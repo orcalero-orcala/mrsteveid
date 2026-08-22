@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Kelola Guru</title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+</head>
+
+
+<body>
+
+    <div class="app-layout admin-layout">
+
+        <aside class="sidebar admin-sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">◫</span>
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToStudents()"
+                >
+                    <span class="nav-icon">S</span>
+                    Kelola Siswa
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">★</span>
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">▤</span>
+                    Kelola Nilai
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">◉</span>
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToAnnouncement()"
+                >
+                    <span class="nav-icon">!</span>
+                    Announcement
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">T</span>
+                    Kelola Guru
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar admin-profile-avatar">
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Guru
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Teacher
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        TEACHER MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Kelola Guru
+                    </h2>
+
+                    <p>
+                        Kelola kode registrasi untuk guru baru.
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar admin-top-avatar">
+                        T
+                    </div>
+
+                    <div class="admin-top-user-text">
+
+                        <strong id="topAdminName">
+                            Guru
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Teacher
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-page-content">
+
+                <section class="admin-page-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            TEACHER REGISTRATION
+                        </small>
+
+                        <h1>
+                            Kode Registrasi Guru
+                        </h1>
+
+                        <p>
+                            Gunakan kode ini untuk mendaftarkan akun guru baru.
+                            Hanya satu kode yang aktif dalam satu waktu.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                
+
+
+                <section class="admin-form-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Kode Aktif
+                            </h2>
+
+                            <p>
+                                Kode akan hangus setelah digunakan atau diregenerate.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="teacherCodeBox">
+
+                        <p id="teacherCodeStatus">
+                            Memuat kode registrasi...
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <section
+    id="teacherListPanel"
+    class="admin-table-section"
+>
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                Daftar Guru
+            </h2>
+
+            <p>
+                Akun guru yang sudah terdaftar di LMS.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-data-table">
+
+            <thead>
+
+                <tr>
+                    <th>Nama</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Dibuat</th>
+                    <th>Aksi</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody id="teacherTableBody">
+
+                <tr>
+                    <td colspan="5">
+                        Memuat daftar guru...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <script>
+
+        const adminId =
+            localStorage.getItem(
+                "adminId"
+            );
+
+        const adminName =
+            localStorage.getItem(
+                "adminName"
+            );
+
+        const adminRole =
+            localStorage.getItem(
+                "adminRole"
+            );
+
+        const adminUsername =
+            localStorage.getItem(
+                "adminUsername"
+            );
+
+
+        if (
+            !adminId ||
+            !adminUsername
+        ) {
+
+            window.location.href =
+                "/admin-login.html";
+
+        }
+
+
+        const displayRole =
+            adminRole === "teacher"
+                ? "Teacher"
+                : adminRole || "Administrator";
+
+
+        document.getElementById(
+            "sidebarAdminName"
+        ).textContent =
+            adminName || "Guru";
+
+
+        document.getElementById(
+            "sidebarAdminRole"
+        ).textContent =
+            displayRole;
+
+
+        document.getElementById(
+            "topAdminName"
+        ).textContent =
+            adminName || "Guru";
+
+
+        document.getElementById(
+            "topAdminRole"
+        ).textContent =
+            displayRole;
+
+            async function loadTeachers() {
+
+    const tableBody =
+        document.getElementById(
+            "teacherTableBody"
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/teachers"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            tableBody.innerHTML = `
+
+                <tr>
+                    <td colspan="5">
+                        ${escapeHtml(
+                            data.message ||
+                            "Gagal mengambil daftar guru."
+                        )}
+                    </td>
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        if (
+            !Array.isArray(
+                data.teachers
+            ) ||
+            data.teachers.length === 0
+        ) {
+
+            tableBody.innerHTML = `
+
+                <tr>
+                    <td colspan="5">
+                        Belum ada akun guru.
+                    </td>
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        tableBody.innerHTML =
+            "";
+
+
+        data.teachers.forEach(
+            (teacher) => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const isCurrentTeacher =
+                    Number(teacher.id) ===
+                    Number(adminId);
+
+
+                const displayRole =
+                    teacher.role === "teacher"
+                        ? "Teacher"
+                        : teacher.role;
+
+
+                row.innerHTML = `
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(
+                                teacher.name ||
+                                "-"
+                            )}
+                        </strong>
+                    </td>
+
+
+                    <td>
+                        ${escapeHtml(
+                            teacher.username ||
+                            "-"
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${escapeHtml(
+                            displayRole ||
+                            "-"
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${escapeHtml(
+                            teacher.created_at ||
+                            "-"
+                        )}
+                    </td>
+
+
+                    <td>
+
+                        ${
+                            isCurrentTeacher
+                                ? `
+                                    <span class="teacher-current-badge">
+                                        Akun Saya
+                                    </span>
+                                `
+                                : `
+                                    <button
+                                        type="button"
+                                        class="admin-delete-button"
+                                        onclick="
+                                            deleteTeacher(
+                                                ${teacher.id},
+                                                '${escapeJsString(
+                                                    teacher.name ||
+                                                    teacher.username ||
+                                                    "Guru"
+                                                )}'
+                                            )
+                                        "
+                                    >
+                                        Hapus
+                                    </button>
+                                `
+                        }
+
+                    </td>
+
+                `;
+
+
+                tableBody.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        tableBody.innerHTML = `
+
+            <tr>
+                <td colspan="5">
+                    Tidak dapat terhubung ke server.
+                </td>
+            </tr>
+
+        `;
+
+    }
+
+}
+
+async function deleteTeacher(
+    teacherId,
+    teacherName
+) {
+
+    const confirmed =
+        confirm(
+            `Yakin ingin menghapus akun ${teacherName}?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/teachers/${teacherId}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Gagal menghapus akun guru."
+            );
+
+            return;
+
+        }
+
+
+        await loadTeachers();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Tidak dapat terhubung ke server."
+        );
+
+    }
+
+}
+
+function escapeJsString(text) {
+
+    return String(
+        text ?? ""
+    )
+        .replaceAll(
+            "\\",
+            "\\\\"
+        )
+        .replaceAll(
+            "'",
+            "\\'"
+        )
+        .replaceAll(
+            "\n",
+            " "
+        )
+        .replaceAll(
+            "\r",
+            " "
+        );
+
+}
+
+
+        async function loadRegistrationCode() {
+
+            const codeBox =
+                document.getElementById(
+                    "teacherCodeBox"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/registration-code"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    codeBox.innerHTML = `
+                        <p class="admin-form-message">
+                            ${escapeHtml(
+                                data.message ||
+                                "Gagal mengambil kode."
+                            )}
+                        </p>
+                    `;
+
+                    return;
+
+                }
+
+
+                if (!data.code) {
+
+                    codeBox.innerHTML = `
+
+                        <div class="empty-state">
+
+                            <strong>
+                                Belum ada kode aktif
+                            </strong>
+
+                            <span>
+                                Buat kode registrasi untuk guru baru.
+                            </span>
+
+                            <button
+                                type="button"
+                                class="admin-primary-button"
+                                onclick="regenerateCode()"
+                            >
+                                Generate Code
+                            </button>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                codeBox.innerHTML = `
+
+                    <div class="teacher-registration-card">
+
+                        <span class="teacher-code-label">
+                            KODE REGISTRASI AKTIF
+                        </span>
+
+                        <strong class="teacher-registration-code">
+                            ${escapeHtml(
+                                data.code.code
+                            )}
+                        </strong>
+
+                        <p>
+                            Dibuat oleh
+                            <strong>
+                                ${escapeHtml(
+                                    data.code.creator_name ||
+                                    "Guru"
+                                )}
+                            </strong>
+                        </p>
+
+                        <button
+                            type="button"
+                            class="admin-primary-button"
+                            onclick="regenerateCode()"
+                        >
+                            Regenerate Code
+                        </button>
+
+                    </div>
+
+                `;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                codeBox.innerHTML = `
+                    <p class="admin-form-message">
+                        Tidak dapat terhubung ke server.
+                    </p>
+                `;
+
+            }
+
+        }
+
+
+        async function regenerateCode() {
+
+            const confirmed =
+                confirm(
+                    "Kode lama akan langsung hangus. Lanjutkan?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/registration-code/regenerate",
+                        {
+                            method: "POST"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    alert(
+                        data.message ||
+                        "Gagal membuat kode."
+                    );
+
+                    return;
+
+                }
+
+
+                loadRegistrationCode();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Tidak dapat terhubung ke server."
+                );
+
+            }
+
+        }
+
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                text ?? "";
+
+            return div.innerHTML;
+
+        }
+
+
+        function goToDashboard() {
+            window.location.href =
+                "/admin-dashboard.html";
+        }
+
+
+        function goToStudents() {
+            window.location.href =
+                "/admin-students.html";
+        }
+
+
+        function goToPoints() {
+            window.location.href =
+                "/admin-points.html";
+        }
+
+
+        function goToExamScores() {
+            window.location.href =
+                "/admin-exam-scores.html";
+        }
+
+
+        function goToClassroomFeed() {
+            window.location.href =
+                "/admin-announcements.html";
+        }
+
+
+        function goToAnnouncement() {
+            window.location.href =
+                "/admin-announcement.html";
+        }
+
+
+        async function logout() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+
+            localStorage.removeItem(
+                "adminId"
+            );
+
+            localStorage.removeItem(
+                "adminName"
+            );
+
+            localStorage.removeItem(
+                "adminRole"
+            );
+
+            localStorage.removeItem(
+                "adminUsername"
+            );
+
+
+            window.location.href =
+                "/admin-login.html";
+
+        }
+
+
+        loadRegistrationCode();
+        loadTeachers();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+<title>
+    Kelola Nilai
+</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+</head>
+
+
+<body>
+
+    <div class="app-layout admin-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar admin-sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">◫</span>
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToStudents()"
+                >
+                    <span class="nav-icon">S</span>
+                    Kelola Siswa
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">★</span>
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">▤</span>
+                    Kelola Nilai
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">◉</span>
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPublicAnnouncement()"
+                >
+                    <span class="nav-icon">!</span>
+                    Announcement
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToTeachers()"
+>
+    <span class="nav-icon">T</span>
+    Kelola Guru
+</button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar admin-profile-avatar">
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        ACADEMIC MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Kelola Nilai
+                    </h2>
+
+                    <p>
+                        Tambah dan tinjau nilai ujian siswa
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar admin-top-avatar">
+                        T
+                    </div>
+
+                    <div class="admin-top-user-text">
+
+                        <strong id="topAdminName">
+                            Admin
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Administrator
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-page-content">
+
+                <!-- HERO -->
+
+                <section class="admin-page-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            EXAM SCORES
+                        </small>
+
+                        <h1>
+                            Nilai Ujian Siswa
+                        </h1>
+
+                        <p>
+                            Masukkan nilai ujian siswa dan
+                            tinjau seluruh hasil berdasarkan
+                            siswa yang dipilih.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- TAMBAH NILAI -->
+
+                <section class="admin-form-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Tambah Nilai
+                            </h2>
+
+                            <p>
+                                Masukkan data ujian dan nilai siswa.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        id="examScoreForm"
+                        class="admin-score-form"
+                    >
+
+                        <div class="admin-form-field">
+
+                            <label for="studentSelect">
+                                Siswa
+                            </label>
+
+                            <select
+                                id="studentSelect"
+                                required
+                            >
+                                <option value="">
+                                    Pilih siswa
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="admin-form-field">
+
+                            <label for="subject">
+                                Mapel
+                            </label>
+
+                            <input
+                                type="text"
+                                id="subject"
+                                placeholder="Contoh: Matematika"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-field">
+
+                            <label for="material">
+                                Materi
+                            </label>
+
+                            <input
+                                type="text"
+                                id="material"
+                                placeholder="Contoh: Persamaan Linear"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-field">
+
+                            <label for="score">
+                                Nilai
+                            </label>
+
+                            <input
+                                type="number"
+                                id="score"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                placeholder="0 - 100"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-action">
+
+                            <button
+                                type="submit"
+                                class="admin-primary-button"
+                            >
+                                Simpan Nilai
+                            </button>
+
+                        </div>
+
+                    </form>
+
+
+                    <p
+                        id="message"
+                        class="admin-form-message"
+                    ></p>
+
+                </section>
+
+
+                <!-- DAFTAR NILAI -->
+
+                <section class="admin-table-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Daftar Nilai Siswa
+                            </h2>
+
+                            <p>
+                                Pilih siswa untuk melihat semua nilai.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="admin-score-filter">
+
+                        <div class="admin-form-field">
+
+                            <label for="scoreStudentSelect">
+                                Pilih Siswa
+                            </label>
+
+                            <select id="scoreStudentSelect">
+
+                                <option value="">
+                                    Pilih siswa
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="loadExamScores()"
+                        >
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="examScoreTableContainer"
+                        class="admin-score-table-container"
+                    >
+
+                        <div class="empty-state">
+
+                            <strong>
+                                Belum ada siswa dipilih
+                            </strong>
+
+                            <span>
+                                Pilih siswa untuk melihat nilai.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+
+function goToTeachers() {
+
+    window.location.href =
+        "/admin-users.html";
+
+}
+
+        const adminName =
+    localStorage.getItem(
+        "adminName"
+    );
+
+const adminRole =
+    localStorage.getItem(
+        "adminRole"
+    );
+
+    const displayRole =
+    adminRole === "teacher"
+        ? "Teacher"
+        : adminRole || "Administrator";
+
+const adminUsername =
+    localStorage.getItem(
+        "adminUsername"
+    );
+
+
+if (!adminUsername) {
+
+    window.location.href =
+        "/admin-login.html";
+
+}
+
+
+document.getElementById(
+    "sidebarAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "sidebarAdminRole"
+).textContent =
+    displayRole;
+
+
+document.getElementById(
+    "topAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "topAdminRole"
+).textContent =
+    displayRole;
+
+        const examScoreList =
+    document.getElementById(
+        "examScoreList"
+    );
+
+        const form =
+            document.getElementById(
+                "examScoreForm"
+            );
+
+
+        const studentSelect =
+            document.getElementById(
+                "studentSelect"
+            );
+
+
+        const subjectInput =
+            document.getElementById(
+                "subject"
+            );
+
+
+        const materialInput =
+            document.getElementById(
+                "material"
+            );
+
+
+        const scoreInput =
+            document.getElementById(
+                "score"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+            function escapeHtml(text) {
+
+                const scoreStudentSelect =
+    document.getElementById(
+        "scoreStudentSelect"
+    );
+
+
+const examScoreTableContainer =
+    document.getElementById(
+        "examScoreTableContainer"
+    );
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        text ?? "";
+
+    return div.innerHTML;
+
+}
+
+        // =====================================
+        // LOAD SISWA
+        // =====================================
+
+        async function loadStudents() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/students"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            message.textContent =
+                "Gagal mengambil daftar siswa.";
+
+            return;
+
+        }
+
+
+        // Dropdown untuk TAMBAH NILAI
+        studentSelect.innerHTML = `
+            <option value="">
+                Pilih siswa
+            </option>
+        `;
+
+
+        // Dropdown untuk LIHAT NILAI
+        scoreStudentSelect.innerHTML = `
+            <option value="">
+                Pilih siswa
+            </option>
+        `;
+
+
+        data.students.forEach(
+            (student) => {
+
+                // =========================
+                // DROPDOWN TAMBAH NILAI
+                // =========================
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    student.id;
+
+
+                option.textContent =
+                    `${student.name} — ${student.class_name}`;
+
+
+                studentSelect.appendChild(
+                    option
+                );
+
+
+                // =========================
+                // DROPDOWN LIHAT NILAI
+                // =========================
+
+                const scoreOption =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                scoreOption.value =
+                    student.id;
+
+
+                scoreOption.textContent =
+                    `${student.name} — ${student.class_name}`;
+
+
+                scoreStudentSelect.appendChild(
+                    scoreOption
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
+
+        async function deleteExamScore(
+    scoreId
+) {
+
+    const confirmDelete =
+        confirm(
+            "Yakin ingin menghapus nilai ini?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/exam-scores/${scoreId}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Gagal menghapus nilai."
+            );
+
+            return;
+
+        }
+
+
+        loadExamScores();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Gagal menghapus nilai."
+        );
+
+    }
+
+}
+
+       async function loadExamScores() {
+
+    const selectedStudentId =
+        Number(
+            scoreStudentSelect.value
+        );
+
+
+if (!selectedStudentId) {
+
+    examScoreTableContainer.innerHTML = `
+
+        <div class="empty-state">
+
+            <strong>
+                Belum ada siswa dipilih
+            </strong>
+
+            <span>
+                Pilih siswa untuk melihat nilai.
+            </span>
+
+        </div>
+
+    `;
+
+    return;
+
+}
+
+
+    examScoreTableContainer.innerHTML =
+        "Memuat nilai...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/exam-scores"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            examScoreTableContainer.innerHTML =
+                "Gagal mengambil nilai.";
+
+            return;
+
+        }
+
+
+        const studentScores =
+            data.examScores.filter(
+                (examScore) =>
+                    Number(
+                        examScore.student_id
+                    ) ===
+                    selectedStudentId
+            );
+
+
+if (
+    studentScores.length === 0
+) {
+
+    examScoreTableContainer.innerHTML = `
+
+        <div class="empty-state">
+
+            <strong>
+                Belum ada nilai
+            </strong>
+
+            <span>
+                Siswa ini belum memiliki nilai ujian.
+            </span>
+
+        </div>
+
+    `;
+
+    return;
+
+}
+
+
+ let tableHtml = `
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Mapel
+                    </th>
+
+                    <th>
+                        Materi
+                    </th>
+
+                    <th>
+                        Nilai
+                    </th>
+
+                    <th>
+                        Tanggal
+                    </th>
+
+                    <th>
+                        Aksi
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+`;
+
+
+studentScores.forEach(
+    (examScore) => {
+
+        const numericScore =
+            Number(
+                examScore.score
+            );
+
+
+        let scoreLevel =
+            "medium";
+
+
+        if (numericScore >= 85) {
+
+            scoreLevel =
+                "high";
+
+        } else if (
+            numericScore < 70
+        ) {
+
+            scoreLevel =
+                "low";
+
+        }
+
+
+        tableHtml += `
+
+            <tr>
+
+                <td>
+
+                    <strong class="admin-score-subject">
+                        ${escapeHtml(
+                            examScore.subject
+                        )}
+                    </strong>
+
+                </td>
+
+
+                <td>
+                    ${escapeHtml(
+                        examScore.material
+                    )}
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="
+                            admin-score-badge
+                            ${scoreLevel}
+                        "
+                    >
+                        ${numericScore}
+                    </span>
+
+                </td>
+
+
+                <td>
+                    ${escapeHtml(
+                        examScore.created_at
+                    )}
+                </td>
+
+
+                <td>
+
+                    <button
+                        type="button"
+                        class="admin-delete-button"
+                        onclick="
+                            deleteExamScore(
+                                ${examScore.id}
+                            )
+                        "
+                    >
+                        Hapus
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+);
+
+
+tableHtml += `
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+`;
+
+
+examScoreTableContainer.innerHTML =
+    tableHtml;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        examScoreTableContainer.innerHTML =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
+
+        // =====================================
+        // SIMPAN NILAI
+        // =====================================
+
+        form.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+                const studentId =
+                    Number(
+                        studentSelect.value
+                    );
+
+
+                const subject =
+                    subjectInput
+                        .value
+                        .trim();
+
+
+                const material =
+                    materialInput
+                        .value
+                        .trim();
+
+
+                const score =
+                    Number(
+                        scoreInput.value
+                    );
+
+
+                if (!studentId) {
+
+                    message.textContent =
+                        "Pilih siswa terlebih dahulu.";
+
+                    return;
+
+                }
+
+
+                if (
+                    !subject ||
+                    !material
+                ) {
+
+                    message.textContent =
+                        "Mapel dan materi wajib diisi.";
+
+                    return;
+
+                }
+
+
+                if (
+                    !Number.isFinite(score) ||
+                    score < 0 ||
+                    score > 100
+                ) {
+
+                    message.textContent =
+                        "Nilai harus antara 0 sampai 100.";
+
+                    return;
+
+                }
+
+
+                message.textContent =
+                    "Menyimpan nilai...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/admin/exam-scores",
+                            {
+                                method:
+                                    "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        studentId,
+                                        subject,
+                                        material,
+                                        score
+                                    })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!data.success) {
+
+                        message.textContent =
+                            data.message ||
+                            "Gagal menyimpan nilai.";
+
+                        return;
+
+                    }
+
+
+                    message.textContent =
+                        "Nilai berhasil disimpan.";
+
+                        loadExamScores();
+
+
+                    subjectInput.value =
+                        "";
+
+                    materialInput.value =
+                        "";
+
+                    scoreInput.value =
+                        "";
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    message.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+                }
+
+            }
+        );
+
+        scoreStudentSelect.addEventListener(
+    "change",
+    loadExamScores
+);
+
+function goToDashboard() {
+
+    window.location.href =
+        "/admin-dashboard.html";
+
+}
+
+
+function goToStudents() {
+
+    window.location.href =
+        "/admin-students.html";
+
+}
+
+
+function goToPoints() {
+
+    window.location.href =
+        "/admin-points.html";
+
+}
+
+
+function goToClassroomFeed() {
+
+    window.location.href =
+        "/admin-announcements.html";
+
+}
+
+
+function goToPublicAnnouncement() {
+
+    window.location.href =
+        "/admin-announcement.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminRole"
+    );
+
+    localStorage.removeItem(
+        "adminUsername"
+    );
+
+
+    window.location.href =
+        "/admin-login.html";
+}
+
+
+        loadStudents();
+        loadExamScores();
+
+    </script>
+
+</body>
+
+</html>

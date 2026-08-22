@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+<title>
+    Announcement
+</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout admin-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar admin-sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">◫</span>
+                    Dashboard
+                </button>
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToStudents()"
+                >
+                    <span class="nav-icon">S</span>
+                    Kelola Siswa
+                </button>
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">★</span>
+                    Kelola Poin
+                </button>
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">▤</span>
+                    Kelola Nilai
+                </button>
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">◉</span>
+                    Classroom Feed
+                </button>
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">!</span>
+                    Announcement
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToTeachers()"
+>
+    <span class="nav-icon">T</span>
+    Kelola Guru
+</button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar admin-profile-avatar">
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        OFFICIAL INFORMATION
+                    </small>
+
+                    <h2>
+                        Announcement
+                    </h2>
+
+                    <p>
+                        Informasi resmi untuk seluruh siswa
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar admin-top-avatar">
+                        T
+                    </div>
+
+                    <div class="admin-top-user-text">
+
+                        <strong id="topAdminName">
+                            Admin
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Administrator
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-page-content">
+
+                <!-- HERO -->
+
+                <section class="admin-announcement-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            SCHOOL ANNOUNCEMENT
+                        </small>
+
+                        <h1>
+                            Informasi Resmi Sekolah
+                        </h1>
+
+                        <p>
+                            Buat announcement resmi seperti
+                            jadwal ujian, libur sekolah,
+                            perubahan kegiatan, dan informasi penting lainnya.
+                        </p>
+
+                    </div>
+
+                    <div class="official-badge">
+                        OFFICIAL
+                    </div>
+
+                </section>
+
+
+                <!-- CREATE -->
+
+                <section class="admin-form-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Buat Announcement
+                            </h2>
+
+                            <p>
+                                Announcement ini dapat dibaca oleh seluruh siswa.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        id="announcementForm"
+                        class="admin-announcement-form"
+                    >
+
+                        <div class="admin-form-field">
+
+                            <label for="title">
+                                Judul
+                            </label>
+
+                            <input
+                                type="text"
+                                id="title"
+                                placeholder="Contoh: Libur Sekolah"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-field">
+
+                            <label for="message">
+                                Isi Announcement
+                            </label>
+
+                            <textarea
+                                id="message"
+                                rows="6"
+                                placeholder="Tulis informasi untuk siswa..."
+                                required
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="admin-announcement-actions">
+
+                            <p
+                                id="statusMessage"
+                                class="admin-form-message"
+                            ></p>
+
+
+                            <button
+                                type="submit"
+                                class="admin-primary-button"
+                            >
+                                Publikasikan Announcement
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- LIST -->
+
+                <section class="admin-announcement-list-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Announcement Terbit
+                            </h2>
+
+                            <p>
+                                Informasi resmi yang sedang tersedia untuk siswa.
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="refreshAnnouncements()"
+                        >
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="announcementList"
+                        class="official-announcement-list"
+                    >
+                        Memuat announcement...
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        function goToTeachers() {
+
+    window.location.href =
+        "/admin-users.html";
+
+}
+
+        const adminId =
+            localStorage.getItem(
+                "adminId"
+            );
+
+            const adminName =
+    localStorage.getItem(
+        "adminName"
+    );
+
+const adminRole =
+    localStorage.getItem(
+        "adminRole"
+    );
+
+    const displayRole =
+    adminRole === "teacher"
+        ? "Teacher"
+        : adminRole || "Administrator";
+
+const adminUsername =
+    localStorage.getItem(
+        "adminUsername"
+    );
+
+
+if (!adminId || !adminUsername) {
+
+    window.location.href =
+        "/admin-login.html";
+
+}
+
+
+document.getElementById(
+    "sidebarAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "sidebarAdminRole"
+).textContent =
+    displayRole;
+
+
+document.getElementById(
+    "topAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "topAdminRole"
+).textContent =
+    displayRole;
+
+        const announcementForm =
+            document.getElementById(
+                "announcementForm"
+            );
+
+
+        const titleInput =
+            document.getElementById(
+                "title"
+            );
+
+
+        const messageInput =
+            document.getElementById(
+                "message"
+            );
+
+
+        const statusMessage =
+            document.getElementById(
+                "statusMessage"
+            );
+
+
+        const announcementList =
+            document.getElementById(
+                "announcementList"
+            );
+
+
+        // =====================================
+        // BUAT ANNOUNCEMENT
+        // =====================================
+
+        announcementForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+                const title =
+                    titleInput
+                        .value
+                        .trim();
+
+
+                const message =
+                    messageInput
+                        .value
+                        .trim();
+
+
+                if (
+                    !title ||
+                    !message
+                ) {
+
+                    statusMessage.textContent =
+                        "Judul dan isi wajib diisi.";
+
+                    return;
+
+                }
+
+
+                statusMessage.textContent =
+                    "Membuat announcement...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/admin/public-announcements",
+                            {
+
+                                method:
+                                    "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+
+                                        adminId:
+                                            Number(
+                                                adminId
+                                            ),
+
+                                        title,
+
+                                        message
+
+                                    })
+
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!data.success) {
+
+                        statusMessage.textContent =
+                            data.message ||
+                            "Gagal membuat announcement.";
+
+                        return;
+
+                    }
+
+
+                    statusMessage.textContent =
+                        "Announcement berhasil dibuat.";
+
+
+                    titleInput.value =
+                        "";
+
+
+                    messageInput.value =
+                        "";
+
+
+                    loadAnnouncements();
+
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+
+                    statusMessage.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+                }
+
+            }
+        );
+
+async function refreshAnnouncements() {
+
+    await loadAnnouncements(false);
+
+}
+
+
+        // =====================================
+        // LOAD ANNOUNCEMENT
+        // =====================================
+
+async function loadAnnouncements(
+    showLoading = true
+) {
+
+    if (showLoading) {
+
+        announcementList.innerHTML =
+            "Memuat announcement...";
+
+    }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/public-announcements"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    announcementList.innerHTML =
+                        "Gagal mengambil announcement.";
+
+                    return;
+
+                }
+
+
+                if (
+                    data.announcements.length === 0
+                ) {
+
+announcementList.innerHTML = `
+
+    <div class="empty-state">
+
+        <strong>
+            Belum ada announcement
+        </strong>
+
+        <span>
+            Announcement resmi yang dibuat akan muncul di sini.
+        </span>
+
+    </div>
+
+`;
+
+                    return;
+
+                }
+
+
+                announcementList.innerHTML =
+                    "";
+
+
+                data.announcements.forEach(
+                    (announcement) => {
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+
+card.className =
+    "official-announcement-card";
+
+
+  card.innerHTML = `
+
+    <div class="official-announcement-header">
+
+        <div class="official-announcement-icon">
+            !
+        </div>
+
+
+        <div class="official-announcement-title">
+
+            <span>
+                OFFICIAL ANNOUNCEMENT
+            </span>
+
+            <h3>
+                ${escapeHtml(
+                    announcement.title
+                )}
+            </h3>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="admin-delete-button"
+            onclick="
+                deleteAnnouncement(
+                    ${announcement.id}
+                )
+            "
+        >
+            Hapus
+        </button>
+
+    </div>
+
+
+<div class="official-announcement-message">${escapeHtml(
+    announcement.message
+)}</div>
+
+
+    <div class="official-announcement-meta">
+
+        <span>
+            Oleh
+            <strong>
+                ${escapeHtml(
+                    announcement.admin_name ||
+                    "Admin / Guru"
+                )}
+            </strong>
+        </span>
+
+
+        <span>
+            ${escapeHtml(
+                announcement.created_at
+            )}
+        </span>
+
+    </div>
+
+`;
+
+
+                        announcementList.appendChild(
+                            card
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                announcementList.innerHTML =
+                    "Tidak dapat terhubung ke server.";
+
+            }
+
+        }
+
+
+        // =====================================
+        // HAPUS ANNOUNCEMENT
+        // =====================================
+
+        async function deleteAnnouncement(
+            announcementId
+        ) {
+
+            const confirmDelete =
+                confirm(
+                    "Yakin ingin menghapus announcement ini?"
+                );
+
+
+            if (!confirmDelete) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/admin/public-announcements/${announcementId}`,
+                        {
+                            method:
+                                "DELETE"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    alert(
+                        data.message ||
+                        "Gagal menghapus announcement."
+                    );
+
+                    return;
+
+                }
+
+
+                loadAnnouncements();
+
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                alert(
+                    "Tidak dapat terhubung ke server."
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // ESCAPE HTML
+        // =====================================
+
+        function escapeHtml(
+            text
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.textContent =
+                text ?? "";
+
+
+            return div.innerHTML;
+
+        }
+
+        function goToDashboard() {
+
+    window.location.href =
+        "/admin-dashboard.html";
+
+}
+
+
+function goToStudents() {
+
+    window.location.href =
+        "/admin-students.html";
+
+}
+
+
+function goToPoints() {
+
+    window.location.href =
+        "/admin-points.html";
+
+}
+
+
+function goToExamScores() {
+
+    window.location.href =
+        "/admin-exam-scores.html";
+
+}
+
+
+function goToClassroomFeed() {
+
+    window.location.href =
+        "/admin-announcements.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminRole"
+    );
+
+    localStorage.removeItem(
+        "adminUsername"
+    );
+
+
+    window.location.href =
+        "/admin-login.html";
+}
+
+
+        // =====================================
+        // START
+        // =====================================
+
+        loadAnnouncements();
+
+    </script>
+
+</body>
+
+</html>

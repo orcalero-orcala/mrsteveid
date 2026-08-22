@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Profile Siswa</title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Student Portal
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        S
+                    </span>
+
+                    Profile
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Poin Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Nilai Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToAnnouncements()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar">
+                        S
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarStudentName">
+                            Student
+                        </strong>
+
+                        <small id="sidebarStudentClass">
+                            Kelas
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+
+                    <h2>
+                        Profile
+                    </h2>
+
+                    <p>
+                        Informasi akun dan ringkasan akademik
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar">
+                        S
+                    </div>
+
+                    <span id="topStudentName">
+                        Student
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <div class="dashboard-content">
+
+                <section class="welcome-card">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            STUDENT PROFILE
+                        </small>
+
+                        <h1 id="profileFullName">
+                            Memuat profile...
+                        </h1>
+
+                        <p>
+                            Ringkasan informasi akun siswa.
+                        </p>
+
+                    </div>
+
+
+                    <div class="welcome-decoration">
+                        S
+                    </div>
+
+                </section>
+
+
+                <section class="student-info-grid">
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Nama Pendek
+                        </span>
+
+                        <strong id="profileShortName">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Kode Siswa
+                        </span>
+
+                        <strong id="profileCode">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Tanggal Lahir
+                        </span>
+
+                        <strong id="profileDob">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Kelas
+                        </span>
+
+                        <strong id="profileClass">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Total Poin
+                        </span>
+
+                        <strong id="profilePoints">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Nilai Rata-rata
+                        </span>
+
+                        <strong id="profileAverage">
+                            -
+                        </strong>
+
+                    </article>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        async function loadProfile() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/student/profile"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    if (response.status === 401) {
+
+                        window.location.href =
+                            "/student-login.html";
+
+                        return;
+
+                    }
+
+
+                    alert(
+                        data.message ||
+                        "Gagal mengambil profile siswa."
+                    );
+
+                    return;
+
+                }
+
+
+                const student =
+                    data.student;
+
+
+                document.getElementById(
+                    "profileFullName"
+                ).textContent =
+                    student.fullName;
+
+
+                document.getElementById(
+                    "profileShortName"
+                ).textContent =
+                    student.name;
+
+
+                document.getElementById(
+                    "profileCode"
+                ).textContent =
+                    student.loginCode;
+
+
+                document.getElementById(
+                    "profileDob"
+                ).textContent =
+                    formatDate(
+                        student.dateOfBirth
+                    );
+
+
+                document.getElementById(
+                    "profileClass"
+                ).textContent =
+                    student.className;
+
+
+                document.getElementById(
+                    "profilePoints"
+                ).textContent =
+                    student.totalPoints;
+
+
+                document.getElementById(
+                    "profileAverage"
+                ).textContent =
+                    student.averageScore === null
+                        ? "Belum ada nilai"
+                        : student.averageScore;
+
+
+                document.getElementById(
+                    "sidebarStudentName"
+                ).textContent =
+                    student.name;
+
+
+                document.getElementById(
+                    "sidebarStudentClass"
+                ).textContent =
+                    student.className;
+
+
+                document.getElementById(
+                    "topStudentName"
+                ).textContent =
+                    student.name;
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal load profile:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        function formatDate(dateString) {
+
+            if (!dateString) {
+
+                return "-";
+
+            }
+
+
+            const parts =
+                dateString.split("-");
+
+
+            if (parts.length !== 3) {
+
+                return dateString;
+
+            }
+
+
+            const [
+                year,
+                month,
+                day
+            ] = parts;
+
+
+            const months = [
+                "Januari",
+                "Februari",
+                "Maret",
+                "April",
+                "Mei",
+                "Juni",
+                "Juli",
+                "Agustus",
+                "September",
+                "Oktober",
+                "November",
+                "Desember"
+            ];
+
+
+            return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
+
+        }
+
+
+        function goToDashboard() {
+
+            window.location.href =
+                "/student-dashboard.html";
+
+        }
+
+
+        function goToPoints() {
+
+            window.location.href =
+                "/student-points.html";
+
+        }
+
+
+        function goToExamScores() {
+
+            window.location.href =
+                "/student-exam-scores.html";
+
+        }
+
+
+        function goToAnnouncements() {
+
+            window.location.href =
+                "/student-announcements.html";
+
+        }
+
+
+        async function logout() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+
+            localStorage.removeItem(
+                "studentId"
+            );
+
+            localStorage.removeItem(
+                "studentName"
+            );
+
+            localStorage.removeItem(
+                "studentClass"
+            );
+
+            localStorage.removeItem(
+                "studentLoginCode"
+            );
+
+
+            window.location.href =
+                "/student-login.html";
+
+        }
+
+
+        loadProfile();
+
+    </script>
+
+</body>
+
+</html>

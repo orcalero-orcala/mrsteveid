@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Notifikasi Admin / Guru</title>
+    <link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+<body class="notification-popup-page">
+
+    <main class="notification-popup-shell">
+
+        <section class="notification-popup-panel">
+
+            <button
+                type="button"
+                class="notification-close-button"
+                onclick="goBack()"
+                aria-label="Tutup notifikasi"
+            >
+                ×
+            </button>
+
+
+            <div class="notification-popup-header">
+
+                <small class="eyebrow">
+                    NOTIFICATIONS
+                </small>
+
+                <h1>
+                    Notifikasi
+                </h1>
+
+                <p>
+                    Mention, reply, dan aktivitas terbaru
+                    dari Classroom Feed.
+                </p>
+
+            </div>
+
+
+            <div
+                id="notificationList"
+                class="notification-popup-list"
+            >
+                Memuat notifikasi...
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const adminId =
+            Number(
+                localStorage.getItem(
+                    "adminId"
+                )
+            );
+
+
+        if (!Number.isInteger(adminId)) {
+
+            window.location.href =
+                "/admin-login.html";
+
+        }
+
+
+        function goBack() {
+
+            window.location.href =
+                "/admin-announcements.html";
+
+        }
+
+
+        async function loadNotifications() {
+
+            const container =
+                document.getElementById(
+                    "notificationList"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/admin/${adminId}/notifications`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    container.innerHTML =
+                        "Gagal mengambil notifikasi.";
+
+                    return;
+
+                }
+
+
+                container.innerHTML = "";
+
+
+                if (
+                    !data.notifications ||
+                    data.notifications.length === 0
+                ) {
+
+container.innerHTML = `
+
+    <div class="empty-state">
+
+        <strong>
+            Belum ada notifikasi
+        </strong>
+
+        <span>
+            Aktivitas baru akan muncul di sini.
+        </span>
+
+    </div>
+
+`;
+
+                    return;
+
+                }
+
+
+                data.notifications.forEach(
+                    (notification) => {
+
+                        const item =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        item.className =
+                            "notification";
+
+
+                        if (
+                            notification.is_read === 0
+                        ) {
+
+                            item.classList.add(
+                                "unread"
+                            );
+
+                        }
+
+
+item.innerHTML = `
+
+    ${
+        notification.is_read === 0
+            ? `
+                <span
+                    class="notification-unread-dot"
+                    aria-label="Belum dibaca"
+                ></span>
+            `
+            : ""
+    }
+
+
+    <div class="notification-content">
+
+        <p>
+            ${escapeHtml(
+                notification.message
+            )}
+        </p>
+
+        <span class="notification-time">
+            ${escapeHtml(
+                notification.created_at
+            )}
+        </span>
+
+    </div>
+
+
+    <span class="notification-arrow">
+        →
+    </span>
+
+`;
+
+
+                        item.onclick = () => {
+
+                            openNotification(
+                                notification
+                            );
+
+                        };
+
+
+                        container.appendChild(
+                            item
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                container.innerHTML =
+                    "Terjadi kesalahan saat mengambil notifikasi.";
+
+            }
+
+        }
+
+
+        async function openNotification(
+            notification
+        ) {
+
+            try {
+
+                await fetch(
+                    `/api/notifications/${notification.id}/read`,
+                    {
+                        method: "PATCH"
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+
+sessionStorage.setItem(
+    "notificationAnnouncementId",
+    String(
+        notification.announcement_id || ""
+    )
+);
+
+sessionStorage.setItem(
+    "notificationReplyId",
+    String(
+        notification.reply_id || ""
+    )
+);
+
+window.location.href =
+    "/admin-announcements.html";
+
+        }
+
+
+        function escapeHtml(text) {
+
+            return String(text ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+
+        }
+
+
+        loadNotifications();
+
+    </script>
+
+</body>
+</html>

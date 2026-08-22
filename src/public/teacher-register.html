@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Register Guru - LMS Sekolah</title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+</head>
+
+
+<body
+    id="teacherRegisterPage"
+    class="auth-page"
+>
+
+    <main class="auth-shell">
+
+        <a
+            href="/admin-login.html"
+            class="auth-close-button"
+            aria-label="Kembali ke login guru"
+        >
+            ×
+        </a>
+
+
+        <section class="auth-visual">
+
+            <div>
+
+                <small class="eyebrow">
+                    TEACHER REGISTRATION
+                </small>
+
+                <h1>
+                    Daftar Akun Guru
+                </h1>
+
+                <p>
+                    Gunakan kode registrasi aktif yang diberikan
+                    oleh guru yang sudah terdaftar.
+                </p>
+
+            </div>
+
+        </section>
+
+
+<div id="teacherRegisterPanel">
+
+    <section
+        id="teacherRegisterCard"
+        class="auth-card"
+    >
+
+            <div class="auth-card-header">
+
+                <small class="eyebrow">
+                    REGISTER
+                </small>
+
+                <h2>
+                    Buat Akun Guru
+                </h2>
+
+                <p>
+                    Lengkapi data di bawah untuk membuat akun baru.
+                </p>
+
+            </div>
+
+
+            <form id="teacherRegisterForm">
+
+                <div class="admin-form-field">
+
+                    <label for="name">
+                        Nama Guru
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Contoh: Budi Santoso"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-form-field">
+
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Contoh: budi"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-form-field">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Minimal 8 karakter"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="admin-form-field">
+
+                    <label for="code">
+                        Kode Registrasi
+                    </label>
+
+                    <input
+                        type="text"
+                        id="code"
+                        placeholder="TCH-XXXXXXXX"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <p
+                    id="registerMessage"
+                    class="admin-form-message"
+                ></p>
+
+
+                <button
+                    type="submit"
+                    class="admin-primary-button"
+                >
+                    Daftar sebagai Guru
+                </button>
+
+            </form>
+
+
+            <p class="auth-switch-text">
+                Sudah punya akun?
+                <a href="/admin-login.html">
+                    Login Guru
+                </a>
+            </p>
+
+        </section>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const form =
+            document.getElementById(
+                "teacherRegisterForm"
+            );
+
+        const message =
+            document.getElementById(
+                "registerMessage"
+            );
+
+
+        form.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+                const name =
+                    document.getElementById(
+                        "name"
+                    ).value.trim();
+
+
+                const username =
+                    document.getElementById(
+                        "username"
+                    ).value.trim();
+
+
+                const password =
+                    document.getElementById(
+                        "password"
+                    ).value;
+
+
+                const code =
+                    document.getElementById(
+                        "code"
+                    ).value.trim();
+
+
+                message.textContent =
+                    "Membuat akun guru...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/teacher/register",
+                            {
+                                method:
+                                    "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        name,
+                                        username,
+                                        password,
+                                        code
+                                    })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!data.success) {
+
+                        message.textContent =
+                            data.message ||
+                            "Registrasi gagal.";
+
+                        return;
+
+                    }
+
+
+                    message.textContent =
+                        "Akun berhasil dibuat. Mengarahkan ke login...";
+
+
+                    setTimeout(
+                        () => {
+
+                            window.location.href =
+                                "/admin-login.html";
+
+                        },
+                        900
+                    );
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    message.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

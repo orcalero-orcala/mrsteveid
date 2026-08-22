@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dashboard Siswa</title>
+
+    <link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- =========================
+             SIDEBAR
+        ========================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Student Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    Dashboard
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToProfile()"
+>
+    <span class="nav-icon">
+        S
+    </span>
+
+    Profile
+</button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Poin Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Nilai Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToAnnouncements()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar">
+                        S
+                    </div>
+
+                    <div>
+                        <strong id="sidebarStudentName">
+                            Student
+                        </strong>
+
+                       <small id="sidebarStudentClass">
+                            Kelas
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN
+        ========================== -->
+
+        <main class="main-content">
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <h2>
+                        Dashboard
+                    </h2>
+
+                    <p>
+                        Ringkasan akun siswa
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar">
+                        S
+                    </div>
+
+                    <span id="topStudentName">
+                        Student
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <div class="dashboard-content">
+
+
+                <!-- WELCOME -->
+
+                <section class="welcome-card">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            STUDENT PORTAL
+                        </small>
+
+                        <h1 id="studentName">
+                            Selamat datang
+                        </h1>
+
+                        <p>
+                            Pantau informasi sekolah,
+                            nilai, poin dan aktivitas
+                            kelas kamu.
+                        </p>
+
+                    </div>
+
+
+                    <div class="welcome-decoration">
+                        ★
+                    </div>
+
+                </section>
+
+
+                <!-- STUDENT INFO -->
+
+                <section class="student-info-grid">
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Kelas
+                        </span>
+
+                        <strong id="studentClass">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="info-card">
+
+                        <span class="info-label">
+                            Kode Siswa
+                        </span>
+
+                        <strong id="studentCode">
+                            -
+                        </strong>
+
+                    </article>
+
+                </section>
+
+
+                <!-- QUICK MENU -->
+
+                <section>
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Akses Cepat
+                            </h2>
+
+                            <p>
+                                Menu utama LMS kamu
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-grid">
+
+
+                        <button
+                            class="quick-card"
+                            type="button"
+                            onclick="goToPoints()"
+                        >
+
+                            <div class="quick-icon">
+                                ★
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Poin Saya
+                                </strong>
+
+                                <span>
+                                    Lihat riwayat poin
+                                </span>
+
+                            </div>
+
+                            <span class="quick-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            class="quick-card"
+                            type="button"
+                            onclick="goToAnnouncements()"
+                        >
+
+                            <div class="quick-icon">
+                                ◉
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Classroom Feed
+                                </strong>
+
+                                <span>
+                                    Diskusi dan komunikasi kelas
+                                </span>
+
+                            </div>
+
+                            <span class="quick-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            class="quick-card"
+                            type="button"
+                            onclick="goToExamScores()"
+                        >
+
+                            <div class="quick-icon">
+                                ▤
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Nilai Saya
+                                </strong>
+
+                                <span>
+                                    Lihat hasil ujian
+                                </span>
+
+                            </div>
+
+                            <span class="quick-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                    </div>
+
+                </section>
+
+
+                <!-- ANNOUNCEMENT -->
+
+                <section class="announcement-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Announcement
+                            </h2>
+
+                            <p>
+                                Informasi terbaru dari sekolah
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="publicAnnouncementList"
+                        class="announcement-list"
+                    >
+                        Memuat announcement...
+                    </div>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        function goToProfile() {
+
+    window.location.href =
+        "/student-profile.html";
+
+}
+
+        function goToAnnouncements() {
+
+            window.location.href =
+                "/student-announcements.html";
+
+        }
+
+        function goToPoints() {
+
+            window.location.href =
+                "/student-points.html";
+
+        }
+
+        function goToExamScores() {
+
+    window.location.href =
+        "/student-exam-scores.html";
+
+}
+
+        const studentId =
+            localStorage.getItem(
+                "studentId"
+            );
+
+
+        const studentName =
+            localStorage.getItem(
+                "studentName"
+            );
+
+
+        const studentClass =
+            localStorage.getItem(
+                "studentClass"
+            );
+
+
+        const studentLoginCode =
+            localStorage.getItem(
+                "studentLoginCode"
+            );
+
+            const publicAnnouncementList =
+    document.getElementById(
+        "publicAnnouncementList"
+    );
+
+
+        // Kalau belum login
+        if (!studentId) {
+
+            window.location.href =
+                "/student-login.html";
+
+        }
+
+
+        // Tampilkan informasi siswa
+        document.getElementById(
+            "studentName"
+        ).textContent =
+            `Selamat datang, ${studentName}`;
+
+                    document.getElementById(
+            "sidebarStudentName"
+        ).textContent =
+            studentName;
+
+            document.getElementById(
+    "sidebarStudentClass"
+).textContent =
+    studentClass;
+
+
+        document.getElementById(
+            "topStudentName"
+        ).textContent =
+            studentName;
+
+
+        document.getElementById(
+            "studentClass"
+        ).textContent =
+            `Kelas: ${studentClass}`;
+
+
+        document.getElementById(
+            "studentCode"
+        ).textContent =
+            `Kode: ${studentLoginCode}`;
+
+            loadPublicAnnouncements();
+
+// =====================================
+// LOAD PUBLIC ANNOUNCEMENT
+// =====================================
+
+async function loadPublicAnnouncements() {
+
+    publicAnnouncementList.innerHTML =
+        "Memuat announcement...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/public-announcements"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            publicAnnouncementList.innerHTML =
+                "Gagal mengambil announcement.";
+
+            return;
+
+        }
+
+
+        if (
+            data.announcements.length === 0
+        ) {
+
+            publicAnnouncementList.innerHTML = `
+                <p>
+                    Belum ada announcement.
+                </p>
+            `;
+
+            return;
+
+        }
+
+
+        publicAnnouncementList.innerHTML =
+            "";
+
+
+        data.announcements.forEach(
+            (announcement) => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.style.border =
+                    "1px solid #ccc";
+
+                card.style.padding =
+                    "15px";
+
+                card.style.marginBottom =
+                    "10px";
+
+                card.style.borderRadius =
+                    "8px";
+
+
+                card.innerHTML = `
+
+                    <h3>
+                        ${escapeHtml(
+                            announcement.title
+                        )}
+                    </h3>
+
+<div class="student-public-announcement-message">
+    ${escapeHtml(
+        announcement.message
+    )}
+</div>
+
+
+                    <small>
+
+                        Oleh:
+                        ${escapeHtml(
+                            announcement.admin_name ||
+                            "Admin / Guru"
+                        )}
+
+                        <br>
+
+                        ${announcement.created_at}
+
+                    </small>
+
+                `;
+
+
+                publicAnnouncementList.appendChild(
+                    card
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        publicAnnouncementList.innerHTML =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
+
+function escapeHtml(
+    text
+) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text ?? "";
+
+
+    return div.innerHTML;
+
+}
+
+        // Logout
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "studentId"
+    );
+
+    localStorage.removeItem(
+        "studentName"
+    );
+
+    localStorage.removeItem(
+        "studentClass"
+    );
+
+    localStorage.removeItem(
+        "studentLoginCode"
+    );
+
+
+    window.location.href =
+        "/student-login.html";
+}
+
+    </script>
+
+
+</body>
+
+</html>

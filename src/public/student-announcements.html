@@ -1,0 +1,2458 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+    Classroom Feed
+</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- =========================
+             SIDEBAR
+        ========================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Student Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    Dashboard
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToProfile()"
+>
+    <span class="nav-icon">
+        S
+    </span>
+
+    Profile
+</button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Poin Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Nilai Saya
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar">
+                        S
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarStudentName">
+                            Student
+                        </strong>
+
+                        <small id="sidebarStudentClass">
+                            Siswa
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN CONTENT
+        ========================== -->
+
+        <main class="main-content">
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <h2>
+                        Classroom Feed
+                    </h2>
+
+                    <p>
+                        Diskusi dan komunikasi kelas
+                    </p>
+
+                </div>
+
+
+                <div class="feed-topbar-actions">
+
+                    <button
+                        class="notification-button"
+                        type="button"
+                        onclick="goToNotifications()"
+                    >
+                        🔔
+
+                        <span
+                            id="notificationBadge"
+                            class="notification-badge"
+                        ></span>
+                    </button>
+
+
+                    <div class="topbar-user">
+
+                        <div class="top-avatar">
+                            S
+                        </div>
+
+                        <span id="topStudentName">
+                            Student
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="feed-page-content">
+
+
+                <!-- =========================
+                     PAGE INTRO
+                ========================== -->
+
+                <section class="feed-intro">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            CLASSROOM
+                        </small>
+
+                        <h1>
+                            Classroom Feed
+                        </h1>
+
+                        <p>
+                            Bagikan informasi, berdiskusi,
+                            reply, dan mention teman atau guru.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feed-user-info">
+
+                        <strong id="studentName">
+                            Siswa
+                        </strong>
+
+                        <span id="studentClass">
+                            Kelas
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     CREATE POST
+                ========================== -->
+
+                <section class="feed-composer">
+
+                    <div class="composer-header">
+
+                        <div class="composer-avatar">
+                            S
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Buat postingan
+                            </strong>
+
+                            <span>
+                                Bagikan sesuatu ke kelas
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <form id="studentAnnouncementForm">
+
+
+                        <div class="feed-target-row">
+
+                            <span class="feed-field-label">
+                                Kirim ke
+                            </span>
+
+
+                            <label class="target-option">
+
+                                <input
+                                    type="radio"
+                                    name="studentAnnouncementTarget"
+                                    value="class"
+                                    checked
+                                >
+
+                                <span>
+                                    Kelas Saya
+                                </span>
+
+                            </label>
+
+
+                            <label class="target-option">
+
+                                <input
+                                    type="radio"
+                                    name="studentAnnouncementTarget"
+                                    value="global"
+                                >
+
+                                <span>
+                                    Global
+                                </span>
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="composer-input-area">
+
+                            <textarea
+                                id="studentAnnouncementMessage"
+                                rows="4"
+                                placeholder="Apa yang ingin kamu bagikan? Gunakan @ untuk mention..."
+                                required
+                            ></textarea>
+
+
+                            <div
+                                id="studentAnnouncementMentionSuggestions"
+                                class="feed-mention-suggestions"
+                                style="display: none;"
+                            ></div>
+
+                        </div>
+
+
+                        <div class="composer-footer">
+
+                            <span class="composer-hint">
+                                Gunakan @nama untuk mention
+                            </span>
+
+
+                            <button
+                                type="submit"
+                                class="feed-post-button"
+                            >
+                                Posting
+                            </button>
+
+                        </div>
+
+                    </form>
+
+
+                    <p
+                        id="studentAnnouncementStatus"
+                        class="feed-status"
+                    ></p>
+
+                </section>
+
+
+                <!-- =========================
+                     FEED LIST
+                ========================== -->
+
+                <section class="feed-list-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Feed terbaru
+                            </h2>
+
+                            <p>
+                                Postingan kelas dan global
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="refreshStudentAnnouncements()"
+                        >
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="announcementList"
+                        class="feed-list"
+                    >
+                        Memuat feed...
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+    <script>
+
+        function goToProfile() {
+
+    window.location.href =
+        "/student-profile.html";
+
+}
+
+        function goToExamScores() {
+
+    window.location.href =
+        "/student-exam-scores.html";
+
+}
+
+        const studentAnnouncementMentionSuggestions =
+    document.getElementById(
+        "studentAnnouncementMentionSuggestions"
+    );
+
+    let studentAnnouncementMentions = [];
+let studentAnnouncementMentionUsers = [];
+let studentMentionLoadVersion = 0;
+
+        async function deleteStudentAnnouncement(
+    announcementId
+) {
+
+    const confirmDelete =
+        confirm(
+            "Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus."
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/announcements/${announcementId}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Gagal menghapus announcement."
+            );
+
+            return;
+
+        }
+
+
+        loadAnnouncements();
+
+        loadNotificationCount();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Gagal menghapus announcement."
+        );
+
+    }
+
+}
+
+        function refreshStudentAnnouncements() {
+
+    loadAnnouncements();
+    loadNotificationCount();
+
+}
+
+async function loadStudentAnnouncementMentionUsers() {
+
+    const target =
+        document.querySelector(
+            'input[name="studentAnnouncementTarget"]:checked'
+        ).value;
+
+
+    const loadVersion =
+        ++studentMentionLoadVersion;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/mention-list?target=${encodeURIComponent(target)}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        /*
+            Kalau selama request berjalan user sudah
+            mengganti target, abaikan response lama.
+        */
+        if (
+            loadVersion !==
+            studentMentionLoadVersion
+        ) {
+
+            return;
+
+        }
+
+
+        const currentTarget =
+            document.querySelector(
+                'input[name="studentAnnouncementTarget"]:checked'
+            ).value;
+
+
+        if (currentTarget !== target) {
+
+            return;
+
+        }
+
+
+        if (!data.success) {
+
+            studentAnnouncementMentionUsers =
+                [];
+
+            return;
+
+        }
+
+
+        studentAnnouncementMentionUsers =
+            Array.isArray(data.users)
+                ? data.users
+                : [];
+
+
+    } catch (error) {
+
+        /*
+            Jangan sampai request lama yang gagal
+            mengosongkan hasil request terbaru.
+        */
+        if (
+            loadVersion !==
+            studentMentionLoadVersion
+        ) {
+
+            return;
+
+        }
+
+
+        console.error(
+            "Gagal load mention announcement:",
+            error
+        );
+
+
+        studentAnnouncementMentionUsers =
+            [];
+
+    }
+
+}
+
+        async function deleteStudentReply(
+    announcementId,
+    replyId
+) {
+
+    const confirmDelete =
+        confirm(
+            "Yakin ingin menghapus reply ini?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/announcements/${announcementId}/replies/${replyId}`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            studentId:
+                                Number(studentId)
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Gagal menghapus reply."
+            );
+
+            return;
+
+        }
+
+
+        loadReplies(
+            announcementId
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Gagal menghapus reply."
+        );
+
+    }
+
+
+    // Coba cari reply dulu
+    if (replyId) {
+
+        const reply =
+            document.getElementById(
+                `reply-${replyId}`
+            );
+
+        if (reply) {
+
+            reply.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+
+            reply.style.outline =
+                "2px solid #2563eb";
+
+            reply.style.outlineOffset =
+                "4px";
+
+            reply.style.borderRadius =
+                "6px";
+
+
+            setTimeout(() => {
+
+                reply.style.outline = "";
+                reply.style.outlineOffset = "";
+                reply.style.borderRadius = "";
+
+            }, 3000);
+
+
+            return;
+
+        }
+
+    }
+
+}
+
+        async function loadNotificationCount() {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/notifications`
+            );
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+            return;
+        }
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+        if (data.unreadCount > 0) {
+
+badge.textContent =
+    data.unreadCount;
+
+        } else {
+
+            badge.textContent =
+                "";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil notifikasi:",
+            error
+        );
+
+    }
+
+}
+
+        function goToNotifications() {
+    window.location.href =
+        "/student-notifications.html";
+}
+
+function goToDashboard() {
+
+    window.location.href =
+        "/student-dashboard.html";
+
+}
+
+
+function goToPoints() {
+
+    window.location.href =
+        "/student-points.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "studentId"
+    );
+
+    localStorage.removeItem(
+        "studentName"
+    );
+
+    localStorage.removeItem(
+        "studentClass"
+    );
+
+    localStorage.removeItem(
+        "studentLoginCode"
+    );
+
+
+    window.location.href =
+        "/student-login.html";
+}
+
+function formatMessage(
+    text,
+    mentions = []
+) {
+
+    let safeText =
+        escapeHtml(text);
+
+
+    if (!Array.isArray(mentions)) {
+        return safeText;
+    }
+
+
+    mentions.forEach(
+        (mention) => {
+
+            if (
+                !mention ||
+                !mention.name
+            ) {
+                return;
+            }
+
+
+            const mentionText =
+                `@${escapeHtml(
+                    mention.name
+                )}`;
+
+
+            safeText =
+                safeText.replace(
+                    mentionText,
+                    `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
+                );
+
+        }
+    );
+
+
+    return safeText;
+}
+
+function scrollToMention() {
+
+    const announcementId =
+        sessionStorage.getItem(
+            "notificationAnnouncementId"
+        );
+
+    const replyId =
+        sessionStorage.getItem(
+            "notificationReplyId"
+        );
+
+
+    if (!announcementId) {
+        return false;
+    }
+
+
+    let target = null;
+
+
+    // Kalau notif menunjuk reply,
+    // WAJIB tunggu reply tersebut tersedia.
+    if (replyId) {
+
+        target =
+            document.getElementById(
+                `reply-${replyId}`
+            );
+
+        if (!target) {
+            return false;
+        }
+
+    } else {
+
+        // Kalau notif berasal dari post langsung
+        target =
+            document.getElementById(
+                `announcement-${announcementId}`
+            );
+
+        if (!target) {
+            return false;
+        }
+
+    }
+
+
+    target.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+
+    // Highlight hanya outline.
+    // Jangan ubah background asli card.
+    target.style.outline =
+        "3px solid #2563eb";
+
+    target.style.outlineOffset =
+        "4px";
+
+
+    sessionStorage.removeItem(
+        "notificationAnnouncementId"
+    );
+
+    sessionStorage.removeItem(
+        "notificationReplyId"
+    );
+
+
+    const clearHighlight = () => {
+
+        target.style.outline = "";
+
+        target.style.outlineOffset = "";
+
+        document.removeEventListener(
+            "click",
+            clearHighlight
+        );
+
+    };
+
+
+    setTimeout(
+        () => {
+
+            document.addEventListener(
+                "click",
+                clearHighlight
+            );
+
+        },
+        200
+    );
+
+
+    setTimeout(
+        clearHighlight,
+        5000
+    );
+
+
+    return true;
+}
+
+        function insertMention(
+    input,
+    user
+) {
+
+    const value =
+        input.value;
+
+
+    const cursorPosition =
+        input.selectionStart;
+
+
+    const textBeforeCursor =
+        value.substring(
+            0,
+            cursorPosition
+        );
+
+
+    const textAfterCursor =
+        value.substring(
+            cursorPosition
+        );
+
+
+    const mentionStart =
+        textBeforeCursor
+            .lastIndexOf("@");
+
+
+    if (mentionStart === -1) {
+
+        return;
+
+    }
+
+
+    const beforeMention =
+        value.substring(
+            0,
+            mentionStart
+        );
+
+
+    const mentionText =
+        `@${user.name} `;
+
+        const form =
+    input.closest(
+        ".reply-form"
+    );
+
+
+if (!form.selectedMentions) {
+
+    form.selectedMentions = [];
+
+}
+
+
+// Hindari mention user yang sama dua kali
+const alreadySelected =
+    form.selectedMentions.some(
+        (mention) =>
+            mention.id === user.id &&
+            mention.type === user.type
+    );
+
+
+if (!alreadySelected) {
+
+    form.selectedMentions.push({
+
+        id:
+            user.id,
+
+        type:
+            user.type,
+
+        name:
+            user.name
+
+    });
+
+}
+
+
+    input.value =
+        beforeMention +
+        mentionText +
+        textAfterCursor;
+
+
+    const newCursorPosition =
+        (
+            beforeMention +
+            mentionText
+        ).length;
+
+
+    input.focus();
+
+
+    input.setSelectionRange(
+        newCursorPosition,
+        newCursorPosition
+    );
+
+}
+
+        function setupMentionAutocomplete() {
+
+    document
+        .querySelectorAll(".reply-input")
+        .forEach((input) => {
+
+            const form =
+                input.closest(".reply-form");
+
+                const announcementId =
+    form.dataset.id;
+
+form.mentionUsers = [];
+
+loadMentionUsers(
+    announcementId
+).then((users) => {
+
+    form.mentionUsers =
+        users;
+
+});
+
+            const suggestionBox =
+                form.querySelector(
+                    ".mention-suggestions"
+                );
+
+
+            input.addEventListener(
+                "input",
+                () => {
+
+                    const value =
+                        input.value;
+
+                    const cursorPosition =
+                        input.selectionStart;
+
+
+                    const textBeforeCursor =
+                        value.substring(
+                            0,
+                            cursorPosition
+                        );
+
+
+                    const mentionMatch =
+                        textBeforeCursor.match(
+                            /@([^@]*)$/
+                        );
+
+
+                    if (!mentionMatch) {
+
+                        suggestionBox.style.display =
+                            "none";
+
+                        suggestionBox.innerHTML =
+                            "";
+
+                        return;
+
+                    }
+
+
+                    const searchText =
+                        mentionMatch[1]
+                            .trim()
+                            .toLowerCase();
+
+
+const filteredUsers =
+    [...(form.mentionUsers || [])]
+        .sort(
+            (a, b) =>
+                a.name.localeCompare(
+                    b.name,
+                    "id",
+                    {
+                        sensitivity: "base"
+                    }
+                )
+        )
+        .filter(
+            (user) =>
+                user.name
+                    .toLowerCase()
+                    .includes(
+                        searchText
+                    )
+        );
+
+
+                    if (
+                        filteredUsers.length === 0
+                    ) {
+
+                        suggestionBox.style.display =
+                            "none";
+
+                        suggestionBox.innerHTML =
+                            "";
+
+                        return;
+
+                    }
+
+
+                    suggestionBox.innerHTML =
+                        "";
+
+
+                    filteredUsers.forEach(
+                        (user) => {
+
+                            const button =
+                                document.createElement(
+                                    "button"
+                                );
+
+
+                            button.type =
+                                "button";
+
+
+                            button.style.display =
+                                "block";
+
+
+                            button.style.width =
+                                "100%";
+
+
+                            button.style.textAlign =
+                                "left";
+
+
+                            let detail = "";
+
+
+                            if (
+                                user.type ===
+                                "student"
+                            ) {
+
+                                detail =
+                                    `Student — ${user.className}`;
+
+                            } else {
+
+                                detail =
+                                    user.role;
+
+                            }
+
+
+                            button.textContent =
+                                `${user.name} (${detail})`;
+
+
+                            button.addEventListener(
+                                "click",
+                                () => {
+
+                                    insertMention(
+                                        input,
+                                        user
+                                    );
+
+
+                                    suggestionBox
+                                        .style
+                                        .display =
+                                        "none";
+
+
+                                    suggestionBox
+                                        .innerHTML =
+                                        "";
+
+                                }
+                            );
+
+
+                            suggestionBox
+                                .appendChild(
+                                    button
+                                );
+
+                        }
+                    );
+
+
+                    suggestionBox.style.display =
+                        "block";
+
+                }
+            );
+
+        });
+
+}
+
+        let mentionUsers = [];
+
+
+async function loadMentionUsers(
+    announcementId
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/mentions/users?announcementId=${announcementId}`
+            );
+
+        const data =
+            await response.json();
+
+        if (data.success) {
+            return data.users;
+        }
+
+        return [];
+
+    } catch (error) {
+
+        console.error(
+            "Gagal load mention users:",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+
+
+        // =====================================
+        // DATA SISWA
+        // =====================================
+
+        const studentId =
+            localStorage.getItem(
+                "studentId"
+            );
+
+
+        const studentName =
+            localStorage.getItem(
+                "studentName"
+            );
+
+
+        const studentClass =
+            localStorage.getItem(
+                "studentClass"
+            );
+
+
+        // =====================================
+        // CEK LOGIN
+        // =====================================
+
+        if (!studentId) {
+
+            window.location.href =
+                "/student-login.html";
+
+        }
+
+
+        document.getElementById(
+            "studentName"
+        ).textContent =
+            studentName;
+
+
+        document.getElementById(
+            "studentClass"
+        ).textContent =
+            `Kelas: ${studentClass}`;
+
+            document.getElementById(
+    "sidebarStudentName"
+).textContent =
+    studentName;
+
+
+document.getElementById(
+    "sidebarStudentClass"
+).textContent =
+    studentClass;
+
+
+document.getElementById(
+    "topStudentName"
+).textContent =
+    studentName;
+
+// =====================================
+// SISWA BUAT ANNOUNCEMENT
+// =====================================
+
+const studentAnnouncementForm =
+    document.getElementById(
+        "studentAnnouncementForm"
+    );
+
+const studentAnnouncementMessage =
+    document.getElementById(
+        "studentAnnouncementMessage"
+    );
+
+const studentAnnouncementStatus =
+    document.getElementById(
+        "studentAnnouncementStatus"
+    );
+
+    studentAnnouncementMessage.addEventListener(
+    "input",
+    () => {
+
+        const value =
+            studentAnnouncementMessage.value;
+
+        const cursorPosition =
+            studentAnnouncementMessage.selectionStart;
+
+        const textBeforeCursor =
+            value.substring(
+                0,
+                cursorPosition
+            );
+
+
+        const mentionMatch =
+            textBeforeCursor.match(
+                /@([^@]*)$/
+            );
+
+
+        if (!mentionMatch) {
+
+            studentAnnouncementMentionSuggestions.style.display =
+                "none";
+
+            studentAnnouncementMentionSuggestions.innerHTML =
+                "";
+
+            return;
+
+        }
+
+
+        const searchText =
+            mentionMatch[1]
+                .trim()
+                .toLowerCase();
+
+
+const filteredUsers =
+    [...studentAnnouncementMentionUsers]
+        .sort(
+            (a, b) =>
+                a.name.localeCompare(
+                    b.name,
+                    "id",
+                    {
+                        sensitivity: "base"
+                    }
+                )
+        )
+        .filter(
+            (user) =>
+                user.name
+                    .toLowerCase()
+                    .includes(
+                        searchText
+                    )
+        );
+
+
+        if (
+            filteredUsers.length === 0
+        ) {
+
+            studentAnnouncementMentionSuggestions.style.display =
+                "none";
+
+            studentAnnouncementMentionSuggestions.innerHTML =
+                "";
+
+            return;
+
+        }
+
+
+        studentAnnouncementMentionSuggestions.innerHTML =
+            "";
+
+
+        filteredUsers.forEach(
+            (user) => {
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+                button.type =
+                    "button";
+
+                button.style.display =
+                    "block";
+
+                button.style.width =
+                    "100%";
+
+                button.style.textAlign =
+                    "left";
+
+
+                const detail =
+                    user.type === "student"
+                        ? `Student — ${user.className}`
+                        : user.role;
+
+
+                button.textContent =
+                    `${user.name} (${detail})`;
+
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const value =
+                            studentAnnouncementMessage.value;
+
+                        const cursorPosition =
+                            studentAnnouncementMessage.selectionStart;
+
+                        const textBeforeCursor =
+                            value.substring(
+                                0,
+                                cursorPosition
+                            );
+
+                        const textAfterCursor =
+                            value.substring(
+                                cursorPosition
+                            );
+
+                        const mentionStart =
+                            textBeforeCursor.lastIndexOf(
+                                "@"
+                            );
+
+
+                        const beforeMention =
+                            value.substring(
+                                0,
+                                mentionStart
+                            );
+
+
+                        const mentionText =
+                            `@${user.name} `;
+
+
+                        studentAnnouncementMessage.value =
+                            beforeMention +
+                            mentionText +
+                            textAfterCursor;
+
+
+                        const alreadySelected =
+                            studentAnnouncementMentions.some(
+                                (mention) =>
+                                    mention.id === user.id &&
+                                    mention.type === user.type
+                            );
+
+
+                        if (!alreadySelected) {
+
+                            studentAnnouncementMentions.push({
+                                id:
+                                    user.id,
+
+                                type:
+                                    user.type,
+
+                                name:
+                                    user.name
+                            });
+
+                        }
+
+
+                        studentAnnouncementMentionSuggestions.style.display =
+                            "none";
+
+                        studentAnnouncementMentionSuggestions.innerHTML =
+                            "";
+
+                    }
+                );
+
+
+                studentAnnouncementMentionSuggestions.appendChild(
+                    button
+                );
+
+            }
+        );
+
+
+        studentAnnouncementMentionSuggestions.style.display =
+            "block";
+
+    }
+);
+
+studentAnnouncementForm.addEventListener(
+    "submit",
+    async (event) => {
+
+        event.preventDefault();
+
+
+        const message =
+            studentAnnouncementMessage
+                .value
+                .trim();
+
+
+        const target =
+            document.querySelector(
+                'input[name="studentAnnouncementTarget"]:checked'
+            ).value;
+
+
+        if (!message) {
+
+            studentAnnouncementStatus.textContent =
+                "Pesan wajib diisi.";
+
+            return;
+
+        }
+
+
+        studentAnnouncementStatus.textContent =
+            "Membuat announcement...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/student/${studentId}/announcements`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                message,
+                                target,
+                                mentions:
+                                    studentAnnouncementMentions
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
+
+                studentAnnouncementStatus.textContent =
+                    data.message ||
+                    "Gagal membuat announcement.";
+
+                return;
+
+            }
+
+
+            studentAnnouncementStatus.textContent =
+    "Announcement berhasil dibuat.";
+
+studentAnnouncementMessage.value =
+    "";
+
+studentAnnouncementMentions =
+    [];
+
+studentAnnouncementMentionSuggestions.style.display =
+    "none";
+
+studentAnnouncementMentionSuggestions.innerHTML =
+    "";
+
+document.querySelector(
+    'input[name="studentAnnouncementTarget"][value="class"]'
+).checked = true;
+
+loadStudentAnnouncementMentionUsers();
+
+loadAnnouncements();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            studentAnnouncementStatus.textContent =
+                "Tidak dapat terhubung ke server.";
+
+        }
+
+    }
+);
+
+
+async function loadAnnouncements() {
+
+    const list =
+        document.getElementById(
+            "announcementList"
+        );
+
+
+    list.innerHTML =
+        "Memuat announcement...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/announcements`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            list.innerHTML = `
+                <p>
+                    ${escapeHtml(
+                        data.message ||
+                        "Gagal mengambil announcement."
+                    )}
+                </p>
+            `;
+
+            return;
+
+        }
+
+
+        if (
+            data.announcements.length === 0
+        ) {
+
+            list.innerHTML = `
+                <p>
+                    Belum ada announcement.
+                </p>
+            `;
+
+            return;
+
+        }
+
+
+        list.innerHTML = "";
+
+
+        // =================================
+        // SETIAP ANNOUNCEMENT
+        // =================================
+
+        for (
+            const announcement
+            of data.announcements
+        ) {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.id =
+                `announcement-${announcement.id}`;
+
+                card.className =
+                "feed-card";
+
+
+
+            // =================================
+            // FORMAT PEMBUAT ANNOUNCEMENT
+            // =================================
+
+            let creatorText;
+
+
+            if (announcement.student_id) {
+
+                creatorText =
+                    `${announcement.student_creator_name || "Siswa"} — ` +
+                    `${announcement.student_creator_class || "-"} — `;
+
+            } else {
+
+                creatorText =
+                    `${announcement.admin_creator_name || "Admin / Guru"} — `;
+
+            }
+
+
+            const announcementType =
+                announcement.class_name
+                    ? `KELAS ${announcement.class_name}`
+                    : "GLOBAL";
+
+
+            const heading =
+                creatorText +
+                announcementType;
+
+
+            // =================================
+            // ISI CARD
+            // =================================
+
+            card.innerHTML = `
+
+    <div class="feed-card-header">
+
+        <div class="feed-author">
+
+            <div class="feed-avatar">
+                ${
+                    announcement.student_id
+                        ? "S"
+                        : "G"
+                }
+            </div>
+
+
+            <div>
+
+                <strong>
+                    ${escapeHtml(
+                        heading
+                    )}
+                </strong>
+
+                <span>
+                    ${announcement.created_at}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <span
+            class="
+                feed-scope-badge
+                ${
+                    announcement.class_name
+                        ? "class"
+                        : "global"
+                }
+            "
+        >
+            ${
+                announcement.class_name
+                    ? `Kelas ${escapeHtml(
+                        announcement.class_name
+                    )}`
+                    : "Global"
+            }
+        </span>
+
+    </div>
+
+
+<div class="feed-message">${formatMessage(
+    announcement.message,
+    announcement.mentions
+)}</div>
+
+
+    ${
+        Number(
+            announcement.student_id
+        ) ===
+        Number(studentId)
+
+            ? `
+
+                <div class="feed-owner-actions">
+
+                    <button
+                        type="button"
+                        class="feed-delete-button"
+                        onclick="
+                            deleteStudentAnnouncement(
+                                ${announcement.id}
+                            )
+                        "
+                    >
+                        Hapus postingan
+                    </button>
+
+                </div>
+
+            `
+
+            : ""
+    }
+
+
+    <div class="feed-divider"></div>
+
+
+    <div class="reply-section">
+
+        <div class="reply-heading">
+
+            <strong>
+                Replies
+            </strong>
+
+        </div>
+
+
+        <div
+            id="replies-${announcement.id}"
+            class="reply-list"
+        >
+            Memuat reply...
+        </div>
+
+
+        <form
+            class="reply-form"
+            data-id="${announcement.id}"
+        >
+
+            <div class="reply-composer">
+
+                <input
+                    type="text"
+                    name="reply"
+                    class="reply-input"
+                    placeholder="Tulis reply... gunakan @ untuk mention"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="reply-send-button"
+                >
+                    Kirim
+                </button>
+
+            </div>
+
+
+            <div
+                class="mention-suggestions"
+                style="display: none;"
+            ></div>
+
+        </form>
+
+    </div>
+
+`;
+
+
+            list.appendChild(
+                card
+            );
+
+
+            // Load reply
+            loadReplies(
+                announcement.id
+            );
+
+        }
+
+
+        // =================================
+        // FORM REPLY
+        // =================================
+
+        document
+            .querySelectorAll(
+                ".reply-form"
+            )
+            .forEach(
+                (form) => {
+
+                    form.addEventListener(
+                        "submit",
+                        submitReply
+                    );
+
+                }
+            );
+
+
+        setupMentionAutocomplete();  
+
+
+                } catch (error) {
+
+        console.error(error);
+
+
+        list.innerHTML = `
+            <p>
+                Gagal mengambil announcement.
+            </p>
+        `;
+
+    }
+
+}
+
+        // =====================================
+        // LOAD REPLIES
+        // =====================================
+
+        async function loadReplies(
+            announcementId
+        ) {
+
+            const container =
+                document.getElementById(
+                    `replies-${announcementId}`
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/announcements/${announcementId}/replies`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    container.textContent =
+                        "Gagal mengambil reply.";
+
+                    return;
+
+                }
+
+
+if (
+    data.replies.length === 0
+) {
+
+    container.innerHTML = `
+        <small>
+            Belum ada reply.
+        </small>
+    `;
+
+
+    const targetAnnouncementId =
+        sessionStorage.getItem(
+            "notificationAnnouncementId"
+        );
+
+
+    if (
+        targetAnnouncementId ===
+        String(announcementId)
+    ) {
+
+        setTimeout(
+            scrollToMention,
+            100
+        );
+
+    }
+
+
+    return;
+}
+
+
+                container.innerHTML =
+                    "";
+
+
+                data.replies.forEach(
+                    (reply) => {
+
+                        const item =
+                            document.createElement(
+                                "div"
+                            );
+
+                                                    const targetAnnouncementId =
+                            sessionStorage.getItem(
+                                "notificationAnnouncementId"
+                            );
+
+
+                        if (
+                            targetAnnouncementId ===
+                            String(announcementId)
+                        ) {
+
+                            setTimeout(
+                                scrollToMention,
+                                100
+                            );
+
+                        }
+
+                            item.id =
+                             `reply-${reply.id}`;
+
+
+                        item.className =
+                        "reply-item";
+
+
+                      item.innerHTML = `
+
+    <div class="reply-author-row">
+
+        <div class="reply-avatar">
+
+            ${
+                reply.sender_type === "admin"
+                    ? "G"
+                    : "S"
+            }
+
+        </div>
+
+
+        <div class="reply-author-info">
+
+            <strong>
+                ${escapeHtml(
+                    reply.sender_name
+                )}
+            </strong>
+
+
+            ${
+                reply.sender_type === "admin"
+
+                    ? `
+
+                        <span>
+                            ${escapeHtml(
+                                reply.sender_role ||
+                                "Admin / Guru"
+                            )}
+                        </span>
+
+                    `
+
+                    : `
+
+                        <span>
+                            Siswa
+                        </span>
+
+                    `
+            }
+
+        </div>
+
+    </div>
+
+
+    <div class="reply-message">
+
+        ${formatMessage(
+            reply.message,
+            reply.mentions
+        )}
+
+    </div>
+
+
+    <div class="reply-footer">
+
+        <span>
+            ${reply.created_at}
+        </span>
+
+
+        ${
+            reply.sender_type ===
+                "student" &&
+            Number(
+                reply.sender_id
+            ) ===
+            Number(studentId)
+
+                ? `
+
+                    <button
+                        type="button"
+                        class="reply-delete-button"
+                        onclick="
+                            deleteStudentReply(
+                                ${announcementId},
+                                ${reply.id}
+                            )
+                        "
+                    >
+                        Hapus
+                    </button>
+
+                `
+
+                : ""
+        }
+
+    </div>
+
+`;
+
+                        container.appendChild(
+                            item
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                container.textContent =
+                    "Gagal mengambil reply.";
+
+            }
+
+        }
+
+
+        // =====================================
+        // KIRIM REPLY
+        // =====================================
+
+        async function submitReply(
+            event
+        ) {
+
+            event.preventDefault();
+
+
+            const form =
+                event.currentTarget;
+
+
+            const announcementId =
+                form.dataset.id;
+
+
+            const input =
+                form.querySelector(
+                    'input[name="reply"]'
+                );
+
+
+            const message =
+                input.value.trim();
+
+                const mentions =
+    form.selectedMentions || [];
+
+
+            if (!message) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/announcements/${announcementId}/replies`,
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    studentId:
+                                        Number(studentId),
+
+                                    message,
+
+                                    mentions
+
+                                })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    alert(
+                        data.message
+                    );
+
+                    return;
+
+                }
+
+
+                // Kosongkan input
+                input.value = "";
+                form.selectedMentions = [];
+
+
+                // Refresh reply
+                loadReplies(
+                    announcementId
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                alert(
+                    "Gagal mengirim reply."
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // ESCAPE HTML
+        // =====================================
+
+        function escapeHtml(
+            text
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.textContent =
+                text;
+
+
+            return div.innerHTML;
+
+        }
+
+
+// =====================================
+// TARGET ANNOUNCEMENT BERUBAH
+// =====================================
+
+document
+    .querySelectorAll(
+        'input[name="studentAnnouncementTarget"]'
+    )
+    .forEach(
+        (radio) => {
+
+            radio.addEventListener(
+                "change",
+                async () => {
+
+                    studentAnnouncementMentions =
+                        [];
+
+                    studentAnnouncementMentionSuggestions
+                        .style
+                        .display =
+                        "none";
+
+                    studentAnnouncementMentionSuggestions
+                        .innerHTML =
+                        "";
+
+
+                    await loadStudentAnnouncementMentionUsers();
+
+                }
+            );
+
+        }
+    );
+
+
+// =====================================
+// START
+// =====================================
+
+loadStudentAnnouncementMentionUsers();
+
+loadAnnouncements();
+
+loadNotificationCount();
+
+    </script>
+
+</body>
+
+</html>

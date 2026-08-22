@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+<title>Login Siswa</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body class="auth-page">
+
+    <main class="auth-shell">
+
+        <section class="auth-visual">
+
+            <div class="auth-brand">
+
+                <div class="auth-brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid.vercel.app
+                    </strong>
+
+                    <span>
+                        Student Portal
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="auth-visual-content">
+
+                <small class="eyebrow">
+                    STUDENT ACCESS
+                </small>
+
+                <h1>
+                    Selamat datang kembali.
+                </h1>
+
+                <p>
+                    Masuk menggunakan kode siswa untuk
+                    melihat announcement, poin, nilai,
+                    dan aktivitas Classroom Feed.
+                </p>
+
+            </div>
+
+
+            <div class="auth-visual-decoration">
+
+                <div class="auth-floating-card card-one">
+
+                    <span>
+                        ★
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Poin
+                        </strong>
+
+                        <small>
+                            Pantau perkembangan
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="auth-floating-card card-two">
+
+                    <span>
+                        ▤
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Nilai
+                        </strong>
+
+                        <small>
+                            Hasil akademik
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="auth-floating-card card-three">
+
+                    <span>
+                        ◉
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Classroom Feed
+                        </strong>
+
+                        <small>
+                            Tetap terhubung
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+<section class="auth-form-side">
+
+    <div class="auth-card">
+
+        <a
+            href="/"
+            class="auth-close-button"
+            aria-label="Kembali ke halaman utama"
+        >
+            ×
+        </a>
+
+                <div class="auth-card-header">
+
+                    <small class="eyebrow">
+                        LOGIN SISWA
+                    </small>
+
+                    <h2>
+                        Masuk ke akunmu
+                    </h2>
+
+                    <p>
+                        Gunakan kode siswa 5 karakter
+                        yang diberikan oleh sekolah.
+                    </p>
+
+                </div>
+
+
+                <form id="studentLoginForm">
+
+                    <div class="auth-field">
+
+                        <label for="loginCode">
+                            Kode Siswa
+                        </label>
+
+                        <input
+                            type="text"
+                            id="loginCode"
+                            placeholder="Contoh: ABC12"
+                            maxlength="5"
+                            minlength="5"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="auth-submit-button"
+                    >
+                        Login
+                    </button>
+
+                </form>
+
+
+                <p
+                    id="message"
+                    class="auth-message"
+                ></p>
+
+
+                <div class="auth-helper">
+
+                    <span>
+                        Belum punya kode siswa?
+                    </span>
+
+                    <small>
+                        Hubungi guru atau admin sekolah.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const form =
+            document.getElementById(
+                "studentLoginForm"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        form.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+                const loginCode =
+                    document
+                        .getElementById("loginCode")
+                        .value
+                        .trim()
+                        .toUpperCase();
+
+
+                message.textContent =
+                    "Memeriksa kode...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/student/login",
+                            {
+
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        loginCode
+                                    })
+
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (data.success) {
+
+
+                        // Simpan data siswa
+                        localStorage.setItem(
+                            "studentId",
+                            data.student.id
+                        );
+
+
+                        localStorage.setItem(
+                            "studentName",
+                            data.student.name
+                        );
+
+
+                        localStorage.setItem(
+                            "studentClass",
+                            data.student.className
+                        );
+
+
+                        localStorage.setItem(
+                            "studentLoginCode",
+                            data.student.loginCode
+                        );
+
+
+                        // Masuk dashboard
+                        window.location.href =
+                            "/student-dashboard.html";
+
+
+                    } else {
+
+                        message.textContent =
+                            data.message ||
+                            "Login gagal.";
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+
+                    message.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>

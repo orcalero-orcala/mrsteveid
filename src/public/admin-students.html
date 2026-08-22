@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Kelola Siswa</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout admin-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar admin-sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ◫
+                    </span>
+
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        S
+                    </span>
+
+                    Kelola Siswa
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Kelola Nilai
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPublicAnnouncement()"
+                >
+                    <span class="nav-icon">
+                        !
+                    </span>
+
+                    Announcement
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToTeachers()"
+>
+    <span class="nav-icon">T</span>
+    Kelola Guru
+</button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar admin-profile-avatar">
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        STUDENT MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Kelola Siswa
+                    </h2>
+
+                    <p>
+                        Tambah dan lihat data siswa
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar admin-top-avatar">
+                        T
+                    </div>
+
+                    <div class="admin-top-user-text">
+
+                        <strong id="topAdminName">
+                            Admin
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Administrator
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-page-content">
+
+
+                <!-- PAGE HERO -->
+
+                <section class="admin-page-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            STUDENTS
+                        </small>
+
+                        <h1>
+                            Data Siswa
+                        </h1>
+
+                        <p>
+                            Buat akun siswa baru dan kelola
+                            daftar siswa yang sudah terdaftar.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ADD STUDENT -->
+
+                <section class="admin-form-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Tambah Siswa
+                            </h2>
+
+                            <p>
+                                Sistem akan membuat kode login
+                                siswa secara otomatis.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        id="studentForm"
+                        class="admin-student-form"
+                    >
+
+<div class="admin-form-field">
+
+    <label for="fullName">
+        Nama Lengkap
+    </label>
+
+    <input
+        type="text"
+        id="fullName"
+        placeholder="Contoh: Budi Santoso Pratama"
+        required
+    >
+
+</div>
+
+
+<div class="admin-form-field">
+
+    <label for="name">
+        Nama Pendek
+    </label>
+
+    <input
+        type="text"
+        id="name"
+        placeholder="Contoh: Budi"
+        required
+    >
+
+</div>
+
+
+<div class="admin-form-field">
+
+    <label for="dateOfBirth">
+        Tanggal Lahir
+    </label>
+
+    <input
+        type="date"
+        id="dateOfBirth"
+        required
+    >
+
+</div>
+
+
+                        <div class="admin-form-field">
+
+                            <label for="className">
+                                Kelas
+                            </label>
+
+                            <input
+                                type="text"
+                                id="className"
+                                placeholder="Contoh: X RPL 1"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="admin-form-action">
+
+                            <button
+                                type="submit"
+                                class="admin-primary-button"
+                            >
+                                + Tambah Siswa
+                            </button>
+
+                        </div>
+
+                    </form>
+
+
+                    <p
+                        id="message"
+                        class="admin-form-message"
+                    ></p>
+
+                </section>
+
+
+                <!-- STUDENT LIST -->
+
+                <section class="admin-table-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Daftar Siswa
+                            </h2>
+
+                            <p>
+                                Semua siswa yang terdaftar di LMS
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="loadStudents()"
+                        >
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+
+                    <div class="admin-table-wrapper">
+
+                        <table class="admin-data-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        No
+                                    </th>
+
+                                    <th>
+                                        Nama
+                                    </th>
+
+                                    <th>
+                                        Kelas
+                                    </th>
+
+                                    <th>
+                                        Kode Login
+                                    </th>
+
+                                    <th>
+                                        Dibuat
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="studentList">
+
+                                <tr>
+
+                                    <td colspan="5">
+                                        Memuat data...
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        function goToTeachers() {
+
+    window.location.href =
+        "/admin-users.html";
+
+}
+
+        const adminName =
+    localStorage.getItem(
+        "adminName"
+    );
+
+
+const adminRole =
+    localStorage.getItem(
+        "adminRole"
+    );
+
+    const displayRole =
+    adminRole === "teacher"
+        ? "Teacher"
+        : adminRole || "Administrator";
+
+
+const adminUsername =
+    localStorage.getItem(
+        "adminUsername"
+    );
+
+
+if (!adminUsername) {
+
+    window.location.href =
+        "/admin-login.html";
+
+}
+
+
+document.getElementById(
+    "sidebarAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "sidebarAdminRole"
+).textContent =
+    displayRole;
+
+
+document.getElementById(
+    "topAdminName"
+).textContent =
+    adminName || "Admin";
+
+
+document.getElementById(
+    "topAdminRole"
+).textContent =
+    displayRole;
+
+        // =================================
+        // TAMBAH SISWA
+        // =================================
+
+        const form =
+            document.getElementById(
+                "studentForm"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        form.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+const fullName =
+    document
+        .getElementById("fullName")
+        .value
+        .trim();
+
+
+const name =
+    document
+        .getElementById("name")
+        .value
+        .trim();
+
+
+const dateOfBirth =
+    document
+        .getElementById("dateOfBirth")
+        .value
+        .trim();
+
+
+const className =
+                    document
+                        .getElementById("className")
+                        .value
+                        .trim();
+
+
+                message.textContent =
+                    "Membuat siswa...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/admin/students",
+                            {
+
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        fullName,
+                                        name,
+                                        dateOfBirth,
+                                        className
+                                    })
+
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (data.success) {
+
+                        message.textContent =
+                            `Siswa berhasil dibuat. Kode login: ${data.student.loginCode}`;
+
+
+                        form.reset();
+
+
+                        // Refresh daftar siswa
+                        loadStudents();
+
+
+                    } else {
+
+                        message.textContent =
+                            data.message ||
+                            "Gagal membuat siswa.";
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    message.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+                }
+
+            }
+        );
+
+
+        // =================================
+        // LOAD SEMUA SISWA
+        // =================================
+
+        async function loadStudents() {
+
+            const studentList =
+                document.getElementById(
+                    "studentList"
+                );
+
+
+            studentList.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        Memuat data...
+                    </td>
+                </tr>
+            `;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/students"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    studentList.innerHTML = `
+                        <tr>
+                            <td colspan="5">
+                                ${data.message}
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+
+                }
+
+
+                // Tidak ada siswa
+                if (data.students.length === 0) {
+
+                    studentList.innerHTML = `
+                        <tr>
+                            <td colspan="5">
+                                Belum ada siswa.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+
+                }
+
+
+                studentList.innerHTML = "";
+
+
+                data.students.forEach(
+                    (student, index) => {
+
+                        const row =
+                            document.createElement(
+                                "tr"
+                            );
+
+
+                        row.innerHTML = `
+
+                            <td>
+                                ${index + 1}
+                            </td>
+
+                            <td>
+
+                                <div class="student-name-cell">
+
+                                    <div class="student-mini-avatar">
+                                        S
+                                    </div>
+
+                                    <strong>
+                                        ${escapeHtml(
+                                            student.name
+                                        )}
+                                    </strong>
+
+                                </div>
+
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    student.class_name
+                                )}
+                            </td>
+
+                            <td>
+
+                                <span class="student-login-code">
+                                    ${escapeHtml(
+                                        student.login_code
+                                    )}
+                                </span>
+
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    student.created_at
+                                )}
+                            </td>
+
+                        `;
+
+
+                        studentList.appendChild(
+                            row
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                studentList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            Gagal mengambil data siswa.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+        }
+
+        function goToDashboard() {
+
+    window.location.href =
+        "/admin-dashboard.html";
+
+}
+
+
+function goToPoints() {
+
+    window.location.href =
+        "/admin-points.html";
+
+}
+
+
+function goToExamScores() {
+
+    window.location.href =
+        "/admin-exam-scores.html";
+
+}
+
+
+function goToClassroomFeed() {
+
+    window.location.href =
+        "/admin-announcements.html";
+
+}
+
+
+function goToPublicAnnouncement() {
+
+    window.location.href =
+        "/admin-announcement.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminRole"
+    );
+
+    localStorage.removeItem(
+        "adminUsername"
+    );
+
+
+    window.location.href =
+        "/admin-login.html";
+}
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        text ?? "";
+
+    return div.innerHTML;
+
+}
+
+
+        // =================================
+        // LOAD SAAT HALAMAN DIBUKA
+        // =================================
+
+        loadStudents();
+
+    </script>
+
+
+</body>
+
+</html>

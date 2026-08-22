@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Poin Siswa</title>
+
+    <link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Student Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    Dashboard
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToProfile()"
+>
+    <span class="nav-icon">
+        S
+    </span>
+
+    Profile
+</button>
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Poin Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Nilai Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar">
+                        S
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarStudentName">
+                            Student
+                        </strong>
+
+                        <small id="sidebarStudentClass">
+                            Kelas
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+
+            <!-- TOPBAR -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <h2>
+                        Poin Saya
+                    </h2>
+
+                    <p>
+                        Ringkasan dan riwayat poin
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar">
+                        S
+                    </div>
+
+                    <span id="topStudentName">
+                        Student
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <div class="dashboard-content">
+
+
+                <!-- HERO -->
+
+                <section class="points-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            BEHAVIOR POINTS
+                        </small>
+
+                        <h1 id="studentName">
+                            Siswa
+                        </h1>
+
+                        <p id="studentClass">
+                            Kelas: -
+                        </p>
+
+                    </div>
+
+
+                    <div class="points-total-block">
+
+                        <span>
+                            Total Poin
+                        </span>
+
+                        <strong id="totalPoints">
+                            0
+                        </strong>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SUMMARY -->
+
+                <section class="points-summary-grid">
+
+                    <article class="points-summary-card">
+
+                        <div class="summary-icon">
+                            ★
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Total Poin
+                            </span>
+
+                            <strong id="summaryTotalPoints">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="points-summary-card">
+
+                        <div class="summary-icon positive">
+                            +
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Poin Positif
+                            </span>
+
+                            <strong id="positivePoints">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="points-summary-card">
+
+                        <div class="summary-icon negative">
+                            −
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Poin Negatif
+                            </span>
+
+                            <strong id="negativePoints">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </article>
+
+                </section>
+
+
+                <!-- HISTORY -->
+
+                <section class="points-history-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Riwayat Poin
+                            </h2>
+
+                            <p>
+                                Semua perubahan poin dari guru
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="transactionList"
+                        class="points-history-list"
+                    >
+
+                        <div class="empty-state">
+                            Memuat riwayat poin...
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        function goToProfile() {
+
+    window.location.href =
+        "/student-profile.html";
+
+}
+
+        function goToExamScores() {
+
+    window.location.href =
+        "/student-exam-scores.html";
+
+}
+
+        const studentId =
+            localStorage.getItem(
+                "studentId"
+            );
+
+
+        if (!studentId) {
+
+            window.location.href =
+                "/student-login.html";
+
+        }
+
+
+        async function loadPoints() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/points`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    document.getElementById(
+                        "transactionList"
+                    ).innerHTML = `
+                        <tr>
+                            <td colspan="3">
+                                ${data.message}
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+
+                }
+
+
+                // Informasi siswa
+                document.getElementById(
+                    "studentName"
+                ).textContent =
+                    data.student.name;
+
+                    document.getElementById(
+                        "sidebarStudentName"
+                    ).textContent =
+                        data.student.name;
+
+                       document.getElementById(
+                        "sidebarStudentClass"
+                    ).textContent =
+                        data.student.className;
+
+
+                    document.getElementById(
+                        "topStudentName"
+                    ).textContent =
+                        data.student.name;
+
+
+                document.getElementById(
+                    "studentClass"
+                ).textContent =
+                    `Kelas: ${data.student.className}`;
+
+
+               // Total poin
+                document.getElementById(
+                    "totalPoints"
+                ).textContent =
+                    data.totalPoints;
+
+
+                document.getElementById(
+                    "summaryTotalPoints"
+                ).textContent =
+                    data.totalPoints;
+
+                                        let positivePoints = 0;
+                    let negativePoints = 0;
+
+
+                    data.transactions.forEach(
+                        (transaction) => {
+
+                            if (transaction.points > 0) {
+                                positivePoints +=
+                                    transaction.points;
+                            }
+
+                            if (transaction.points < 0) {
+                                negativePoints +=
+                                    Math.abs(
+                                        transaction.points
+                                    );
+                            }
+
+                        }
+                    );
+
+
+                    document.getElementById(
+                        "positivePoints"
+                    ).textContent =
+                        `+${positivePoints}`;
+
+
+                    document.getElementById(
+                        "negativePoints"
+                    ).textContent =
+                        negativePoints;
+
+
+                const list =
+                    document.getElementById(
+                        "transactionList"
+                    );
+
+
+                // Tidak ada transaksi
+                                if (
+                    data.transactions.length === 0
+                ) {
+
+                    list.innerHTML = `
+
+                        <div class="empty-state">
+
+                            <strong>
+                                Belum ada riwayat poin
+                            </strong>
+
+                            <span>
+                                Riwayat perubahan poin akan muncul di sini.
+                            </span>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+                list.innerHTML = "";
+
+
+                                data.transactions.forEach(
+                        (transaction) => {
+
+                            const item =
+                                document.createElement(
+                                    "div"
+                                );
+
+
+                            item.className =
+                                "point-history-item";
+
+
+                            const isPositive =
+                                transaction.points > 0;
+
+
+                            item.innerHTML = `
+
+                                <div class="point-history-left">
+
+                                    <div
+                                        class="
+                                            point-history-icon
+                                            ${
+                                                isPositive
+                                                    ? "positive"
+                                                    : "negative"
+                                            }
+                                        "
+                                    >
+                                        ${
+                                            isPositive
+                                                ? "+"
+                                                : "−"
+                                        }
+                                    </div>
+
+
+                                    <div>
+
+                                        <strong>
+                                            ${escapeHtml(
+                                                transaction.reason
+                                            )}
+                                        </strong>
+
+                                        <span>
+                                            ${transaction.created_at}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    class="
+                                        point-value
+                                        ${
+                                            isPositive
+                                                ? "positive"
+                                                : "negative"
+                                        }
+                                    "
+                                >
+
+                                    ${
+                                        isPositive
+                                            ? "+"
+                                            : ""
+                                    }${transaction.points}
+
+                                </div>
+
+                            `;
+
+
+                            list.appendChild(
+                                item
+                            );
+
+                        }
+                    );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        }
+
+        function goToDashboard() {
+
+    window.location.href =
+        "/student-dashboard.html";
+
+}
+
+
+function goToClassroomFeed() {
+
+    window.location.href =
+        "/student-announcements.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "studentId"
+    );
+
+    localStorage.removeItem(
+        "studentName"
+    );
+
+    localStorage.removeItem(
+        "studentClass"
+    );
+
+    localStorage.removeItem(
+        "studentLoginCode"
+    );
+
+
+    window.location.href =
+        "/student-login.html";
+}
+
+
+function escapeHtml(
+    text
+) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        text ?? "";
+
+
+    return div.innerHTML;
+
+}
+
+        loadPoints();
+
+    </script>
+
+</body>
+
+</html>

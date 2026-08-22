@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        System & Reset - LMS Sekolah
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
+</head>
+
+
+<body class="admin-reset-page">
+
+    <main class="admin-reset-page-shell">
+
+        <section class="admin-reset-page-panel">
+
+            <button
+                type="button"
+                class="notification-close-button"
+                onclick="goBack()"
+                aria-label="Kembali ke dashboard"
+            >
+                ×
+            </button>
+
+
+            <div class="admin-reset-page-header">
+
+                <small class="eyebrow">
+                    SYSTEM MANAGEMENT
+                </small>
+
+                <h1>
+                    System & Reset
+                </h1>
+
+                <p>
+                    Kelola reset data LMS dari satu halaman.
+                    Gunakan fitur ini dengan hati-hati.
+                </p>
+
+            </div>
+
+                <div class="admin-reset-options">
+
+    <!-- =========================
+         FACTORY RESET
+    ========================== -->
+
+    <div class="admin-reset-option danger">
+
+        <div>
+
+            <span class="admin-reset-label">
+                HARD RESET
+            </span>
+
+            <strong>
+                Factory Reset
+            </strong>
+
+            <p>
+                Hapus seluruh data LMS dan
+                kembalikan sistem ke kondisi awal.
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="admin-danger-reset-button"
+            onclick="openFactoryResetModal()"
+        >
+            Factory Reset
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         RESET PER BAGIAN
+    ========================== -->
+
+    <div class="admin-reset-section-divider">
+
+        <div>
+
+            <small class="eyebrow">
+                SECTION RESET
+            </small>
+
+            <h2>
+                Reset Per Bagian
+            </h2>
+
+            <p>
+                Hanya data pada bagian yang dipilih yang akan dihapus.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-section-reset-grid">
+
+        <div class="admin-section-reset-card">
+
+            <div>
+
+                <strong>
+                    Reset Poin
+                </strong>
+
+                <p>
+                    Hapus seluruh riwayat poin siswa.
+                    Data siswa tetap ada.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="admin-section-reset-button"
+                onclick="resetSection(
+                    'points',
+                    'Poin',
+                    'Semua riwayat poin siswa akan dihapus.'
+                )"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="admin-section-reset-card">
+
+            <div>
+
+                <strong>
+                    Reset Nilai
+                </strong>
+
+                <p>
+                    Hapus seluruh data nilai ujian siswa.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="admin-section-reset-button"
+                onclick="resetSection(
+                    'scores',
+                    'Nilai',
+                    'Semua nilai ujian siswa akan dihapus.'
+                )"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="admin-section-reset-card">
+
+            <div>
+
+                <strong>
+                    Reset Announcement
+                </strong>
+
+                <p>
+                    Hapus seluruh Announcement resmi sekolah.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="admin-section-reset-button"
+                onclick="resetSection(
+                    'announcements',
+                    'Announcement',
+                    'Semua Announcement resmi akan dihapus.'
+                )"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="admin-section-reset-card">
+
+            <div>
+
+                <strong>
+                    Reset Classroom Feed
+                </strong>
+
+                <p>
+                    Hapus seluruh post, reply, mention,
+                    dan notifikasi Classroom Feed.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="admin-section-reset-button"
+                onclick="resetSection(
+                    'classroom-feed',
+                    'Classroom Feed',
+                    'Seluruh Classroom Feed, reply, mention, dan notifikasi akan dihapus.'
+                )"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="admin-section-reset-card">
+
+            <div>
+
+                <strong>
+                    Reset Semua Siswa
+                </strong>
+
+                <p>
+                    Hapus semua akun siswa beserta poin,
+                    nilai, dan aktivitas siswa.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="admin-section-reset-button"
+                onclick="resetSection(
+                    'students',
+                    'Semua Siswa',
+                    'SEMUA akun siswa beserta data terkait akan dihapus.'
+                )"
+            >
+                Reset
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <p
+        id="sectionResetMessage"
+        class="admin-form-message"
+    ></p>
+
+</div>
+
+    </main>
+
+
+    <div
+        id="factoryResetModal"
+        class="admin-reset-modal"
+    >
+
+        <div class="admin-reset-modal-card">
+
+            <small class="admin-reset-danger-label">
+                DANGER ZONE
+            </small>
+
+            <h2>
+                Factory Reset LMS
+            </h2>
+
+            <p>
+                Semua siswa, poin, nilai,
+                Classroom Feed, Announcement,
+                notifikasi, kode registrasi,
+                dan akun guru akan dihapus.
+            </p>
+
+
+            <div class="admin-reset-default-account">
+
+                <span>
+                    Username
+                    <strong>
+                        steven
+                    </strong>
+                </span>
+
+                <span>
+                    Password
+                    <strong>
+                        cruise@fl350
+                    </strong>
+                </span>
+
+            </div>
+
+
+            <label for="factoryResetConfirm">
+                Ketik
+                <strong>
+                    FACTORY RESET
+                </strong>
+                untuk melanjutkan
+            </label>
+
+
+            <input
+                type="text"
+                id="factoryResetConfirm"
+                placeholder="FACTORY RESET"
+                autocomplete="off"
+            >
+
+
+            <p
+                id="factoryResetMessage"
+                class="admin-form-message"
+            ></p>
+
+
+            <div class="admin-reset-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeFactoryResetModal()"
+                >
+                    Batal
+                </button>
+
+
+                <button
+                    type="button"
+                    class="admin-danger-reset-button"
+                    onclick="runFactoryReset()"
+                >
+                    Hapus Semua Data
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const adminId =
+            localStorage.getItem(
+                "adminId"
+            );
+
+        const adminUsername =
+            localStorage.getItem(
+                "adminUsername"
+            );
+
+
+        if (
+            !adminId ||
+            !adminUsername
+        ) {
+
+            window.location.href =
+                "/admin-login.html";
+
+        }
+
+
+        function goBack() {
+
+            window.location.href =
+                "/admin-dashboard.html";
+
+        }
+
+
+        function openFactoryResetModal() {
+
+            const modal =
+                document.getElementById(
+                    "factoryResetModal"
+                );
+
+            const input =
+                document.getElementById(
+                    "factoryResetConfirm"
+                );
+
+            const message =
+                document.getElementById(
+                    "factoryResetMessage"
+                );
+
+
+            input.value =
+                "";
+
+            message.textContent =
+                "";
+
+
+            modal.classList.add(
+                "show"
+            );
+
+
+            setTimeout(
+                () => {
+                    input.focus();
+                },
+                50
+            );
+
+        }
+
+
+        function closeFactoryResetModal() {
+
+            document.getElementById(
+                "factoryResetModal"
+            ).classList.remove(
+                "show"
+            );
+
+        }
+
+
+        async function runFactoryReset() {
+
+            const input =
+                document.getElementById(
+                    "factoryResetConfirm"
+                );
+
+            const message =
+                document.getElementById(
+                    "factoryResetMessage"
+                );
+
+
+            if (
+                input.value.trim() !==
+                "FACTORY RESET"
+            ) {
+
+                message.textContent =
+                    "Ketik FACTORY RESET dengan benar.";
+
+                return;
+
+            }
+
+
+            const confirmed =
+                confirm(
+                    "Semua data LMS akan dihapus permanen. Lanjutkan?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            message.textContent =
+                "Melakukan factory reset...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/system/factory-reset",
+                        {
+                            method:
+                                "POST"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    message.textContent =
+                        data.message ||
+                        "Factory reset gagal.";
+
+                    return;
+
+                }
+
+
+                localStorage.clear();
+
+
+                alert(
+                    "Factory reset berhasil. Silakan login kembali."
+                );
+
+
+                window.location.href =
+                    "/admin-login.html";
+
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+
+                message.textContent =
+                    "Tidak dapat terhubung ke server.";
+
+            }
+
+        }
+
+        async function resetSection(
+    section,
+    sectionName,
+    warning
+) {
+
+    const message =
+        document.getElementById(
+            "sectionResetMessage"
+        );
+
+
+    const confirmed =
+        confirm(
+            `${warning}\n\nYakin ingin Reset ${sectionName}?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    message.textContent =
+        `Mereset ${sectionName}...`;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/system/reset/${section}`,
+                {
+                    method: "POST"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            message.textContent =
+                data.message ||
+                `Reset ${sectionName} gagal.`;
+
+            return;
+
+        }
+
+
+        message.textContent =
+            data.message;
+
+
+        alert(
+            data.message
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        message.textContent =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
+
+    </script>
+
+</body>
+
+</html>

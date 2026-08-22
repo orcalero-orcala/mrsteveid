@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+   <title>
+    Nilai Saya
+</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Student Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    Dashboard
+                </button>
+
+                <button
+    class="nav-item"
+    type="button"
+    onclick="goToProfile()"
+>
+    <span class="nav-icon">
+        S
+    </span>
+
+    Profile
+</button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Poin Saya
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Nilai Saya
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="profile-avatar">
+                        S
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarStudentName">
+                            Student
+                        </strong>
+
+                        <small id="sidebarStudentClass">
+                            Siswa
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+
+                    <h2>
+                        Nilai Saya
+                    </h2>
+
+                    <p>
+                        Hasil ujian dan evaluasi belajar
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="top-avatar">
+                        S
+                    </div>
+
+                    <span id="topStudentName">
+                        Student
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <div class="dashboard-content">
+
+
+                <!-- HERO -->
+
+                <section class="scores-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            ACADEMIC RECORD
+                        </small>
+
+                        <h1>
+                            Nilai Saya
+                        </h1>
+
+                        <p>
+                            Pantau hasil ujian dan perkembangan akademik kamu.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        onclick="loadExamScores()"
+                    >
+                        ↻ Refresh
+                    </button>
+
+                </section>
+
+
+                <!-- INFO SISWA -->
+
+                <section
+                    id="studentInfo"
+                    class="score-student-info"
+                >
+                    Memuat data siswa...
+                </section>
+
+
+                <!-- SUMMARY -->
+
+                <section class="score-summary-grid">
+
+                    <article class="score-summary-card">
+
+                        <span>
+                            Jumlah Nilai
+                        </span>
+
+                        <strong id="totalScores">
+                            0
+                        </strong>
+
+                    </article>
+
+
+                    <article class="score-summary-card">
+
+                        <span>
+                            Rata-rata
+                        </span>
+
+                        <strong id="averageScore">
+                            0
+                        </strong>
+
+                    </article>
+
+
+                    <article class="score-summary-card">
+
+                        <span>
+                            Nilai Tertinggi
+                        </span>
+
+                        <strong id="highestScore">
+                            0
+                        </strong>
+
+                    </article>
+
+                </section>
+
+
+                <!-- LIST NILAI -->
+
+                <section class="score-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Riwayat Nilai
+                            </h2>
+
+                            <p>
+                                Semua nilai ujian yang sudah diberikan
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="examScoreContainer"
+                        class="score-list"
+                    >
+                        Memuat nilai...
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+
+        function goToProfile() {
+
+    window.location.href =
+        "/student-profile.html";
+
+}
+
+        const studentId =
+            localStorage.getItem(
+                "studentId"
+            );
+
+
+        const studentInfo =
+            document.getElementById(
+                "studentInfo"
+            );
+
+
+        const examScoreContainer =
+            document.getElementById(
+                "examScoreContainer"
+            );
+
+
+        // =====================================
+        // LOAD NILAI SISWA
+        // =====================================
+
+        async function loadExamScores() {
+
+            if (!studentId) {
+
+                examScoreContainer.innerHTML = `
+                    <p>
+                        Data login siswa tidak ditemukan.
+                    </p>
+                `;
+
+                return;
+
+            }
+
+
+            examScoreContainer.innerHTML =
+                "Memuat nilai...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/exam-scores`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    examScoreContainer.innerHTML = `
+                        <p>
+                            ${escapeHtml(
+                                data.message ||
+                                "Gagal mengambil nilai."
+                            )}
+                        </p>
+                    `;
+
+                    return;
+
+                }
+
+
+                // =================================
+                // INFO SISWA
+                // =================================
+
+                        studentInfo.innerHTML = `
+
+                            <div>
+
+                                <span>
+                                    Nama
+                                </span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        data.student.name
+                                    )}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    Kelas
+                                </span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        data.student.className
+                                    )}
+                                </strong>
+
+                            </div>
+
+                        `;
+
+                        document.getElementById(
+                            "sidebarStudentName"
+                        ).textContent =
+                            data.student.name;
+
+
+                        document.getElementById(
+                            "sidebarStudentClass"
+                        ).textContent =
+                            data.student.className;
+
+
+                        document.getElementById(
+                            "topStudentName"
+                        ).textContent =
+                            data.student.name;
+
+                                                const scores =
+                        data.examScores.map(
+                            (item) =>
+                                Number(item.score)
+                        );
+
+
+                    const totalScores =
+                        scores.length;
+
+
+                    const averageScore =
+                        totalScores > 0
+                            ? (
+                                scores.reduce(
+                                    (total, score) =>
+                                        total + score,
+                                    0
+                                ) / totalScores
+                            ).toFixed(1)
+                            : 0;
+
+
+                    const highestScore =
+                        totalScores > 0
+                            ? Math.max(...scores)
+                            : 0;
+
+
+                    document.getElementById(
+                        "totalScores"
+                    ).textContent =
+                        totalScores;
+
+
+                    document.getElementById(
+                        "averageScore"
+                    ).textContent =
+                        averageScore;
+
+
+                    document.getElementById(
+                        "highestScore"
+                    ).textContent =
+                        highestScore;
+
+
+                // =================================
+                // BELUM ADA NILAI
+                // =================================
+
+                        if (
+                            data.examScores.length === 0
+                        ) {
+
+                            examScoreContainer.innerHTML = `
+
+                                <div class="empty-state">
+
+                                    <strong>
+                                        Belum ada nilai
+                                    </strong>
+
+                                    <span>
+                                        Nilai ujian kamu akan muncul di sini.
+                                    </span>
+
+                                </div>
+
+                            `;
+
+                            return;
+
+                        }
+
+
+                // =================================
+                // TABEL NILAI
+                // =================================
+
+                examScoreContainer.innerHTML =
+    "";
+
+
+data.examScores.forEach(
+    (examScore) => {
+
+        const item =
+            document.createElement(
+                "article"
+            );
+
+
+        item.className =
+            "score-item";
+
+
+        const numericScore =
+            Number(
+                examScore.score
+            );
+
+
+        let scoreLevel =
+            "medium";
+
+
+        if (numericScore >= 85) {
+
+            scoreLevel =
+                "high";
+
+        } else if (
+            numericScore < 70
+        ) {
+
+            scoreLevel =
+                "low";
+
+        }
+
+
+        item.innerHTML = `
+
+            <div class="score-item-main">
+
+                <div class="score-subject-icon">
+                    ▤
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        ${escapeHtml(
+                            examScore.subject
+                        )}
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(
+                            examScore.material
+                        )}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="score-item-date">
+
+                <span>
+                    Tanggal
+                </span>
+
+                <strong>
+                    ${examScore.created_at}
+                </strong>
+
+            </div>
+
+
+            <div
+                class="
+                    score-badge
+                    ${scoreLevel}
+                "
+            >
+                ${numericScore}
+            </div>
+
+        `;
+
+
+        examScoreContainer.appendChild(
+            item
+        );
+
+    }
+);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                examScoreContainer.innerHTML = `
+                    <p>
+                        Tidak dapat terhubung ke server.
+                    </p>
+                `;
+
+            }
+
+        }
+
+
+        // =====================================
+        // ESCAPE HTML
+        // =====================================
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                text ?? "";
+
+            return div.innerHTML;
+
+        }
+
+        function goToDashboard() {
+
+    window.location.href =
+        "/student-dashboard.html";
+
+}
+
+
+function goToPoints() {
+
+    window.location.href =
+        "/student-points.html";
+
+}
+
+
+function goToClassroomFeed() {
+
+    window.location.href =
+        "/student-announcements.html";
+
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+
+    localStorage.removeItem(
+        "studentId"
+    );
+
+    localStorage.removeItem(
+        "studentName"
+    );
+
+    localStorage.removeItem(
+        "studentClass"
+    );
+
+    localStorage.removeItem(
+        "studentLoginCode"
+    );
+
+
+    window.location.href =
+        "/student-login.html";
+}
+
+        // =====================================
+        // START
+        // =====================================
+
+        loadExamScores();
+
+    </script>
+
+</body>
+
+</html>

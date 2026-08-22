@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+   <title>Admin Portal</title>
+
+<link
+    rel="stylesheet"
+    href="/styles.css"
+>
+</head>
+
+<body class="auth-page admin-auth-page">
+
+    <main class="auth-shell">
+
+        <section class="auth-visual admin-auth-visual">
+
+            <div class="auth-brand">
+
+                <div class="auth-brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid.vercel.app
+                    </strong>
+
+                    <span>
+                        Admin & Teacher Portal
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="auth-visual-content">
+
+                <small class="eyebrow">
+                    ADMIN ACCESS
+                </small>
+
+                <h1>
+                    Kelola sekolah
+                    dalam satu portal.
+                </h1>
+
+                <p>
+                    Akses data siswa, nilai,
+                    poin, Classroom Feed,
+                    announcement, dan fitur
+                    administrasi LMS.
+                </p>
+
+            </div>
+
+
+            <div class="admin-auth-features">
+
+                <div class="admin-auth-feature">
+
+                    <span>
+                        S
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Kelola Siswa
+                        </strong>
+
+                        <small>
+                            Data dan akun siswa
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-auth-feature">
+
+                    <span>
+                        ▤
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Nilai & Poin
+                        </strong>
+
+                        <small>
+                            Kelola perkembangan siswa
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-auth-feature">
+
+                    <span>
+                        ◉
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Classroom Feed
+                        </strong>
+
+                        <small>
+                            Komunikasi kelas
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+<section class="auth-form-side">
+
+    <div class="auth-card">
+
+        <a
+            href="/"
+            class="auth-close-button"
+            aria-label="Kembali ke halaman utama"
+        >
+            ×
+        </a>
+
+                <div class="auth-card-header">
+
+                    <small class="eyebrow">
+                        ADMIN / GURU
+                    </small>
+
+                    <h2>
+                        Masuk ke portal
+                    </h2>
+
+                    <p>
+                        Gunakan username dan password
+                        akun admin atau guru.
+                    </p>
+
+                </div>
+
+
+                <form id="adminLoginForm">
+
+                    <div class="auth-field">
+
+                        <label for="username">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Masukkan username"
+                            autocomplete="username"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="auth-field">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="auth-submit-button"
+                    >
+                        Masuk ke Admin Portal
+                    </button>
+<p
+    id="teacherRegisterLink"
+    class="auth-switch-text"
+>
+    Belum punya akun guru?
+    <a href="/teacher-register.html">
+        Daftar sebagai Guru
+    </a>
+</p>
+
+                </form>
+
+
+                <p
+                    id="message"
+                    class="auth-message"
+                ></p>
+
+
+                <div class="auth-helper">
+
+                    <span>
+                        Portal khusus staf sekolah
+                    </span>
+
+                    <small>
+                        Pastikan menggunakan akun yang telah terdaftar.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const form =
+            document.getElementById("adminLoginForm");
+
+        const message =
+            document.getElementById("message");
+
+
+        form.addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+
+            const username =
+                document.getElementById("username").value.trim();
+
+            const password =
+                document.getElementById("password").value;
+
+
+            // Reset pesan
+            message.textContent = "Sedang login...";
+
+
+            try {
+
+                const response = await fetch(
+                    "/api/admin/login",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                if (data.success) {
+
+                    // Simpan username admin
+                    localStorage.setItem(
+                        "adminUsername",
+                        data.admin.username
+                    );
+
+                    localStorage.setItem(
+                        "adminId",
+                        data.admin.id
+                    );
+
+                    localStorage.setItem(
+                        "adminName",
+                        data.admin.name
+                    );
+
+                    localStorage.setItem(
+                        "adminRole",
+                        data.admin.role
+                    );
+
+
+                    // Pindah ke dashboard
+                    window.location.href =
+                        "/admin-dashboard.html";
+
+                } else {
+
+                    message.textContent =
+                        data.message || "Login gagal.";
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Login error:",
+                    error
+                );
+
+                message.textContent =
+                    "Tidak dapat terhubung ke server.";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>
