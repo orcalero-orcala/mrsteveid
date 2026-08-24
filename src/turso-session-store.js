@@ -240,14 +240,52 @@ class TursoSessionStore
     }
 
 
-    async touchAsync(
-        sid,
-        sessionData
+async touchAsync(
+    sid,
+    sessionData
+) {
+
+    const now =
+        Date.now();
+
+    /*
+        Jangan menulis session ke Turso
+        pada setiap request.
+
+        Session cukup diperpanjang bila
+        terakhir di-update sudah lebih dari
+        5 menit.
+    */
+    const row =
+        await tursoDb.get(
+            `
+                SELECT updated_at
+                FROM sessions
+                WHERE sid = ?
+            `,
+            [
+                sid
+            ]
+        );
+
+
+    if (
+        row &&
+        Number.isFinite(
+            Number(row.updated_at)
+        ) &&
+        now - Number(row.updated_at) <
+            5 * 60 * 1000
     ) {
 
-        let expiresAt =
-            Date.now() +
-            this.defaultMaxAge;
+        return;
+
+    }
+
+
+    let expiresAt =
+        now +
+        this.defaultMaxAge;
 
 
         if (
@@ -275,20 +313,20 @@ class TursoSessionStore
         }
 
 
-        await tursoDb.run(
-            `
-                UPDATE sessions
-                SET
-                    expires_at = ?,
-                    updated_at = ?
-                WHERE sid = ?
-            `,
-            [
-                expiresAt,
-                Date.now(),
-                sid
-            ]
-        );
+await tursoDb.run(
+    `
+        UPDATE sessions
+        SET
+            expires_at = ?,
+            updated_at = ?
+        WHERE sid = ?
+    `,
+    [
+        expiresAt,
+        now,
+        sid
+    ]
+);
 
     }
 

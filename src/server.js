@@ -8748,11 +8748,10 @@ app.get(
 
 app.listen(
     PORT,
+    "0.0.0.0",
     () => {
-
         console.log(
-            `LMS berjalan di http://localhost:${PORT}`
+            `Server jalan di port ${PORT}`
         );
-
     }
 );

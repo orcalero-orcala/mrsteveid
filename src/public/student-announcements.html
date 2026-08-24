@@ -997,11 +997,19 @@
                         )}
                     </p>
 
-                    <span class="notification-time">
-${formatDeviceDateTime(
-    notification.created_at
-)}
-                    </span>
+<span class="notification-time">
+${
+    typeof formatDeviceDateTime ===
+        "function"
+        ? formatDeviceDateTime(
+            notification.created_at
+        )
+        : escapeHtml(
+            notification.created_at ||
+            ""
+        )
+}
+</span>
 
                 </div>
 
@@ -1121,126 +1129,133 @@ ${formatDeviceDateTime(
         }
 
 
-        async function openStudentNotification(
-            notification,
-            item
-        ) {
+ async function openStudentNotification(
+    notification,
+    item
+) {
 
-            const wasUnread =
-                item.classList.contains(
-                    "unread"
-                );
+    const wasUnread =
+        item.classList.contains(
+            "unread"
+        );
 
 
-            sessionStorage.setItem(
-                "notificationAnnouncementId",
-                String(
-                    notification.announcement_id ||
-                    ""
-                )
+    sessionStorage.setItem(
+        "notificationAnnouncementId",
+        String(
+            notification.announcement_id ||
+            ""
+        )
+    );
+
+    sessionStorage.setItem(
+        "notificationReplyId",
+        String(
+            notification.reply_id ||
+            ""
+        )
+    );
+
+
+    closeStudentNotifications();
+
+
+    /*
+        Update badge langsung.
+        Tidak perlu tunggu server.
+    */
+    if (wasUnread) {
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
             );
 
-
-            sessionStorage.setItem(
-                "notificationReplyId",
-                String(
-                    notification.reply_id ||
-                    ""
-                )
+        const currentCount =
+            Number(
+                badge.textContent || 0
             );
 
+        const newCount =
+            Math.max(
+                0,
+                currentCount - 1
+            );
 
-            closeStudentNotifications();
+        badge.textContent =
+            newCount > 0
+                ? String(newCount)
+                : "";
 
-
-            if (wasUnread) {
-
-                const badge =
-                    document.getElementById(
-                        "notificationBadge"
-                    );
-
-
-                const currentCount =
-                    Number(
-                        badge.textContent || 0
-                    );
+    }
 
 
-                const newCount =
-                    Math.max(
-                        0,
-                        currentCount - 1
-                    );
+    /*
+        Kalau target sudah ada,
+        langsung scroll.
+    */
+    if (scrollToMention()) {
 
-
-                badge.textContent =
-                    newCount > 0
-                        ? String(newCount)
-                        : "";
-
+        fetch(
+            `/api/notifications/${notification.id}/read`,
+            {
+                method: "PATCH"
             }
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/notifications/${notification.id}/read`,
-                        {
-                            method:
-                                "PATCH"
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!data.success) {
-
-                    console.error(
-                        "Gagal menandai notification:",
-                        data.message
-                    );
-
-
-                    loadNotificationCount();
-
-                    return;
-
-                }
-
-
-            } catch (error) {
-
+        ).catch(
+            (error) => {
                 console.error(
                     "Gagal menandai notification:",
                     error
                 );
-
-
-                loadNotificationCount();
-
-                return;
-
             }
+        );
+
+        return;
+
+    }
 
 
-            await runStudentLiveSync();
+    /*
+        Target belum ada.
+        Ambil live post + reply secara paralel.
+        Jangan jalankan seluruh live sync.
+    */
+    try {
+
+        await Promise.all([
+            checkLiveAnnouncements(),
+            checkLiveReplies()
+        ]);
 
 
-            setTimeout(
-                () => {
+        scrollToMention();
 
-                    scrollToMention();
 
-                },
-                50
-            );
+        fetch(
+            `/api/notifications/${notification.id}/read`,
+            {
+                method: "PATCH"
+            }
+        ).catch(
+            (error) => {
+                console.error(
+                    "Gagal menandai notification:",
+                    error
+                );
+            }
+        );
 
-        }
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membuka notification:",
+            error
+        );
+
+    }
+
+}
 
 
         function scrollToMention() {

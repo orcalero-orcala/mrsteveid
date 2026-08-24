@@ -1009,7 +1009,6 @@ async function openAdminNotification(
         )
     );
 
-
     sessionStorage.setItem(
         "notificationReplyId",
         String(
@@ -1022,6 +1021,10 @@ async function openAdminNotification(
     closeAdminNotifications();
 
 
+    /*
+        Update badge langsung.
+        Tidak perlu menunggu server.
+    */
     if (wasUnread) {
 
         const badge =
@@ -1029,19 +1032,16 @@ async function openAdminNotification(
                 "notificationBadge"
             );
 
-
         const currentCount =
             Number(
                 badge.textContent || 0
             );
-
 
         const newCount =
             Math.max(
                 0,
                 currentCount - 1
             );
-
 
         badge.textContent =
             newCount > 0
@@ -1051,67 +1051,78 @@ async function openAdminNotification(
     }
 
 
-    try {
+    /*
+        Kalau target sudah ada di DOM,
+        scroll SEKARANG.
 
-        const response =
-            await fetch(
-                `/api/notifications/${notification.id}/read`,
-                {
-                    method: "PATCH"
-                }
-            );
+        Jangan menunggu Turso/network.
+    */
+    if (scrollToMention()) {
 
-
-        const data =
-            await response.json();
-
-
-        if (!data.success) {
-
-            console.error(
-                "Gagal menandai notification:",
-                data.message
-            );
-
-
-            loadNotificationCount();
-
-            return;
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Gagal menandai notification:",
-            error
+        /*
+            Mark as read jalan di background.
+        */
+        fetch(
+            `/api/notifications/${notification.id}/read`,
+            {
+                method: "PATCH"
+            }
+        ).catch(
+            (error) => {
+                console.error(
+                    "Gagal menandai notification:",
+                    error
+                );
+            }
         );
-
-
-        loadNotificationCount();
 
         return;
 
     }
 
 
-    loadNotificationCount();
+    /*
+        Target belum ada di DOM.
+        Ambil post + reply secara paralel,
+        bukan satu-satu.
+    */
+    try {
+
+        await Promise.all([
+            checkLiveAnnouncements(),
+            checkLiveReplies()
+        ]);
 
 
-    await checkLiveAnnouncements();
-
-    await checkLiveReplies();
+        scrollToMention();
 
 
-    setTimeout(
-        () => {
+        /*
+            Mark read tidak menghalangi scroll.
+        */
+        fetch(
+            `/api/notifications/${notification.id}/read`,
+            {
+                method: "PATCH"
+            }
+        ).catch(
+            (error) => {
+                console.error(
+                    "Gagal menandai notification:",
+                    error
+                );
+            }
+        );
 
-            scrollToMention();
 
-        },
-        50
-    );
+    } catch (error) {
+
+        console.error(
+            "Gagal membuka notification:",
+            error
+        );
+
+    }
 
 }
 
@@ -3592,15 +3603,33 @@ async function checkLiveAnnouncements() {
                 }
 
 
-                const card =
-                    createAdminAnnouncementCard(
-                        announcement
-                    );
+const card =
+    createAdminAnnouncementCard(
+        announcement
+    );
 
 
-                announcementList.prepend(
-                    card
-                );
+const emptyMessage =
+    announcementList.querySelector(
+        "p"
+    );
+
+
+if (
+    emptyMessage &&
+    emptyMessage.textContent.includes(
+        "Belum ada announcement"
+    )
+) {
+
+    emptyMessage.remove();
+
+}
+
+
+announcementList.prepend(
+    card
+);
 
 
                 latestAnnouncementId =

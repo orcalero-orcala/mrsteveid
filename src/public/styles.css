@@ -3211,7 +3211,7 @@ body {
 
 .score-badge.medium {
     background:
-        rgba(59, 130, 246, 0.13);
+        rgba(245, 158, 11, 0.13);
 
     color: #ffc400;
 }
@@ -6379,11 +6379,11 @@ body {
     color: #ffc400;
 
     background:
-        rgba(59, 130, 246, 0.13);
+        rgba(245, 158, 11, 0.13);
 
     border:
         1px solid
-        rgba(59, 130, 246, 0.2);
+        rgba(245, 158, 11, 0.24);
 }
 
 
@@ -9646,4 +9646,9 @@ input::placeholder {
     transform: none !important;
 }
 
+}
+
+.feed-intro:not(.admin-feed-intro)
+.feed-live-status {
+    top: 0px !important;
 }
