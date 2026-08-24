@@ -225,9 +225,9 @@
 
                 <!-- INTRO -->
 
-                <section class="feed-intro admin-feed-intro">
+<section class="feed-intro admin-feed-intro">
 
-                    <div>
+    <div class="admin-feed-intro-content">
 
                         <small class="eyebrow">
                             CLASSROOM FEED
@@ -244,6 +244,17 @@
                         </p>
 
                     </div>
+
+                    <div
+    id="feedLiveStatus"
+    class="feed-live-status"
+>
+    <span class="feed-live-dot"></span>
+
+    <span>
+        LIVE
+    </span>
+</div>
 
                 </section>
 
@@ -325,11 +336,11 @@
                                 Nama Kelas
                             </label>
 
-                            <input
-                                type="text"
-                                id="className"
-                                placeholder="Contoh: X RPL 1"
-                            >
+<select id="className">
+    <option value="">
+        Pilih kelas
+    </option>
+</select>
 
                         </div>
 
@@ -420,6 +431,50 @@
 
     </div>
 
+    <div
+    id="adminNotificationOverlay"
+    class="admin-notification-overlay"
+    style="display: none;"
+>
+    <section class="admin-notification-panel">
+
+        <button
+            type="button"
+            class="notification-close-button"
+            onclick="closeAdminNotifications()"
+            aria-label="Tutup notifikasi"
+        >
+            ×
+        </button>
+
+
+        <div class="notification-popup-header">
+
+            <small class="eyebrow">
+                NOTIFICATIONS
+            </small>
+
+            <h1>
+                Notifikasi
+            </h1>
+
+            <p>
+                Mention, reply, dan aktivitas terbaru
+                dari Classroom Feed.
+            </p>
+
+        </div>
+
+
+        <div
+            id="adminNotificationList"
+            class="notification-popup-list"
+        ></div>
+
+    </section>
+</div>
+
+<script src="/time.js"></script>
     <script>
 
         function goToTeachers() {
@@ -431,7 +486,8 @@
 
         async function deleteAdminReply(
     announcementId,
-    replyId
+    replyId,
+    button
 ) {
 
     const confirmDelete =
@@ -443,6 +499,10 @@
     if (!confirmDelete) {
         return;
     }
+
+    button.disabled = true;
+button.textContent =
+    "Menghapuskan...";
 
 
     try {
@@ -471,32 +531,63 @@
             await response.json();
 
 
-        if (!data.success) {
+if (!data.success) {
 
-            alert(
-                data.message ||
-                "Gagal menghapus reply."
-            );
+    button.disabled = false;
+    button.textContent =
+        "Hapus";
 
-            return;
+    alert(
+        data.message ||
+        "Gagal menghapus reply."
+    );
 
-        }
-
-
-        loadAdminReplies(
-            announcementId
-        );
+    return;
+}
 
 
-    } catch (error) {
+const replyItem =
+    document.getElementById(
+        `reply-${replyId}`
+    );
 
-        console.error(error);
+if (replyItem) {
+    replyItem.remove();
+}
 
-        alert(
-            "Gagal menghapus reply."
-        );
 
-    }
+const container =
+    document.getElementById(
+        `admin-replies-${announcementId}`
+    );
+
+
+if (
+    container &&
+    container.children.length === 0
+) {
+
+    container.innerHTML = `
+        <small>
+            Belum ada reply.
+        </small>
+    `;
+
+}
+
+
+} catch (error) {
+
+    console.error(error);
+
+    button.disabled = false;
+    button.textContent =
+        "Hapus";
+
+    alert(
+        "Gagal menghapus reply."
+    );
+}
 
 }
 
@@ -664,9 +755,364 @@ function formatMessage(
 
 }
 
-        function goToNotifications() {
-    window.location.href =
-        "/admin-notifications.html";
+function goToNotifications() {
+
+    const overlay =
+        document.getElementById(
+            "adminNotificationOverlay"
+        );
+
+
+    overlay.style.display =
+        "flex";
+
+
+    document.body.style.overflow =
+        "hidden";
+
+
+    loadAdminNotificationPanel();
+
+}
+
+function closeAdminNotifications() {
+
+    const overlay =
+        document.getElementById(
+            "adminNotificationOverlay"
+        );
+
+
+    overlay.style.display =
+        "none";
+
+
+    document.body.style.overflow =
+        "";
+
+}
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const overlay =
+            document.getElementById(
+                "adminNotificationOverlay"
+            );
+
+
+        if (
+            event.target === overlay
+        ) {
+
+            closeAdminNotifications();
+
+        }
+
+    }
+);
+
+function createAdminNotificationItem(
+    notification
+) {
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+
+    item.id =
+        `notification-${notification.id}`;
+
+    item.className =
+        "notification";
+
+
+    if (
+        Number(notification.is_read) === 0
+    ) {
+
+        item.classList.add(
+            "unread"
+        );
+
+    }
+
+
+    item.innerHTML = `
+
+        ${
+            Number(notification.is_read) === 0
+                ? `
+                    <span
+                        class="notification-unread-dot"
+                        aria-label="Belum dibaca"
+                    ></span>
+                `
+                : ""
+        }
+
+
+        <div class="notification-content">
+
+            <p>
+                ${escapeHtml(
+                    notification.message
+                )}
+            </p>
+
+            <span class="notification-time">
+${formatDeviceDateTime(
+    notification.created_at
+)}
+            </span>
+
+        </div>
+
+
+        <span class="notification-arrow">
+            →
+        </span>
+
+    `;
+
+
+    item.addEventListener(
+        "click",
+        () => {
+
+            openAdminNotification(
+                notification,
+                item
+            );
+
+        }
+    );
+
+
+    return item;
+}
+
+async function loadAdminNotificationPanel() {
+
+    const container =
+        document.getElementById(
+            "adminNotificationList"
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/${adminId}/notifications`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            container.innerHTML =
+                "Gagal mengambil notifikasi.";
+
+            return;
+
+        }
+
+
+        if (
+            !Array.isArray(
+                data.notifications
+            ) ||
+            data.notifications.length === 0
+        ) {
+
+            container.innerHTML = `
+
+                <div class="empty-state">
+
+                    <strong>
+                        Belum ada notifikasi
+                    </strong>
+
+                    <span>
+                        Aktivitas baru akan muncul di sini.
+                    </span>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        data.notifications.forEach(
+            (notification) => {
+
+                const item =
+                    createAdminNotificationItem(
+                        notification
+                    );
+
+
+                container.appendChild(
+                    item
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil notification:",
+            error
+        );
+
+
+        container.innerHTML =
+            "Terjadi kesalahan saat mengambil notifikasi.";
+
+    }
+
+}
+
+
+async function openAdminNotification(
+    notification,
+    item
+) {
+
+    const wasUnread =
+        item.classList.contains(
+            "unread"
+        );
+
+
+    sessionStorage.setItem(
+        "notificationAnnouncementId",
+        String(
+            notification.announcement_id ||
+            ""
+        )
+    );
+
+
+    sessionStorage.setItem(
+        "notificationReplyId",
+        String(
+            notification.reply_id ||
+            ""
+        )
+    );
+
+
+    closeAdminNotifications();
+
+
+    if (wasUnread) {
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+
+        const currentCount =
+            Number(
+                badge.textContent || 0
+            );
+
+
+        const newCount =
+            Math.max(
+                0,
+                currentCount - 1
+            );
+
+
+        badge.textContent =
+            newCount > 0
+                ? String(newCount)
+                : "";
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/notifications/${notification.id}/read`,
+                {
+                    method: "PATCH"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            console.error(
+                "Gagal menandai notification:",
+                data.message
+            );
+
+
+            loadNotificationCount();
+
+            return;
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menandai notification:",
+            error
+        );
+
+
+        loadNotificationCount();
+
+        return;
+
+    }
+
+
+    loadNotificationCount();
+
+
+    await checkLiveAnnouncements();
+
+    await checkLiveReplies();
+
+
+    setTimeout(
+        () => {
+
+            scrollToMention();
+
+        },
+        50
+    );
+
 }
 
         function insertAdminMention(
@@ -1160,6 +1606,79 @@ let adminAnnouncementMentions = [];
 
 let adminAnnouncementMentionUsers = [];
 
+async function loadClassOptions() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/students"
+            );
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+            return;
+        }
+
+        const classes =
+            [
+                ...new Set(
+                    data.students
+                        .map(
+                            (student) =>
+                                student.class_name
+                        )
+                        .filter(Boolean)
+                )
+            ]
+            .sort(
+                (a, b) =>
+                    a.localeCompare(
+                        b,
+                        "id",
+                        {
+                            sensitivity: "base"
+                        }
+                    )
+            );
+
+        classNameInput.innerHTML = `
+            <option value="">
+                Pilih kelas
+            </option>
+        `;
+
+        classes.forEach(
+            (className) => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    className;
+
+                option.textContent =
+                    className;
+
+                classNameInput.appendChild(
+                    option
+                );
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil daftar kelas:",
+            error
+        );
+    }
+}
+
 
         const announcementList =
             document.getElementById(
@@ -1566,7 +2085,7 @@ const filteredUsers =
             );
 
             classNameInput.addEventListener(
-    "input",
+    "change",
     () => {
 
         adminAnnouncementMentions =
@@ -1597,6 +2116,11 @@ const filteredUsers =
 
                 event.preventDefault();
 
+                const submitButton =
+    form.querySelector(
+        'button[type="submit"]'
+    );
+
 
                 const target =
                     document.querySelector(
@@ -1624,6 +2148,12 @@ const filteredUsers =
                     return;
 
                 }
+
+                submitButton.disabled =
+    true;
+
+submitButton.textContent =
+    "Memposting...";
 
 
                 message.textContent =
@@ -1706,10 +2236,58 @@ const filteredUsers =
                             false;
 
 
-                        loadAnnouncements();
+const newCard =
+    createAdminAnnouncementCard(
+        data.announcement
+    );
+
+
+const emptyMessage =
+    announcementList.querySelector(
+        "p"
+    );
+
+if (
+    emptyMessage &&
+    emptyMessage.textContent.includes(
+        "Belum ada announcement"
+    )
+) {
+
+    announcementList.innerHTML =
+        "";
+}
+
+
+announcementList.prepend(
+    newCard
+);
+
+latestAnnouncementId =
+    Math.max(
+        latestAnnouncementId,
+        Number(
+            data.announcement.id
+        )
+    );
+
+submitButton.disabled =
+    false;
+
+submitButton.textContent =
+    "Posting";
+
+
+setupAdminMentionAutocomplete();
 
 
                     } else {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.textContent =
+                            "Posting";
 
                         message.textContent =
                             data.message ||
@@ -1726,11 +2304,193 @@ const filteredUsers =
                     message.textContent =
                         "Tidak dapat terhubung ke server.";
 
+                    submitButton.disabled =
+                        false;
+
+                    submitButton.textContent =
+                        "Posting";
+
                 }
 
             }
         );
 
+        function createAdminAnnouncementCard(
+    announcement
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+    card.id =
+        `announcement-${announcement.id}`;
+
+    card.className =
+        "feed-card admin-feed-card";
+
+
+    card.innerHTML = `
+
+        <div class="feed-card-header">
+
+            <div class="feed-author">
+
+                <div class="feed-avatar">
+                    ${
+                        announcement.student_id
+                            ? "S"
+                            : "T"
+                    }
+                </div>
+
+                <div>
+
+                    <strong>
+                        ${
+                            announcement.student_id
+                                ? escapeHtml(
+                                    announcement.student_creator_name ||
+                                    "Siswa"
+                                )
+                                : escapeHtml(
+                                    announcement.admin_creator_name ||
+                                    "Admin / Guru"
+                                )
+                        }
+                    </strong>
+
+                    <span>
+                        ${
+                            announcement.student_id
+                                ? escapeHtml(
+                                    announcement.student_creator_class ||
+                                    "-"
+                                )
+                                : "Admin / Guru"
+                        }
+                        ·
+${formatDeviceDateTime(
+    announcement.created_at
+)}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <span class="feed-scope-badge">
+
+                ${
+                    announcement.class_name
+                        ? escapeHtml(
+                            announcement.class_name
+                        )
+                        : "Global"
+                }
+
+            </span>
+
+        </div>
+
+
+<div class="feed-message">${formatMessage(
+    announcement.message,
+    announcement.mentions
+)}</div>
+
+
+        <div class="feed-owner-actions">
+
+            <button
+                type="button"
+                class="feed-delete-button"
+                onclick="
+                    deleteAnnouncement(
+                        ${announcement.id},
+                        this
+                    )
+                "
+            >
+                Hapus
+            </button>
+
+        </div>
+
+
+        <div class="feed-divider"></div>
+
+
+        <div class="reply-section">
+
+            <div class="reply-heading">
+                <strong>
+                    Replies
+                </strong>
+            </div>
+
+
+            <div
+                id="admin-replies-${announcement.id}"
+                class="reply-list"
+            >
+                <small>
+                    Belum ada reply.
+                </small>
+            </div>
+
+
+            <form
+                class="admin-reply-form reply-composer"
+                data-id="${announcement.id}"
+            >
+
+                <input
+                    type="text"
+                    name="reply"
+                    class="admin-reply-input reply-input"
+                    placeholder="Tulis balasan... gunakan @ untuk mention"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="reply-send-button"
+                >
+                    Kirim
+                </button>
+
+
+                <div
+                    class="admin-mention-suggestions mention-suggestions"
+                    style="display: none;"
+                ></div>
+
+            </form>
+
+        </div>
+    `;
+
+
+    const replyForm =
+        card.querySelector(
+            ".admin-reply-form"
+        );
+
+    replyForm.addEventListener(
+        "submit",
+        submitAdminReply
+    );
+
+
+    return card;
+}
+
+let latestAnnouncementId = 0;
 
         // =================================
         // LOAD ANNOUNCEMENTS
@@ -1780,222 +2540,29 @@ const filteredUsers =
                     "";
 
 
-                data.announcements.forEach(
-                    (announcement) => {
-
-                        const card =
-                            document.createElement(
-                                "div"
-                            );
-
-                            card.id =
-                                `announcement-${announcement.id}`;
-
-                                card.className =
-                                "feed-card admin-feed-card";
-
-
-                        let creatorText;
-
-
-                        if (announcement.student_id) {
-
-                            creatorText =
-                                `${announcement.student_creator_name || "Siswa"} — ` +
-                                `${announcement.student_creator_class || "-"} — `;
-
-                        } else {
-
-                            creatorText =
-                                `${announcement.admin_creator_name || "Admin / Guru"} — `;
-
-                        }
-
-
-                        const announcementType =
-                            announcement.class_name
-                                ? `KELAS ${announcement.class_name}`
-                                : "GLOBAL";
-
-
-                        const heading =
-                            creatorText +
-                            announcementType;
-
-
-                       card.innerHTML = `
-
-    <div class="feed-card-header">
-
-        <div class="feed-author">
-
-            <div class="feed-avatar">
-                ${
-                    announcement.student_id
-                        ? "S"
-                        : "T"
-                }
-            </div>
-
-
-            <div>
-
-                <strong>
-                    ${
-                        announcement.student_id
-                            ? escapeHtml(
-                                announcement.student_creator_name ||
-                                "Siswa"
-                            )
-                            : escapeHtml(
-                                announcement.admin_creator_name ||
-                                "Admin / Guru"
-                            )
-                    }
-                </strong>
-
-                <span>
-                    ${
-                        announcement.student_id
-                            ? escapeHtml(
-                                announcement.student_creator_class ||
-                                "-"
-                            )
-                            : "Admin / Guru"
-                    }
-                    ·
-                    ${escapeHtml(
-                        announcement.created_at
-                    )}
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <span class="feed-scope-badge">
-
-            ${
-                announcement.class_name
-                    ? `Kelas ${escapeHtml(
-                        announcement.class_name
-                    )}`
-                    : "Global"
-            }
-
-        </span>
-
-    </div>
-
-
-    <div class="feed-message">${formatMessage(
-        announcement.message,
-        announcement.mentions
-    )}</div>
-
-
-    <div class="feed-owner-actions">
-
-        <button
-            type="button"
-            class="feed-delete-button"
-            onclick="
-                deleteAnnouncement(
-                    ${announcement.id}
-                )
-            "
-        >
-            Hapus Post
-        </button>
-
-    </div>
-
-
-    <div class="feed-divider"></div>
-
-
-    <div class="reply-section">
-
-        <div class="reply-heading">
-
-            <strong>
-                Replies
-            </strong>
-
-        </div>
-
-
-        <div
-            id="admin-replies-${announcement.id}"
-            class="reply-list"
-        >
-            Memuat reply...
-        </div>
-
-
-        <form
-            class="admin-reply-form reply-composer"
-            data-id="${announcement.id}"
-        >
-
-            <input
-                type="text"
-                name="reply"
-                class="admin-reply-input reply-input"
-                placeholder="Tulis balasan... gunakan @ untuk mention"
-                autocomplete="off"
-                required
-            >
-
-
-            <button
-                type="submit"
-                class="reply-send-button"
-            >
-                Kirim
-            </button>
-
-
-            <div
-                class="admin-mention-suggestions mention-suggestions"
-                style="display: none;"
-            ></div>
-
-        </form>
-
-    </div>
-
-`;
-
-
-                        announcementList.appendChild(
-                            card
-                        );
-
-                        loadAdminReplies(
-                            announcement.id
-                        );
-
-                        const replyForms =
-                            document.querySelectorAll(
-                                ".admin-reply-form"
-                            );
-
-
-                        replyForms.forEach(
-                            (form) => {
-
-                                form.addEventListener(
-                                    "submit",
-                                    submitAdminReply
-                                );
-
-                            }
-                        );
-
-                    }
-                );
+ data.announcements.forEach(
+    (announcement) => {
+
+        latestAnnouncementId =
+    Math.max(
+        latestAnnouncementId,
+        Number(announcement.id)
+    );
+
+        const card =
+            createAdminAnnouncementCard(
+                announcement
+            );
+
+        announcementList.appendChild(
+            card
+        );
+
+        loadAdminReplies(
+            announcement.id
+        );
+    }
+);
 
                 setupAdminMentionAutocomplete();
 
@@ -2011,6 +2578,100 @@ const filteredUsers =
             }
 
         }
+
+let latestReplyId = 0;
+
+function createAdminReplyItem(
+    announcementId,
+    reply
+) {
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+    item.id =
+        `reply-${reply.id}`;
+
+    item.className =
+        "reply-item";
+
+
+    item.innerHTML = `
+
+        <div class="reply-author-row">
+
+            <div class="reply-avatar">
+                ${
+                    reply.sender_type === "admin"
+                        ? "T"
+                        : "S"
+                }
+            </div>
+
+            <div>
+
+                <strong>
+                    ${escapeHtml(
+                        reply.sender_name
+                    )}
+                </strong>
+
+                <span>
+                    ${
+                        reply.sender_type === "admin"
+                            ? escapeHtml(
+                                reply.sender_role ||
+                                "Admin / Guru"
+                            )
+                            : escapeHtml(
+                                reply.class_name ||
+                                "Siswa"
+                            )
+                    }
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="reply-message">${formatMessage(
+            reply.message,
+            reply.mentions
+        )}</div>
+
+
+        <div class="reply-footer">
+
+            <span>
+${formatDeviceDateTime(
+    reply.created_at
+)}
+            </span>
+
+            <button
+                type="button"
+                class="feed-delete-button"
+                onclick="
+                    deleteAdminReply(
+                        ${announcementId},
+                        ${reply.id},
+                        this
+                    )
+                "
+            >
+                Hapus
+            </button>
+
+        </div>
+
+    `;
+
+
+    return item;
+}
 
         // =====================================
         // ADMIN REPLY
@@ -2036,6 +2697,11 @@ const filteredUsers =
                     'input[name="reply"]'
                 );
 
+                const submitButton =
+    form.querySelector(
+        'button[type="submit"]'
+    );
+
 
             const message =
                 input.value.trim();
@@ -2049,6 +2715,10 @@ const filteredUsers =
                 return;
 
             }
+
+            submitButton.disabled = true;
+submitButton.textContent =
+    "Menambahkan...";
 
 
             try {
@@ -2087,36 +2757,89 @@ const filteredUsers =
                     await response.json();
 
 
-                if (!data.success) {
+if (!data.success) {
 
-                    alert(
-                        data.message
-                    );
+    submitButton.disabled = false;
+    submitButton.textContent =
+        "Kirim";
 
-                    return;
+    alert(
+        data.message
+    );
 
-                }
+    return;
+}
 
+input.value = "";
+form.selectedMentions = [];
 
-                input.value = "";
-                form.selectedMentions = [];
-
-
-                loadAdminReplies(
-                    announcementId
-                );
-
-
-            } catch (error) {
-
-                console.error(error);
+submitButton.disabled = false;
+submitButton.textContent =
+    "Kirim";
 
 
-                alert(
-                    "Gagal mengirim reply."
-                );
+const container =
+    document.getElementById(
+        `admin-replies-${announcementId}`
+    );
 
-            }
+
+if (container) {
+
+    const emptyReply =
+        container.querySelector(
+            "small"
+        );
+
+    if (
+        emptyReply &&
+        emptyReply.textContent.includes(
+            "Belum ada reply"
+        )
+    ) {
+
+        container.innerHTML =
+            "";
+    }
+
+
+    const replyItem =
+        createAdminReplyItem(
+            announcementId,
+            data.reply
+        );
+
+
+    container.appendChild(
+        replyItem
+    );
+
+    if (latestReplyId !== null) {
+
+    latestReplyId =
+        Math.max(
+            latestReplyId,
+            Number(
+                data.reply.id
+            )
+        );
+
+}
+
+}
+
+} catch (error) {
+
+    console.error(error);
+
+    submitButton.disabled = false;
+    submitButton.textContent =
+        "Kirim";
+
+    alert(
+        "Gagal mengirim reply."
+    );
+}
 
         }
 
@@ -2196,6 +2919,12 @@ if (
         data.replies.forEach(
             (reply) => {
 
+                latestReplyId =
+    Math.max(
+        latestReplyId,
+        Number(reply.id)
+    );
+
                 const item =
                     document.createElement(
                         "div"
@@ -2259,23 +2988,24 @@ if (
     <div class="reply-footer">
 
         <span>
-            ${escapeHtml(
-                reply.created_at
-            )}
+${formatDeviceDateTime(
+    reply.created_at
+)}
         </span>
 
 
         <button
             type="button"
             class="feed-delete-button"
-            onclick="
-                deleteAdminReply(
-                    ${announcementId},
-                    ${reply.id}
-                )
-            "
+onclick="
+    deleteAdminReply(
+        ${announcementId},
+        ${reply.id},
+        this
+    )
+"
         >
-            Hapus Reply
+            Hapus
         </button>
 
     </div>
@@ -2287,7 +3017,6 @@ if (
                 );
 
             }
-
             
         );
 
@@ -2326,9 +3055,10 @@ if (
         // HAPUS ANNOUNCEMENT
         // =================================
 
-        async function deleteAnnouncement(
-            announcementId
-        ) {
+async function deleteAnnouncement(
+    announcementId,
+    button
+) {
 
             const confirmDelete =
                 confirm(
@@ -2341,6 +3071,10 @@ if (
                 return;
 
             }
+
+            button.disabled = true;
+button.textContent =
+    "Menghapuskan...";
 
 
             try {
@@ -2360,28 +3094,53 @@ if (
                     await response.json();
 
 
-                if (data.success) {
+if (data.success) {
 
-                    loadAnnouncements();
+    const card =
+        document.getElementById(
+            `announcement-${announcementId}`
+        );
 
-                } else {
-
-                    alert(
-                        data.message
-                    );
-
-                }
+    if (card) {
+        card.remove();
+    }
 
 
-            } catch (error) {
+    if (
+        announcementList.children.length === 0
+    ) {
 
-                console.error(error);
+        announcementList.innerHTML = `
+            <p>
+                Belum ada announcement.
+            </p>
+        `;
+    }
 
-                alert(
-                    "Gagal menghapus announcement."
-                );
+} else {
 
-            }
+    button.disabled = false;
+    button.textContent =
+        "Hapus";
+
+    alert(
+        data.message
+    );
+}
+
+
+} catch (error) {
+
+    console.error(error);
+
+    button.disabled = false;
+    button.textContent =
+        "Hapus Post";
+
+    alert(
+        "Gagal menghapus announcement."
+    );
+}
 
         }
 
@@ -2468,11 +3227,765 @@ async function logout() {
         // =================================
         // LOAD AWAL
         // =================================
-       loadAdminAnnouncementMentionUsers();
+loadClassOptions();
 
-loadAnnouncements();
+loadAdminAnnouncementMentionUsers();
+
+
+const skipInitialFeedReload =
+    sessionStorage.getItem(
+        "skipAdminFeedInitialReload"
+    ) === "1";
+
+
+if (skipInitialFeedReload) {
+
+    sessionStorage.removeItem(
+        "skipAdminFeedInitialReload"
+    );
+
+
+    const cachedFeed =
+        sessionStorage.getItem(
+            "adminFeedCachedHtml"
+        );
+
+
+    if (cachedFeed) {
+
+        announcementList.innerHTML =
+            cachedFeed;
+
+
+        /*
+            Sambungkan ulang form reply
+            karena innerHTML tidak membawa
+            event listener lama.
+        */
+        document
+            .querySelectorAll(
+                ".admin-reply-form"
+            )
+            .forEach(
+                (replyForm) => {
+
+                    replyForm.addEventListener(
+                        "submit",
+                        submitAdminReply
+                    );
+
+                }
+            );
+
+
+        setupAdminMentionAutocomplete();
+
+
+        /*
+            Ambil ulang ID terakhir dari DOM
+            agar live polling tetap lanjut.
+        */
+        document
+            .querySelectorAll(
+                '[id^="announcement-"]'
+            )
+            .forEach(
+                (card) => {
+
+                    const id =
+                        Number(
+                            card.id.replace(
+                                "announcement-",
+                                ""
+                            )
+                        );
+
+
+                    if (
+                        Number.isInteger(id)
+                    ) {
+
+                        latestAnnouncementId =
+                            Math.max(
+                                latestAnnouncementId,
+                                id
+                            );
+
+                    }
+
+                }
+            );
+
+
+        document
+            .querySelectorAll(
+                '[id^="reply-"]'
+            )
+            .forEach(
+                (replyItem) => {
+
+                    const id =
+                        Number(
+                            replyItem.id.replace(
+                                "reply-",
+                                ""
+                            )
+                        );
+
+
+                    if (
+                        Number.isInteger(id)
+                    ) {
+
+                        latestReplyId =
+                            Math.max(
+                                latestReplyId,
+                                id
+                            );
+
+                    }
+
+                }
+            );
+
+    } else {
+
+        loadAnnouncements();
+
+    }
+
+
+} else {
+
+    loadAnnouncements();
+
+}
+
 
 loadNotificationCount();
+
+let notificationPollingTimer = null;
+
+function startNotificationPolling() {
+
+    if (notificationPollingTimer) {
+        return;
+    }
+
+    notificationPollingTimer =
+        setInterval(
+            () => {
+
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
+
+                    loadNotificationCount();
+
+                }
+
+            },
+            10000
+        );
+}
+
+let feedLivePollingTimer =
+    null;
+
+
+async function checkLiveReplies() {
+
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/replies/live?afterId=${latestReplyId}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.replies
+            )
+        ) {
+
+            return;
+        }
+
+
+        for (
+            const reply
+            of data.replies
+        ) {
+
+            /*
+                Kalau reply sudah ada di layar,
+                jangan render dua kali.
+            */
+            const existingReply =
+                document.getElementById(
+                    `reply-${reply.id}`
+                );
+
+
+            if (existingReply) {
+
+                latestReplyId =
+                    Math.max(
+                        latestReplyId,
+                        Number(reply.id)
+                    );
+
+                continue;
+            }
+
+
+            const announcementId =
+                Number(
+                    reply.announcement_id
+                );
+
+
+            const container =
+                document.getElementById(
+                    `admin-replies-${announcementId}`
+                );
+
+
+            /*
+                Kalau card announcement belum masuk
+                ke layar, jangan kehilangan reply ini.
+
+                Stop dulu dan coba lagi poll berikutnya.
+            */
+if (!container) {
+
+    latestReplyId =
+        Math.max(
+            latestReplyId,
+            Number(reply.id)
+        );
+
+    continue;
+}
+
+
+            const emptyReply =
+                container.querySelector(
+                    "small"
+                );
+
+
+            if (
+                emptyReply &&
+                emptyReply.textContent.includes(
+                    "Belum ada reply"
+                )
+            ) {
+
+                container.innerHTML =
+                    "";
+
+            }
+
+
+            const replyItem =
+                createAdminReplyItem(
+                    announcementId,
+                    reply
+                );
+
+
+            container.appendChild(
+                replyItem
+            );
+
+
+            latestReplyId =
+                Math.max(
+                    latestReplyId,
+                    Number(reply.id)
+                );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Live reply gagal:",
+            error
+        );
+
+    }
+
+}
+
+
+async function checkLiveAnnouncements() {
+
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/announcements/live?afterId=${latestAnnouncementId}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.announcements
+            )
+        ) {
+
+            return;
+        }
+
+
+        if (
+            data.announcements.length === 0
+        ) {
+
+            return;
+        }
+
+
+        data.announcements.forEach(
+            (announcement) => {
+
+                if (
+                    document.getElementById(
+                        `announcement-${announcement.id}`
+                    )
+                ) {
+
+                    return;
+                }
+
+
+                const card =
+                    createAdminAnnouncementCard(
+                        announcement
+                    );
+
+
+                announcementList.prepend(
+                    card
+                );
+
+
+                latestAnnouncementId =
+                    Math.max(
+                        latestAnnouncementId,
+                        Number(
+                            announcement.id
+                        )
+                    );
+
+            }
+        );
+
+
+        setupAdminMentionAutocomplete();
+
+
+    } catch (error) {
+
+        console.error(
+            "Live feed gagal:",
+            error
+        );
+
+    }
+
+}
+
+async function checkLiveDeletions() {
+
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/classroom-feed/state"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.announcementIds
+            ) ||
+            !Array.isArray(
+                data.replies
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const announcementIds =
+            new Set(
+                data.announcementIds.map(
+                    (id) =>
+                        String(id)
+                )
+            );
+
+
+        const replyIds =
+            new Set(
+                data.replies.map(
+                    (reply) =>
+                        String(reply.id)
+                )
+            );
+
+
+        /*
+            HAPUS POST YANG SUDAH
+            TIDAK ADA DI SERVER
+        */
+        document
+            .querySelectorAll(
+                '#announcementList > [id^="announcement-"]'
+            )
+            .forEach(
+                (card) => {
+
+                    const announcementId =
+                        card.id.replace(
+                            "announcement-",
+                            ""
+                        );
+
+
+                    if (
+                        !announcementIds.has(
+                            announcementId
+                        )
+                    ) {
+
+                        card.remove();
+
+                    }
+
+                }
+            );
+
+
+        /*
+            HAPUS REPLY YANG SUDAH
+            TIDAK ADA DI SERVER
+        */
+        document
+            .querySelectorAll(
+                '.reply-item[id^="reply-"]'
+            )
+            .forEach(
+                (replyItem) => {
+
+                    const replyId =
+                        replyItem.id.replace(
+                            "reply-",
+                            ""
+                        );
+
+
+                    if (
+                        !replyIds.has(
+                            replyId
+                        )
+                    ) {
+
+                        const container =
+                            replyItem.closest(
+                                ".reply-list"
+                            );
+
+
+                        replyItem.remove();
+
+
+                        if (
+                            container &&
+                            container.querySelectorAll(
+                                ".reply-item"
+                            ).length === 0
+                        ) {
+
+                            container.innerHTML = `
+                                <small>
+                                    Belum ada reply.
+                                </small>
+                            `;
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+        /*
+            Kalau semua post hilang.
+        */
+        if (
+            announcementList.querySelectorAll(
+                '[id^="announcement-"]'
+            ).length === 0
+        ) {
+
+            announcementList.innerHTML = `
+                <p>
+                    Belum ada announcement.
+                </p>
+            `;
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Live delete gagal:",
+            error
+        );
+
+    }
+
+}
+
+function startFeedLivePolling() {
+
+    if (feedLivePollingTimer) {
+        return;
+    }
+
+
+feedLivePollingTimer =
+    setInterval(
+        async () => {
+
+            await Promise.all([
+                checkLiveAnnouncements(),
+                checkLiveReplies(),
+                checkLiveDeletions(),
+                loadNotificationCount()
+            ]);
+
+        },
+        5000
+    );
+}
+
+
+function stopFeedLivePolling() {
+
+    if (!feedLivePollingTimer) {
+        return;
+    }
+
+
+    clearInterval(
+        feedLivePollingTimer
+    );
+
+    feedLivePollingTimer =
+        null;
+}
+
+
+function stopNotificationPolling() {
+
+    if (!notificationPollingTimer) {
+        return;
+    }
+
+    clearInterval(
+        notificationPollingTimer
+    );
+
+    notificationPollingTimer =
+        null;
+}
+
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            loadNotificationCount();
+
+            startNotificationPolling();
+
+            checkLiveAnnouncements();
+
+            checkLiveReplies();
+
+            startFeedLivePolling();
+
+
+        } else {
+
+            stopNotificationPolling();
+            stopFeedLivePolling();
+
+        }
+
+    }
+);
+
+
+startNotificationPolling();
+
+startFeedLivePolling();
+
+window.addEventListener(
+    "message",
+    async (event) => {
+
+        /*
+            Hanya terima pesan
+            dari website kita sendiri.
+        */
+        if (
+            event.origin !==
+            window.location.origin
+        ) {
+            return;
+        }
+
+
+        if (
+            event.data?.type !==
+            "OPEN_CLASSROOM_NOTIFICATION"
+        ) {
+            return;
+        }
+
+
+        const announcementId =
+            event.data.announcementId;
+
+        const replyId =
+            event.data.replyId;
+
+
+        sessionStorage.setItem(
+            "notificationAnnouncementId",
+            String(
+                announcementId ||
+                ""
+            )
+        );
+
+
+        sessionStorage.setItem(
+            "notificationReplyId",
+            String(
+                replyId ||
+                ""
+            )
+        );
+
+
+        /*
+            Jangan loadAnnouncements().
+            Cuma pakai live sync ringan.
+        */
+        await checkLiveAnnouncements();
+
+        await checkLiveReplies();
+
+
+        /*
+            Setelah DOM update,
+            cari target dan scroll.
+        */
+        setTimeout(
+            () => {
+
+                scrollToMention();
+
+            },
+            100
+        );
+
+    }
+);
+
+if (
+    sessionStorage.getItem(
+        "notificationAnnouncementId"
+    )
+) {
+
+    setTimeout(
+        async () => {
+
+            await checkLiveAnnouncements();
+
+            await checkLiveReplies();
+
+            scrollToMention();
+
+        },
+        100
+    );
+
+}
+
         function escapeHtml(text) {
 
     const div =
@@ -2493,5 +4006,7 @@ loadNotificationCount();
 
 
 </body>
+
+<script src="/mobile-nav.js"></script>
 
 </html>

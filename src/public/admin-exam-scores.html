@@ -17,6 +17,7 @@
     rel="stylesheet"
     href="/styles.css"
 >
+
 </head>
 
 
@@ -425,6 +426,7 @@
 
     </div>
 
+<script src="/time.js"></script>
     <script>
 
 function goToTeachers() {
@@ -912,9 +914,9 @@ studentScores.forEach(
 
 
                 <td>
-                    ${escapeHtml(
-                        examScore.created_at
-                    )}
+${formatDeviceDateTime(
+    examScore.created_at
+)}
                 </td>
 
 
@@ -1201,6 +1203,8 @@ async function logout() {
         loadExamScores();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 

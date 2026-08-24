@@ -173,15 +173,17 @@
                             Kode Siswa
                         </label>
 
-                        <input
-                            type="text"
-                            id="loginCode"
-                            placeholder="Contoh: ABC12"
-                            maxlength="5"
-                            minlength="5"
-                            autocomplete="off"
-                            required
-                        >
+<input
+    type="text"
+    id="loginCode"
+    placeholder="Contoh: ABC12"
+    maxlength="5"
+    minlength="5"
+    autocomplete="off"
+    autocapitalize="characters"
+    spellcheck="false"
+    required
+>
 
                     </div>
 
@@ -219,7 +221,8 @@
         </section>
 
     </main>
-
+    <script src="/student-session.js"></script>
+<script src="/time.js"></script>
     <script>
 
         const form =
@@ -232,6 +235,41 @@
             document.getElementById(
                 "message"
             );
+
+            const loginCodeInput =
+    document.getElementById(
+        "loginCode"
+    );
+
+
+loginCodeInput.addEventListener(
+    "input",
+    () => {
+
+        const cursorPosition =
+            loginCodeInput.selectionStart;
+
+
+        loginCodeInput.value =
+            loginCodeInput.value
+                .toUpperCase()
+                .replace(
+                    /[^A-Z0-9]/g,
+                    ""
+                )
+                .slice(
+                    0,
+                    5
+                );
+
+
+        loginCodeInput.setSelectionRange(
+            cursorPosition,
+            cursorPosition
+        );
+
+    }
+);
 
 
         form.addEventListener(
@@ -248,9 +286,8 @@
                         .trim()
                         .toUpperCase();
 
-
-                message.textContent =
-                    "Memeriksa kode...";
+            message.classList.remove("auth-error");
+            message.textContent = "Memeriksa Kode...";
 
 
                 try {
@@ -315,9 +352,10 @@
 
                     } else {
 
-                        message.textContent =
-                            data.message ||
-                            "Login gagal.";
+message.classList.add("auth-error");
+
+message.textContent =
+    data.message || "Login gagal.";
 
                     }
 
@@ -328,6 +366,7 @@
 
 
                     message.textContent =
+                    message.classList.add("auth-error");
                         "Tidak dapat terhubung ke server.";
 
                 }

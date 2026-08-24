@@ -189,14 +189,26 @@
                             Password
                         </label>
 
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Masukkan password"
-                            autocomplete="current-password"
-                            required
-                        >
+<div class="password-hold-field">
+
+    <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Masukkan password"
+        autocomplete="current-password"
+        required
+    >
+
+    <button
+        type="button"
+        class="password-hold-button"
+        aria-label="Tahan untuk melihat password"
+    >
+        👁
+    </button>
+
+</div>
 
                     </div>
 
@@ -244,6 +256,7 @@
 
     </main>
 
+<script src="/time.js"></script>
     <script>
 
         const form =
@@ -266,7 +279,8 @@
 
 
             // Reset pesan
-            message.textContent = "Sedang login...";
+message.classList.remove("auth-error");
+message.textContent = "Sedang login...";
 
 
             try {
@@ -321,8 +335,10 @@
 
                 } else {
 
-                    message.textContent =
-                        data.message || "Login gagal.";
+message.classList.add("auth-error");
+
+message.textContent =
+    data.message || "Login gagal.";
 
                 }
 
@@ -333,12 +349,127 @@
                     error
                 );
 
+                message.classList.add("auth-error");
                 message.textContent =
                     "Tidak dapat terhubung ke server.";
 
             }
 
         });
+
+        function setupHoldPasswordReveal() {
+
+    document
+        .querySelectorAll(
+            ".password-hold-field"
+        )
+        .forEach(
+            (field) => {
+
+                const input =
+                    field.querySelector(
+                        'input[type="password"], input[data-password-field]'
+                    );
+
+                const button =
+                    field.querySelector(
+                        ".password-hold-button"
+                    );
+
+
+                if (
+                    !input ||
+                    !button
+                ) {
+
+                    return;
+
+                }
+
+
+                input.dataset.passwordField =
+                    "true";
+
+
+                const showPassword = (
+                    event
+                ) => {
+
+                    event.preventDefault();
+
+                    input.type =
+                        "text";
+
+                    button.classList.add(
+                        "is-revealing"
+                    );
+
+                };
+
+
+                const hidePassword = (
+                    event
+                ) => {
+
+                    if (event) {
+
+                        event.preventDefault();
+
+                    }
+
+
+                    input.type =
+                        "password";
+
+                    button.classList.remove(
+                        "is-revealing"
+                    );
+
+                };
+
+
+                button.addEventListener(
+                    "pointerdown",
+                    showPassword
+                );
+
+
+                button.addEventListener(
+                    "pointerup",
+                    hidePassword
+                );
+
+
+                button.addEventListener(
+                    "pointercancel",
+                    hidePassword
+                );
+
+
+                button.addEventListener(
+                    "pointerleave",
+                    hidePassword
+                );
+
+
+                window.addEventListener(
+                    "pointerup",
+                    hidePassword
+                );
+
+
+                window.addEventListener(
+                    "blur",
+                    hidePassword
+                );
+
+            }
+        );
+
+}
+
+
+setupHoldPasswordReveal();
 
     </script>
 

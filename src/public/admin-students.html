@@ -17,6 +17,7 @@
     href="/styles.css"
 >
 
+
 </head>
 
 
@@ -247,6 +248,99 @@
 
                 </section>
 
+                <!-- MASTER KELAS -->
+
+<section class="admin-form-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                Master Kelas
+            </h2>
+
+            <p>
+                Tambahkan kelas yang digunakan
+                untuk data siswa.
+            </p>
+
+        </div>
+
+    </div>
+
+
+<form
+    id="classForm"
+    class="admin-student-form"
+>
+
+        <div class="admin-form-field">
+
+            <label for="classNameMaster">
+                Nama Kelas
+            </label>
+
+            <input
+                type="text"
+                id="classNameMaster"
+                placeholder="Contoh: Grade 9A"
+                required
+            >
+
+        </div>
+
+
+        <div class="admin-form-action">
+
+            <button
+                type="submit"
+                class="admin-primary-button"
+            >
+                + Tambah Kelas
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <p
+        id="classMessage"
+        class="admin-form-message"
+    ></p>
+
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-data-table">
+
+            <thead>
+
+                <tr>
+                    <th>No</th>
+                    <th>Nama Kelas</th>
+                    <th>Dibuat</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="classList">
+
+                <tr>
+                    <td colspan="3">
+                        Memuat kelas...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
 
                 <!-- ADD STUDENT -->
 
@@ -270,10 +364,10 @@
                     </div>
 
 
-                    <form
-                        id="studentForm"
-                        class="admin-student-form"
-                    >
+<form
+    id="studentForm"
+    class="admin-student-form student-entry-form"
+>
 
 <div class="admin-form-field">
 
@@ -322,32 +416,38 @@
 </div>
 
 
-                        <div class="admin-form-field">
+<div class="admin-form-field">
 
-                            <label for="className">
-                                Kelas
-                            </label>
+    <label for="className">
+        Kelas
+    </label>
 
-                            <input
-                                type="text"
-                                id="className"
-                                placeholder="Contoh: X RPL 1"
-                                required
-                            >
+<div class="student-class-select">
 
-                        </div>
+    <select
+        id="className"
+        required
+    >
+        <option value="">
+            Pilih kelas
+        </option>
+    </select>
+
+</div>
+
+</div>
 
 
-                        <div class="admin-form-action">
+<div class="admin-form-action student-submit-action">
 
-                            <button
-                                type="submit"
-                                class="admin-primary-button"
-                            >
-                                + Tambah Siswa
-                            </button>
+    <button
+        type="submit"
+        class="admin-primary-button"
+    >
+        + Tambah Siswa
+    </button>
 
-                        </div>
+</div>
 
                     </form>
 
@@ -447,6 +547,8 @@
 
     </div>
 
+    <script src="/time.js"></script>
+
     <script>
 
         function goToTeachers() {
@@ -509,6 +611,253 @@ document.getElementById(
     "topAdminRole"
 ).textContent =
     displayRole;
+
+// =================================
+// MASTER KELAS
+// =================================
+
+const classForm =
+    document.getElementById(
+        "classForm"
+    );
+
+const classMessage =
+    document.getElementById(
+        "classMessage"
+    );
+
+const classList =
+    document.getElementById(
+        "classList"
+    );
+
+const studentClassSelect =
+    document.getElementById(
+        "className"
+    );
+
+
+// =================================
+// TAMBAH KELAS
+// =================================
+
+classForm.addEventListener(
+    "submit",
+    async (event) => {
+
+        event.preventDefault();
+
+        const name =
+            document
+                .getElementById(
+                    "classNameMaster"
+                )
+                .value
+                .trim();
+
+        if (!name) {
+            return;
+        }
+
+        const submitButton =
+            classForm.querySelector(
+                'button[type="submit"]'
+            );
+
+        submitButton.disabled =
+            true;
+
+        submitButton.textContent =
+            "Menambahkan...";
+
+        classMessage.textContent =
+            "Menambahkan kelas...";
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/admin/classes",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify({
+                                name
+                            })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                classMessage.textContent =
+                    data.message ||
+                    "Gagal menambahkan kelas.";
+
+                return;
+            }
+
+            classMessage.textContent =
+                "Kelas berhasil ditambahkan.";
+
+            classForm.reset();
+
+            await loadClasses();
+
+        } catch (error) {
+
+            console.error(error);
+
+            classMessage.textContent =
+                "Tidak dapat terhubung ke server.";
+
+        } finally {
+
+            submitButton.disabled =
+                false;
+
+            submitButton.textContent =
+                "+ Tambah Kelas";
+        }
+    }
+);
+
+
+// =================================
+// LOAD KELAS
+// =================================
+
+async function loadClasses() {
+
+    classList.innerHTML = `
+        <tr>
+            <td colspan="3">
+                Memuat kelas...
+            </td>
+        </tr>
+    `;
+
+    studentClassSelect.innerHTML = `
+        <option value="">
+            Pilih kelas
+        </option>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/classes"
+            );
+
+        const data =
+            await response.json();
+
+        if (!data.success) {
+
+            classList.innerHTML = `
+                <tr>
+                    <td colspan="3">
+                        ${escapeHtml(
+                            data.message
+                        )}
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        if (data.classes.length === 0) {
+
+            classList.innerHTML = `
+                <tr>
+                    <td colspan="3">
+                        Belum ada kelas.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        classList.innerHTML = "";
+
+
+        data.classes.forEach(
+            (classData, index) => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+                row.innerHTML = `
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(
+                                classData.name
+                            )}
+                        </strong>
+                    </td>
+
+                    <td>
+${escapeHtml(
+    formatDeviceDateTime(
+        classData.created_at
+    )
+)}
+                    </td>
+                `;
+
+                classList.appendChild(
+                    row
+                );
+
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    classData.name;
+
+                option.textContent =
+                    classData.name;
+
+                studentClassSelect
+                    .appendChild(
+                        option
+                    );
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        classList.innerHTML = `
+            <tr>
+                <td colspan="3">
+                    Gagal mengambil daftar kelas.
+                </td>
+            </tr>
+        `;
+    }
+}
 
         // =================================
         // TAMBAH SISWA
@@ -747,9 +1096,11 @@ const className =
                             </td>
 
                             <td>
-                                ${escapeHtml(
-                                    student.created_at
-                                )}
+${escapeHtml(
+    formatDeviceDateTime(
+        student.created_at
+    )
+)}
                             </td>
 
                         `;
@@ -873,14 +1224,17 @@ function escapeHtml(text) {
 
 }
 
+// =================================
+// LOAD SAAT HALAMAN DIBUKA
+// =================================
 
-        // =================================
-        // LOAD SAAT HALAMAN DIBUKA
-        // =================================
+loadClasses();
 
-        loadStudents();
+loadStudents();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 
 </body>

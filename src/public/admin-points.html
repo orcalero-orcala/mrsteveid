@@ -17,6 +17,7 @@
     href="/styles.css"
 >
 
+
 </head>
 
 
@@ -450,6 +451,8 @@
 
     </div>
 
+    <script src="/time.js"></script>
+
     <script>
 
         function goToTeachers() {
@@ -665,7 +668,7 @@ document.getElementById(
 
                 const response =
                     await fetch(
-                        `/api/student/${studentId}/points`
+                        `/api/admin/students/${studentId}/points`
                     );
 
 
@@ -803,9 +806,9 @@ row.innerHTML = `
 
 
     <td>
-        ${escapeHtml(
-            transaction.created_at
-        )}
+${formatDeviceDateTime(
+    transaction.created_at
+)}
     </td>
 
 `;
@@ -1036,6 +1039,8 @@ async function logout() {
         loadStudents();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 

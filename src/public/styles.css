@@ -1402,70 +1402,386 @@ body {
    MOBILE
    ========================================= */
 
+/* =========================================
+   MOBILE SIDEBAR DRAWER
+   ========================================= */
+
+.mobile-menu-button,
+.mobile-sidebar-backdrop {
+    display: none;
+}
+
+
 @media (
     max-width: 900px
 ) {
 
+    /* ==============================
+       MAIN CONTENT FULL WIDTH
+       ============================== */
+
+    .main-content {
+        width: 100%;
+        margin-left: 0;
+    }
+
+
+    /* ==============================
+       SIDEBAR MENJADI DRAWER
+       ============================== */
+
     .sidebar {
-        width: 76px;
+        width: min(
+            280px,
+            82vw
+        );
+
+        height: 100dvh;
+        min-height: 100dvh;
+
+        top: 0;
+        left: 0;
+        bottom: auto;
+
+        z-index: 10002;
 
         padding:
-            18px 10px;
+            18px 14px;
+
+        overflow-y: auto;
+        overscroll-behavior: contain;
+
+        transform:
+            translateX(-105%);
+
+        transition:
+            transform
+            0.22s
+            ease;
+    }
+
+
+    .sidebar.mobile-sidebar-open {
+        transform:
+            translateX(0);
+    }
+
+
+    /* ==============================
+       KEMBALIKAN ISI SIDEBAR NORMAL
+       ============================== */
+
+    .brand {
+        padding:
+            4px 6px 18px;
+    }
+
+
+    .brand > div:last-child {
+        display: block;
     }
 
 
     .brand > div:last-child,
+    .nav-item,
     .nav-item:not(.active) {
-        font-size: 0;
+        font-size: inherit;
     }
 
 
     .nav-item {
-        justify-content: center;
+        justify-content: flex-start;
+
+        min-height: 43px;
+
+        padding:
+            10px 12px;
+
+        white-space: normal;
     }
 
 
     .nav-icon {
+        width: 22px;
+
+        flex-shrink: 0;
+
         font-size: 17px;
     }
 
 
-    .sidebar-profile > div:last-child {
-        display: none;
+    /* ==============================
+       PROFILE + LOGOUT
+       ============================== */
+
+    .sidebar-bottom {
+        margin-top: auto;
+
+        padding-top: 18px;
     }
 
 
     .sidebar-profile {
-        justify-content: center;
+        justify-content: flex-start;
+
+        min-width: 0;
     }
 
 
-    .main-content {
-        width:
-            calc(
-                100% - 76px
+    .sidebar-profile > div:last-child {
+        display: block;
+
+        min-width: 0;
+    }
+
+
+    .sidebar-profile strong,
+    .sidebar-profile small {
+        max-width: 170px;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+    }
+
+
+    .logout-button {
+        min-height: 42px;
+
+        margin-bottom:
+            max(
+                4px,
+                env(
+                    safe-area-inset-bottom
+                )
+            );
+    }
+
+
+    /* ==============================
+       HAMBURGER
+       ============================== */
+
+.mobile-menu-button {
+    position: absolute;
+
+    top:
+        max(
+            14px,
+            env(
+                safe-area-inset-top
+            )
+        );
+
+    left: 14px;
+
+    z-index: 10004;
+
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    line-height: 0;
+
+    background: #111b28;
+
+    border:
+        1px solid #2a3a4e;
+
+    border-radius: 11px;
+
+    box-shadow:
+        0 7px 20px
+        rgba(
+            0,
+            0,
+            0,
+            0.25
+        );
+}
+
+
+.mobile-menu-button span {
+    width: 18px;
+    height: 2px;
+
+    display: block;
+    flex-shrink: 0;
+
+    margin: 0;
+    padding: 0;
+
+    border-radius: 999px;
+
+    background: #e2e8f0;
+
+    transition:
+        transform
+        0.18s
+        ease,
+        opacity
+        0.18s
+        ease;
+}
+
+
+    .mobile-menu-button:hover {
+        transform: none;
+    }
+
+
+    .mobile-menu-button.is-open
+    span:nth-child(1) {
+        transform:
+            translateY(6px)
+            rotate(45deg);
+    }
+
+
+    .mobile-menu-button.is-open
+    span:nth-child(2) {
+        opacity: 0;
+    }
+
+
+    .mobile-menu-button.is-open
+    span:nth-child(3) {
+        transform:
+            translateY(-6px)
+            rotate(-45deg);
+    }
+
+
+    /* ==============================
+       DRAWER BACKDROP
+       ============================== */
+
+    .mobile-sidebar-backdrop {
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 10001;
+
+        display: block;
+
+        visibility: hidden;
+        opacity: 0;
+
+        background:
+            rgba(
+                2,
+                6,
+                12,
+                0.68
             );
 
-        margin-left: 76px;
+        backdrop-filter:
+            blur(2px);
+
+        transition:
+            opacity
+            0.2s
+            ease,
+            visibility
+            0.2s
+            ease;
     }
 
+
+    .mobile-sidebar-backdrop.is-visible {
+        visibility: visible;
+        opacity: 1;
+    }
+
+
+    body.mobile-sidebar-active {
+        overflow: hidden;
+    }
+
+
+    /* ==============================
+       DASHBOARD GRID
+       ============================== */
 
     .quick-grid {
         grid-template-columns:
             1fr;
     }
 
-}
-
-
 @media (
     max-width: 600px
 ) {
 
     .topbar {
+        min-height: 76px;
+        height: auto;
+
         padding:
-            0 18px;
+            12px
+            14px
+            12px
+            68px;
+
+        gap: 10px;
     }
+
+
+    .topbar > div:first-child {
+        min-width: 0;
+        flex: 1;
+    }
+
+
+    .topbar h2 {
+        max-width: 100%;
+
+        font-size: 16px;
+        line-height: 1.25;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    .topbar p {
+        max-width: 100%;
+
+        font-size: 11px;
+        line-height: 1.35;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    .dashboard-content {
+        padding:
+            18px;
+    }
+
+
+    .student-info-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .topbar-user span {
+        display: none;
+    }
+
+}
 
 
     .dashboard-content {
@@ -3298,11 +3614,11 @@ body {
 
     border-radius: 10px;
 
-    font-size: 15px;
+    font-size: 16px;
 
-    letter-spacing: 0.08em;
+    letter-spacing: 0.02em;
 
-    text-transform: uppercase;
+    text-transform: none;
 }
 
 
@@ -4381,10 +4697,9 @@ body {
     }
 
 
-    .landing-top-actions
-    .landing-login-link {
-        display: none;
-    }
+.landing-top-actions {
+    display: none;
+}
 
 
     .landing-hero {
@@ -5254,6 +5569,141 @@ body {
     gap: 12px;
 }
 
+.student-entry-form {
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 170px);
+}
+
+.student-entry-form
+.admin-form-field:nth-child(4) {
+    grid-column: 1 / 2;
+    width: 100%;
+    min-width: 0;
+}
+
+.student-entry-form
+.admin-form-field select {
+    width: 100%;
+    min-width: 100%;
+    max-width: none;
+
+    height: 44px;
+    min-height: 44px;
+
+    padding:
+        10px 40px 10px 12px;
+
+    box-sizing: border-box;
+
+    background-color: #0c1420;
+
+    border:
+        1px solid #29394d;
+
+    border-radius: 10px;
+
+    color: #e2e8f0;
+
+    font: inherit;
+    appearance: none;
+-webkit-appearance: none;
+}
+
+.student-class-select {
+    position: relative;
+    width: 100%;
+}
+
+.student-class-select select {
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+.student-class-select select:hover {
+    border-color: #334155;
+    background: #111c31;
+}
+
+.student-class-select select:focus {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.16);
+
+    background: #111c31;
+}
+
+.student-class-select:hover::after,
+.student-class-select:focus-within::after {
+    border-color: #93c5fd;
+}
+
+.student-class-select select {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.student-class-select::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    right: 16px;
+
+    width: 7px;
+    height: 7px;
+
+    border-right:
+        2px solid #718096;
+
+    border-bottom:
+        2px solid #718096;
+
+    transform:
+        translateY(-65%)
+        rotate(45deg);
+
+    pointer-events: none;
+}
+
+.student-entry-form
+.admin-form-field:nth-child(4) {
+    width: 100%;
+}
+
+.student-entry-form
+.admin-form-field:nth-child(4) select {
+    display: block;
+    width: 100%;
+}
+
+.student-entry-form
+.admin-form-field select:invalid {
+    color: #7186a5;
+}
+
+.student-entry-form
+.admin-form-field select option {
+    color: #e2e8f0;
+    background: #0c1420;
+}
+
+.student-submit-action {
+    grid-column: 2 / 3;
+    align-self: end;
+}
+
+.student-submit-action
+.admin-primary-button {
+    min-height: 44px;
+}
+
 
 .admin-form-field label {
     display: block;
@@ -6058,11 +6508,12 @@ body {
             115deg,
             #14375f,
             #10243d 55%,
-            #0e1825
+            #0e1825, 
         );
 
     border:
         1px solid #28517c;
+    position: relative;
 }
 
 
@@ -7020,9 +7471,6 @@ body {
     background: #162331;
 
     border-color: #365777;
-
-    transform:
-        translateY(-1px);
 }
 
 
@@ -7506,7 +7954,7 @@ textarea {
 
 .student-public-announcement-message {
     margin:
-        12px 0;
+        0px 0 12px;
 
     padding: 0;
 
@@ -8412,4 +8860,790 @@ margin-bottom: auto;
     width: auto !important;
 
     margin: 0 !important;
+}
+
+/* =========================================
+   AUTH ERROR MESSAGE
+   ========================================= */
+
+.auth-error {
+    color: #ff4242 !important;
+    text-align: center;
+}
+
+.auth-page #message,
+.auth-page #statusMessage,
+.auth-page .auth-message {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.auth-error {
+    color: #ff4242 !important;
+}
+
+#teacherRegisterCard #message,
+#teacherRegisterCard #statusMessage,
+#teacherRegisterCard .auth-message,
+#teacherRegisterCard .admin-form-message {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+}
+
+.feed-live-status {
+    position: relative;
+    top: 35px;
+
+margin-left: auto;
+flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 4px 7px;
+
+    border:
+        1px solid
+        rgba(239, 68, 68, 0.28);
+
+    border-radius: 999px;
+
+    background:
+        rgba(239, 68, 68, 0.08);
+
+    color: #f87171;
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+
+    user-select: none;
+}
+
+
+.feed-live-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #ef4444;
+
+    animation:
+        feedLivePulse
+        1.5s
+        infinite;
+}
+
+/* =========================================
+   ADMIN NOTIFICATION OVERLAY
+   ========================================= */
+
+.admin-notification-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(3, 8, 15, 0.72);
+
+    backdrop-filter:
+        blur(5px);
+}
+
+
+.admin-notification-panel {
+    position: relative;
+
+    width: 100%;
+    max-width: 720px;
+    max-height: 85vh;
+
+    padding: 26px;
+
+    overflow: hidden;
+
+    background: #0f1824;
+
+    border:
+        1px solid #2a3a4e;
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0, 0, 0, 0.42);
+}
+
+
+.admin-notification-panel
+.notification-popup-list {
+    max-height: 60vh;
+}
+
+
+@media (
+    max-width: 650px
+) {
+
+    .admin-notification-overlay {
+        padding: 14px;
+    }
+
+
+    .admin-notification-panel {
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+}
+
+/* FIX HOVER NOTIFICATION PANEL ADMIN */
+
+.admin-notification-panel
+.notification-popup-list
+.notification:hover {
+    transform: none !important;
+}
+
+/* =========================================
+   FIX AUTH INPUT TEXT SIZE
+   LOGIN + REGISTER GURU
+   ========================================= */
+
+.admin-auth-page .auth-field input,
+.admin-auth-page .auth-field input:focus,
+.admin-auth-page .auth-field input:active {
+    font-size: 16px !important;
+    line-height: 20px !important;
+
+    font-family: inherit !important;
+    font-weight: 400;
+
+    letter-spacing: normal !important;
+    text-transform: none !important;
+
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+
+.admin-auth-page
+.auth-field
+input::placeholder {
+    font-size: 16px !important;
+    line-height: 20px !important;
+
+    font-family: inherit !important;
+    font-weight: 400;
+
+    letter-spacing: normal !important;
+    text-transform: none !important;
+
+    opacity: 1;
+}
+
+/* =========================================
+   HOLD TO REVEAL PASSWORD
+   ========================================= */
+
+.password-hold-field {
+    position: relative;
+    width: 100%;
+}
+
+.password-hold-field input {
+    width: 100%;
+    padding-right: 48px !important;
+}
+
+.password-hold-button {
+    position: absolute;
+
+    top: 50%;
+    right: 10px;
+
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform:
+        translateY(-50%);
+
+    background:
+        transparent;
+
+    border: 0;
+
+    border-radius: 7px;
+
+    color: #8795a8;
+
+    font-size: 15px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    touch-action: none;
+}
+
+.password-hold-button:hover {
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    color: #cbd5e1;
+
+    transform:
+        translateY(-50%);
+
+    box-shadow: none;
+}
+
+.password-hold-button:active,
+.password-hold-button.is-revealing {
+    background:
+        rgba(59, 130, 246, 0.12);
+
+    color: #93c5fd;
+
+    transform:
+        translateY(-50%);
+}
+
+/* =========================================
+   STUDENT DASHBOARD ANNOUNCEMENT LIVE
+   ========================================= */
+
+.student-announcement-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+
+.student-announcement-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    margin-left: auto;
+
+    padding: 4px 7px;
+
+    border:
+        1px solid
+        rgba(239, 68, 68, 0.28);
+
+    border-radius: 999px;
+
+    background:
+        rgba(239, 68, 68, 0.08);
+
+    color: #ef4444;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    flex-shrink: 0;
+}
+
+
+.student-announcement-live-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #ef4444;
+
+    animation:
+        studentAnnouncementLivePulse
+        1.5s
+        infinite;
+}
+
+
+@keyframes studentAnnouncementLivePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+
+}
+
+/* =========================================
+   ADMIN MOBILE TOPBAR
+   ========================================= */
+
+@media (
+    max-width: 700px
+) {
+
+    .topbar.admin-topbar {
+        min-height: 92px;
+        height: auto;
+
+        align-items: center;
+
+        padding:
+            13px
+            12px
+            13px
+            68px;
+    }
+
+
+    .admin-topbar
+    > div:first-child {
+        min-width: 0;
+
+        flex: 1;
+    }
+
+
+    .admin-top-label {
+        font-size: 7px;
+
+        letter-spacing:
+            0.1em;
+    }
+
+
+    .admin-topbar h2 {
+        font-size: 15px;
+
+        line-height: 1.25;
+
+        white-space: normal;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    .admin-topbar p {
+        max-width: 100%;
+
+        font-size: 10px;
+        line-height: 1.35;
+
+        white-space: normal;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    .admin-topbar
+    .topbar-user {
+        flex-shrink: 0;
+    }
+
+
+    .admin-top-user-text {
+        display: none;
+    }
+
+
+    .admin-top-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+}
+
+/* =========================================
+   STUDENT FEED MOBILE TARGET
+   ========================================= */
+
+@media (
+    max-width: 600px
+) {
+
+    .feed-target-row {
+        display: grid;
+
+        grid-template-columns:
+            1fr
+            1fr;
+
+        gap: 8px;
+    }
+
+
+    .feed-target-row
+    .feed-field-label {
+        grid-column:
+            1 / -1;
+    }
+
+
+    .feed-target-row
+    .target-option {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+}
+
+/* =========================================
+   MOBILE NAV FINAL FIX
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    /*
+        ADMIN:
+        turunkan hamburger sedikit supaya
+        sejajar dengan area heading.
+    */
+    .admin-layout ~ .mobile-menu-button,
+    body:has(.admin-sidebar)
+    .mobile-menu-button {
+        top:
+            max(
+                25px,
+                env(safe-area-inset-top)
+            );
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    .mobile-menu-button.is-open {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+}
+
+/* =========================================
+   FINAL MOBILE UI CLEANUP
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    /* =====================================
+       1. CLASSROOM FEED
+       LIVE TETAP DI POJOK KANAN ATAS
+
+       Berlaku:
+       - Student Classroom Feed
+       - Admin / Teacher Classroom Feed
+       ===================================== */
+
+    .feed-intro {
+        position: relative;
+
+        display: block;
+
+        padding-right: 72px;
+    }
+
+
+    .feed-intro
+    .feed-live-status {
+        position: absolute;
+
+        top: 14px;
+        right: 14px;
+
+        margin: 0;
+
+        flex-shrink: 0;
+    }
+
+
+    /*
+        Hero Admin sedikit lebih besar,
+        jadi beri posisi yang nyaman.
+    */
+    .admin-feed-intro
+    .feed-live-status {
+        top: 16px;
+        right: 16px;
+    }
+
+
+    /* =====================================
+       2. OFFICIAL ANNOUNCEMENT ADMIN
+       REFRESH ICON + TEKS SATU BARIS
+       DAN DIPERKECIL
+       ===================================== */
+
+    .admin-announcement-list-section
+    .section-heading
+    .secondary-button {
+        width: auto;
+        min-width: 0;
+
+        display: inline-flex;
+
+        flex-direction: row;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 4px;
+
+        padding:
+            7px 9px;
+
+        font-size: 10px;
+        line-height: 1;
+
+        white-space: nowrap;
+
+        flex-shrink: 0;
+    }
+
+
+    /* =====================================
+       3. ADMIN POINTS
+       EMPTY STUDENT HARUS CENTER
+       ===================================== */
+
+    .admin-point-student-card
+    > .empty-state {
+        width: 100%;
+
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    .admin-point-student-card
+    > .empty-state
+    strong,
+    .admin-point-student-card
+    > .empty-state
+    span {
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    /* =====================================
+       4. ADMIN LOGIN
+       HAPUS PANEL DEKORASI MOBILE
+       ===================================== */
+
+    .admin-auth-features {
+        display: none;
+    }
+
+
+    /* =====================================
+       5. INDEX
+       HAPUS INFO DEKORATIF MOBILE
+       CLASSROOM FEED / NILAI & POIN /
+       ANNOUNCEMENT
+       ===================================== */
+
+    .landing-mini-info {
+        display: none;
+    }
+
+}
+
+/* =========================================
+   MOBILE POSITION FINAL FIX
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    /* =====================================
+       STUDENT CLASSROOM FEED
+       LIVE sejajar dengan tulisan CLASSROOM
+       ===================================== */
+
+    .feed-intro {
+        position: relative !important;
+    }
+
+    .feed-intro
+    .feed-live-status {
+        position: absolute !important;
+
+        top: 15px !important;
+        right: 14px !important;
+
+        margin: 0 !important;
+
+        transform: none !important;
+    }
+
+
+    /* =====================================
+       ADMIN CLASSROOM FEED
+       LIVE juga tetap di pojok atas
+       ===================================== */
+
+    .admin-feed-intro
+    .feed-live-status {
+        top: 16px !important;
+        right: 16px !important;
+
+        transform: none !important;
+    }
+
+
+    /* =====================================
+       OFFICIAL ANNOUNCEMENT ADMIN
+       REFRESH sejajar dengan judul
+       Announcement Terbit
+       ===================================== */
+
+    .admin-announcement-list-section
+    .section-heading {
+        align-items: flex-start !important;
+    }
+
+
+    .admin-announcement-list-section
+    .section-heading
+    .secondary-button {
+        align-self: flex-start !important;
+
+        margin-top: 0 !important;
+
+        position: relative;
+        top: -2px;
+
+        width: auto !important;
+        min-width: max-content !important;
+
+        padding: 7px 9px !important;
+
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        gap: 4px;
+
+        font-size: 10px !important;
+        line-height: 1 !important;
+
+        white-space: nowrap !important;
+
+        flex-shrink: 0;
+    }
+
+}
+
+/* =========================================
+   FINAL MOBILE FEED FIX
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    /* =====================================
+       1. ADMIN FEED TARGET
+       Target di atas,
+       Global + Kelas sejajar di bawah
+       ===================================== */
+
+    .admin-feed-composer
+    .feed-target-row {
+        display: grid !important;
+
+        grid-template-columns:
+            1fr
+            1fr !important;
+
+        gap: 8px !important;
+
+        width: 100%;
+    }
+
+
+    .admin-feed-composer
+    .feed-target-label {
+        grid-column:
+            1 / -1;
+
+        width: 100%;
+
+        margin: 0 0 2px;
+
+        font-size: 12px;
+    }
+
+
+    .admin-feed-composer
+    .target-option {
+        width: 100% !important;
+
+        min-width: 0 !important;
+
+        margin: 0 !important;
+
+        display: flex !important;
+
+        align-items: center;
+        justify-content: center;
+
+        padding:
+            8px 10px !important;
+    }
+
+
+    .admin-feed-composer
+    .target-option input {
+        flex-shrink: 0;
+    }
+
+
+    /* =====================================
+       2. STUDENT FEED LIVE
+       sejajar dengan CLASSROOM
+       ===================================== */
+
+.feed-intro:not(.admin-feed-intro)
+.feed-live-status {
+    position: absolute !important;
+
+    top: 8px !important;
+    right: 14px !important;
+
+    margin: 0 !important;
+
+    transform: none !important;
+}
+
 }

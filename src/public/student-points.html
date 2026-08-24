@@ -333,7 +333,8 @@
         </main>
 
     </div>
-
+<script src="/student-session.js"></script>
+<script src="/time.js"></script>
     <script>
 
         function goToProfile() {
@@ -553,7 +554,9 @@
                                         </strong>
 
                                         <span>
-                                            ${transaction.created_at}
+${formatDeviceDateTime(
+    transaction.created_at
+)}
                                         </span>
 
                                     </div>
@@ -676,6 +679,8 @@ function escapeHtml(
         loadPoints();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 

@@ -15,6 +15,7 @@
         rel="stylesheet"
         href="/styles.css"
     >
+    
 </head>
 
 
@@ -312,7 +313,7 @@
 
     </div>
 
-
+<script src="/time.js"></script>
 
     <script>
 
@@ -492,10 +493,13 @@
 
 
                     <td>
-                        ${escapeHtml(
-                            teacher.created_at ||
-                            "-"
-                        )}
+${escapeHtml(
+    teacher.created_at
+        ? formatDeviceDateTime(
+            teacher.created_at
+        )
+        : "-"
+)}
                     </td>
 
 
@@ -567,12 +571,42 @@ async function deleteTeacher(
 
     const confirmed =
         confirm(
-            `Yakin ingin menghapus akun ${teacherName}?`
+            `Yakin ingin menghapus akun ${teacherName}?\n\n` +
+            "Semua postingan, reply, announcement, mention, " +
+            "notification, dan data LMS yang dibuat akun ini " +
+            "akan ikut dihapus permanen."
         );
 
 
     if (!confirmed) {
         return;
+    }
+
+
+    const password =
+        prompt(
+            `Masukkan password akun ${teacherName} untuk menghapus akun secara permanen:`
+        );
+
+
+    /*
+        Cancel prompt.
+    */
+    if (password === null) {
+        return;
+    }
+
+
+    if (
+        password.trim().length === 0
+    ) {
+
+        alert(
+            "Password wajib diisi."
+        );
+
+        return;
+
     }
 
 
@@ -583,7 +617,17 @@ async function deleteTeacher(
                 `/api/admin/teachers/${teacherId}`,
                 {
                     method:
-                        "DELETE"
+                        "DELETE",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            password
+                        })
                 }
             );
 
@@ -604,12 +648,19 @@ async function deleteTeacher(
         }
 
 
+        alert(
+            data.message ||
+            "Akun guru berhasil dihapus beserta seluruh data terkait."
+        );
+
+
         await loadTeachers();
 
 
     } catch (error) {
 
         console.error(error);
+
 
         alert(
             "Tidak dapat terhubung ke server."
@@ -763,60 +814,107 @@ function escapeJsString(text) {
         }
 
 
-        async function regenerateCode() {
+ async function regenerateCode() {
 
-            const confirmed =
-                confirm(
-                    "Kode lama akan langsung hangus. Lanjutkan?"
-                );
-
-
-            if (!confirmed) {
-                return;
-            }
+    const confirmed =
+        confirm(
+            "Kode lama akan langsung hangus. Lanjutkan?"
+        );
 
 
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/admin/registration-code/regenerate",
-                        {
-                            method: "POST"
-                        }
-                    );
+    if (!confirmed) {
+        return;
+    }
 
 
-                const data =
-                    await response.json();
+    const codeBox =
+        document.getElementById(
+            "teacherCodeBox"
+        );
 
 
-                if (!data.success) {
+    /*
+        Feedback langsung saat proses generate.
+    */
+    codeBox.innerHTML = `
+        <div class="teacher-registration-card">
 
-                    alert(
+            <span class="teacher-code-label">
+                KODE REGISTRASI AKTIF
+            </span>
+
+            <strong class="teacher-registration-code">
+                ...
+            </strong>
+
+            <p>
+                Dibuat oleh...
+            </p>
+
+            <button
+                type="button"
+                class="admin-primary-button"
+                disabled
+            >
+                Memuat...
+            </button>
+
+        </div>
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/registration-code/regenerate",
+                {
+                    method: "POST"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            codeBox.innerHTML = `
+                <p class="admin-form-message">
+                    ${escapeHtml(
                         data.message ||
                         "Gagal membuat kode."
-                    );
-
-                    return;
-
-                }
+                    )}
+                </p>
+            `;
 
 
-                loadRegistrationCode();
-
-
-            } catch (error) {
-
-                console.error(error);
-
-                alert(
-                    "Tidak dapat terhubung ke server."
-                );
-
-            }
-
+            return;
         }
+
+
+        /*
+            Setelah server selesai,
+            ambil dan tampilkan kode terbaru.
+        */
+        await loadRegistrationCode();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        codeBox.innerHTML = `
+            <p class="admin-form-message">
+                Tidak dapat terhubung ke server.
+            </p>
+        `;
+
+    }
+
+}
 
 
         function escapeHtml(text) {
@@ -915,6 +1013,8 @@ function escapeJsString(text) {
         loadTeachers();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 

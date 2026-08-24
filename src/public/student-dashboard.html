@@ -372,33 +372,39 @@
 
                 <!-- ANNOUNCEMENT -->
 
-                <section class="announcement-section">
+ <section class="announcement-section">
 
-                    <div class="section-heading">
+    <div class="section-heading">
 
-                        <div>
+        <div>
 
-                            <h2>
-                                Announcement
-                            </h2>
+            <h2>
+                Announcement
+            </h2>
 
-                            <p>
-                                Informasi terbaru dari sekolah
-                            </p>
+            <p>
+                Informasi terbaru dari sekolah
+            </p>
 
-                        </div>
-
-                    </div>
+        </div>
 
 
-                    <div
-                        id="publicAnnouncementList"
-                        class="announcement-list"
-                    >
-                        Memuat announcement...
-                    </div>
+        <div class="student-announcement-live">
+            <span class="student-announcement-live-dot"></span>
+            <span>LIVE</span>
+        </div>
 
-                </section>
+    </div>
+
+
+    <div
+        id="publicAnnouncementList"
+        class="announcement-list"
+    >
+        Memuat announcement...
+    </div>
+
+</section>
 
 
             </div>
@@ -406,8 +412,8 @@
         </main>
 
     </div>
-
-
+<script src="/student-session.js"></script>
+<script src="/time.js"></script>
     <script>
 
         function goToProfile() {
@@ -466,6 +472,12 @@
         "publicAnnouncementList"
     );
 
+    let publicAnnouncementSignature =
+    "";
+
+let publicAnnouncementPollingTimer =
+    null;
+
 
         // Kalau belum login
         if (!studentId) {
@@ -510,16 +522,24 @@
         ).textContent =
             `Kode: ${studentLoginCode}`;
 
-            loadPublicAnnouncements();
+loadPublicAnnouncements();
+
+startPublicAnnouncementLive();
 
 // =====================================
 // LOAD PUBLIC ANNOUNCEMENT
 // =====================================
 
-async function loadPublicAnnouncements() {
+async function loadPublicAnnouncements(
+    showLoading = true
+) {
 
-    publicAnnouncementList.innerHTML =
-        "Memuat announcement...";
+    if (showLoading) {
+
+        publicAnnouncementList.innerHTML =
+            "Memuat announcement...";
+
+    }
 
 
     try {
@@ -536,16 +556,62 @@ async function loadPublicAnnouncements() {
 
         if (!data.success) {
 
-            publicAnnouncementList.innerHTML =
-                "Gagal mengambil announcement.";
+            if (showLoading) {
+
+                publicAnnouncementList.innerHTML =
+                    "Gagal mengambil announcement.";
+
+            }
 
             return;
 
         }
 
 
+        const announcements =
+            Array.isArray(
+                data.announcements
+            )
+                ? data.announcements
+                : [];
+
+
+        /*
+            Signature dipakai supaya DOM
+            hanya dirender ulang kalau
+            daftar Announcement berubah.
+        */
+        const newSignature =
+            announcements
+                .map(
+                    (announcement) =>
+                        [
+                            announcement.id,
+                            announcement.title,
+                            announcement.message,
+                            announcement.created_at
+                        ].join(":")
+                )
+                .join("|");
+
+
         if (
-            data.announcements.length === 0
+            !showLoading &&
+            newSignature ===
+                publicAnnouncementSignature
+        ) {
+
+            return;
+
+        }
+
+
+        publicAnnouncementSignature =
+            newSignature;
+
+
+        if (
+            announcements.length === 0
         ) {
 
             publicAnnouncementList.innerHTML = `
@@ -563,7 +629,7 @@ async function loadPublicAnnouncements() {
             "";
 
 
-        data.announcements.forEach(
+        announcements.forEach(
             (announcement) => {
 
                 const card =
@@ -593,12 +659,11 @@ async function loadPublicAnnouncements() {
                         )}
                     </h3>
 
-<div class="student-public-announcement-message">
-    ${escapeHtml(
-        announcement.message
-    )}
-</div>
-
+                    <div class="student-public-announcement-message">
+                        ${escapeHtml(
+                            announcement.message
+                        )}
+                    </div>
 
                     <small>
 
@@ -610,16 +675,23 @@ async function loadPublicAnnouncements() {
 
                         <br>
 
-                        ${announcement.created_at}
+                        ${escapeHtml(
+                            announcement.created_at
+                                ? formatDeviceDateTime(
+                                    announcement.created_at
+                                )
+                                : "-"
+                        )}
 
                     </small>
 
                 `;
 
 
-                publicAnnouncementList.appendChild(
-                    card
-                );
+                publicAnnouncementList
+                    .appendChild(
+                        card
+                    );
 
             }
         );
@@ -628,16 +700,111 @@ async function loadPublicAnnouncements() {
     } catch (error) {
 
         console.error(
+            "Live Announcement siswa gagal:",
             error
         );
 
 
-        publicAnnouncementList.innerHTML =
-            "Tidak dapat terhubung ke server.";
+        if (showLoading) {
+
+            publicAnnouncementList.innerHTML =
+                "Tidak dapat terhubung ke server.";
+
+        }
 
     }
 
 }
+
+function startPublicAnnouncementLive() {
+
+    if (
+        publicAnnouncementPollingTimer
+    ) {
+
+        return;
+
+    }
+
+
+    publicAnnouncementPollingTimer =
+        setInterval(
+            () => {
+
+                if (
+                    document.visibilityState !==
+                    "visible"
+                ) {
+
+                    return;
+
+                }
+
+
+                loadPublicAnnouncements(
+                    false
+                );
+
+            },
+            5000
+        );
+
+}
+
+
+function stopPublicAnnouncementLive() {
+
+    if (
+        !publicAnnouncementPollingTimer
+    ) {
+
+        return;
+
+    }
+
+
+    clearInterval(
+        publicAnnouncementPollingTimer
+    );
+
+
+    publicAnnouncementPollingTimer =
+        null;
+
+}
+
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            /*
+                Begitu siswa balik ke tab,
+                langsung cek perubahan.
+            */
+            loadPublicAnnouncements(
+                false
+            );
+
+            startPublicAnnouncementLive();
+
+        } else {
+
+            /*
+                Tidak perlu request
+                saat tab tidak terlihat.
+            */
+            stopPublicAnnouncementLive();
+
+        }
+
+    }
+);
 
 function escapeHtml(
     text
@@ -699,6 +866,7 @@ async function logout() {
 
     </script>
 
+<script src="/mobile-nav.js"></script>
 
 </body>
 

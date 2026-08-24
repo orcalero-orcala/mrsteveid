@@ -19,6 +19,61 @@
     href="/styles.css"
 >
 
+
+
+<style>
+/* =========================================
+   STUDENT CLASSROOM FEED - LIVE
+   ========================================= */
+
+.student-notification-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(3, 8, 15, 0.72);
+    backdrop-filter: blur(5px);
+}
+
+.student-notification-panel {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    max-height: 85vh;
+    padding: 26px;
+    overflow: hidden;
+    background: #0f1824;
+    border: 1px solid #2a3a4e;
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+}
+
+.student-notification-panel .notification-popup-list {
+    max-height: 60vh;
+    padding-top: 2px;
+}
+
+.student-notification-panel
+.notification-popup-list
+.notification:hover {
+    transform: none !important;
+}
+
+@media (max-width: 650px) {
+    .student-notification-overlay {
+        padding: 14px;
+    }
+
+    .student-notification-panel {
+        padding: 20px;
+        border-radius: 18px;
+    }
+}
+</style>
+
 </head>
 
 
@@ -218,39 +273,38 @@
                      PAGE INTRO
                 ========================== -->
 
-                <section class="feed-intro">
+ <section class="feed-intro">
 
-                    <div>
+    <div>
 
-                        <small class="eyebrow">
-                            CLASSROOM
-                        </small>
+        <small class="eyebrow">
+            CLASSROOM
+        </small>
 
-                        <h1>
-                            Classroom Feed
-                        </h1>
+        <h1>
+            Classroom Feed
+        </h1>
 
-                        <p>
-                            Bagikan informasi, berdiskusi,
-                            reply, dan mention teman atau guru.
-                        </p>
+        <p>
+            Bagikan informasi, berdiskusi,
+            reply, dan mention teman atau guru.
+        </p>
 
-                    </div>
+    </div>
 
 
-                    <div class="feed-user-info">
+    <div
+        id="feedLiveStatus"
+        class="feed-live-status"
+    >
+        <span class="feed-live-dot"></span>
 
-                        <strong id="studentName">
-                            Siswa
-                        </strong>
+        <span>
+            LIVE
+        </span>
+    </div>
 
-                        <span id="studentClass">
-                            Kelas
-                        </span>
-
-                    </div>
-
-                </section>
+</section>
 
 
                 <!-- =========================
@@ -375,30 +429,30 @@
 
                 <section class="feed-list-section">
 
-                    <div class="section-heading">
+<div class="section-heading">
 
-                        <div>
+    <div>
 
-                            <h2>
-                                Feed terbaru
-                            </h2>
+        <h2>
+            Feed terbaru
+        </h2>
 
-                            <p>
-                                Postingan kelas dan global
-                            </p>
+        <p>
+            Postingan kelas dan global
+        </p>
 
-                        </div>
+    </div>
 
 
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            onclick="refreshStudentAnnouncements()"
-                        >
-                            ↻ Refresh
-                        </button>
+    <button
+        type="button"
+        class="secondary-button"
+        onclick="hardRefreshStudentFeed()"
+    >
+        ↻ Refresh
+    </button>
 
-                    </div>
+</div>
 
 
                     <div
@@ -415,943 +469,74 @@
         </main>
 
     </div>
+
+    <div
+        id="studentNotificationOverlay"
+        class="student-notification-overlay"
+        style="display: none;"
+    >
+        <section class="student-notification-panel">
+
+            <button
+                type="button"
+                class="notification-close-button"
+                onclick="closeStudentNotifications()"
+                aria-label="Tutup notifikasi"
+            >
+                ×
+            </button>
+
+            <div class="notification-popup-header">
+
+                <small class="eyebrow">
+                    NOTIFICATIONS
+                </small>
+
+                <h1>
+                    Notifikasi
+                </h1>
+
+                <p>
+                    Mention, reply, dan aktivitas terbaru
+                    dari Classroom Feed.
+                </p>
+
+            </div>
+
+            <div
+                id="studentNotificationList"
+                class="notification-popup-list"
+            ></div>
+
+        </section>
+    </div>
+<script src="/student-session.js"></script>
+<script src="/time.js"></script>
     <script>
-
-        function goToProfile() {
-
-    window.location.href =
-        "/student-profile.html";
-
-}
-
-        function goToExamScores() {
-
-    window.location.href =
-        "/student-exam-scores.html";
-
-}
-
-        const studentAnnouncementMentionSuggestions =
-    document.getElementById(
-        "studentAnnouncementMentionSuggestions"
-    );
-
-    let studentAnnouncementMentions = [];
-let studentAnnouncementMentionUsers = [];
-let studentMentionLoadVersion = 0;
-
-        async function deleteStudentAnnouncement(
-    announcementId
-) {
-
-    const confirmDelete =
-        confirm(
-            "Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus."
-        );
-
-
-    if (!confirmDelete) {
-        return;
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/student/${studentId}/announcements/${announcementId}`,
-                {
-                    method:
-                        "DELETE"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.success) {
-
-            alert(
-                data.message ||
-                "Gagal menghapus announcement."
-            );
-
-            return;
-
-        }
-
-
-        loadAnnouncements();
-
-        loadNotificationCount();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Gagal menghapus announcement."
-        );
-
-    }
-
-}
-
-        function refreshStudentAnnouncements() {
-
-    loadAnnouncements();
-    loadNotificationCount();
-
-}
-
-async function loadStudentAnnouncementMentionUsers() {
-
-    const target =
-        document.querySelector(
-            'input[name="studentAnnouncementTarget"]:checked'
-        ).value;
-
-
-    const loadVersion =
-        ++studentMentionLoadVersion;
-
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/student/mention-list?target=${encodeURIComponent(target)}`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        /*
-            Kalau selama request berjalan user sudah
-            mengganti target, abaikan response lama.
-        */
-        if (
-            loadVersion !==
-            studentMentionLoadVersion
-        ) {
-
-            return;
-
-        }
-
-
-        const currentTarget =
-            document.querySelector(
-                'input[name="studentAnnouncementTarget"]:checked'
-            ).value;
-
-
-        if (currentTarget !== target) {
-
-            return;
-
-        }
-
-
-        if (!data.success) {
-
-            studentAnnouncementMentionUsers =
-                [];
-
-            return;
-
-        }
-
-
-        studentAnnouncementMentionUsers =
-            Array.isArray(data.users)
-                ? data.users
-                : [];
-
-
-    } catch (error) {
-
-        /*
-            Jangan sampai request lama yang gagal
-            mengosongkan hasil request terbaru.
-        */
-        if (
-            loadVersion !==
-            studentMentionLoadVersion
-        ) {
-
-            return;
-
-        }
-
-
-        console.error(
-            "Gagal load mention announcement:",
-            error
-        );
-
-
-        studentAnnouncementMentionUsers =
-            [];
-
-    }
-
-}
-
-        async function deleteStudentReply(
-    announcementId,
-    replyId
-) {
-
-    const confirmDelete =
-        confirm(
-            "Yakin ingin menghapus reply ini?"
-        );
-
-
-    if (!confirmDelete) {
-        return;
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/announcements/${announcementId}/replies/${replyId}`,
-                {
-                    method: "DELETE",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            studentId:
-                                Number(studentId)
-                        })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.success) {
-
-            alert(
-                data.message ||
-                "Gagal menghapus reply."
-            );
-
-            return;
-
-        }
-
-
-        loadReplies(
-            announcementId
-        );
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Gagal menghapus reply."
-        );
-
-    }
-
-
-    // Coba cari reply dulu
-    if (replyId) {
-
-        const reply =
-            document.getElementById(
-                `reply-${replyId}`
-            );
-
-        if (reply) {
-
-            reply.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-
-            reply.style.outline =
-                "2px solid #2563eb";
-
-            reply.style.outlineOffset =
-                "4px";
-
-            reply.style.borderRadius =
-                "6px";
-
-
-            setTimeout(() => {
-
-                reply.style.outline = "";
-                reply.style.outlineOffset = "";
-                reply.style.borderRadius = "";
-
-            }, 3000);
-
-
-            return;
-
-        }
-
-    }
-
-}
-
-        async function loadNotificationCount() {
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/student/${studentId}/notifications`
-            );
-
-        const data =
-            await response.json();
-
-        if (!data.success) {
-            return;
-        }
-
-        const badge =
-            document.getElementById(
-                "notificationBadge"
-            );
-
-        if (data.unreadCount > 0) {
-
-badge.textContent =
-    data.unreadCount;
-
-        } else {
-
-            badge.textContent =
-                "";
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Gagal mengambil notifikasi:",
-            error
-        );
-
-    }
-
-}
-
-        function goToNotifications() {
-    window.location.href =
-        "/student-notifications.html";
-}
-
-function goToDashboard() {
-
-    window.location.href =
-        "/student-dashboard.html";
-
-}
-
-
-function goToPoints() {
-
-    window.location.href =
-        "/student-points.html";
-
-}
-
-
-async function logout() {
-
-    try {
-
-        await fetch(
-            "/api/logout",
-            {
-                method: "POST"
-            }
-        );
-
-    } catch (error) {
-
-        console.error(error);
-
-    }
-
-
-    localStorage.removeItem(
-        "studentId"
-    );
-
-    localStorage.removeItem(
-        "studentName"
-    );
-
-    localStorage.removeItem(
-        "studentClass"
-    );
-
-    localStorage.removeItem(
-        "studentLoginCode"
-    );
-
-
-    window.location.href =
-        "/student-login.html";
-}
-
-function formatMessage(
-    text,
-    mentions = []
-) {
-
-    let safeText =
-        escapeHtml(text);
-
-
-    if (!Array.isArray(mentions)) {
-        return safeText;
-    }
-
-
-    mentions.forEach(
-        (mention) => {
-
-            if (
-                !mention ||
-                !mention.name
-            ) {
-                return;
-            }
-
-
-            const mentionText =
-                `@${escapeHtml(
-                    mention.name
-                )}`;
-
-
-            safeText =
-                safeText.replace(
-                    mentionText,
-                    `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
-                );
-
-        }
-    );
-
-
-    return safeText;
-}
-
-function scrollToMention() {
-
-    const announcementId =
-        sessionStorage.getItem(
-            "notificationAnnouncementId"
-        );
-
-    const replyId =
-        sessionStorage.getItem(
-            "notificationReplyId"
-        );
-
-
-    if (!announcementId) {
-        return false;
-    }
-
-
-    let target = null;
-
-
-    // Kalau notif menunjuk reply,
-    // WAJIB tunggu reply tersebut tersedia.
-    if (replyId) {
-
-        target =
-            document.getElementById(
-                `reply-${replyId}`
-            );
-
-        if (!target) {
-            return false;
-        }
-
-    } else {
-
-        // Kalau notif berasal dari post langsung
-        target =
-            document.getElementById(
-                `announcement-${announcementId}`
-            );
-
-        if (!target) {
-            return false;
-        }
-
-    }
-
-
-    target.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-
-
-    // Highlight hanya outline.
-    // Jangan ubah background asli card.
-    target.style.outline =
-        "3px solid #2563eb";
-
-    target.style.outlineOffset =
-        "4px";
-
-
-    sessionStorage.removeItem(
-        "notificationAnnouncementId"
-    );
-
-    sessionStorage.removeItem(
-        "notificationReplyId"
-    );
-
-
-    const clearHighlight = () => {
-
-        target.style.outline = "";
-
-        target.style.outlineOffset = "";
-
-        document.removeEventListener(
-            "click",
-            clearHighlight
-        );
-
-    };
-
-
-    setTimeout(
-        () => {
-
-            document.addEventListener(
-                "click",
-                clearHighlight
-            );
-
-        },
-        200
-    );
-
-
-    setTimeout(
-        clearHighlight,
-        5000
-    );
-
-
-    return true;
-}
-
-        function insertMention(
-    input,
-    user
-) {
-
-    const value =
-        input.value;
-
-
-    const cursorPosition =
-        input.selectionStart;
-
-
-    const textBeforeCursor =
-        value.substring(
-            0,
-            cursorPosition
-        );
-
-
-    const textAfterCursor =
-        value.substring(
-            cursorPosition
-        );
-
-
-    const mentionStart =
-        textBeforeCursor
-            .lastIndexOf("@");
-
-
-    if (mentionStart === -1) {
-
-        return;
-
-    }
-
-
-    const beforeMention =
-        value.substring(
-            0,
-            mentionStart
-        );
-
-
-    const mentionText =
-        `@${user.name} `;
-
-        const form =
-    input.closest(
-        ".reply-form"
-    );
-
-
-if (!form.selectedMentions) {
-
-    form.selectedMentions = [];
-
-}
-
-
-// Hindari mention user yang sama dua kali
-const alreadySelected =
-    form.selectedMentions.some(
-        (mention) =>
-            mention.id === user.id &&
-            mention.type === user.type
-    );
-
-
-if (!alreadySelected) {
-
-    form.selectedMentions.push({
-
-        id:
-            user.id,
-
-        type:
-            user.type,
-
-        name:
-            user.name
-
-    });
-
-}
-
-
-    input.value =
-        beforeMention +
-        mentionText +
-        textAfterCursor;
-
-
-    const newCursorPosition =
-        (
-            beforeMention +
-            mentionText
-        ).length;
-
-
-    input.focus();
-
-
-    input.setSelectionRange(
-        newCursorPosition,
-        newCursorPosition
-    );
-
-}
-
-        function setupMentionAutocomplete() {
-
-    document
-        .querySelectorAll(".reply-input")
-        .forEach((input) => {
-
-            const form =
-                input.closest(".reply-form");
-
-                const announcementId =
-    form.dataset.id;
-
-form.mentionUsers = [];
-
-loadMentionUsers(
-    announcementId
-).then((users) => {
-
-    form.mentionUsers =
-        users;
-
-});
-
-            const suggestionBox =
-                form.querySelector(
-                    ".mention-suggestions"
-                );
-
-
-            input.addEventListener(
-                "input",
-                () => {
-
-                    const value =
-                        input.value;
-
-                    const cursorPosition =
-                        input.selectionStart;
-
-
-                    const textBeforeCursor =
-                        value.substring(
-                            0,
-                            cursorPosition
-                        );
-
-
-                    const mentionMatch =
-                        textBeforeCursor.match(
-                            /@([^@]*)$/
-                        );
-
-
-                    if (!mentionMatch) {
-
-                        suggestionBox.style.display =
-                            "none";
-
-                        suggestionBox.innerHTML =
-                            "";
-
-                        return;
-
-                    }
-
-
-                    const searchText =
-                        mentionMatch[1]
-                            .trim()
-                            .toLowerCase();
-
-
-const filteredUsers =
-    [...(form.mentionUsers || [])]
-        .sort(
-            (a, b) =>
-                a.name.localeCompare(
-                    b.name,
-                    "id",
-                    {
-                        sensitivity: "base"
-                    }
-                )
-        )
-        .filter(
-            (user) =>
-                user.name
-                    .toLowerCase()
-                    .includes(
-                        searchText
-                    )
-        );
-
-
-                    if (
-                        filteredUsers.length === 0
-                    ) {
-
-                        suggestionBox.style.display =
-                            "none";
-
-                        suggestionBox.innerHTML =
-                            "";
-
-                        return;
-
-                    }
-
-
-                    suggestionBox.innerHTML =
-                        "";
-
-
-                    filteredUsers.forEach(
-                        (user) => {
-
-                            const button =
-                                document.createElement(
-                                    "button"
-                                );
-
-
-                            button.type =
-                                "button";
-
-
-                            button.style.display =
-                                "block";
-
-
-                            button.style.width =
-                                "100%";
-
-
-                            button.style.textAlign =
-                                "left";
-
-
-                            let detail = "";
-
-
-                            if (
-                                user.type ===
-                                "student"
-                            ) {
-
-                                detail =
-                                    `Student — ${user.className}`;
-
-                            } else {
-
-                                detail =
-                                    user.role;
-
-                            }
-
-
-                            button.textContent =
-                                `${user.name} (${detail})`;
-
-
-                            button.addEventListener(
-                                "click",
-                                () => {
-
-                                    insertMention(
-                                        input,
-                                        user
-                                    );
-
-
-                                    suggestionBox
-                                        .style
-                                        .display =
-                                        "none";
-
-
-                                    suggestionBox
-                                        .innerHTML =
-                                        "";
-
-                                }
-                            );
-
-
-                            suggestionBox
-                                .appendChild(
-                                    button
-                                );
-
-                        }
-                    );
-
-
-                    suggestionBox.style.display =
-                        "block";
-
-                }
-            );
-
-        });
-
-}
-
-        let mentionUsers = [];
-
-
-async function loadMentionUsers(
-    announcementId
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/mentions/users?announcementId=${announcementId}`
-            );
-
-        const data =
-            await response.json();
-
-        if (data.success) {
-            return data.users;
-        }
-
-        return [];
-
-    } catch (error) {
-
-        console.error(
-            "Gagal load mention users:",
-            error
-        );
-
-        return [];
-
-    }
-
-}
-
 
         // =====================================
         // DATA SISWA
         // =====================================
 
         const studentId =
-            localStorage.getItem(
-                "studentId"
+            Number(
+                localStorage.getItem(
+                    "studentId"
+                )
             );
-
 
         const studentName =
             localStorage.getItem(
                 "studentName"
-            );
-
+            ) || "Siswa";
 
         const studentClass =
             localStorage.getItem(
                 "studentClass"
-            );
+            ) || "";
 
 
-        // =====================================
-        // CEK LOGIN
-        // =====================================
-
-        if (!studentId) {
+        if (!Number.isInteger(studentId)) {
 
             window.location.href =
                 "/student-login.html";
@@ -1360,432 +545,1555 @@ async function loadMentionUsers(
 
 
         document.getElementById(
-            "studentName"
+            "sidebarStudentName"
         ).textContent =
             studentName;
 
 
         document.getElementById(
-            "studentClass"
+            "sidebarStudentClass"
         ).textContent =
-            `Kelas: ${studentClass}`;
+            studentClass || "Siswa";
 
+
+        document.getElementById(
+            "topStudentName"
+        ).textContent =
+            studentName;
+
+
+        // =====================================
+        // ELEMENT
+        // =====================================
+
+        const announcementList =
             document.getElementById(
-    "sidebarStudentName"
-).textContent =
-    studentName;
+                "announcementList"
+            );
 
+        const studentAnnouncementForm =
+            document.getElementById(
+                "studentAnnouncementForm"
+            );
 
-document.getElementById(
-    "sidebarStudentClass"
-).textContent =
-    studentClass;
+        const studentAnnouncementMessage =
+            document.getElementById(
+                "studentAnnouncementMessage"
+            );
 
+        const studentAnnouncementStatus =
+            document.getElementById(
+                "studentAnnouncementStatus"
+            );
 
-document.getElementById(
-    "topStudentName"
-).textContent =
-    studentName;
-
-// =====================================
-// SISWA BUAT ANNOUNCEMENT
-// =====================================
-
-const studentAnnouncementForm =
-    document.getElementById(
-        "studentAnnouncementForm"
-    );
-
-const studentAnnouncementMessage =
-    document.getElementById(
-        "studentAnnouncementMessage"
-    );
-
-const studentAnnouncementStatus =
-    document.getElementById(
-        "studentAnnouncementStatus"
-    );
-
-    studentAnnouncementMessage.addEventListener(
-    "input",
-    () => {
-
-        const value =
-            studentAnnouncementMessage.value;
-
-        const cursorPosition =
-            studentAnnouncementMessage.selectionStart;
-
-        const textBeforeCursor =
-            value.substring(
-                0,
-                cursorPosition
+        const studentAnnouncementMentionSuggestions =
+            document.getElementById(
+                "studentAnnouncementMentionSuggestions"
             );
 
 
-        const mentionMatch =
-            textBeforeCursor.match(
-                /@([^@]*)$/
-            );
+        // =====================================
+        // STATE LIVE
+        // =====================================
+
+        let studentAnnouncementMentions = [];
+
+        let studentAnnouncementMentionUsers = [];
+
+        let studentMentionLoadVersion = 0;
+
+        let latestAnnouncementId = 0;
+
+        let latestReplyId = 0;
+
+        let studentLivePollingTimer = null;
 
 
-        if (!mentionMatch) {
+        // =====================================
+        // NAVIGATION
+        // =====================================
 
-            studentAnnouncementMentionSuggestions.style.display =
-                "none";
+        function goToProfile() {
 
-            studentAnnouncementMentionSuggestions.innerHTML =
-                "";
-
-            return;
+            window.location.href =
+                "/student-profile.html";
 
         }
 
 
-        const searchText =
-            mentionMatch[1]
-                .trim()
-                .toLowerCase();
+        function goToExamScores() {
+
+            window.location.href =
+                "/student-exam-scores.html";
+
+        }
 
 
-const filteredUsers =
-    [...studentAnnouncementMentionUsers]
-        .sort(
-            (a, b) =>
-                a.name.localeCompare(
-                    b.name,
-                    "id",
+        function goToDashboard() {
+
+            window.location.href =
+                "/student-dashboard.html";
+
+        }
+
+
+        function goToPoints() {
+
+            window.location.href =
+                "/student-points.html";
+
+        }
+
+
+        async function logout() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
                     {
-                        sensitivity: "base"
-                    }
-                )
-        )
-        .filter(
-            (user) =>
-                user.name
-                    .toLowerCase()
-                    .includes(
-                        searchText
-                    )
-        );
-
-
-        if (
-            filteredUsers.length === 0
-        ) {
-
-            studentAnnouncementMentionSuggestions.style.display =
-                "none";
-
-            studentAnnouncementMentionSuggestions.innerHTML =
-                "";
-
-            return;
-
-        }
-
-
-        studentAnnouncementMentionSuggestions.innerHTML =
-            "";
-
-
-        filteredUsers.forEach(
-            (user) => {
-
-                const button =
-                    document.createElement(
-                        "button"
-                    );
-
-                button.type =
-                    "button";
-
-                button.style.display =
-                    "block";
-
-                button.style.width =
-                    "100%";
-
-                button.style.textAlign =
-                    "left";
-
-
-                const detail =
-                    user.type === "student"
-                        ? `Student — ${user.className}`
-                        : user.role;
-
-
-                button.textContent =
-                    `${user.name} (${detail})`;
-
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        const value =
-                            studentAnnouncementMessage.value;
-
-                        const cursorPosition =
-                            studentAnnouncementMessage.selectionStart;
-
-                        const textBeforeCursor =
-                            value.substring(
-                                0,
-                                cursorPosition
-                            );
-
-                        const textAfterCursor =
-                            value.substring(
-                                cursorPosition
-                            );
-
-                        const mentionStart =
-                            textBeforeCursor.lastIndexOf(
-                                "@"
-                            );
-
-
-                        const beforeMention =
-                            value.substring(
-                                0,
-                                mentionStart
-                            );
-
-
-                        const mentionText =
-                            `@${user.name} `;
-
-
-                        studentAnnouncementMessage.value =
-                            beforeMention +
-                            mentionText +
-                            textAfterCursor;
-
-
-                        const alreadySelected =
-                            studentAnnouncementMentions.some(
-                                (mention) =>
-                                    mention.id === user.id &&
-                                    mention.type === user.type
-                            );
-
-
-                        if (!alreadySelected) {
-
-                            studentAnnouncementMentions.push({
-                                id:
-                                    user.id,
-
-                                type:
-                                    user.type,
-
-                                name:
-                                    user.name
-                            });
-
-                        }
-
-
-                        studentAnnouncementMentionSuggestions.style.display =
-                            "none";
-
-                        studentAnnouncementMentionSuggestions.innerHTML =
-                            "";
-
+                        method: "POST"
                     }
                 );
 
+            } catch (error) {
 
-                studentAnnouncementMentionSuggestions.appendChild(
-                    button
-                );
+                console.error(error);
 
             }
-        );
 
 
-        studentAnnouncementMentionSuggestions.style.display =
-            "block";
+            localStorage.removeItem(
+                "studentId"
+            );
 
-    }
-);
+            localStorage.removeItem(
+                "studentName"
+            );
 
-studentAnnouncementForm.addEventListener(
-    "submit",
-    async (event) => {
+            localStorage.removeItem(
+                "studentClass"
+            );
 
-        event.preventDefault();
-
-
-        const message =
-            studentAnnouncementMessage
-                .value
-                .trim();
+            localStorage.removeItem(
+                "studentLoginCode"
+            );
 
 
-        const target =
-            document.querySelector(
-                'input[name="studentAnnouncementTarget"]:checked'
-            ).value;
-
-
-        if (!message) {
-
-            studentAnnouncementStatus.textContent =
-                "Pesan wajib diisi.";
-
-            return;
+            window.location.href =
+                "/student-login.html";
 
         }
 
 
-        studentAnnouncementStatus.textContent =
-            "Membuat announcement...";
+        // =====================================
+        // UTIL
+        // =====================================
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                String(text ?? "");
+
+            return div.innerHTML;
+
+        }
 
 
-        try {
+        function formatMessage(
+            text,
+            mentions = []
+        ) {
 
-            const response =
-                await fetch(
-                    `/api/student/${studentId}/announcements`,
-                    {
-                        method: "POST",
+            let safeText =
+                escapeHtml(text);
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
 
-                        body:
-                            JSON.stringify({
-                                message,
-                                target,
-                                mentions:
-                                    studentAnnouncementMentions
-                            })
+            if (!Array.isArray(mentions)) {
+
+                return safeText;
+
+            }
+
+
+            mentions.forEach(
+                (mention) => {
+
+                    if (
+                        !mention ||
+                        !mention.name
+                    ) {
+
+                        return;
+
                     }
+
+
+                    const mentionText =
+                        `@${escapeHtml(
+                            mention.name
+                        )}`;
+
+
+                    safeText =
+                        safeText.replace(
+                            mentionText,
+                            `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
+                        );
+
+                }
+            );
+
+
+            return safeText;
+
+        }
+
+
+        function removeAnnouncementEmptyState() {
+
+            const empty =
+                announcementList.querySelector(
+                    ".student-feed-empty"
                 );
 
 
-            const data =
-                await response.json();
+            if (empty) {
+
+                empty.remove();
+
+            }
+
+        }
 
 
-            if (!data.success) {
+        function ensureAnnouncementEmptyState() {
 
-                studentAnnouncementStatus.textContent =
-                    data.message ||
-                    "Gagal membuat announcement.";
+            if (
+                announcementList.querySelector(
+                    '[id^="announcement-"]'
+                )
+            ) {
 
                 return;
 
             }
 
 
-            studentAnnouncementStatus.textContent =
-    "Announcement berhasil dibuat.";
-
-studentAnnouncementMessage.value =
-    "";
-
-studentAnnouncementMentions =
-    [];
-
-studentAnnouncementMentionSuggestions.style.display =
-    "none";
-
-studentAnnouncementMentionSuggestions.innerHTML =
-    "";
-
-document.querySelector(
-    'input[name="studentAnnouncementTarget"][value="class"]'
-).checked = true;
-
-loadStudentAnnouncementMentionUsers();
-
-loadAnnouncements();
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            studentAnnouncementStatus.textContent =
-                "Tidak dapat terhubung ke server.";
-
-        }
-
-    }
-);
-
-
-async function loadAnnouncements() {
-
-    const list =
-        document.getElementById(
-            "announcementList"
-        );
-
-
-    list.innerHTML =
-        "Memuat announcement...";
-
-
-    try {
-
-        const response =
-            await fetch(
-                `/api/student/${studentId}/announcements`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.success) {
-
-            list.innerHTML = `
-                <p>
-                    ${escapeHtml(
-                        data.message ||
-                        "Gagal mengambil announcement."
-                    )}
-                </p>
-            `;
-
-            return;
-
-        }
-
-
-        if (
-            data.announcements.length === 0
-        ) {
-
-            list.innerHTML = `
-                <p>
+            announcementList.innerHTML = `
+                <p class="student-feed-empty">
                     Belum ada announcement.
                 </p>
             `;
 
-            return;
+        }
+
+
+        function ensureReplyEmptyState(
+            container
+        ) {
+
+            if (!container) {
+
+                return;
+
+            }
+
+
+            if (
+                container.querySelector(
+                    ".reply-item"
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            container.innerHTML = `
+                <small>
+                    Belum ada reply.
+                </small>
+            `;
 
         }
 
 
-        list.innerHTML = "";
+        // =====================================
+        // NOTIFICATION BADGE
+        // =====================================
+
+        async function loadNotificationCount() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/notifications`
+                    );
 
 
-        // =================================
-        // SETIAP ANNOUNCEMENT
-        // =================================
+                const data =
+                    await response.json();
 
-        for (
-            const announcement
-            of data.announcements
+
+                if (!data.success) {
+
+                    return;
+
+                }
+
+
+                const badge =
+                    document.getElementById(
+                        "notificationBadge"
+                    );
+
+
+                badge.textContent =
+                    Number(
+                        data.unreadCount
+                    ) > 0
+                        ? String(
+                            data.unreadCount
+                        )
+                        : "";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal mengambil notifikasi:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // NOTIFICATION OVERLAY
+        // =====================================
+
+        function goToNotifications() {
+
+            const overlay =
+                document.getElementById(
+                    "studentNotificationOverlay"
+                );
+
+
+            overlay.style.display =
+                "flex";
+
+
+            document.body.style.overflow =
+                "hidden";
+
+
+            loadStudentNotificationPanel();
+
+        }
+
+
+        function closeStudentNotifications() {
+
+            const overlay =
+                document.getElementById(
+                    "studentNotificationOverlay"
+                );
+
+
+            overlay.style.display =
+                "none";
+
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+
+        document.addEventListener(
+            "click",
+            (event) => {
+
+                const overlay =
+                    document.getElementById(
+                        "studentNotificationOverlay"
+                    );
+
+
+                if (
+                    event.target === overlay
+                ) {
+
+                    closeStudentNotifications();
+
+                }
+
+            }
+        );
+
+
+        function createStudentNotificationItem(
+            notification
+        ) {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.id =
+                `notification-${notification.id}`;
+
+            item.className =
+                "notification";
+
+
+            if (
+                Number(
+                    notification.is_read
+                ) === 0
+            ) {
+
+                item.classList.add(
+                    "unread"
+                );
+
+            }
+
+
+            item.innerHTML = `
+
+                ${
+                    Number(
+                        notification.is_read
+                    ) === 0
+                        ? `
+                            <span
+                                class="notification-unread-dot"
+                                aria-label="Belum dibaca"
+                            ></span>
+                        `
+                        : ""
+                }
+
+
+                <div class="notification-content">
+
+                    <p>
+                        ${escapeHtml(
+                            notification.message
+                        )}
+                    </p>
+
+                    <span class="notification-time">
+${formatDeviceDateTime(
+    notification.created_at
+)}
+                    </span>
+
+                </div>
+
+
+                <span class="notification-arrow">
+                    →
+                </span>
+
+            `;
+
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    openStudentNotification(
+                        notification,
+                        item
+                    );
+
+                }
+            );
+
+
+            return item;
+
+        }
+
+
+        async function loadStudentNotificationPanel() {
+
+            const container =
+                document.getElementById(
+                    "studentNotificationList"
+                );
+
+
+            container.innerHTML =
+                "";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/notifications`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    container.innerHTML =
+                        "Gagal mengambil notifikasi.";
+
+                    return;
+
+                }
+
+
+                if (
+                    !Array.isArray(
+                        data.notifications
+                    ) ||
+                    data.notifications.length ===
+                        0
+                ) {
+
+                    container.innerHTML = `
+                        <div class="empty-state">
+
+                            <strong>
+                                Belum ada notifikasi
+                            </strong>
+
+                            <span>
+                                Aktivitas baru akan muncul di sini.
+                            </span>
+
+                        </div>
+                    `;
+
+                    return;
+
+                }
+
+
+                data.notifications.forEach(
+                    (notification) => {
+
+                        container.appendChild(
+                            createStudentNotificationItem(
+                                notification
+                            )
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal mengambil notification:",
+                    error
+                );
+
+
+                container.innerHTML =
+                    "Terjadi kesalahan saat mengambil notifikasi.";
+
+            }
+
+        }
+
+
+        async function openStudentNotification(
+            notification,
+            item
+        ) {
+
+            const wasUnread =
+                item.classList.contains(
+                    "unread"
+                );
+
+
+            sessionStorage.setItem(
+                "notificationAnnouncementId",
+                String(
+                    notification.announcement_id ||
+                    ""
+                )
+            );
+
+
+            sessionStorage.setItem(
+                "notificationReplyId",
+                String(
+                    notification.reply_id ||
+                    ""
+                )
+            );
+
+
+            closeStudentNotifications();
+
+
+            if (wasUnread) {
+
+                const badge =
+                    document.getElementById(
+                        "notificationBadge"
+                    );
+
+
+                const currentCount =
+                    Number(
+                        badge.textContent || 0
+                    );
+
+
+                const newCount =
+                    Math.max(
+                        0,
+                        currentCount - 1
+                    );
+
+
+                badge.textContent =
+                    newCount > 0
+                        ? String(newCount)
+                        : "";
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/notifications/${notification.id}/read`,
+                        {
+                            method:
+                                "PATCH"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    console.error(
+                        "Gagal menandai notification:",
+                        data.message
+                    );
+
+
+                    loadNotificationCount();
+
+                    return;
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal menandai notification:",
+                    error
+                );
+
+
+                loadNotificationCount();
+
+                return;
+
+            }
+
+
+            await runStudentLiveSync();
+
+
+            setTimeout(
+                () => {
+
+                    scrollToMention();
+
+                },
+                50
+            );
+
+        }
+
+
+        function scrollToMention() {
+
+            const announcementId =
+                sessionStorage.getItem(
+                    "notificationAnnouncementId"
+                );
+
+            const replyId =
+                sessionStorage.getItem(
+                    "notificationReplyId"
+                );
+
+
+            if (!announcementId) {
+
+                return false;
+
+            }
+
+
+            let target = null;
+
+
+            if (replyId) {
+
+                target =
+                    document.getElementById(
+                        `reply-${replyId}`
+                    );
+
+
+                if (!target) {
+
+                    return false;
+
+                }
+
+
+            } else {
+
+                target =
+                    document.getElementById(
+                        `announcement-${announcementId}`
+                    );
+
+
+                if (!target) {
+
+                    return false;
+
+                }
+
+            }
+
+
+            target.scrollIntoView({
+                behavior:
+                    "smooth",
+                block:
+                    "center"
+            });
+
+
+            target.style.outline =
+                "3px solid #2563eb";
+
+            target.style.outlineOffset =
+                "4px";
+
+
+            sessionStorage.removeItem(
+                "notificationAnnouncementId"
+            );
+
+            sessionStorage.removeItem(
+                "notificationReplyId"
+            );
+
+
+            const clearHighlight = () => {
+
+                target.style.outline =
+                    "";
+
+                target.style.outlineOffset =
+                    "";
+
+                document.removeEventListener(
+                    "click",
+                    clearHighlight
+                );
+
+            };
+
+
+            setTimeout(
+                () => {
+
+                    document.addEventListener(
+                        "click",
+                        clearHighlight
+                    );
+
+                },
+                200
+            );
+
+
+            setTimeout(
+                clearHighlight,
+                5000
+            );
+
+
+            return true;
+
+        }
+
+
+        // =====================================
+        // MENTION POST
+        // =====================================
+
+        async function loadStudentAnnouncementMentionUsers() {
+
+            const target =
+                document.querySelector(
+                    'input[name="studentAnnouncementTarget"]:checked'
+                ).value;
+
+
+            const loadVersion =
+                ++studentMentionLoadVersion;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/mention-list?target=${encodeURIComponent(target)}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    loadVersion !==
+                    studentMentionLoadVersion
+                ) {
+
+                    return;
+
+                }
+
+
+                const currentTarget =
+                    document.querySelector(
+                        'input[name="studentAnnouncementTarget"]:checked'
+                    ).value;
+
+
+                if (
+                    currentTarget !==
+                    target
+                ) {
+
+                    return;
+
+                }
+
+
+                if (!data.success) {
+
+                    studentAnnouncementMentionUsers =
+                        [];
+
+                    return;
+
+                }
+
+
+                studentAnnouncementMentionUsers =
+                    Array.isArray(
+                        data.users
+                    )
+                        ? data.users
+                        : [];
+
+
+            } catch (error) {
+
+                if (
+                    loadVersion !==
+                    studentMentionLoadVersion
+                ) {
+
+                    return;
+
+                }
+
+
+                console.error(
+                    "Gagal load mention announcement:",
+                    error
+                );
+
+
+                studentAnnouncementMentionUsers =
+                    [];
+
+            }
+
+        }
+
+
+        studentAnnouncementMessage.addEventListener(
+            "input",
+            () => {
+
+                const value =
+                    studentAnnouncementMessage.value;
+
+                const cursorPosition =
+                    studentAnnouncementMessage.selectionStart;
+
+                const textBeforeCursor =
+                    value.substring(
+                        0,
+                        cursorPosition
+                    );
+
+                const mentionMatch =
+                    textBeforeCursor.match(
+                        /@([^@]*)$/
+                    );
+
+
+                if (!mentionMatch) {
+
+                    studentAnnouncementMentionSuggestions.style.display =
+                        "none";
+
+                    studentAnnouncementMentionSuggestions.innerHTML =
+                        "";
+
+                    return;
+
+                }
+
+
+                const searchText =
+                    mentionMatch[1]
+                        .trim()
+                        .toLowerCase();
+
+
+                const filteredUsers =
+                    [
+                        ...studentAnnouncementMentionUsers
+                    ]
+                        .sort(
+                            (a, b) =>
+                                a.name.localeCompare(
+                                    b.name,
+                                    "id",
+                                    {
+                                        sensitivity:
+                                            "base"
+                                    }
+                                )
+                        )
+                        .filter(
+                            (user) =>
+                                user.name
+                                    .toLowerCase()
+                                    .includes(
+                                        searchText
+                                    )
+                        );
+
+
+                if (
+                    filteredUsers.length ===
+                    0
+                ) {
+
+                    studentAnnouncementMentionSuggestions.style.display =
+                        "none";
+
+                    studentAnnouncementMentionSuggestions.innerHTML =
+                        "";
+
+                    return;
+
+                }
+
+
+                studentAnnouncementMentionSuggestions.innerHTML =
+                    "";
+
+
+                filteredUsers.forEach(
+                    (user) => {
+
+                        const button =
+                            document.createElement(
+                                "button"
+                            );
+
+
+                        button.type =
+                            "button";
+
+                        button.style.display =
+                            "block";
+
+                        button.style.width =
+                            "100%";
+
+                        button.style.textAlign =
+                            "left";
+
+
+                        const detail =
+                            user.type ===
+                                "student"
+                                ? `Student — ${user.className}`
+                                : user.role;
+
+
+                        button.textContent =
+                            `${user.name} (${detail})`;
+
+
+                        button.addEventListener(
+                            "click",
+                            () => {
+
+                                const currentValue =
+                                    studentAnnouncementMessage.value;
+
+                                const currentCursor =
+                                    studentAnnouncementMessage.selectionStart;
+
+                                const beforeCursor =
+                                    currentValue.substring(
+                                        0,
+                                        currentCursor
+                                    );
+
+                                const afterCursor =
+                                    currentValue.substring(
+                                        currentCursor
+                                    );
+
+                                const mentionStart =
+                                    beforeCursor.lastIndexOf(
+                                        "@"
+                                    );
+
+                                const beforeMention =
+                                    currentValue.substring(
+                                        0,
+                                        mentionStart
+                                    );
+
+                                const mentionText =
+                                    `@${user.name} `;
+
+
+                                studentAnnouncementMessage.value =
+                                    beforeMention +
+                                    mentionText +
+                                    afterCursor;
+
+
+                                const alreadySelected =
+                                    studentAnnouncementMentions.some(
+                                        (mention) =>
+                                            mention.id ===
+                                                user.id &&
+                                            mention.type ===
+                                                user.type
+                                    );
+
+
+                                if (
+                                    !alreadySelected
+                                ) {
+
+                                    studentAnnouncementMentions.push({
+                                        id:
+                                            user.id,
+                                        type:
+                                            user.type,
+                                        name:
+                                            user.name
+                                    });
+
+                                }
+
+
+                                studentAnnouncementMentionSuggestions.style.display =
+                                    "none";
+
+                                studentAnnouncementMentionSuggestions.innerHTML =
+                                    "";
+
+
+                                studentAnnouncementMessage.focus();
+
+                            }
+                        );
+
+
+                        studentAnnouncementMentionSuggestions.appendChild(
+                            button
+                        );
+
+                    }
+                );
+
+
+                studentAnnouncementMentionSuggestions.style.display =
+                    "block";
+
+            }
+        );
+
+
+        document
+            .querySelectorAll(
+                'input[name="studentAnnouncementTarget"]'
+            )
+            .forEach(
+                (radio) => {
+
+                    radio.addEventListener(
+                        "change",
+                        async () => {
+
+                            studentAnnouncementMentions =
+                                [];
+
+                            studentAnnouncementMentionSuggestions.style.display =
+                                "none";
+
+                            studentAnnouncementMentionSuggestions.innerHTML =
+                                "";
+
+
+                            await loadStudentAnnouncementMentionUsers();
+
+                        }
+                    );
+
+                }
+            );
+
+
+        // =====================================
+        // MENTION REPLY
+        // =====================================
+
+        async function loadMentionUsers(
+            announcementId
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/mentions/users?announcementId=${announcementId}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    data.success
+                ) {
+
+                    return data.users;
+
+                }
+
+
+                return [];
+
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal load mention users:",
+                    error
+                );
+
+
+                return [];
+
+            }
+
+        }
+
+
+        function insertMention(
+            input,
+            user
+        ) {
+
+            const value =
+                input.value;
+
+            const cursorPosition =
+                input.selectionStart;
+
+            const textBeforeCursor =
+                value.substring(
+                    0,
+                    cursorPosition
+                );
+
+            const textAfterCursor =
+                value.substring(
+                    cursorPosition
+                );
+
+            const mentionStart =
+                textBeforeCursor.lastIndexOf(
+                    "@"
+                );
+
+
+            if (
+                mentionStart ===
+                -1
+            ) {
+
+                return;
+
+            }
+
+
+            const beforeMention =
+                value.substring(
+                    0,
+                    mentionStart
+                );
+
+            const mentionText =
+                `@${user.name} `;
+
+            const form =
+                input.closest(
+                    ".reply-form"
+                );
+
+
+            if (
+                !form.selectedMentions
+            ) {
+
+                form.selectedMentions =
+                    [];
+
+            }
+
+
+            const alreadySelected =
+                form.selectedMentions.some(
+                    (mention) =>
+                        mention.id ===
+                            user.id &&
+                        mention.type ===
+                            user.type
+                );
+
+
+            if (
+                !alreadySelected
+            ) {
+
+                form.selectedMentions.push({
+                    id:
+                        user.id,
+                    type:
+                        user.type,
+                    name:
+                        user.name
+                });
+
+            }
+
+
+            input.value =
+                beforeMention +
+                mentionText +
+                textAfterCursor;
+
+
+            const newCursorPosition =
+                (
+                    beforeMention +
+                    mentionText
+                ).length;
+
+
+            input.focus();
+
+
+            input.setSelectionRange(
+                newCursorPosition,
+                newCursorPosition
+            );
+
+        }
+
+
+        function setupMentionAutocomplete(
+            root = document
+        ) {
+
+            root
+                .querySelectorAll(
+                    ".reply-input"
+                )
+                .forEach(
+                    (input) => {
+
+                        if (
+                            input.dataset.mentionReady ===
+                            "true"
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        input.dataset.mentionReady =
+                            "true";
+
+
+                        const form =
+                            input.closest(
+                                ".reply-form"
+                            );
+
+                        const announcementId =
+                            form.dataset.id;
+
+                        const suggestionBox =
+                            form.querySelector(
+                                ".mention-suggestions"
+                            );
+
+
+                        form.mentionUsers =
+                            [];
+
+                        form.selectedMentions =
+                            form.selectedMentions ||
+                            [];
+
+
+                        loadMentionUsers(
+                            announcementId
+                        ).then(
+                            (users) => {
+
+                                form.mentionUsers =
+                                    users;
+
+                            }
+                        );
+
+
+                        input.addEventListener(
+                            "input",
+                            () => {
+
+                                const value =
+                                    input.value;
+
+                                const cursorPosition =
+                                    input.selectionStart;
+
+                                const textBeforeCursor =
+                                    value.substring(
+                                        0,
+                                        cursorPosition
+                                    );
+
+                                const mentionMatch =
+                                    textBeforeCursor.match(
+                                        /@([^@]*)$/
+                                    );
+
+
+                                if (
+                                    !mentionMatch
+                                ) {
+
+                                    suggestionBox.style.display =
+                                        "none";
+
+                                    suggestionBox.innerHTML =
+                                        "";
+
+                                    return;
+
+                                }
+
+
+                                const searchText =
+                                    mentionMatch[1]
+                                        .trim()
+                                        .toLowerCase();
+
+
+                                const filteredUsers =
+                                    [
+                                        ...(
+                                            form.mentionUsers ||
+                                            []
+                                        )
+                                    ]
+                                        .sort(
+                                            (a, b) =>
+                                                a.name.localeCompare(
+                                                    b.name,
+                                                    "id",
+                                                    {
+                                                        sensitivity:
+                                                            "base"
+                                                    }
+                                                )
+                                        )
+                                        .filter(
+                                            (user) =>
+                                                user.name
+                                                    .toLowerCase()
+                                                    .includes(
+                                                        searchText
+                                                    )
+                                        );
+
+
+                                if (
+                                    filteredUsers.length ===
+                                    0
+                                ) {
+
+                                    suggestionBox.style.display =
+                                        "none";
+
+                                    suggestionBox.innerHTML =
+                                        "";
+
+                                    return;
+
+                                }
+
+
+                                suggestionBox.innerHTML =
+                                    "";
+
+
+                                filteredUsers.forEach(
+                                    (user) => {
+
+                                        const button =
+                                            document.createElement(
+                                                "button"
+                                            );
+
+
+                                        button.type =
+                                            "button";
+
+                                        button.style.display =
+                                            "block";
+
+                                        button.style.width =
+                                            "100%";
+
+                                        button.style.textAlign =
+                                            "left";
+
+
+                                        const detail =
+                                            user.type ===
+                                                "student"
+                                                ? `Student — ${user.className}`
+                                                : user.role;
+
+
+                                        button.textContent =
+                                            `${user.name} (${detail})`;
+
+
+                                        button.addEventListener(
+                                            "click",
+                                            () => {
+
+                                                insertMention(
+                                                    input,
+                                                    user
+                                                );
+
+
+                                                suggestionBox.style.display =
+                                                    "none";
+
+                                                suggestionBox.innerHTML =
+                                                    "";
+
+                                            }
+                                        );
+
+
+                                        suggestionBox.appendChild(
+                                            button
+                                        );
+
+                                    }
+                                );
+
+
+                                suggestionBox.style.display =
+                                    "block";
+
+                            }
+                        );
+
+                    }
+                );
+
+        }
+
+
+        // =====================================
+        // RENDER ANNOUNCEMENT
+        // =====================================
+
+        function createStudentAnnouncementCard(
+            announcement
         ) {
 
             const card =
@@ -1797,252 +2105,543 @@ async function loadAnnouncements() {
             card.id =
                 `announcement-${announcement.id}`;
 
-                card.className =
+            card.className =
                 "feed-card";
 
 
-
-            // =================================
-            // FORMAT PEMBUAT ANNOUNCEMENT
-            // =================================
-
-            let creatorText;
-
-
-            if (announcement.student_id) {
-
-                creatorText =
-                    `${announcement.student_creator_name || "Siswa"} — ` +
-                    `${announcement.student_creator_class || "-"} — `;
-
-            } else {
-
-                creatorText =
-                    `${announcement.admin_creator_name || "Admin / Guru"} — `;
-
-            }
+            const isStudentPost =
+                Number(
+                    announcement.student_id ??
+                    announcement.studentId ??
+                    0
+                ) > 0;
 
 
-            const announcementType =
-                announcement.class_name
-                    ? `KELAS ${announcement.class_name}`
-                    : "GLOBAL";
+            const className =
+                announcement.class_name ??
+                announcement.className ??
+                null;
 
 
-            const heading =
-                creatorText +
-                announcementType;
+            const creatorName =
+                isStudentPost
+                    ? (
+                        announcement.student_creator_name ||
+                        announcement.studentName ||
+                        "Siswa"
+                    )
+                    : (
+                        announcement.admin_creator_name ||
+                        "Admin / Guru"
+                    );
 
 
-            // =================================
-            // ISI CARD
-            // =================================
+            const creatorDetail =
+                isStudentPost
+                    ? (
+                        announcement.student_creator_class ||
+                        className ||
+                        "Siswa"
+                    )
+                    : (
+                        announcement.admin_creator_role ||
+                        "Admin / Guru"
+                    );
+
+
+const createdAt =
+    announcement.created_at
+        ? formatDeviceDateTime(
+            announcement.created_at
+        )
+        : "Baru saja";
+
+
+            const mentions =
+                Array.isArray(
+                    announcement.mentions
+                )
+                    ? announcement.mentions
+                    : [];
+
+
+            const isOwner =
+                Number(
+                    announcement.student_id ??
+                    announcement.studentId
+                ) ===
+                Number(studentId);
+
 
             card.innerHTML = `
 
-    <div class="feed-card-header">
+                <div class="feed-card-header">
 
-        <div class="feed-author">
+                    <div class="feed-author">
 
-            <div class="feed-avatar">
-                ${
-                    announcement.student_id
-                        ? "S"
-                        : "G"
-                }
-            </div>
-
-
-            <div>
-
-                <strong>
-                    ${escapeHtml(
-                        heading
-                    )}
-                </strong>
-
-                <span>
-                    ${announcement.created_at}
-                </span>
-
-            </div>
-
-        </div>
+                        <div class="feed-avatar">
+                            ${
+                                isStudentPost
+                                    ? "S"
+                                    : "T"
+                            }
+                        </div>
 
 
-        <span
-            class="
-                feed-scope-badge
-                ${
-                    announcement.class_name
-                        ? "class"
-                        : "global"
-                }
-            "
-        >
-            ${
-                announcement.class_name
-                    ? `Kelas ${escapeHtml(
-                        announcement.class_name
-                    )}`
-                    : "Global"
-            }
-        </span>
+                        <div>
 
-    </div>
+                            <strong>
+                                ${escapeHtml(
+                                    creatorName
+                                )}
+                            </strong>
 
+                            <span>
+                                ${escapeHtml(
+                                    creatorDetail
+                                )}
+                                ·
+                                ${escapeHtml(
+                                    createdAt
+                                )}
+                            </span>
 
-<div class="feed-message">${formatMessage(
-    announcement.message,
-    announcement.mentions
-)}</div>
+                        </div>
+
+                    </div>
 
 
-    ${
-        Number(
-            announcement.student_id
-        ) ===
-        Number(studentId)
-
-            ? `
-
-                <div class="feed-owner-actions">
-
-                    <button
-                        type="button"
-                        class="feed-delete-button"
-                        onclick="
-                            deleteStudentAnnouncement(
-                                ${announcement.id}
-                            )
-                        "
+                    <span
+                        class="feed-scope-badge ${
+                            className
+                                ? "class"
+                                : "global"
+                        }"
                     >
-                        Hapus postingan
-                    </button>
+                        ${
+                            className
+                                ? escapeHtml(
+                                    className
+                                )
+                                : "Global"
+                        }
+                    </span>
 
                 </div>
 
-            `
 
-            : ""
-    }
-
-
-    <div class="feed-divider"></div>
-
-
-    <div class="reply-section">
-
-        <div class="reply-heading">
-
-            <strong>
-                Replies
-            </strong>
-
-        </div>
+                <div class="feed-message">${
+                    formatMessage(
+                        announcement.message,
+                        mentions
+                    )
+                }</div>
 
 
-        <div
-            id="replies-${announcement.id}"
-            class="reply-list"
-        >
-            Memuat reply...
-        </div>
+                ${
+                    isOwner
+                        ? `
+                            <div class="feed-owner-actions">
+
+                                <button
+                                    type="button"
+                                    class="feed-delete-button"
+                                    onclick="
+                                        deleteStudentAnnouncement(
+                                            ${announcement.id},
+                                            this
+                                        )
+                                    "
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
 
 
-        <form
-            class="reply-form"
-            data-id="${announcement.id}"
-        >
-
-            <div class="reply-composer">
-
-                <input
-                    type="text"
-                    name="reply"
-                    class="reply-input"
-                    placeholder="Tulis reply... gunakan @ untuk mention"
-                    autocomplete="off"
-                    required
-                >
+                <div class="feed-divider"></div>
 
 
-                <button
-                    type="submit"
-                    class="reply-send-button"
-                >
-                    Kirim
-                </button>
+                <div class="reply-section">
 
-            </div>
+                    <div class="reply-heading">
 
+                        <strong>
+                            Replies
+                        </strong>
 
-            <div
-                class="mention-suggestions"
-                style="display: none;"
-            ></div>
-
-        </form>
-
-    </div>
-
-`;
+                    </div>
 
 
-            list.appendChild(
+                    <div
+                        id="replies-${announcement.id}"
+                        class="reply-list"
+                    >
+                        <small>
+                            Belum ada reply.
+                        </small>
+                    </div>
+
+
+                    <form
+                        class="reply-form"
+                        data-id="${announcement.id}"
+                    >
+
+                        <div class="reply-composer">
+
+                            <input
+                                type="text"
+                                name="reply"
+                                class="reply-input"
+                                placeholder="Tulis reply... gunakan @ untuk mention"
+                                autocomplete="off"
+                                required
+                            >
+
+                            <button
+                                type="submit"
+                                class="reply-send-button"
+                            >
+                                Kirim
+                            </button>
+
+                        </div>
+
+
+                        <div
+                            class="mention-suggestions"
+                            style="display: none;"
+                        ></div>
+
+                    </form>
+
+                </div>
+
+            `;
+
+
+            const replyForm =
+                card.querySelector(
+                    ".reply-form"
+                );
+
+
+            replyForm.addEventListener(
+                "submit",
+                submitReply
+            );
+
+
+            setupMentionAutocomplete(
                 card
             );
 
 
-            // Load reply
-            loadReplies(
-                announcement.id
-            );
+            return card;
 
         }
 
 
-        // =================================
-        // FORM REPLY
-        // =================================
+        // =====================================
+        // RENDER REPLY
+        // =====================================
 
-        document
-            .querySelectorAll(
-                ".reply-form"
-            )
-            .forEach(
-                (form) => {
+        function createStudentReplyItem(
+            announcementId,
+            reply
+        ) {
 
-                    form.addEventListener(
-                        "submit",
-                        submitReply
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.id =
+                `reply-${reply.id}`;
+
+            item.className =
+                "reply-item";
+
+
+            const senderType =
+                reply.sender_type ||
+                (
+                    reply.admin_id
+                        ? "admin"
+                        : "student"
+                );
+
+
+            const senderId =
+                reply.sender_id ??
+                reply.student_id ??
+                reply.studentId ??
+                null;
+
+
+            const senderName =
+                reply.sender_name ||
+                reply.student_name ||
+                reply.studentName ||
+                (
+                    senderType ===
+                        "admin"
+                        ? "Admin / Guru"
+                        : "Siswa"
+                );
+
+
+            const senderDetail =
+                senderType ===
+                    "admin"
+                    ? (
+                        reply.sender_role ||
+                        reply.admin_role ||
+                        "Admin / Guru"
+                    )
+                    : (
+                        reply.class_name ||
+                        reply.className ||
+                        "Siswa"
                     );
 
+
+const createdAt =
+    reply.created_at
+        ? formatDeviceDateTime(
+            reply.created_at
+        )
+        : "Baru saja";
+
+
+            const mentions =
+                Array.isArray(
+                    reply.mentions
+                )
+                    ? reply.mentions
+                    : [];
+
+
+            const isOwner =
+                senderType ===
+                    "student" &&
+                Number(senderId) ===
+                    Number(studentId);
+
+
+            item.innerHTML = `
+
+                <div class="reply-author-row">
+
+                    <div class="reply-avatar">
+                        ${
+                            senderType ===
+                                "admin"
+                                ? "T"
+                                : "S"
+                        }
+                    </div>
+
+
+                    <div class="reply-author-info">
+
+                        <strong>
+                            ${escapeHtml(
+                                senderName
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                senderDetail
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="reply-message">
+                    ${
+                        formatMessage(
+                            reply.message,
+                            mentions
+                        )
+                    }
+                </div>
+
+
+                <div class="reply-footer">
+
+                    <span>
+                        ${escapeHtml(
+                            createdAt
+                        )}
+                    </span>
+
+
+                    ${
+                        isOwner
+                            ? `
+                                <button
+                                    type="button"
+                                    class="reply-delete-button"
+                                    onclick="
+                                        deleteStudentReply(
+                                            ${announcementId},
+                                            ${reply.id},
+                                            this
+                                        )
+                                    "
+                                >
+                                    Hapus
+                                </button>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            `;
+
+
+            return item;
+
+        }
+
+
+        // =====================================
+        // LOAD AWAL
+        // =====================================
+
+        async function loadAnnouncements() {
+
+            announcementList.innerHTML =
+                "Memuat announcement...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/announcements`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success
+                ) {
+
+                    announcementList.innerHTML = `
+                        <p>
+                            ${escapeHtml(
+                                data.message ||
+                                "Gagal mengambil announcement."
+                            )}
+                        </p>
+                    `;
+
+                    return;
+
                 }
-            );
 
 
-        setupMentionAutocomplete();  
+                announcementList.innerHTML =
+                    "";
 
 
-                } catch (error) {
+                latestAnnouncementId =
+                    0;
 
-        console.error(error);
+                latestReplyId =
+                    0;
 
 
-        list.innerHTML = `
-            <p>
-                Gagal mengambil announcement.
-            </p>
-        `;
+                if (
+                    !Array.isArray(
+                        data.announcements
+                    ) ||
+                    data.announcements.length ===
+                        0
+                ) {
 
-    }
+                    ensureAnnouncementEmptyState();
 
-}
+                    return;
 
-        // =====================================
-        // LOAD REPLIES
-        // =====================================
+                }
+
+
+                const replyLoads =
+                    [];
+
+
+                data.announcements.forEach(
+                    (announcement) => {
+
+                        latestAnnouncementId =
+                            Math.max(
+                                latestAnnouncementId,
+                                Number(
+                                    announcement.id
+                                )
+                            );
+
+
+                        const card =
+                            createStudentAnnouncementCard(
+                                announcement
+                            );
+
+
+                        announcementList.appendChild(
+                            card
+                        );
+
+
+                        replyLoads.push(
+                            loadReplies(
+                                announcement.id
+                            )
+                        );
+
+                    }
+                );
+
+
+                await Promise.all(
+                    replyLoads
+                );
+
+
+                scrollToMention();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                announcementList.innerHTML = `
+                    <p>
+                        Gagal mengambil announcement.
+                    </p>
+                `;
+
+            }
+
+        }
+
 
         async function loadReplies(
             announcementId
@@ -2052,6 +2651,15 @@ async function loadAnnouncements() {
                 document.getElementById(
                     `replies-${announcementId}`
                 );
+
+
+            if (
+                !container
+            ) {
+
+                return;
+
+            }
 
 
             try {
@@ -2066,7 +2674,9 @@ async function loadAnnouncements() {
                     await response.json();
 
 
-                if (!data.success) {
+                if (
+                    !data.success
+                ) {
 
                     container.textContent =
                         "Gagal mengambil reply.";
@@ -2076,181 +2686,44 @@ async function loadAnnouncements() {
                 }
 
 
-if (
-    data.replies.length === 0
-) {
-
-    container.innerHTML = `
-        <small>
-            Belum ada reply.
-        </small>
-    `;
-
-
-    const targetAnnouncementId =
-        sessionStorage.getItem(
-            "notificationAnnouncementId"
-        );
-
-
-    if (
-        targetAnnouncementId ===
-        String(announcementId)
-    ) {
-
-        setTimeout(
-            scrollToMention,
-            100
-        );
-
-    }
-
-
-    return;
-}
-
-
                 container.innerHTML =
                     "";
+
+
+                if (
+                    !Array.isArray(
+                        data.replies
+                    ) ||
+                    data.replies.length ===
+                        0
+                ) {
+
+                    ensureReplyEmptyState(
+                        container
+                    );
+
+                    return;
+
+                }
 
 
                 data.replies.forEach(
                     (reply) => {
 
-                        const item =
-                            document.createElement(
-                                "div"
+                        latestReplyId =
+                            Math.max(
+                                latestReplyId,
+                                Number(
+                                    reply.id
+                                )
                             );
 
-                                                    const targetAnnouncementId =
-                            sessionStorage.getItem(
-                                "notificationAnnouncementId"
-                            );
-
-
-                        if (
-                            targetAnnouncementId ===
-                            String(announcementId)
-                        ) {
-
-                            setTimeout(
-                                scrollToMention,
-                                100
-                            );
-
-                        }
-
-                            item.id =
-                             `reply-${reply.id}`;
-
-
-                        item.className =
-                        "reply-item";
-
-
-                      item.innerHTML = `
-
-    <div class="reply-author-row">
-
-        <div class="reply-avatar">
-
-            ${
-                reply.sender_type === "admin"
-                    ? "G"
-                    : "S"
-            }
-
-        </div>
-
-
-        <div class="reply-author-info">
-
-            <strong>
-                ${escapeHtml(
-                    reply.sender_name
-                )}
-            </strong>
-
-
-            ${
-                reply.sender_type === "admin"
-
-                    ? `
-
-                        <span>
-                            ${escapeHtml(
-                                reply.sender_role ||
-                                "Admin / Guru"
-                            )}
-                        </span>
-
-                    `
-
-                    : `
-
-                        <span>
-                            Siswa
-                        </span>
-
-                    `
-            }
-
-        </div>
-
-    </div>
-
-
-    <div class="reply-message">
-
-        ${formatMessage(
-            reply.message,
-            reply.mentions
-        )}
-
-    </div>
-
-
-    <div class="reply-footer">
-
-        <span>
-            ${reply.created_at}
-        </span>
-
-
-        ${
-            reply.sender_type ===
-                "student" &&
-            Number(
-                reply.sender_id
-            ) ===
-            Number(studentId)
-
-                ? `
-
-                    <button
-                        type="button"
-                        class="reply-delete-button"
-                        onclick="
-                            deleteStudentReply(
-                                ${announcementId},
-                                ${reply.id}
-                            )
-                        "
-                    >
-                        Hapus
-                    </button>
-
-                `
-
-                : ""
-        }
-
-    </div>
-
-`;
 
                         container.appendChild(
-                            item
+                            createStudentReplyItem(
+                                announcementId,
+                                reply
+                            )
                         );
 
                     }
@@ -2271,7 +2744,311 @@ if (
 
 
         // =====================================
-        // KIRIM REPLY
+        // BUAT POST - LOCAL DOM
+        // =====================================
+
+        studentAnnouncementForm.addEventListener(
+            "submit",
+            async (event) => {
+
+                event.preventDefault();
+
+
+                const submitButton =
+                    studentAnnouncementForm.querySelector(
+                        'button[type="submit"]'
+                    );
+
+
+                const message =
+                    studentAnnouncementMessage
+                        .value
+                        .trim();
+
+
+                const target =
+                    document.querySelector(
+                        'input[name="studentAnnouncementTarget"]:checked'
+                    ).value;
+
+
+                if (
+                    !message
+                ) {
+
+                    studentAnnouncementStatus.textContent =
+                        "Pesan wajib diisi.";
+
+                    return;
+
+                }
+
+
+                const mentions =
+                    [
+                        ...studentAnnouncementMentions
+                    ];
+
+
+                submitButton.disabled =
+                    true;
+
+                submitButton.textContent =
+                    "Memposting...";
+
+
+                studentAnnouncementStatus.textContent =
+                    "Membuat announcement...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `/api/student/${studentId}/announcements`,
+                            {
+                                method:
+                                    "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        message,
+                                        target,
+                                        mentions
+                                    })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (
+                        !data.success
+                    ) {
+
+                        studentAnnouncementStatus.textContent =
+                            data.message ||
+                            "Gagal membuat announcement.";
+
+                        return;
+
+                    }
+
+
+                    const newAnnouncement = {
+                        id:
+                            data.announcement.id,
+
+                        student_id:
+                            Number(
+                                studentId
+                            ),
+
+                        student_creator_name:
+                            studentName,
+
+                        student_creator_class:
+                            studentClass,
+
+                        class_name:
+                            target ===
+                                "class"
+                                ? studentClass
+                                : null,
+
+                        message,
+
+                        created_at:
+                            "Baru saja",
+
+                        mentions
+                    };
+
+
+                    removeAnnouncementEmptyState();
+
+
+                    announcementList.prepend(
+                        createStudentAnnouncementCard(
+                            newAnnouncement
+                        )
+                    );
+
+
+                    latestAnnouncementId =
+                        Math.max(
+                            latestAnnouncementId,
+                            Number(
+                                newAnnouncement.id
+                            )
+                        );
+
+
+                    studentAnnouncementMessage.value =
+                        "";
+
+                    studentAnnouncementMentions =
+                        [];
+
+                    studentAnnouncementMentionSuggestions.style.display =
+                        "none";
+
+                    studentAnnouncementMentionSuggestions.innerHTML =
+                        "";
+
+
+                    document.querySelector(
+                        'input[name="studentAnnouncementTarget"][value="class"]'
+                    ).checked =
+                        true;
+
+
+                    loadStudentAnnouncementMentionUsers();
+
+
+                    studentAnnouncementStatus.textContent =
+                        "Announcement berhasil dibuat.";
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+
+                    studentAnnouncementStatus.textContent =
+                        "Tidak dapat terhubung ke server.";
+
+
+                } finally {
+
+                    submitButton.disabled =
+                        false;
+
+                    submitButton.textContent =
+                        "Posting";
+
+                }
+
+            }
+        );
+
+
+        // =====================================
+        // HAPUS POST - LOCAL DOM
+        // =====================================
+
+        async function deleteStudentAnnouncement(
+            announcementId,
+            button
+        ) {
+
+            const confirmDelete =
+                confirm(
+                    "Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus."
+                );
+
+
+            if (
+                !confirmDelete
+            ) {
+
+                return;
+
+            }
+
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "Menghapus...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/announcements/${announcementId}`,
+                        {
+                            method:
+                                "DELETE"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success
+                ) {
+
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        "Hapus";
+
+
+                    alert(
+                        data.message ||
+                        "Gagal menghapus announcement."
+                    );
+
+                    return;
+
+                }
+
+
+                const card =
+                    document.getElementById(
+                        `announcement-${announcementId}`
+                    );
+
+
+                if (
+                    card
+                ) {
+
+                    card.remove();
+
+                }
+
+
+                ensureAnnouncementEmptyState();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "Hapus";
+
+
+                alert(
+                    "Gagal menghapus announcement."
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // BUAT REPLY - LOCAL DOM
         // =====================================
 
         async function submitReply(
@@ -2284,29 +3061,47 @@ if (
             const form =
                 event.currentTarget;
 
-
             const announcementId =
-                form.dataset.id;
-
+                Number(
+                    form.dataset.id
+                );
 
             const input =
                 form.querySelector(
                     'input[name="reply"]'
                 );
 
+            const submitButton =
+                form.querySelector(
+                    'button[type="submit"]'
+                );
 
             const message =
                 input.value.trim();
 
-                const mentions =
-    form.selectedMentions || [];
+            const mentions =
+                [
+                    ...(
+                        form.selectedMentions ||
+                        []
+                    )
+                ];
 
 
-            if (!message) {
+            if (
+                !message
+            ) {
 
                 return;
 
             }
+
+
+            submitButton.disabled =
+                true;
+
+            submitButton.textContent =
+                "Menambahkan...";
 
 
             try {
@@ -2315,28 +3110,23 @@ if (
                     await fetch(
                         `/api/announcements/${announcementId}/replies`,
                         {
-
-                            method: "POST",
+                            method:
+                                "POST",
 
                             headers: {
-
                                 "Content-Type":
                                     "application/json"
-
                             },
 
                             body:
                                 JSON.stringify({
-
                                     studentId:
-                                        Number(studentId),
-
+                                        Number(
+                                            studentId
+                                        ),
                                     message,
-
                                     mentions
-
                                 })
-
                         }
                     );
 
@@ -2345,10 +3135,13 @@ if (
                     await response.json();
 
 
-                if (!data.success) {
+                if (
+                    !data.success
+                ) {
 
                     alert(
-                        data.message
+                        data.message ||
+                        "Gagal mengirim reply."
                     );
 
                     return;
@@ -2356,15 +3149,89 @@ if (
                 }
 
 
-                // Kosongkan input
-                input.value = "";
-                form.selectedMentions = [];
+                const container =
+                    document.getElementById(
+                        `replies-${announcementId}`
+                    );
 
 
-                // Refresh reply
-                loadReplies(
-                    announcementId
-                );
+                if (
+                    container
+                ) {
+
+                    const empty =
+                        container.querySelector(
+                            "small"
+                        );
+
+
+                    if (
+                        empty &&
+                        empty.textContent.includes(
+                            "Belum ada reply"
+                        )
+                    ) {
+
+                        container.innerHTML =
+                            "";
+
+                    }
+
+
+                    const newReply = {
+                        id:
+                            data.reply.id,
+
+                        announcement_id:
+                            announcementId,
+
+                        sender_type:
+                            "student",
+
+                        sender_id:
+                            Number(
+                                studentId
+                            ),
+
+                        sender_name:
+                            studentName,
+
+                        class_name:
+                            studentClass,
+
+                        message,
+
+                        created_at:
+                            "Baru saja",
+
+                        mentions
+                    };
+
+
+                    container.appendChild(
+                        createStudentReplyItem(
+                            announcementId,
+                            newReply
+                        )
+                    );
+
+
+                    latestReplyId =
+                        Math.max(
+                            latestReplyId,
+                            Number(
+                                newReply.id
+                            )
+                        );
+
+                }
+
+
+                input.value =
+                    "";
+
+                form.selectedMentions =
+                    [];
 
 
             } catch (error) {
@@ -2376,82 +3243,641 @@ if (
                     "Gagal mengirim reply."
                 );
 
+
+            } finally {
+
+                submitButton.disabled =
+                    false;
+
+                submitButton.textContent =
+                    "Kirim";
+
             }
 
         }
 
 
         // =====================================
-        // ESCAPE HTML
+        // HAPUS REPLY - LOCAL DOM
         // =====================================
 
-        function escapeHtml(
-            text
+        async function deleteStudentReply(
+            announcementId,
+            replyId,
+            button
         ) {
 
-            const div =
-                document.createElement(
-                    "div"
+            const confirmDelete =
+                confirm(
+                    "Yakin ingin menghapus reply ini?"
                 );
 
 
-            div.textContent =
-                text;
+            if (
+                !confirmDelete
+            ) {
+
+                return;
+
+            }
 
 
-            return div.innerHTML;
+            button.disabled =
+                true;
 
-        }
-
-
-// =====================================
-// TARGET ANNOUNCEMENT BERUBAH
-// =====================================
-
-document
-    .querySelectorAll(
-        'input[name="studentAnnouncementTarget"]'
-    )
-    .forEach(
-        (radio) => {
-
-            radio.addEventListener(
-                "change",
-                async () => {
-
-                    studentAnnouncementMentions =
-                        [];
-
-                    studentAnnouncementMentionSuggestions
-                        .style
-                        .display =
-                        "none";
-
-                    studentAnnouncementMentionSuggestions
-                        .innerHTML =
-                        "";
+            button.textContent =
+                "Menghapus...";
 
 
-                    await loadStudentAnnouncementMentionUsers();
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/announcements/${announcementId}/replies/${replyId}`,
+                        {
+                            method:
+                                "DELETE",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    studentId:
+                                        Number(
+                                            studentId
+                                        )
+                                })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success
+                ) {
+
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        "Hapus";
+
+
+                    alert(
+                        data.message ||
+                        "Gagal menghapus reply."
+                    );
+
+                    return;
 
                 }
-            );
+
+
+                const item =
+                    document.getElementById(
+                        `reply-${replyId}`
+                    );
+
+
+                const container =
+                    item
+                        ? item.closest(
+                            ".reply-list"
+                        )
+                        : document.getElementById(
+                            `replies-${announcementId}`
+                        );
+
+
+                if (
+                    item
+                ) {
+
+                    item.remove();
+
+                }
+
+
+                ensureReplyEmptyState(
+                    container
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "Hapus";
+
+
+                alert(
+                    "Gagal menghapus reply."
+                );
+
+            }
 
         }
-    );
 
 
-// =====================================
-// START
-// =====================================
+        // =====================================
+        // LIVE POST BARU
+        // =====================================
 
-loadStudentAnnouncementMentionUsers();
+        async function checkLiveAnnouncements() {
 
-loadAnnouncements();
+            if (
+                document.visibilityState !==
+                "visible"
+            ) {
 
-loadNotificationCount();
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/announcements/live?afterId=${latestAnnouncementId}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !Array.isArray(
+                        data.announcements
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                data.announcements.forEach(
+                    (announcement) => {
+
+                        latestAnnouncementId =
+                            Math.max(
+                                latestAnnouncementId,
+                                Number(
+                                    announcement.id
+                                )
+                            );
+
+
+                        if (
+                            document.getElementById(
+                                `announcement-${announcement.id}`
+                            )
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        removeAnnouncementEmptyState();
+
+
+                        announcementList.prepend(
+                            createStudentAnnouncementCard(
+                                announcement
+                            )
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Live post siswa gagal:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // LIVE REPLY BARU
+        // =====================================
+
+        async function checkLiveReplies() {
+
+            if (
+                document.visibilityState !==
+                "visible"
+            ) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/replies/live?afterId=${latestReplyId}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !Array.isArray(
+                        data.replies
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                for (
+                    const reply
+                    of data.replies
+                ) {
+
+                    latestReplyId =
+                        Math.max(
+                            latestReplyId,
+                            Number(
+                                reply.id
+                            )
+                        );
+
+
+                    if (
+                        document.getElementById(
+                            `reply-${reply.id}`
+                        )
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    const announcementId =
+                        Number(
+                            reply.announcement_id
+                        );
+
+
+                    const container =
+                        document.getElementById(
+                            `replies-${announcementId}`
+                        );
+
+
+                    if (
+                        !container
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    const empty =
+                        container.querySelector(
+                            "small"
+                        );
+
+
+                    if (
+                        empty &&
+                        empty.textContent.includes(
+                            "Belum ada reply"
+                        )
+                    ) {
+
+                        container.innerHTML =
+                            "";
+
+                    }
+
+
+                    container.appendChild(
+                        createStudentReplyItem(
+                            announcementId,
+                            reply
+                        )
+                    );
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "Live reply siswa gagal:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // =====================================
+        // LIVE DELETE
+        // =====================================
+
+        async function checkLiveDeletions() {
+
+            if (
+                document.visibilityState !==
+                "visible"
+            ) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/${studentId}/classroom-feed/state`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data.success ||
+                    !Array.isArray(
+                        data.announcementIds
+                    ) ||
+                    !Array.isArray(
+                        data.replies
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                const announcementIds =
+                    new Set(
+                        data.announcementIds.map(
+                            (id) =>
+                                String(id)
+                        )
+                    );
+
+
+                const replyIds =
+                    new Set(
+                        data.replies.map(
+                            (reply) =>
+                                String(
+                                    reply.id
+                                )
+                        )
+                    );
+
+
+                document
+                    .querySelectorAll(
+                        '#announcementList > [id^="announcement-"]'
+                    )
+                    .forEach(
+                        (card) => {
+
+                            const id =
+                                card.id.replace(
+                                    "announcement-",
+                                    ""
+                                );
+
+
+                            if (
+                                !announcementIds.has(
+                                    id
+                                )
+                            ) {
+
+                                card.remove();
+
+                            }
+
+                        }
+                    );
+
+
+                document
+                    .querySelectorAll(
+                        '.reply-item[id^="reply-"]'
+                    )
+                    .forEach(
+                        (replyItem) => {
+
+                            const id =
+                                replyItem.id.replace(
+                                    "reply-",
+                                    ""
+                                );
+
+
+                            if (
+                                replyIds.has(
+                                    id
+                                )
+                            ) {
+
+                                return;
+
+                            }
+
+
+                            const container =
+                                replyItem.closest(
+                                    ".reply-list"
+                                );
+
+
+                            replyItem.remove();
+
+
+                            ensureReplyEmptyState(
+                                container
+                            );
+
+                        }
+                    );
+
+
+                ensureAnnouncementEmptyState();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Live delete siswa gagal:",
+                    error
+                );
+
+            }
+
+        }
+
+async function hardRefreshStudentFeed() {
+
+    /*
+        Ini sengaja full reload data Feed.
+        Hanya dipakai sebagai backup manual.
+    */
+    await loadAnnouncements();
+
+    await loadNotificationCount();
+
+}
+
+
+        // =====================================
+        // LIVE LOOP
+        // =====================================
+
+        async function runStudentLiveSync() {
+
+            /*
+                Post baru diproses lebih dulu supaya
+                container reply-nya sudah tersedia.
+            */
+            await checkLiveAnnouncements();
+
+
+            await Promise.all([
+                checkLiveReplies(),
+                checkLiveDeletions(),
+                loadNotificationCount()
+            ]);
+
+        }
+
+
+        function startStudentLivePolling() {
+
+            if (
+                studentLivePollingTimer
+            ) {
+
+                return;
+
+            }
+
+
+            studentLivePollingTimer =
+                setInterval(
+                    runStudentLiveSync,
+                    5000
+                );
+
+        }
+
+
+        function stopStudentLivePolling() {
+
+            if (
+                !studentLivePollingTimer
+            ) {
+
+                return;
+
+            }
+
+
+            clearInterval(
+                studentLivePollingTimer
+            );
+
+
+            studentLivePollingTimer =
+                null;
+
+        }
+
+
+        document.addEventListener(
+            "visibilitychange",
+            () => {
+
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
+
+                    runStudentLiveSync();
+
+                    startStudentLivePolling();
+
+
+                } else {
+
+                    stopStudentLivePolling();
+
+                }
+
+            }
+        );
+
+
+        // =====================================
+        // START
+        // =====================================
+
+        async function startStudentFeed() {
+
+            await Promise.all([
+                loadStudentAnnouncementMentionUsers(),
+                loadNotificationCount()
+            ]);
+
+
+            await loadAnnouncements();
+
+
+            startStudentLivePolling();
+
+        }
+
+
+        startStudentFeed();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 

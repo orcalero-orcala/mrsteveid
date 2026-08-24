@@ -411,6 +411,178 @@ function generateTeacherCode() {
 }
 
 // ========================================
+// MASTER KELAS
+// ========================================
+
+async function ensureClassesTable() {
+
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS classes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    /*
+        Ambil kelas lama dari data siswa
+        supaya data yang sudah ada tidak hilang.
+    */
+    await tursoDb.run(`
+        INSERT OR IGNORE INTO classes (
+            name
+        )
+        SELECT DISTINCT
+            TRIM(class_name)
+        FROM students
+        WHERE
+            class_name IS NOT NULL
+            AND TRIM(class_name) <> ''
+    `);
+}
+
+
+// ========================================
+// AMBIL SEMUA KELAS
+// ========================================
+
+app.get(
+    "/api/admin/classes",
+    async (req, res) => {
+
+        try {
+
+            await ensureClassesTable();
+
+            const classes =
+                await tursoDb.all(`
+                    SELECT
+                        id,
+                        name,
+                        created_at
+                    FROM classes
+                    ORDER BY name COLLATE NOCASE ASC
+                `);
+
+            return res.json({
+                success: true,
+                classes
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil kelas:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil daftar kelas."
+            });
+        }
+    }
+);
+
+
+// ========================================
+// TAMBAH KELAS
+// ========================================
+
+app.post(
+    "/api/admin/classes",
+    async (req, res) => {
+
+        const {
+            name
+        } = req.body;
+
+        if (
+            !name ||
+            name.trim().length === 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Nama kelas wajib diisi."
+            });
+        }
+
+        const cleanName =
+            name.trim();
+
+        try {
+
+            await ensureClassesTable();
+
+            const existingClass =
+                await tursoDb.get(
+                    `
+                        SELECT id
+                        FROM classes
+                        WHERE name = ?
+                        COLLATE NOCASE
+                    `,
+                    [
+                        cleanName
+                    ]
+                );
+
+            if (existingClass) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Kelas tersebut sudah terdaftar."
+                });
+            }
+
+            const result =
+                await tursoDb.run(
+                    `
+                        INSERT INTO classes (
+                            name
+                        )
+                        VALUES (?)
+                    `,
+                    [
+                        cleanName
+                    ]
+                );
+
+            return res.json({
+                success: true,
+                message:
+                    "Kelas berhasil ditambahkan.",
+                classData: {
+                    id:
+                        Number(
+                            result.lastInsertRowid
+                        ),
+                    name:
+                        cleanName
+                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error tambah kelas:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menambahkan kelas."
+            });
+        }
+    }
+);
+
+// ========================================
 // TAMBAH SISWA
 // ========================================
 
@@ -473,8 +645,34 @@ if (
 
 try {
 
-            const loginCode =
-                await generateStudentCode();
+    await ensureClassesTable();
+
+    const selectedClass =
+        await tursoDb.get(
+            `
+                SELECT
+                    id,
+                    name
+                FROM classes
+                WHERE name = ?
+                COLLATE NOCASE
+            `,
+            [
+                cleanClass
+            ]
+        );
+
+    if (!selectedClass) {
+
+        return res.status(400).json({
+            success: false,
+            message:
+                "Kelas yang dipilih tidak terdaftar."
+        });
+    }
+
+    const loginCode =
+        await generateStudentCode();
 
 
             const result =
@@ -494,7 +692,7 @@ try {
                             cleanName,
                             cleanFullName,
                             cleanDateOfBirth,
-                            cleanClass
+                            selectedClass.name
                         ]
                 );
 
@@ -525,7 +723,7 @@ try {
                         cleanDateOfBirth,
 
                     className:
-                        cleanClass
+                        selectedClass.name
 
                 }
 
@@ -701,6 +899,131 @@ req.session.studentLoginCode =
             }
 
         });
+
+    }
+);
+
+// ========================================
+// CEK SESSION SISWA MASIH VALID
+// ========================================
+
+app.get(
+    "/api/student/session-status",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res
+                .status(401)
+                .json({
+                    success: false,
+                    loggedOut: true,
+                    message:
+                        "Kamu telah dilogout."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        const sessionLoginCode =
+            String(
+                req.session.studentLoginCode || ""
+            );
+
+
+        try {
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            login_code
+
+                        FROM students
+
+                        WHERE id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            /*
+                Akun sudah dihapus,
+                misalnya karena Reset Data Siswa
+                atau Factory Reset.
+            */
+            if (
+                !student ||
+                String(
+                    student.login_code || ""
+                ) !== sessionLoginCode
+            ) {
+
+                delete req.session.studentId;
+                delete req.session.studentLoginCode;
+
+
+                return req.session.save(
+                    (error) => {
+
+                        if (error) {
+
+                            console.error(
+                                "Gagal menyimpan session logout siswa:",
+                                error
+                            );
+
+                        }
+
+
+                        return res
+                            .status(401)
+                            .json({
+                                success: false,
+                                loggedOut: true,
+                                message:
+                                    "Kamu telah dilogout."
+                            });
+
+                    }
+                );
+
+            }
+
+
+            return res.json({
+                success: true,
+                loggedOut: false
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengecek session siswa:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success: false,
+                    loggedOut: false,
+                    message:
+                        "Gagal mengecek session siswa."
+                });
+
+        }
 
     }
 );
@@ -1195,6 +1518,131 @@ app.post(
 // ADMIN TAMBAH / KURANGI POIN
 // ========================================
 
+app.get(
+    "/api/admin/students/:studentId/points",
+    async (req, res) => {
+
+        const studentId =
+            Number(req.params.studentId);
+
+
+        if (!Number.isInteger(studentId)) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            class_name
+                        FROM students
+                        WHERE id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const transactions =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            points,
+                            reason,
+                            created_at
+                        FROM point_transactions
+                        WHERE student_id = ?
+                        ORDER BY id DESC
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            const result =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            COALESCE(
+                                SUM(points),
+                                0
+                            ) AS total_points
+                        FROM point_transactions
+                        WHERE student_id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            return res.json({
+                success: true,
+
+                student: {
+                    id:
+                        student.id,
+
+                    name:
+                        student.name,
+
+                    className:
+                        student.class_name
+                },
+
+                totalPoints:
+                    Number(
+                        result?.total_points || 0
+                    ),
+
+                transactions
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error admin mengambil poin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil data poin."
+            });
+
+        }
+
+    }
+);
+
 app.post(
     "/api/admin/students/:studentId/points",
     async (req, res) => {
@@ -1670,36 +2118,68 @@ app.post(
             }
 
 
-            return res.json({
+const createdAnnouncement =
+    await tursoDb.get(
+        `
+            SELECT
+                id,
+                admin_id,
+                class_name,
+                message,
+                created_at
+            FROM announcements
+            WHERE id = ?
+        `,
+        [
+            announcementId
+        ]
+    );
 
-                success: true,
 
-                message:
-                    "Announcement berhasil dibuat.",
+return res.json({
 
-                announcement: {
+    success: true,
 
-                    id:
-                        announcementId,
+    message:
+        "Announcement berhasil dibuat.",
 
-                    adminId:
-                        numericAdminId,
+    announcement: {
 
-                    adminName:
-                        admin.name,
+        id:
+            createdAnnouncement.id,
 
-                    adminRole:
-                        admin.role,
+        student_id:
+            null,
 
-                    className:
-                        cleanClass,
+        admin_id:
+            createdAnnouncement.admin_id,
 
-                    message:
-                        cleanMessage
+        student_creator_name:
+            null,
 
-                }
+        student_creator_class:
+            null,
 
-            });
+        admin_creator_name:
+            admin.name,
+
+        admin_creator_role:
+            admin.role,
+
+        class_name:
+            createdAnnouncement.class_name,
+
+        message:
+            createdAnnouncement.message,
+
+        created_at:
+            createdAnnouncement.created_at,
+
+        mentions:
+            mentions
+    }
+
+});
 
 
         } catch (error) {
@@ -2721,6 +3201,123 @@ app.delete(
 );
 
 // ========================================
+// LIVE FEED ADMIN - POST BARU
+// ========================================
+
+app.get(
+    "/api/admin/announcements/live",
+    async (req, res) => {
+
+        const afterId =
+            Number(req.query.afterId || 0);
+
+
+        if (
+            !Number.isInteger(afterId) ||
+            afterId < 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID live feed tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const announcements =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcements.id,
+                            announcements.student_id,
+                            announcements.admin_id,
+                            announcements.class_name,
+                            announcements.message,
+                            announcements.created_at,
+
+                            students.name
+                                AS student_creator_name,
+
+                            students.class_name
+                                AS student_creator_class,
+
+                            admins.name
+                                AS admin_creator_name,
+
+                            admins.role
+                                AS admin_creator_role
+
+                        FROM announcements
+
+                        LEFT JOIN students
+                        ON students.id =
+                            announcements.student_id
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            announcements.admin_id
+
+                        WHERE announcements.id > ?
+
+                        ORDER BY
+                            announcements.id ASC
+                    `,
+                    [
+                        afterId
+                    ]
+                );
+
+
+            const formattedAnnouncements =
+                await Promise.all(
+                    announcements.map(
+                        async (announcement) => {
+
+                            return {
+                                ...announcement,
+
+                                mentions:
+                                    await getAnnouncementMentions(
+                                        announcement.id
+                                    )
+                            };
+
+                        }
+                    )
+                );
+
+
+            return res.json({
+                success: true,
+                announcements:
+                    formattedAnnouncements
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error live feed admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil live feed."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
 // AMBIL SEMUA ANNOUNCEMENT ADMIN
 // ========================================
 
@@ -3681,6 +4278,326 @@ app.post(
 );
 
 // ========================================
+// LIVE FEED ADMIN - STATE ID
+// UNTUK DETEKSI DELETE
+// ========================================
+
+app.get(
+    "/api/admin/classroom-feed/state",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai admin."
+            });
+
+        }
+
+
+        try {
+
+            const announcements =
+                await tursoDb.all(
+                    `
+                        SELECT id
+                        FROM announcements
+                    `
+                );
+
+
+            const replies =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            announcement_id
+                        FROM announcement_replies
+                    `
+                );
+
+
+            return res.json({
+                success: true,
+
+                announcementIds:
+                    announcements.map(
+                        (announcement) =>
+                            Number(
+                                announcement.id
+                            )
+                    ),
+
+                replies:
+                    replies.map(
+                        (reply) => ({
+                            id:
+                                Number(reply.id),
+
+                            announcement_id:
+                                Number(
+                                    reply.announcement_id
+                                )
+                        })
+                    )
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error classroom feed state:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil state Classroom Feed."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
+// LIVE REPLY UNTUK ADMIN
+// ========================================
+
+app.get(
+    "/api/admin/replies/live",
+    async (req, res) => {
+
+        const afterIdRaw =
+            req.query.afterId;
+
+
+        try {
+
+            /*
+                Kalau afterId belum dikirim,
+                hanya ambil ID reply paling terakhir.
+
+                Ini dipakai saat halaman pertama dibuka
+                supaya reply lama tidak dianggap reply baru.
+            */
+            if (
+                afterIdRaw === undefined
+            ) {
+
+                const latest =
+                    await tursoDb.get(
+                        `
+                            SELECT
+                                COALESCE(
+                                    MAX(id),
+                                    0
+                                ) AS latest_reply_id
+                            FROM announcement_replies
+                        `
+                    );
+
+
+                return res.json({
+                    success: true,
+
+                    latestReplyId:
+                        Number(
+                            latest?.latest_reply_id ||
+                            0
+                        ),
+
+                    replies: []
+                });
+
+            }
+
+
+            const afterId =
+                Number(afterIdRaw);
+
+
+            if (
+                !Number.isInteger(afterId) ||
+                afterId < 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "ID live reply tidak valid."
+                });
+
+            }
+
+
+            const replies =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcement_replies.id,
+                            announcement_replies.announcement_id,
+                            announcement_replies.message,
+                            announcement_replies.created_at,
+                            announcement_replies.student_id,
+                            announcement_replies.admin_id,
+
+                            students.name
+                                AS student_name,
+
+                            students.class_name
+                                AS class_name,
+
+                            admins.name
+                                AS admin_name,
+
+                            admins.role
+                                AS admin_role
+
+                        FROM announcement_replies
+
+                        LEFT JOIN students
+                        ON students.id =
+                            announcement_replies.student_id
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            announcement_replies.admin_id
+
+                        WHERE
+                            announcement_replies.id > ?
+
+                        ORDER BY
+                            announcement_replies.id ASC
+                    `,
+                    [
+                        afterId
+                    ]
+                );
+
+
+            const formattedReplies =
+                await Promise.all(
+                    replies.map(
+                        async (reply) => {
+
+                            const mentions =
+                                await getReplyMentions(
+                                    reply.id
+                                );
+
+
+                            if (reply.student_id) {
+
+                                return {
+
+                                    id:
+                                        reply.id,
+
+                                    announcement_id:
+                                        reply.announcement_id,
+
+                                    message:
+                                        reply.message,
+
+                                    created_at:
+                                        reply.created_at,
+
+                                    mentions,
+
+                                    sender_id:
+                                        reply.student_id,
+
+                                    sender_name:
+                                        reply.student_name ||
+                                        "Siswa",
+
+                                    sender_type:
+                                        "student",
+
+                                    sender_role:
+                                        "student",
+
+                                    class_name:
+                                        reply.class_name
+                                };
+
+                            }
+
+
+                            return {
+
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions,
+
+                                sender_id:
+                                    reply.admin_id,
+
+                                sender_name:
+                                    reply.admin_name ||
+                                    "Admin / Guru",
+
+                                sender_type:
+                                    "admin",
+
+                                sender_role:
+                                    reply.admin_role ||
+                                    "admin",
+
+                                class_name:
+                                    null
+                            };
+
+                        }
+                    )
+                );
+
+
+            return res.json({
+
+                success: true,
+
+                replies:
+                    formattedReplies
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error live reply admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil live reply."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
 // ADMIN - AMBIL SEMUA REPLY ANNOUNCEMENT
 // ========================================
 
@@ -4220,35 +5137,65 @@ app.post(
             }
 
 
-            return res.json({
+const createdReply =
+    await tursoDb.get(
+        `
+            SELECT
+                id,
+                announcement_id,
+                message,
+                created_at
+            FROM announcement_replies
+            WHERE id = ?
+        `,
+        [
+            replyId
+        ]
+    );
 
-                success: true,
 
-                message:
-                    "Reply berhasil dikirim.",
+return res.json({
 
-                reply: {
+    success: true,
 
-                    id:
-                        replyId,
+    message:
+        "Reply berhasil dikirim.",
 
-                    announcementId,
+    reply: {
 
-                    adminId:
-                        numericAdminId,
+        id:
+            createdReply.id,
 
-                    senderName:
-                        currentAdmin.name,
+        announcement_id:
+            createdReply.announcement_id,
 
-                    senderRole:
-                        currentAdmin.role,
+        sender_type:
+            "admin",
 
-                    message:
-                        message.trim()
+        sender_id:
+            numericAdminId,
 
-                }
+        sender_name:
+            currentAdmin.name,
 
-            });
+        sender_role:
+            currentAdmin.role,
+
+        class_name:
+            null,
+
+        message:
+            createdReply.message,
+
+        created_at:
+            createdReply.created_at,
+
+        mentions:
+            mentions
+
+    }
+
+});
 
 
         } catch (error) {
@@ -4915,44 +5862,38 @@ app.patch(
 
         try {
 
-            let result;
+const result =
+    await tursoDb.run(
+        `
+            UPDATE notifications
+            SET is_read = 1
 
+            WHERE id = ?
 
-            if (studentId) {
+            AND (
+                (
+                    recipient_admin_id = ?
+                    AND ? IS NOT NULL
+                )
 
-                result =
-                    await tursoDb.run(
-                        `
-                            UPDATE notifications
-                            SET is_read = 1
+                OR
 
-                            WHERE id = ?
-                            AND recipient_student_id = ?
-                        `,
-                        [
-                            notificationId,
-                            studentId
-                        ]
-                    );
+                (
+                    recipient_student_id = ?
+                    AND ? IS NOT NULL
+                )
+            )
+        `,
+        [
+            notificationId,
 
-            } else {
+            adminId,
+            adminId,
 
-                result =
-                    await tursoDb.run(
-                        `
-                            UPDATE notifications
-                            SET is_read = 1
-
-                            WHERE id = ?
-                            AND recipient_admin_id = ?
-                        `,
-                        [
-                            notificationId,
-                            adminId
-                        ]
-                    );
-
-            }
+            studentId,
+            studentId
+        ]
+    );
 
 
             if (
@@ -6175,56 +7116,80 @@ app.delete(
         }
 
 
+        const teacherId =
+            Number(
+                req.params.teacherId
+            );
+
+
+        const password =
+            String(
+                req.body?.password || ""
+            );
+
+
+        if (
+            !Number.isInteger(
+                teacherId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "ID guru tidak valid."
+                });
+
+        }
+
+
+        if (
+            teacherId ===
+            Number(
+                req.session.adminId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Akun yang sedang digunakan tidak dapat dihapus."
+                });
+
+        }
+
+
+        if (!password) {
+
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message:
+                        "Password guru wajib diisi."
+                });
+
+        }
+
+
         try {
 
-            const teacherId =
-                Number(
-                    req.params.teacherId
-                );
-
-
-            if (
-                !Number.isInteger(
-                    teacherId
-                )
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        message:
-                            "ID guru tidak valid."
-                    });
-
-            }
-
-
-            if (
-                teacherId ===
-                Number(
-                    req.session.adminId
-                )
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        message:
-                            "Akun yang sedang digunakan tidak dapat dihapus."
-                    });
-
-            }
-
-
+            /*
+                Ambil akun target sekaligus
+                password hash-nya.
+            */
             const teacher =
                 await tursoDb.get(
                     `
                         SELECT
                             id,
                             name,
-                            username
+                            username,
+                            password
 
                         FROM admins
 
@@ -6249,6 +7214,10 @@ app.delete(
             }
 
 
+            /*
+                Jangan izinkan seluruh akun
+                guru habis.
+            */
             const teacherCount =
                 await tursoDb.get(
                     `
@@ -6276,26 +7245,235 @@ app.delete(
 
             }
 
+
+            /*
+                PASSWORD HARUS MILIK
+                GURU YANG AKAN DIHAPUS.
+            */
+            const passwordValid =
+                await bcrypt.compare(
+                    password,
+                    teacher.password
+                );
+
+
+            if (!passwordValid) {
+
+                return res
+                    .status(403)
+                    .json({
+                        success: false,
+                        message:
+                            "Password guru salah. Akun tidak dihapus."
+                    });
+
+            }
+
+
+            /*
+                =================================
+                1. NOTIFICATION
+
+                Hapus:
+                - notif yang dikirim guru
+                - notif yang diterima guru
+                - notif dari postingan guru
+                - notif dari reply guru
+                =================================
+            */
             await tursoDb.run(
-    `
-        UPDATE teacher_registration_codes
+                `
+                    DELETE FROM notifications
 
-        SET
-            used_by_admin_id = NULL
+                    WHERE
+                        sender_admin_id = ?
 
-        WHERE
-            used_by_admin_id = ?
-    `,
-    [
-        teacherId
-    ]
-);
+                    OR
+                        recipient_admin_id = ?
+
+                    OR
+                        announcement_id IN (
+                            SELECT id
+                            FROM announcements
+                            WHERE admin_id = ?
+                        )
+
+                    OR
+                        reply_id IN (
+                            SELECT id
+                            FROM announcement_replies
+                            WHERE admin_id = ?
+                        )
+                `,
+                [
+                    teacherId,
+                    teacherId,
+                    teacherId,
+                    teacherId
+                ]
+            );
 
 
+            /*
+                =================================
+                2. MENTION
+
+                Termasuk:
+                - mention yang menunjuk guru
+                - mention pada post guru
+                - mention pada reply guru
+                =================================
+            */
+            await tursoDb.run(
+                `
+                    DELETE FROM announcement_mentions
+
+                    WHERE
+                        mentioned_admin_id = ?
+
+                    OR
+                        announcement_id IN (
+                            SELECT id
+                            FROM announcements
+                            WHERE admin_id = ?
+                        )
+
+                    OR
+                        reply_id IN (
+                            SELECT id
+                            FROM announcement_replies
+                            WHERE admin_id = ?
+                        )
+                `,
+                [
+                    teacherId,
+                    teacherId,
+                    teacherId
+                ]
+            );
+
+
+            /*
+                =================================
+                3. REPLY CLASSROOM FEED
+
+                Hapus reply milik guru.
+
+                Kalau sebuah post utama dibuat
+                guru tersebut, seluruh reply
+                di bawah thread itu juga harus
+                ikut hilang karena post-nya
+                akan dihapus.
+                =================================
+            */
+            await tursoDb.run(
+                `
+                    DELETE FROM announcement_replies
+
+                    WHERE
+                        admin_id = ?
+
+                    OR
+                        announcement_id IN (
+                            SELECT id
+                            FROM announcements
+                            WHERE admin_id = ?
+                        )
+                `,
+                [
+                    teacherId,
+                    teacherId
+                ]
+            );
+
+
+            /*
+                =================================
+                4. POST CLASSROOM FEED
+                =================================
+            */
+            await tursoDb.run(
+                `
+                    DELETE FROM announcements
+
+                    WHERE admin_id = ?
+                `,
+                [
+                    teacherId
+                ]
+            );
+
+
+            /*
+                =================================
+                5. OFFICIAL ANNOUNCEMENT
+                =================================
+            */
+            await tursoDb.run(
+                `
+                    DELETE FROM public_announcements
+
+                    WHERE admin_id = ?
+                `,
+                [
+                    teacherId
+                ]
+            );
+
+
+            /*
+                =================================
+                6. REGISTRATION CODE
+
+                Kalau kode dibuat oleh guru
+                target, hapus.
+
+                Kalau guru target dulu pernah
+                menggunakan kode milik guru
+                lain, cukup putus referensi
+                used_by_admin_id.
+                =================================
+            */
+            await tursoDb.run(
+                `
+                    UPDATE teacher_registration_codes
+
+                    SET
+                        used_by_admin_id = NULL
+
+                    WHERE
+                        used_by_admin_id = ?
+                `,
+                [
+                    teacherId
+                ]
+            );
+
+
+            await tursoDb.run(
+                `
+                    DELETE FROM teacher_registration_codes
+
+                    WHERE
+                        created_by_admin_id = ?
+                `,
+                [
+                    teacherId
+                ]
+            );
+
+
+            /*
+                =================================
+                7. TERAKHIR:
+                   HAPUS AKUN GURU
+                =================================
+            */
             const result =
                 await tursoDb.run(
                     `
                         DELETE FROM admins
+
                         WHERE id = ?
                     `,
                     [
@@ -6323,24 +7501,28 @@ app.delete(
 
             return res.json({
                 success: true,
+
                 message:
-                    "Akun guru berhasil dihapus."
+                    `Akun ${teacher.name} berhasil dihapus beserta seluruh data terkait.`
             });
 
 
         } catch (error) {
 
             console.error(
-                "Gagal menghapus guru:",
+                "Gagal menghapus guru dan data terkait:",
                 error
             );
 
 
-            return res.status(500).json({
-                success: false,
-                message:
-                    "Akun guru belum dapat dihapus karena masih terhubung dengan data LMS."
-            });
+            return res
+                .status(500)
+                .json({
+                    success: false,
+
+                    message:
+                        "Gagal menghapus akun guru beserta data terkait."
+                });
 
         }
 
@@ -6843,18 +8025,28 @@ if (
     );
 
 
-    await tursoDb.run(
-        `
-            DELETE FROM students
-        `
-    );
+await tursoDb.run(
+    `
+        DELETE FROM students
+    `
+);
 
 
-    const tables = [
-        "students",
-        "point_transactions",
-        "exam_scores"
-    ];
+await ensureClassesTable();
+
+await tursoDb.run(
+    `
+        DELETE FROM classes
+    `
+);
+
+
+const tables = [
+    "students",
+    "point_transactions",
+    "exam_scores",
+    "classes"
+];
 
 
     for (const tableName of tables) {
@@ -6917,6 +8109,625 @@ throw new Error(
                     message:
                         "Reset data gagal."
                 });
+
+        }
+
+    }
+);
+
+// ========================================
+// LIVE FEED SISWA - POST BARU
+// ========================================
+
+app.get(
+    "/api/student/:studentId/announcements/live",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+        const afterId =
+            Number(
+                req.query.afterId || 0
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId !==
+                sessionStudentId
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Akses siswa tidak valid."
+            });
+
+        }
+
+
+        if (
+            !Number.isInteger(afterId) ||
+            afterId < 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID live feed tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            class_name
+                        FROM students
+                        WHERE id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const announcements =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcements.id,
+                            announcements.student_id,
+                            announcements.admin_id,
+                            announcements.class_name,
+                            announcements.message,
+                            announcements.created_at,
+
+                            students.name
+                                AS student_creator_name,
+
+                            students.class_name
+                                AS student_creator_class,
+
+                            admins.name
+                                AS admin_creator_name,
+
+                            admins.role
+                                AS admin_creator_role
+
+                        FROM announcements
+
+                        LEFT JOIN students
+                        ON students.id =
+                            announcements.student_id
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            announcements.admin_id
+
+                        WHERE
+                            announcements.id > ?
+
+                        AND (
+                            announcements.class_name
+                                IS NULL
+
+                            OR
+
+                            announcements.class_name = ?
+                        )
+
+                        ORDER BY
+                            announcements.id ASC
+                    `,
+                    [
+                        afterId,
+                        student.class_name
+                    ]
+                );
+
+
+            const formattedAnnouncements =
+                await Promise.all(
+                    announcements.map(
+                        async (
+                            announcement
+                        ) => ({
+                            ...announcement,
+
+                            mentions:
+                                await getAnnouncementMentions(
+                                    announcement.id
+                                )
+                        })
+                    )
+                );
+
+
+            return res.json({
+                success: true,
+                announcements:
+                    formattedAnnouncements
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error live feed siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil live feed siswa."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
+// LIVE FEED SISWA - REPLY BARU
+// ========================================
+
+app.get(
+    "/api/student/:studentId/replies/live",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+        const afterId =
+            Number(
+                req.query.afterId || 0
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId !==
+                sessionStudentId
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Akses siswa tidak valid."
+            });
+
+        }
+
+
+        if (
+            !Number.isInteger(afterId) ||
+            afterId < 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID live reply tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            class_name
+                        FROM students
+                        WHERE id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const replies =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcement_replies.id,
+                            announcement_replies.announcement_id,
+                            announcement_replies.message,
+                            announcement_replies.created_at,
+                            announcement_replies.student_id,
+                            announcement_replies.admin_id,
+
+                            students.name
+                                AS student_name,
+
+                            students.class_name
+                                AS class_name,
+
+                            admins.name
+                                AS admin_name,
+
+                            admins.role
+                                AS admin_role
+
+                        FROM announcement_replies
+
+                        INNER JOIN announcements
+                        ON announcements.id =
+                            announcement_replies.announcement_id
+
+                        LEFT JOIN students
+                        ON students.id =
+                            announcement_replies.student_id
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            announcement_replies.admin_id
+
+                        WHERE
+                            announcement_replies.id > ?
+
+                        AND (
+                            announcements.class_name
+                                IS NULL
+
+                            OR
+
+                            announcements.class_name = ?
+                        )
+
+                        ORDER BY
+                            announcement_replies.id ASC
+                    `,
+                    [
+                        afterId,
+                        student.class_name
+                    ]
+                );
+
+
+            const formattedReplies =
+                await Promise.all(
+                    replies.map(
+                        async (reply) => {
+
+                            const mentions =
+                                await getReplyMentions(
+                                    reply.id
+                                );
+
+
+                            if (
+                                reply.student_id
+                            ) {
+
+                                return {
+                                    id:
+                                        reply.id,
+
+                                    announcement_id:
+                                        reply.announcement_id,
+
+                                    message:
+                                        reply.message,
+
+                                    created_at:
+                                        reply.created_at,
+
+                                    mentions,
+
+                                    sender_id:
+                                        reply.student_id,
+
+                                    sender_name:
+                                        reply.student_name ||
+                                        "Siswa",
+
+                                    sender_type:
+                                        "student",
+
+                                    sender_role:
+                                        "student",
+
+                                    class_name:
+                                        reply.class_name
+                                };
+
+                            }
+
+
+                            return {
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions,
+
+                                sender_id:
+                                    reply.admin_id,
+
+                                sender_name:
+                                    reply.admin_name ||
+                                    "Admin / Guru",
+
+                                sender_type:
+                                    "admin",
+
+                                sender_role:
+                                    reply.admin_role ||
+                                    "Admin / Guru",
+
+                                class_name:
+                                    null
+                            };
+
+                        }
+                    )
+                );
+
+
+            return res.json({
+                success: true,
+                replies:
+                    formattedReplies
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error live reply siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil live reply siswa."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
+// LIVE FEED SISWA - STATE ID
+// UNTUK DETEKSI DELETE
+// ========================================
+
+app.get(
+    "/api/student/:studentId/classroom-feed/state",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId !==
+                sessionStudentId
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Akses siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            class_name
+                        FROM students
+                        WHERE id = ?
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const announcements =
+                await tursoDb.all(
+                    `
+                        SELECT id
+                        FROM announcements
+
+                        WHERE
+                            class_name IS NULL
+
+                        OR
+
+                            class_name = ?
+                    `,
+                    [
+                        student.class_name
+                    ]
+                );
+
+
+            const replies =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcement_replies.id,
+                            announcement_replies.announcement_id
+
+                        FROM announcement_replies
+
+                        INNER JOIN announcements
+                        ON announcements.id =
+                            announcement_replies.announcement_id
+
+                        WHERE
+                            announcements.class_name
+                                IS NULL
+
+                        OR
+
+                            announcements.class_name = ?
+                    `,
+                    [
+                        student.class_name
+                    ]
+                );
+
+
+            return res.json({
+                success: true,
+
+                announcementIds:
+                    announcements.map(
+                        (announcement) =>
+                            Number(
+                                announcement.id
+                            )
+                    ),
+
+                replies:
+                    replies.map(
+                        (reply) => ({
+                            id:
+                                Number(
+                                    reply.id
+                                ),
+
+                            announcement_id:
+                                Number(
+                                    reply.announcement_id
+                                )
+                        })
+                    )
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error classroom feed state siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil state Classroom Feed siswa."
+            });
 
         }
 

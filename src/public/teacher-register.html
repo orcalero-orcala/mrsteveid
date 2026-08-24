@@ -122,14 +122,26 @@
                         Password
                     </label>
 
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="Minimal 8 karakter"
-                        autocomplete="new-password"
-                        minlength="8"
-                        required
-                    >
+<div class="password-hold-field">
+
+    <input
+    type="password"
+    id="password"
+    name="password"
+    placeholder="Buat password"
+    autocomplete="new-password"
+    required
+>
+
+    <button
+        type="button"
+        class="password-hold-button"
+        aria-label="Tahan untuk melihat password"
+    >
+        👁
+    </button>
+
+</div>
 
                 </div>
 
@@ -180,7 +192,7 @@
 
     </main>
 
-
+<script src="/time.js"></script>
     <script>
 
         const form =
@@ -224,7 +236,7 @@
                         "code"
                     ).value.trim();
 
-
+                message.classList.remove("auth-error");
                 message.textContent =
                     "Membuat akun guru...";
 
@@ -260,9 +272,11 @@
 
                     if (!data.success) {
 
-                        message.textContent =
-                            data.message ||
-                            "Registrasi gagal.";
+message.classList.add("auth-error");
+
+message.textContent =
+    data.message ||
+    "Registrasi gagal.";
 
                         return;
 
@@ -288,13 +302,129 @@
 
                     console.error(error);
 
-                    message.textContent =
-                        "Tidak dapat terhubung ke server.";
+message.classList.add("auth-error");
+
+message.textContent =
+    "Tidak dapat terhubung ke server.";
 
                 }
 
             }
         );
+
+        function setupHoldPasswordReveal() {
+
+    document
+        .querySelectorAll(
+            ".password-hold-field"
+        )
+        .forEach(
+            (field) => {
+
+                const input =
+                    field.querySelector(
+                        'input[type="password"], input[data-password-field]'
+                    );
+
+                const button =
+                    field.querySelector(
+                        ".password-hold-button"
+                    );
+
+
+                if (
+                    !input ||
+                    !button
+                ) {
+
+                    return;
+
+                }
+
+
+                input.dataset.passwordField =
+                    "true";
+
+
+                const showPassword = (
+                    event
+                ) => {
+
+                    event.preventDefault();
+
+                    input.type =
+                        "text";
+
+                    button.classList.add(
+                        "is-revealing"
+                    );
+
+                };
+
+
+                const hidePassword = (
+                    event
+                ) => {
+
+                    if (event) {
+
+                        event.preventDefault();
+
+                    }
+
+
+                    input.type =
+                        "password";
+
+                    button.classList.remove(
+                        "is-revealing"
+                    );
+
+                };
+
+
+                button.addEventListener(
+                    "pointerdown",
+                    showPassword
+                );
+
+
+                button.addEventListener(
+                    "pointerup",
+                    hidePassword
+                );
+
+
+                button.addEventListener(
+                    "pointercancel",
+                    hidePassword
+                );
+
+
+                button.addEventListener(
+                    "pointerleave",
+                    hidePassword
+                );
+
+
+                window.addEventListener(
+                    "pointerup",
+                    hidePassword
+                );
+
+
+                window.addEventListener(
+                    "blur",
+                    hidePassword
+                );
+
+            }
+        );
+
+}
+
+
+setupHoldPasswordReveal();
 
     </script>
 

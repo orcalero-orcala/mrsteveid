@@ -311,7 +311,8 @@
         </main>
 
     </div>
-
+<script src="/student-session.js"></script>
+<script src="/time.js"></script>
     <script>
 
         function goToProfile() {
@@ -601,7 +602,9 @@ data.examScores.forEach(
                 </span>
 
                 <strong>
-                    ${examScore.created_at}
+                    ${formatDeviceDateTime(
+    examScore.created_at
+)}
                 </strong>
 
             </div>
@@ -730,6 +733,8 @@ async function logout() {
         loadExamScores();
 
     </script>
+
+    <script src="/mobile-nav.js"></script>
 
 </body>
 
