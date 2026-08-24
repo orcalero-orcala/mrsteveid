@@ -7550,7 +7550,7 @@ app.post(
 
             const passwordHash =
                 await bcrypt.hash(
-                    "cruise@fl350",
+                    "admin123",
                     12
                 );
 
@@ -7624,20 +7624,31 @@ app.post(
             );
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        students
-                `
-            );
+await tursoDb.run(
+    `
+        DELETE FROM students
+    `
+);
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        admins
-                `
-            );
+/*
+    Factory Reset juga harus
+    menghapus seluruh Master Kelas.
+*/
+await ensureClassesTable();
+
+await tursoDb.run(
+    `
+        DELETE FROM classes
+    `
+);
+
+
+await tursoDb.run(
+    `
+        DELETE FROM admins
+    `
+);
 
 
             /*
@@ -7645,18 +7656,19 @@ app.post(
                 database benar-benar fresh.
             */
 
-            const sequences = [
-                "announcement_mentions",
-                "notifications",
-                "announcement_replies",
-                "announcements",
-                "public_announcements",
-                "point_transactions",
-                "exam_scores",
-                "teacher_registration_codes",
-                "students",
-                "admins"
-            ];
+const sequences = [
+    "announcement_mentions",
+    "notifications",
+    "announcement_replies",
+    "announcements",
+    "public_announcements",
+    "point_transactions",
+    "exam_scores",
+    "teacher_registration_codes",
+    "students",
+    "classes",
+    "admins"
+];
 
 
             for (const tableName of sequences) {
@@ -7678,29 +7690,29 @@ app.post(
                 Buat kembali akun guru default.
             */
 
-            await tursoDb.run(
-                `
-                    INSERT INTO admins (
-                        username,
-                        password,
-                        name,
-                        role
-                    )
+await tursoDb.run(
+    `
+        INSERT INTO admins (
+            username,
+            password,
+            name,
+            role
+        )
 
-                    VALUES (
-                        ?,
-                        ?,
-                        ?,
-                        ?
-                    )
-                `,
-                [
-                    "steven",
-                    passwordHash,
-                    "Steven",
-                    "teacher"
-                ]
-            );
+        VALUES (
+            ?,
+            ?,
+            ?,
+            ?
+        )
+    `,
+    [
+        "admin",
+        passwordHash,
+        "Admin",
+        "teacher"
+    ]
+);
 
 
             /*
@@ -7727,8 +7739,8 @@ app.post(
             return res.json({
                 success: true,
 
-                message:
-                    "Factory reset berhasil. Semua data telah dihapus dan akun default Steven dibuat kembali."
+message:
+    "Factory reset berhasil. Semua data telah dihapus dan akun default sementara dibuat kembali."
             });
 
 
