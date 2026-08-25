@@ -390,30 +390,49 @@
 
                 <section class="feed-list-section">
 
-                    <div class="section-heading">
+ <div class="section-heading">
 
-                        <div>
+    <div>
 
-                            <h2>
-                                Feed Terbaru
-                            </h2>
+        <h2>
+            Feed Terbaru
+        </h2>
 
-                            <p>
-                                Post dan diskusi terbaru
-                            </p>
+        <p>
+            Post dan diskusi terbaru
+        </p>
 
-                        </div>
+    </div>
 
 
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            onclick="loadAnnouncements()"
-                        >
-                            ↻ Refresh
-                        </button>
+    <div class="feed-filter-actions">
 
-                    </div>
+        <select
+            id="adminFeedFilter"
+            class="feed-filter-select"
+            aria-label="Filter Classroom Feed"
+        >
+            <option value="all">
+                Semua
+            </option>
+
+            <option value="global">
+                Global
+            </option>
+        </select>
+
+
+        <button
+            type="button"
+            class="secondary-button"
+            onclick="loadAnnouncements()"
+        >
+            ↻ Refresh
+        </button>
+
+    </div>
+
+</div>
 
 
                     <div
@@ -724,28 +743,44 @@ function formatMessage(
     }
 
 
-    mentions.forEach(
-        (mention) => {
+    const mentionNames =
+        [
+            ...new Set(
+                mentions
+                    .filter(
+                        (mention) =>
+                            mention &&
+                            mention.name
+                    )
+                    .map(
+                        (mention) =>
+                            mention.name
+                    )
+            )
+        ];
 
-            if (
-                !mention ||
-                !mention.name
-            ) {
-                return;
-            }
 
+    mentionNames.sort(
+        (a, b) =>
+            b.length - a.length
+    );
+
+
+    mentionNames.forEach(
+        (name) => {
 
             const mentionText =
-                `@${escapeHtml(
-                    mention.name
-                )}`;
+                `@${escapeHtml(name)}`;
 
 
             safeText =
-                safeText.replace(
-                    mentionText,
-                    `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
-                );
+                safeText
+                    .split(
+                        mentionText
+                    )
+                    .join(
+                        `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
+                    );
 
         }
     );
@@ -1189,30 +1224,18 @@ async function openAdminNotification(
     }
 
 
-    const alreadySelected =
-        form.selectedMentions.some(
-            (mention) =>
-                mention.id === user.id &&
-                mention.type === user.type
-        );
+ form.selectedMentions.push({
 
+    id:
+        user.id,
 
-    if (!alreadySelected) {
+    type:
+        user.type,
 
-        form.selectedMentions.push({
+    name:
+        user.name
 
-            id:
-                user.id,
-
-            type:
-                user.type,
-
-            name:
-                user.name
-
-        });
-
-    }
+});
 
 
     input.value =
@@ -1617,6 +1640,15 @@ document.getElementById(
                 "className"
             );
 
+            const adminFeedFilter =
+    document.getElementById(
+        "adminFeedFilter"
+    );
+
+
+let activeAdminFeedFilter =
+    "all";
+
 
         const announcementMessage =
             document.getElementById(
@@ -1665,29 +1697,57 @@ async function loadClassOptions() {
             </option>
         `;
 
+        adminFeedFilter.innerHTML = `
+    <option value="all">
+        Semua
+    </option>
 
-        data.classes.forEach(
-            (classData) => {
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-
-                option.value =
-                    classData.name;
-
-                option.textContent =
-                    classData.name;
+    <option value="global">
+        Global
+    </option>
+`;
 
 
-                classNameInput.appendChild(
-                    option
-                );
+data.classes.forEach(
+    (classData) => {
 
-            }
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.value =
+            classData.name;
+
+        option.textContent =
+            classData.name;
+
+
+        classNameInput.appendChild(
+            option
         );
+
+
+        const filterOption =
+            document.createElement(
+                "option"
+            );
+
+
+        filterOption.value =
+            `class:${classData.name}`;
+
+        filterOption.textContent =
+            classData.name;
+
+
+        adminFeedFilter.appendChild(
+            filterOption
+        );
+
+    }
+);
 
 
     } catch (error) {
@@ -1979,28 +2039,16 @@ const filteredUsers =
                             textAfterCursor;
 
 
-                        const alreadySelected =
-                            adminAnnouncementMentions.some(
-                                (mention) =>
-                                    mention.id === user.id &&
-                                    mention.type === user.type
-                            );
+ adminAnnouncementMentions.push({
+    id:
+        user.id,
 
+    type:
+        user.type,
 
-                        if (!alreadySelected) {
-
-                            adminAnnouncementMentions.push({
-                                id:
-                                    user.id,
-
-                                type:
-                                    user.type,
-
-                                name:
-                                    user.name
-                            });
-
-                        }
+    name:
+        user.name
+});
 
 
                         adminAnnouncementMentionSuggestions.style.display =
@@ -2212,16 +2260,22 @@ const detectedMentions =
 
 
 const finalMentions =
-    [];
+    [
+        ...adminAnnouncementMentions
+    ];
 
 
-[
-    ...adminAnnouncementMentions,
-    ...detectedMentions
-].forEach(
+/*
+    detectedMentions hanya fallback
+    untuk mention yang diketik manual.
+
+    Mention yang dipilih dua kali dari
+    autocomplete TIDAK boleh dihapus.
+*/
+detectedMentions.forEach(
     (mention) => {
 
-        const exists =
+        const alreadyIncluded =
             finalMentions.some(
                 (existing) =>
                     existing.id ===
@@ -2231,7 +2285,7 @@ const finalMentions =
             );
 
 
-        if (!exists) {
+        if (!alreadyIncluded) {
 
             finalMentions.push(
                 mention
@@ -2458,6 +2512,10 @@ setupAdminMentionAutocomplete(
     card.className =
         "feed-card admin-feed-card";
 
+    card.dataset.feedClass =
+    announcement.class_name ||
+    "";
+
 
     card.innerHTML = `
 
@@ -2626,6 +2684,122 @@ let adminFeedLoading =
 let adminLiveSyncRunning =
     false;
 
+function applyAdminFeedFilter() {
+
+    const oldEmptyMessage =
+        announcementList.querySelector(
+            ".admin-feed-filter-empty"
+        );
+
+
+    if (oldEmptyMessage) {
+        oldEmptyMessage.remove();
+    }
+
+
+    const cards =
+        announcementList.querySelectorAll(
+            ':scope > [id^="announcement-"]'
+        );
+
+
+    let visibleCount =
+        0;
+
+
+    cards.forEach(
+        (card) => {
+
+            const cardClass =
+                card.dataset.feedClass ||
+                "";
+
+
+            let shouldShow =
+                true;
+
+
+            if (
+                activeAdminFeedFilter ===
+                "global"
+            ) {
+
+                shouldShow =
+                    cardClass === "";
+
+            } else if (
+                activeAdminFeedFilter.startsWith(
+                    "class:"
+                )
+            ) {
+
+                const selectedClass =
+                    activeAdminFeedFilter.slice(
+                        6
+                    );
+
+
+                shouldShow =
+                    cardClass ===
+                    selectedClass;
+
+            }
+
+
+            card.style.display =
+                shouldShow
+                    ? ""
+                    : "none";
+
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+
+        }
+    );
+
+
+    if (
+        cards.length > 0 &&
+        visibleCount === 0
+    ) {
+
+        const emptyMessage =
+            document.createElement(
+                "p"
+            );
+
+
+        emptyMessage.className =
+            "admin-feed-filter-empty";
+
+
+        emptyMessage.textContent =
+            "Belum ada announcement.";
+
+
+        announcementList.appendChild(
+            emptyMessage
+        );
+
+    }
+
+}
+
+adminFeedFilter.addEventListener(
+    "change",
+    () => {
+
+        activeAdminFeedFilter =
+            adminFeedFilter.value;
+
+
+        applyAdminFeedFilter();
+
+    }
+);
+
         // =================================
         // LOAD ANNOUNCEMENTS
         // =================================
@@ -2748,7 +2922,6 @@ data.announcements.forEach(
 
         }
 
-
         replies.forEach(
             (reply) => {
 
@@ -2790,6 +2963,7 @@ setupAdminMentionAutocomplete(
     announcementList
 );
 
+applyAdminFeedFilter();
 
     } catch (error) {
 
@@ -3858,6 +4032,8 @@ if (
 announcementList.prepend(
     card
 );
+
+applyAdminFeedFilter();
 
 
                 latestAnnouncementId =

@@ -2472,31 +2472,60 @@ app.post(
                 );
 
 
-            const announcementId =
-                Number(
-                    result.lastInsertRowid
-                );
+ const announcementId =
+    Number(
+        result.lastInsertRowid
+    );
 
 
-            // =====================================
-            // PROSES MENTION
-            // =====================================
+// =====================================
+// PROSES MENTION
+// =====================================
 
-            for (const mention of mentions) {
-
-                const mentionId =
-                    Number(mention.id);
+const processedMentions =
+    new Set();
 
 
-                if (
-                    !Number.isInteger(
-                        mentionId
-                    )
-                ) {
+for (const mention of mentions) {
 
-                    continue;
+    const mentionId =
+        Number(mention.id);
 
-                }
+
+    if (
+        !Number.isInteger(
+            mentionId
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    const mentionKey =
+        `${mention.type}:${mentionId}`;
+
+
+    if (
+        processedMentions.has(
+            mentionKey
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    processedMentions.add(
+        mentionKey
+    );
+
+
+    // =================================
+    // MENTION SISWA
+    // =================================
 
 
                 // =================================
@@ -3801,10 +3830,15 @@ app.get(
                         ON admins.id =
                             announcements.admin_id
 
-                        WHERE announcements.id > ?
+WHERE
+    announcements.id > ?
 
-                        ORDER BY
-                            announcements.id ASC
+AND
+    announcements.created_at <=
+        datetime('now', '-1 second')
+
+ORDER BY
+    announcements.id ASC
                     `,
                     [
                         afterId
@@ -4674,25 +4708,49 @@ if (!student) {
                 );
 
 
-            // =====================================
-            // PROSES MENTION
-            // =====================================
+// =====================================
+// PROSES MENTION
+// =====================================
 
-            for (const mention of mentions) {
-
-                const mentionId =
-                    Number(mention.id);
+const processedMentions =
+    new Set();
 
 
-                if (
-                    !Number.isInteger(
-                        mentionId
-                    )
-                ) {
+for (const mention of mentions) {
 
-                    continue;
+    const mentionId =
+        Number(mention.id);
 
-                }
+
+    if (
+        !Number.isInteger(
+            mentionId
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    const mentionKey =
+        `${mention.type}:${mentionId}`;
+
+
+    if (
+        processedMentions.has(
+            mentionKey
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    processedMentions.add(
+        mentionKey
+    );
 
 
                 // =================================
@@ -5627,25 +5685,49 @@ if (!currentAdmin) {
                 );
 
 
-            // =====================================
-            // PROSES MENTION
-            // =====================================
+// =====================================
+// PROSES MENTION
+// =====================================
 
-            for (const mention of mentions) {
-
-                const mentionId =
-                    Number(mention.id);
+const processedMentions =
+    new Set();
 
 
-                if (
-                    !Number.isInteger(
-                        mentionId
-                    )
-                ) {
+for (const mention of mentions) {
 
-                    continue;
+    const mentionId =
+        Number(mention.id);
 
-                }
+
+    if (
+        !Number.isInteger(
+            mentionId
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    const mentionKey =
+        `${mention.type}:${mentionId}`;
+
+
+    if (
+        processedMentions.has(
+            mentionKey
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    processedMentions.add(
+        mentionKey
+    );
 
 
                 // =================================

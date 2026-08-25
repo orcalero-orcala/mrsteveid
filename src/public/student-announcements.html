@@ -114,7 +114,7 @@
                     onclick="goToDashboard()"
                 >
                     <span class="nav-icon">
-                        ⌂
+                        ◫
                     </span>
 
                     Dashboard
@@ -444,13 +444,36 @@
     </div>
 
 
-<button
-    id="studentFeedRefreshButton"
-    type="button"
-    class="secondary-button"
->
-    ↻ Refresh
-</button>
+    <div class="feed-filter-actions">
+
+        <select
+            id="studentFeedFilter"
+            class="feed-filter-select"
+            aria-label="Filter Classroom Feed"
+        >
+            <option value="all">
+                Semua
+            </option>
+
+            <option value="global">
+                Global
+            </option>
+
+            <option value="class">
+                Kelas Saya
+            </option>
+        </select>
+
+
+        <button
+            id="studentFeedRefreshButton"
+            type="button"
+            class="secondary-button"
+        >
+            ↻ Refresh
+        </button>
+
+    </div>
 
 </div>
 
@@ -571,6 +594,15 @@
                 "announcementList"
             );
 
+            const studentFeedFilter =
+    document.getElementById(
+        "studentFeedFilter"
+    );
+
+
+let activeStudentFeedFilter =
+    "all";
+
         const studentAnnouncementForm =
             document.getElementById(
                 "studentAnnouncementForm"
@@ -613,6 +645,120 @@ let studentLiveSyncRunning =
         let latestReplyId = 0;
 
         let studentLivePollingTimer = null;
+
+        function applyStudentFeedFilter() {
+
+    const oldEmptyMessage =
+        announcementList.querySelector(
+            ".student-feed-filter-empty"
+        );
+
+
+    if (oldEmptyMessage) {
+        oldEmptyMessage.remove();
+    }
+
+
+    const cards =
+        announcementList.querySelectorAll(
+            ':scope > [id^="announcement-"]'
+        );
+
+
+    let visibleCount =
+        0;
+
+
+    cards.forEach(
+        (card) => {
+
+            const cardClass =
+                card.dataset.feedClass ||
+                "";
+
+
+            let shouldShow =
+                true;
+
+
+            if (
+                activeStudentFeedFilter ===
+                "global"
+            ) {
+
+                shouldShow =
+                    cardClass === "";
+
+            } else if (
+                activeStudentFeedFilter ===
+                "class"
+            ) {
+
+                shouldShow =
+                    cardClass ===
+                    studentClass;
+
+            }
+
+
+            card.style.display =
+                shouldShow
+                    ? ""
+                    : "none";
+
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+
+        }
+    );
+
+
+    /*
+        Feed sebenarnya berisi post,
+        tetapi filter aktif tidak punya hasil.
+    */
+    if (
+        cards.length > 0 &&
+        visibleCount === 0
+    ) {
+
+        const emptyMessage =
+            document.createElement(
+                "p"
+            );
+
+
+        emptyMessage.className =
+            "student-feed-filter-empty";
+
+
+        emptyMessage.textContent =
+            "Belum ada announcement.";
+
+
+        announcementList.appendChild(
+            emptyMessage
+        );
+
+    }
+
+}
+
+
+studentFeedFilter.addEventListener(
+    "change",
+    () => {
+
+        activeStudentFeedFilter =
+            studentFeedFilter.value;
+
+
+        applyStudentFeedFilter();
+
+    }
+);
 
 
         // =====================================
@@ -711,54 +857,66 @@ let studentLiveSyncRunning =
         }
 
 
-        function formatMessage(
-            text,
-            mentions = []
-        ) {
+function formatMessage(
+    text,
+    mentions = []
+) {
 
-            let safeText =
-                escapeHtml(text);
-
-
-            if (!Array.isArray(mentions)) {
-
-                return safeText;
-
-            }
+    let safeText =
+        escapeHtml(text);
 
 
-            mentions.forEach(
-                (mention) => {
-
-                    if (
-                        !mention ||
-                        !mention.name
-                    ) {
-
-                        return;
-
-                    }
+    if (!Array.isArray(mentions)) {
+        return safeText;
+    }
 
 
-                    const mentionText =
-                        `@${escapeHtml(
+    const mentionNames =
+        [
+            ...new Set(
+                mentions
+                    .filter(
+                        (mention) =>
+                            mention &&
                             mention.name
-                        )}`;
+                    )
+                    .map(
+                        (mention) =>
+                            mention.name
+                    )
+            )
+        ];
 
 
-                    safeText =
-                        safeText.replace(
-                            mentionText,
-                            `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
-                        );
-
-                }
-            );
+    mentionNames.sort(
+        (a, b) =>
+            b.length - a.length
+    );
 
 
-            return safeText;
+    mentionNames.forEach(
+        (name) => {
+
+            const mentionText =
+                `@${escapeHtml(name)}`;
+
+
+            safeText =
+                safeText
+                    .split(
+                        mentionText
+                    )
+                    .join(
+                        `<span style="color: #2563eb; font-weight: 600;">${mentionText}</span>`
+                    );
 
         }
+    );
+
+
+    return safeText;
+
+}
 
 
         function removeAnnouncementEmptyState() {
@@ -1642,30 +1800,16 @@ ${
                                     afterCursor;
 
 
-                                const alreadySelected =
-                                    studentAnnouncementMentions.some(
-                                        (mention) =>
-                                            mention.id ===
-                                                user.id &&
-                                            mention.type ===
-                                                user.type
-                                    );
+ studentAnnouncementMentions.push({
+    id:
+        user.id,
 
+    type:
+        user.type,
 
-                                if (
-                                    !alreadySelected
-                                ) {
-
-                                    studentAnnouncementMentions.push({
-                                        id:
-                                            user.id,
-                                        type:
-                                            user.type,
-                                        name:
-                                            user.name
-                                    });
-
-                                }
+    name:
+        user.name
+});
 
 
                                 studentAnnouncementMentionSuggestions.style.display =
@@ -1836,30 +1980,16 @@ ${
             }
 
 
-            const alreadySelected =
-                form.selectedMentions.some(
-                    (mention) =>
-                        mention.id ===
-                            user.id &&
-                        mention.type ===
-                            user.type
-                );
+form.selectedMentions.push({
+    id:
+        user.id,
 
+    type:
+        user.type,
 
-            if (
-                !alreadySelected
-            ) {
-
-                form.selectedMentions.push({
-                    id:
-                        user.id,
-                    type:
-                        user.type,
-                    name:
-                        user.name
-                });
-
-            }
+    name:
+        user.name
+});
 
 
             input.value =
@@ -2142,6 +2272,10 @@ ${
                 announcement.class_name ??
                 announcement.className ??
                 null;
+
+                card.dataset.feedClass =
+    className ||
+    "";
 
 
             const creatorName =
@@ -2719,6 +2853,8 @@ async function loadAnnouncements(
             }
         );
 
+        applyStudentFeedFilter();
+
 
         /*
             Semua post + replies
@@ -2951,16 +3087,22 @@ const detectedMentions =
 
 
 const mentions =
-    [];
+    [
+        ...studentAnnouncementMentions
+    ];
 
 
-[
-    ...studentAnnouncementMentions,
-    ...detectedMentions
-].forEach(
+/*
+    detectedMentions hanya fallback
+    untuk mention manual.
+
+    Duplicate yang memang dipilih user
+    tetap dipertahankan.
+*/
+detectedMentions.forEach(
     (mention) => {
 
-        const exists =
+        const alreadyIncluded =
             mentions.some(
                 (existing) =>
                     existing.id ===
@@ -2970,7 +3112,7 @@ const mentions =
             );
 
 
-        if (!exists) {
+        if (!alreadyIncluded) {
 
             mentions.push(
                 mention
@@ -3071,6 +3213,7 @@ if (existingCard) {
 
 }
 
+applyStudentFeedFilter();
 
 latestAnnouncementId =
     Math.max(
@@ -3198,12 +3341,14 @@ async function deleteStudentAnnouncement(
             );
 
 
-        if (card) {
-            card.remove();
-        }
+if (card) {
+    card.remove();
+}
 
 
-        ensureAnnouncementEmptyState();
+ensureAnnouncementEmptyState();
+
+applyStudentFeedFilter();
 
 
     } catch (error) {
@@ -3270,6 +3415,34 @@ async function deleteStudentAnnouncement(
                     )
                 ];
 
+                const uniqueMentions =
+    [];
+
+
+mentions.forEach(
+    (mention) => {
+
+        const alreadyExists =
+            uniqueMentions.some(
+                (existing) =>
+                    existing.id ===
+                        mention.id &&
+                    existing.type ===
+                        mention.type
+            );
+
+
+        if (!alreadyExists) {
+
+            uniqueMentions.push(
+                mention
+            );
+
+        }
+
+    }
+);
+
 
             if (
                 !message
@@ -3308,7 +3481,8 @@ async function deleteStudentAnnouncement(
                                             studentId
                                         ),
                                     message,
-                                    mentions
+                                    mentions:
+                                        uniqueMentions
                                 })
                         }
                     );
@@ -3620,6 +3794,8 @@ async function checkLiveAnnouncements() {
                                 announcement
                             )
                         );
+
+                        applyStudentFeedFilter();
 
                     }
                 );

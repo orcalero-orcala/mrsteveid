@@ -9665,3 +9665,187 @@ input::placeholder {
     align-self: flex-start !important;
     margin-top: 2px !important;
 }
+
+/* =========================================
+   CLASSROOM FEED FILTER
+   ========================================= */
+
+.feed-filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+.feed-filter-select {
+    width: 160px;
+    min-width: 160px;
+    height: 44px;
+
+    padding:
+        0 34px
+        0 12px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius-sm);
+
+    background:
+        #111924;
+
+    color:
+        var(--text-soft);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: none;
+}
+
+
+.feed-filter-select:hover {
+    border-color:
+        var(--border-light);
+}
+
+
+.feed-filter-select:focus {
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.12);
+}
+
+
+.feed-filter-actions
+.secondary-button {
+    min-height: 40px;
+
+    flex-shrink: 0;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   CLASSROOM FEED FILTER - MOBILE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .feed-list-section
+    .section-heading {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            104px
+            auto;
+
+        gap: 8px;
+
+        align-items: center;
+    }
+
+
+    /*
+        Feed Terbaru + deskripsi
+        tetap di sisi kiri.
+    */
+    .feed-list-section
+    .section-heading
+    > div:first-child {
+        grid-column: 1;
+
+        min-width: 0;
+
+        text-align: left;
+    }
+
+
+    .feed-list-section
+    .section-heading
+    h2 {
+        font-size: 15px;
+    }
+
+
+    .feed-list-section
+    .section-heading
+    p {
+        font-size: 10px;
+
+        white-space: nowrap;
+    }
+
+
+    /*
+        Select dan Refresh menjadi
+        item grid terpisah.
+    */
+    .feed-filter-actions {
+        display: contents;
+    }
+
+
+.feed-filter-select {
+    grid-column: 2;
+
+    width: 104px;
+    min-width: 104px;
+    height: 38px;
+
+    padding:
+        0 28px
+        0 11px;
+
+    font-size: 12px;
+
+    border-radius: 8px;
+}
+
+
+.feed-filter-actions
+.secondary-button {
+    grid-column: 3;
+
+    width: auto;
+    min-height: 38px;
+
+    padding:
+        8px 11px;
+
+    margin: 0;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+}
+
+}
+
+/* =========================================
+   CLASSROOM FEED - MOBILE COMPOSER
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .feed-composer
+    .feed-field-label,
+
+    .admin-feed-composer
+    .feed-target-label {
+        display: none;
+    }
+
+}
