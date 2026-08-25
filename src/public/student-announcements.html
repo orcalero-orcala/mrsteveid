@@ -444,13 +444,13 @@
     </div>
 
 
-    <button
-        type="button"
-        class="secondary-button"
-        onclick="hardRefreshStudentFeed()"
-    >
-        ↻ Refresh
-    </button>
+<button
+    id="studentFeedRefreshButton"
+    type="button"
+    class="secondary-button"
+>
+    ↻ Refresh
+</button>
 
 </div>
 
@@ -603,6 +603,12 @@
         let studentMentionLoadVersion = 0;
 
         let latestAnnouncementId = 0;
+
+        let studentFeedLoading =
+    false;
+
+let studentLiveSyncRunning =
+    false;
 
         let latestReplyId = 0;
 
@@ -833,10 +839,10 @@
 
             try {
 
-                const response =
-                    await fetch(
-                        `/api/student/${studentId}/notifications`
-                    );
+const response =
+    await fetch(
+        `/api/student/${studentId}/notifications/count`
+    );
 
 
                 const data =
@@ -2535,127 +2541,225 @@ const createdAt =
         // LOAD AWAL
         // =====================================
 
-        async function loadAnnouncements() {
+async function loadAnnouncements(
+    onPostsRendered = null
+) {
 
-            announcementList.innerHTML =
-                "Memuat announcement...";
+    if (studentFeedLoading) {
+        return;
+    }
 
 
-            try {
+    studentFeedLoading =
+        true;
 
-                const response =
-                    await fetch(
-                        `/api/student/${studentId}/announcements`
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/announcements`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            announcementList.innerHTML = `
+                <p>
+                    ${escapeHtml(
+                        data.message ||
+                        "Gagal mengambil announcement."
+                    )}
+                </p>
+            `;
+
+            return;
+
+        }
+
+
+        announcementList.innerHTML =
+            "";
+
+
+        latestAnnouncementId =
+            0;
+
+        latestReplyId =
+            0;
+
+
+        if (
+            !Array.isArray(
+                data.announcements
+            ) ||
+            data.announcements.length ===
+                0
+        ) {
+
+            ensureAnnouncementEmptyState();
+
+
+            if (
+                typeof onPostsRendered ===
+                    "function"
+            ) {
+
+                onPostsRendered();
+
+            }
+
+
+            return;
+
+        }
+
+
+        /*
+            Backend sekarang sudah mengirim:
+            announcement + mentions + replies.
+
+            Tidak perlu fetch reply
+            satu per satu lagi.
+        */
+        data.announcements.forEach(
+            (announcement) => {
+
+                latestAnnouncementId =
+                    Math.max(
+                        latestAnnouncementId,
+                        Number(
+                            announcement.id
+                        )
                     );
 
 
-                const data =
-                    await response.json();
+                const card =
+                    createStudentAnnouncementCard(
+                        announcement
+                    );
 
 
-                if (
-                    !data.success
-                ) {
+                announcementList.appendChild(
+                    card
+                );
 
-                    announcementList.innerHTML = `
-                        <p>
-                            ${escapeHtml(
-                                data.message ||
-                                "Gagal mengambil announcement."
-                            )}
-                        </p>
-                    `;
 
+                const replyContainer =
+                    document.getElementById(
+                        `replies-${announcement.id}`
+                    );
+
+
+                if (!replyContainer) {
                     return;
-
                 }
 
 
-                announcementList.innerHTML =
+                const replies =
+                    Array.isArray(
+                        announcement.replies
+                    )
+                        ? announcement.replies
+                        : [];
+
+
+                replyContainer.innerHTML =
                     "";
 
 
-                latestAnnouncementId =
-                    0;
-
-                latestReplyId =
-                    0;
-
-
                 if (
-                    !Array.isArray(
-                        data.announcements
-                    ) ||
-                    data.announcements.length ===
-                        0
+                    replies.length ===
+                    0
                 ) {
 
-                    ensureAnnouncementEmptyState();
+                    ensureReplyEmptyState(
+                        replyContainer
+                    );
 
                     return;
 
                 }
 
 
-                const replyLoads =
-                    [];
+                replies.forEach(
+                    (reply) => {
 
-
-                data.announcements.forEach(
-                    (announcement) => {
-
-                        latestAnnouncementId =
+                        latestReplyId =
                             Math.max(
-                                latestAnnouncementId,
+                                latestReplyId,
                                 Number(
-                                    announcement.id
+                                    reply.id
                                 )
                             );
 
 
-                        const card =
-                            createStudentAnnouncementCard(
-                                announcement
+                        if (
+                            !document.getElementById(
+                                `reply-${reply.id}`
+                            )
+                        ) {
+
+                            replyContainer.appendChild(
+                                createStudentReplyItem(
+                                    announcement.id,
+                                    reply
+                                )
                             );
 
-
-                        announcementList.appendChild(
-                            card
-                        );
-
-
-                        replyLoads.push(
-                            loadReplies(
-                                announcement.id
-                            )
-                        );
+                        }
 
                     }
                 );
 
-
-                await Promise.all(
-                    replyLoads
-                );
-
-
-                scrollToMention();
-
-
-            } catch (error) {
-
-                console.error(error);
-
-
-                announcementList.innerHTML = `
-                    <p>
-                        Gagal mengambil announcement.
-                    </p>
-                `;
-
             }
+        );
+
+
+        /*
+            Semua post + replies
+            sudah benar-benar masuk DOM.
+        */
+        if (
+            typeof onPostsRendered ===
+                "function"
+        ) {
+
+            onPostsRendered();
 
         }
+
+
+        scrollToMention();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal load Student Feed:",
+            error
+        );
+
+
+        announcementList.innerHTML = `
+            <p>
+                Gagal mengambil announcement.
+            </p>
+        `;
+
+
+    } finally {
+
+        studentFeedLoading =
+            false;
+
+    }
+
+}
 
 
         async function loadReplies(
@@ -2734,12 +2838,20 @@ const createdAt =
                             );
 
 
-                        container.appendChild(
-                            createStudentReplyItem(
-                                announcementId,
-                                reply
-                            )
-                        );
+if (
+    !document.getElementById(
+        `reply-${reply.id}`
+    )
+) {
+
+    container.appendChild(
+        createStudentReplyItem(
+            announcementId,
+            reply
+        )
+    );
+
+}
 
                     }
                 );
@@ -2787,36 +2899,90 @@ const createdAt =
                     ).value;
 
 
-                if (
-                    !message
-                ) {
+if (
+    !message
+) {
 
-                    studentAnnouncementStatus.textContent =
-                        "Pesan wajib diisi.";
+    studentAnnouncementStatus.textContent =
+        "Pesan wajib diisi.";
 
-                    return;
+    return;
 
-                }
-
-
-                const mentions =
-                    [
-                        ...studentAnnouncementMentions
-                    ];
+}
 
 
-                submitButton.disabled =
-                    true;
+/*
+    Tombol berubah langsung,
+    jangan tunggu request mention.
+*/
+submitButton.disabled =
+    true;
 
-                submitButton.textContent =
-                    "Memposting...";
+submitButton.textContent =
+    "Memposting...";
+
+studentAnnouncementStatus.textContent =
+    "Membuat announcement...";
 
 
-                studentAnnouncementStatus.textContent =
-                    "Membuat announcement...";
+await loadStudentAnnouncementMentionUsers();
 
 
-                try {
+const detectedMentions =
+    studentAnnouncementMentionUsers
+        .filter(
+            (user) =>
+                message.includes(
+                    `@${user.name}`
+                )
+        )
+        .map(
+            (user) => ({
+                id:
+                    user.id,
+
+                type:
+                    user.type,
+
+                name:
+                    user.name
+            })
+        );
+
+
+const mentions =
+    [];
+
+
+[
+    ...studentAnnouncementMentions,
+    ...detectedMentions
+].forEach(
+    (mention) => {
+
+        const exists =
+            mentions.some(
+                (existing) =>
+                    existing.id ===
+                        mention.id &&
+                    existing.type ===
+                        mention.type
+            );
+
+
+        if (!exists) {
+
+            mentions.push(
+                mention
+            );
+
+        }
+
+    }
+);
+
+
+try {
 
                     const response =
                         await fetch(
@@ -2856,54 +3022,63 @@ const createdAt =
 
                     }
 
-
-                    const newAnnouncement = {
-                        id:
-                            data.announcement.id,
-
-                        student_id:
-                            Number(
-                                studentId
-                            ),
-
-                        student_creator_name:
-                            studentName,
-
-                        student_creator_class:
-                            studentClass,
-
-                        class_name:
-                            target ===
-                                "class"
-                                ? studentClass
-                                : null,
-
-                        message,
-
-                        created_at:
-                            "Baru saja",
-
-                        mentions
-                    };
+removeAnnouncementEmptyState();
 
 
-                    removeAnnouncementEmptyState();
+const existingCard =
+    document.getElementById(
+        `announcement-${data.announcement.id}`
+    );
 
 
-                    announcementList.prepend(
-                        createStudentAnnouncementCard(
-                            newAnnouncement
-                        )
-                    );
+if (existingCard) {
+
+    const freshCard =
+        createStudentAnnouncementCard(
+            data.announcement
+        );
 
 
-                    latestAnnouncementId =
-                        Math.max(
-                            latestAnnouncementId,
-                            Number(
-                                newAnnouncement.id
-                            )
-                        );
+    const existingMessage =
+        existingCard.querySelector(
+            ".feed-message"
+        );
+
+
+    const freshMessage =
+        freshCard.querySelector(
+            ".feed-message"
+        );
+
+
+    if (
+        existingMessage &&
+        freshMessage
+    ) {
+
+        existingMessage.innerHTML =
+            freshMessage.innerHTML;
+
+    }
+
+} else {
+
+    announcementList.prepend(
+        createStudentAnnouncementCard(
+            data.announcement
+        )
+    );
+
+}
+
+
+latestAnnouncementId =
+    Math.max(
+        latestAnnouncementId,
+        Number(
+            data.announcement.id
+        )
+    );
 
 
                     studentAnnouncementMessage.value =
@@ -2959,107 +3134,100 @@ const createdAt =
         // HAPUS POST - LOCAL DOM
         // =====================================
 
-        async function deleteStudentAnnouncement(
-            announcementId,
-            button
-        ) {
+async function deleteStudentAnnouncement(
+    announcementId,
+    button
+) {
 
-            const confirmDelete =
-                confirm(
-                    "Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus."
-                );
+    const confirmDelete =
+        confirm(
+            "Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus."
+        );
 
 
-            if (
-                !confirmDelete
-            ) {
+    if (!confirmDelete) {
+        return;
+    }
 
-                return;
 
-            }
+    button.disabled =
+        true;
 
+    button.textContent =
+        "Menghapus...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/announcements/${announcementId}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
 
             button.disabled =
-                true;
+                false;
 
             button.textContent =
-                "Menghapus...";
+                "Hapus";
 
 
-            try {
+            alert(
+                data.message ||
+                "Gagal menghapus announcement."
+            );
 
-                const response =
-                    await fetch(
-                        `/api/student/${studentId}/announcements/${announcementId}`,
-                        {
-                            method:
-                                "DELETE"
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (
-                    !data.success
-                ) {
-
-                    button.disabled =
-                        false;
-
-                    button.textContent =
-                        "Hapus";
-
-
-                    alert(
-                        data.message ||
-                        "Gagal menghapus announcement."
-                    );
-
-                    return;
-
-                }
-
-
-                const card =
-                    document.getElementById(
-                        `announcement-${announcementId}`
-                    );
-
-
-                if (
-                    card
-                ) {
-
-                    card.remove();
-
-                }
-
-
-                ensureAnnouncementEmptyState();
-
-
-            } catch (error) {
-
-                console.error(error);
-
-
-                button.disabled =
-                    false;
-
-                button.textContent =
-                    "Hapus";
-
-
-                alert(
-                    "Gagal menghapus announcement."
-                );
-
-            }
+            return;
 
         }
+
+
+        const card =
+            document.getElementById(
+                `announcement-${announcementId}`
+            );
+
+
+        if (card) {
+            card.remove();
+        }
+
+
+        ensureAnnouncementEmptyState();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus announcement:",
+            error
+        );
+
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "Hapus";
+
+
+        alert(
+            "Gagal menghapus announcement."
+        );
+
+    }
+
+}
 
 
         // =====================================
@@ -3193,51 +3361,29 @@ const createdAt =
                     }
 
 
-                    const newReply = {
-                        id:
-                            data.reply.id,
+if (
+    !document.getElementById(
+        `reply-${data.reply.id}`
+    )
+) {
 
-                        announcement_id:
-                            announcementId,
+    container.appendChild(
+        createStudentReplyItem(
+            announcementId,
+            data.reply
+        )
+    );
 
-                        sender_type:
-                            "student",
-
-                        sender_id:
-                            Number(
-                                studentId
-                            ),
-
-                        sender_name:
-                            studentName,
-
-                        class_name:
-                            studentClass,
-
-                        message,
-
-                        created_at:
-                            "Baru saja",
-
-                        mentions
-                    };
+}
 
 
-                    container.appendChild(
-                        createStudentReplyItem(
-                            announcementId,
-                            newReply
-                        )
-                    );
-
-
-                    latestReplyId =
-                        Math.max(
-                            latestReplyId,
-                            Number(
-                                newReply.id
-                            )
-                        );
+latestReplyId =
+    Math.max(
+        latestReplyId,
+        Number(
+            data.reply.id
+        )
+    );
 
                 }
 
@@ -3276,152 +3422,150 @@ const createdAt =
         // HAPUS REPLY - LOCAL DOM
         // =====================================
 
-        async function deleteStudentReply(
-            announcementId,
-            replyId,
-            button
-        ) {
+async function deleteStudentReply(
+    announcementId,
+    replyId,
+    button
+) {
 
-            const confirmDelete =
-                confirm(
-                    "Yakin ingin menghapus reply ini?"
-                );
+    const confirmDelete =
+        confirm(
+            "Yakin ingin menghapus reply ini?"
+        );
 
 
-            if (
-                !confirmDelete
-            ) {
+    if (!confirmDelete) {
+        return;
+    }
 
-                return;
 
-            }
+    button.disabled =
+        true;
 
+    button.textContent =
+        "Menghapus...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/announcements/${announcementId}/replies/${replyId}`,
+                {
+                    method:
+                        "DELETE",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            studentId:
+                                Number(
+                                    studentId
+                                )
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
 
             button.disabled =
-                true;
+                false;
 
             button.textContent =
-                "Menghapus...";
+                "Hapus";
 
 
-            try {
+            alert(
+                data.message ||
+                "Gagal menghapus reply."
+            );
 
-                const response =
-                    await fetch(
-                        `/api/announcements/${announcementId}/replies/${replyId}`,
-                        {
-                            method:
-                                "DELETE",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    studentId:
-                                        Number(
-                                            studentId
-                                        )
-                                })
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (
-                    !data.success
-                ) {
-
-                    button.disabled =
-                        false;
-
-                    button.textContent =
-                        "Hapus";
-
-
-                    alert(
-                        data.message ||
-                        "Gagal menghapus reply."
-                    );
-
-                    return;
-
-                }
-
-
-                const item =
-                    document.getElementById(
-                        `reply-${replyId}`
-                    );
-
-
-                const container =
-                    item
-                        ? item.closest(
-                            ".reply-list"
-                        )
-                        : document.getElementById(
-                            `replies-${announcementId}`
-                        );
-
-
-                if (
-                    item
-                ) {
-
-                    item.remove();
-
-                }
-
-
-                ensureReplyEmptyState(
-                    container
-                );
-
-
-            } catch (error) {
-
-                console.error(error);
-
-
-                button.disabled =
-                    false;
-
-                button.textContent =
-                    "Hapus";
-
-
-                alert(
-                    "Gagal menghapus reply."
-                );
-
-            }
+            return;
 
         }
+
+
+        const item =
+            document.getElementById(
+                `reply-${replyId}`
+            );
+
+
+        const container =
+            item
+                ? item.closest(
+                    ".reply-list"
+                )
+                : document.getElementById(
+                    `replies-${announcementId}`
+                );
+
+
+        if (item) {
+            item.remove();
+        }
+
+
+        ensureReplyEmptyState(
+            container
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus reply:",
+            error
+        );
+
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "Hapus";
+
+
+        alert(
+            "Gagal menghapus reply."
+        );
+
+    }
+
+}
 
 
         // =====================================
         // LIVE POST BARU
         // =====================================
 
-        async function checkLiveAnnouncements() {
+async function checkLiveAnnouncements() {
 
-            if (
-                document.visibilityState !==
-                "visible"
-            ) {
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
 
-                return;
+        return;
 
-            }
+    }
 
 
-            try {
+    if (studentFeedLoading) {
+        return;
+    }
+
+
+    try {
 
                 const response =
                     await fetch(
@@ -3497,19 +3641,24 @@ const createdAt =
         // LIVE REPLY BARU
         // =====================================
 
-        async function checkLiveReplies() {
+async function checkLiveReplies() {
 
-            if (
-                document.visibilityState !==
-                "visible"
-            ) {
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
 
-                return;
+        return;
 
-            }
+    }
 
 
-            try {
+    if (studentFeedLoading) {
+        return;
+    }
+
+
+    try {
 
                 const response =
                     await fetch(
@@ -3624,19 +3773,24 @@ const createdAt =
         // LIVE DELETE
         // =====================================
 
-        async function checkLiveDeletions() {
+async function checkLiveDeletions() {
 
-            if (
-                document.visibilityState !==
-                "visible"
-            ) {
+    if (
+        document.visibilityState !==
+        "visible"
+    ) {
 
-                return;
+        return;
 
-            }
+    }
 
 
-            try {
+    if (studentFeedLoading) {
+        return;
+    }
+
+
+    try {
 
                 const response =
                     await fetch(
@@ -3769,37 +3923,168 @@ const createdAt =
 
 async function hardRefreshStudentFeed() {
 
-    /*
-        Ini sengaja full reload data Feed.
-        Hanya dipakai sebagai backup manual.
-    */
-    await loadAnnouncements();
+    const button =
+        document.getElementById(
+            "studentFeedRefreshButton"
+        );
 
-    await loadNotificationCount();
+
+    if (!button) {
+        return;
+    }
+
+
+    button.disabled =
+        true;
+
+    button.textContent =
+        "↻ Memuat...";
+
+
+    announcementList.innerHTML =
+        "Memuat announcement...";
+
+
+    /*
+        Beri browser 1 frame supaya
+        status loading benar-benar terlihat.
+    */
+    await new Promise(
+        (resolve) =>
+            requestAnimationFrame(
+                resolve
+            )
+    );
+
+
+    stopStudentLivePolling();
+
+
+    try {
+
+        /*
+            Kalau ada proses full load lama,
+            tunggu selesai dulu.
+        */
+        while (studentFeedLoading) {
+
+            await new Promise(
+                (resolve) =>
+                    setTimeout(
+                        resolve,
+                        25
+                    )
+            );
+
+        }
+
+
+        await loadAnnouncements(
+            () => {
+
+                /*
+                    Semua postingan sudah tampil.
+                    Tombol langsung aktif lagi.
+                */
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "↻ Refresh";
+
+            }
+        );
+
+
+        loadNotificationCount().catch(
+            (error) => {
+
+                console.error(
+                    "Gagal refresh notification:",
+                    error
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal refresh Student Feed:",
+            error
+        );
+
+
+    } finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "↻ Refresh";
+
+
+        startStudentLivePolling();
+
+    }
 
 }
 
+const studentFeedRefreshButton =
+    document.getElementById(
+        "studentFeedRefreshButton"
+    );
+
+
+if (studentFeedRefreshButton) {
+
+    studentFeedRefreshButton.addEventListener(
+        "click",
+        hardRefreshStudentFeed
+    );
+
+}
 
         // =====================================
         // LIVE LOOP
         // =====================================
 
-        async function runStudentLiveSync() {
+  async function runStudentLiveSync() {
 
-            /*
-                Post baru diproses lebih dulu supaya
-                container reply-nya sudah tersedia.
-            */
-            await checkLiveAnnouncements();
+    if (
+        studentLiveSyncRunning ||
+        studentFeedLoading
+    ) {
+
+        return;
+
+    }
 
 
-            await Promise.all([
-                checkLiveReplies(),
-                checkLiveDeletions(),
-                loadNotificationCount()
-            ]);
+    studentLiveSyncRunning =
+        true;
 
-        }
+
+    try {
+
+        await checkLiveAnnouncements();
+
+
+        await Promise.all([
+            checkLiveReplies(),
+            checkLiveDeletions(),
+            loadNotificationCount()
+        ]);
+
+    } finally {
+
+        studentLiveSyncRunning =
+            false;
+
+    }
+
+}
 
 
         function startStudentLivePolling() {
@@ -3872,20 +4157,32 @@ async function hardRefreshStudentFeed() {
         // START
         // =====================================
 
-        async function startStudentFeed() {
+async function startStudentFeed() {
 
-            await Promise.all([
-                loadStudentAnnouncementMentionUsers(),
-                loadNotificationCount()
-            ]);
-
-
-            await loadAnnouncements();
+    /*
+        Prioritas pertama:
+        tampilkan Feed secepat mungkin.
+    */
+    await loadAnnouncements();
 
 
-            startStudentLivePolling();
+    /*
+        Setelah Feed sudah tampil,
+        baru hidupkan LIVE.
+    */
+    startStudentLivePolling();
 
-        }
+
+    /*
+        Data tambahan tidak boleh
+        menahan tampilan Feed.
+    */
+    Promise.allSettled([
+        loadStudentAnnouncementMentionUsers(),
+        loadNotificationCount()
+    ]);
+
+}
 
 
         startStudentFeed();

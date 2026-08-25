@@ -29,10 +29,134 @@ if (
 const app = express();
 const PORT = 3000;
 
+const publicDirectory =
+    path.join(
+        __dirname,
+        "public"
+    );
+
+
+const publicAssetStatic =
+    express.static(
+        publicDirectory,
+        {
+            index: false
+        }
+    );
+
+// ========================================
+// STATIC ASSET TANPA SESSION
+// ========================================
+
+app.use(
+    (req, res, next) => {
+
+        const extension =
+            path.extname(
+                req.path
+            ).toLowerCase();
+
+
+        const publicAssetExtensions =
+            new Set([
+                ".css",
+                ".js",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".webp",
+                ".svg",
+                ".ico",
+                ".woff",
+                ".woff2"
+            ]);
+
+
+        /*
+            HTML sengaja TIDAK termasuk.
+
+            Halaman Admin / Student tetap
+            harus melewati session protection.
+        */
+        if (
+            publicAssetExtensions.has(
+                extension
+            )
+        ) {
+
+            return publicAssetStatic(
+                req,
+                res,
+                next
+            );
+
+        }
+
+
+        next();
+
+    }
+);
+
 
 // ========================================
 // MIDDLEWARE
 // ========================================
+
+
+// ========================================
+// STATIC ASSET TANPA SESSION
+// ========================================
+
+app.use(
+    (req, res, next) => {
+
+        const extension =
+            path.extname(
+                req.path
+            ).toLowerCase();
+
+
+        const publicAssetExtensions =
+            new Set([
+                ".css",
+                ".js",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".webp",
+                ".svg",
+                ".ico",
+                ".woff",
+                ".woff2"
+            ]);
+
+
+        /*
+            HTML sengaja tidak dimasukkan.
+            Halaman Admin / Student tetap
+            harus melewati session.
+        */
+        if (
+            publicAssetExtensions.has(
+                extension
+            )
+        ) {
+
+            return publicAssetStatic(
+                req,
+                res,
+                next
+            );
+
+        }
+
+
+        next();
+
+    }
+);
+
 
 // Membaca JSON dari request
 app.use(express.json());
@@ -2117,6 +2241,10 @@ app.post(
 
             }
 
+const savedMentions =
+    await getAnnouncementMentions(
+        announcementId
+    );
 
 const createdAnnouncement =
     await tursoDb.get(
@@ -2176,7 +2304,7 @@ return res.json({
             createdAnnouncement.created_at,
 
         mentions:
-            mentions
+            savedMentions
     }
 
 });
@@ -2551,33 +2679,75 @@ app.post(
             }
 
 
-            return res.json({
+const createdAnnouncement =
+    await tursoDb.get(
+        `
+            SELECT
+                id,
+                student_id,
+                class_name,
+                message,
+                created_at
+            FROM announcements
+            WHERE id = ?
+        `,
+        [
+            announcementId
+        ]
+    );
 
-                success: true,
 
-                message:
-                    "Announcement berhasil dibuat.",
+const savedMentions =
+    await getAnnouncementMentions(
+        announcementId
+    );
 
-                announcement: {
 
-                    id:
-                        announcementId,
+return res.json({
 
-                    studentId:
-                        studentId,
+    success: true,
 
-                    studentName:
-                        student.name,
+    message:
+        "Announcement berhasil dibuat.",
 
-                    className:
-                        className,
+    announcement: {
 
-                    message:
-                        message.trim()
+        id:
+            createdAnnouncement.id,
 
-                }
+        student_id:
+            createdAnnouncement.student_id,
 
-            });
+        admin_id:
+            null,
+
+        student_creator_name:
+            student.name,
+
+        student_creator_class:
+            student.class_name,
+
+        admin_creator_name:
+            null,
+
+        admin_creator_role:
+            null,
+
+        class_name:
+            createdAnnouncement.class_name,
+
+        message:
+            createdAnnouncement.message,
+
+        created_at:
+            createdAnnouncement.created_at,
+
+        mentions:
+            savedMentions
+
+    }
+
+});
 
 
         } catch (error) {
@@ -2598,6 +2768,99 @@ app.post(
 
     }
 );
+
+async function deleteAnnouncementFeedData(
+    announcementId
+) {
+
+    await tursoDb.batch(
+        [
+            {
+                sql: `
+                    DELETE FROM notifications
+                    WHERE announcement_id = ?
+                `,
+                args: [
+                    announcementId
+                ]
+            },
+
+            {
+                sql: `
+                    DELETE FROM announcement_mentions
+                    WHERE announcement_id = ?
+                `,
+                args: [
+                    announcementId
+                ]
+            },
+
+            {
+                sql: `
+                    DELETE FROM announcement_replies
+                    WHERE announcement_id = ?
+                `,
+                args: [
+                    announcementId
+                ]
+            },
+
+            {
+                sql: `
+                    DELETE FROM announcements
+                    WHERE id = ?
+                `,
+                args: [
+                    announcementId
+                ]
+            }
+        ],
+        "immediate"
+    );
+
+}
+
+
+async function deleteReplyFeedData(
+    replyId
+) {
+
+    await tursoDb.batch(
+        [
+            {
+                sql: `
+                    DELETE FROM notifications
+                    WHERE reply_id = ?
+                `,
+                args: [
+                    replyId
+                ]
+            },
+
+            {
+                sql: `
+                    DELETE FROM announcement_mentions
+                    WHERE reply_id = ?
+                `,
+                args: [
+                    replyId
+                ]
+            },
+
+            {
+                sql: `
+                    DELETE FROM announcement_replies
+                    WHERE id = ?
+                `,
+                args: [
+                    replyId
+                ]
+            }
+        ],
+        "immediate"
+    );
+
+}
 
 app.delete(
     "/api/student/:studentId/announcements/:announcementId",
@@ -2681,48 +2944,9 @@ app.delete(
             }
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM notifications
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_mentions
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_replies
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcements
-                    WHERE id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
+await deleteAnnouncementFeedData(
+    announcementId
+);
 
 
             return res.json({
@@ -2755,34 +2979,42 @@ app.delete(
 // AMBIL ANNOUNCEMENT SISWA
 // ========================================
 
+// ========================================
+// AMBIL ANNOUNCEMENT SISWA
+// POSTS + REPLIES + MENTIONS SEKALIGUS
+// ========================================
+
 app.get(
     "/api/student/:studentId/announcements",
     async (req, res) => {
 
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
         const studentId =
             Number(req.params.studentId);
 
-            const sessionStudentId =
-    Number(req.session.studentId);
+        const sessionStudentId =
+            Number(req.session.studentId);
 
 
-if (!req.session.studentId) {
+        if (
+            !Number.isInteger(studentId) ||
+            studentId !== sessionStudentId
+        ) {
 
-    return res.status(401).json({
-        success: false,
-        message:
-            "Harus login sebagai siswa."
-    });
-
-}
-
-
-        if (!Number.isInteger(studentId)) {
-
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
                 message:
-                    "ID siswa tidak valid."
+                    "Akses siswa tidak valid."
             });
 
         }
@@ -2817,79 +3049,443 @@ if (!req.session.studentId) {
             }
 
 
-            const announcements =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            announcements.id,
-                            announcements.student_id,
-                            announcements.admin_id,
-                            announcements.class_name,
-                            announcements.message,
-                            announcements.created_at,
+            /*
+                Ambil post, reply, dan mention
+                secara paralel.
 
-                            students.name AS student_creator_name,
-                            students.class_name AS student_creator_class,
-
-                            admins.name AS admin_creator_name,
-                            admins.role AS admin_creator_role
-
-                        FROM announcements
-
-                        LEFT JOIN students
-                        ON students.id =
-                            announcements.student_id
-
-                        LEFT JOIN admins
-                        ON admins.id =
-                            announcements.admin_id
-
-                        WHERE
-                            announcements.class_name IS NULL
-
-                            OR
-
-                            announcements.class_name = ?
-
-                        ORDER BY announcements.id DESC
-                    `,
-                    [
-                        student.class_name
-                    ]
-                );
+                Jadi tidak perlu:
+                - 1 request reply per post
+                - 1 query mention per post
+                - 1 query mention per reply
+            */
+            const [
+                announcements,
+                replies,
+                mentionRows
+            ] =
+                await Promise.all([
 
 
-            const formattedAnnouncements =
-                await Promise.all(
-                    announcements.map(
-                        async (announcement) => {
+                    // =============================
+                    // POSTS YANG BOLEH DILIHAT SISWA
+                    // =============================
 
-                            return {
-                                ...announcement,
+                    tursoDb.all(
+                        `
+                            SELECT
+                                announcements.id,
+                                announcements.student_id,
+                                announcements.admin_id,
+                                announcements.class_name,
+                                announcements.message,
+                                announcements.created_at,
 
-                                mentions:
-                                    await getAnnouncementMentions(
-                                        announcement.id
-                                    )
+                                students.name
+                                    AS student_creator_name,
+
+                                students.class_name
+                                    AS student_creator_class,
+
+                                admins.name
+                                    AS admin_creator_name,
+
+                                admins.role
+                                    AS admin_creator_role
+
+                            FROM announcements
+
+                            LEFT JOIN students
+                            ON students.id =
+                                announcements.student_id
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                announcements.admin_id
+
+                            WHERE (
+                                announcements.class_name
+                                    IS NULL
+
+                                OR
+
+                                announcements.class_name = ?
+                            )
+
+                            ORDER BY
+                                announcements.id DESC
+                        `,
+                        [
+                            student.class_name
+                        ]
+                    ),
+
+
+                    // =============================
+                    // SEMUA REPLY UNTUK POST VISIBLE
+                    // =============================
+
+                    tursoDb.all(
+                        `
+                            SELECT
+                                announcement_replies.id,
+                                announcement_replies.announcement_id,
+                                announcement_replies.message,
+                                announcement_replies.created_at,
+                                announcement_replies.student_id,
+                                announcement_replies.admin_id,
+
+                                students.name
+                                    AS student_name,
+
+                                students.class_name
+                                    AS student_class_name,
+
+                                admins.name
+                                    AS admin_name,
+
+                                admins.role
+                                    AS admin_role
+
+                            FROM announcement_replies
+
+                            INNER JOIN announcements
+                            ON announcements.id =
+                                announcement_replies.announcement_id
+
+                            LEFT JOIN students
+                            ON students.id =
+                                announcement_replies.student_id
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                announcement_replies.admin_id
+
+                            WHERE (
+                                announcements.class_name
+                                    IS NULL
+
+                                OR
+
+                                announcements.class_name = ?
+                            )
+
+                            ORDER BY
+                                announcement_replies.id ASC
+                        `,
+                        [
+                            student.class_name
+                        ]
+                    ),
+
+
+                    // =============================
+                    // SEMUA MENTION UNTUK POST VISIBLE
+                    // =============================
+
+                    tursoDb.all(
+                        `
+                            SELECT
+                                announcement_mentions.announcement_id,
+                                announcement_mentions.reply_id,
+                                announcement_mentions.mentioned_student_id,
+                                announcement_mentions.mentioned_admin_id,
+
+                                students.name
+                                    AS student_name,
+
+                                admins.name
+                                    AS admin_name
+
+                            FROM announcement_mentions
+
+                            INNER JOIN announcements
+                            ON announcements.id =
+                                announcement_mentions.announcement_id
+
+                            LEFT JOIN students
+                            ON students.id =
+                                announcement_mentions.mentioned_student_id
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                announcement_mentions.mentioned_admin_id
+
+                            WHERE (
+                                announcements.class_name
+                                    IS NULL
+
+                                OR
+
+                                announcements.class_name = ?
+                            )
+                        `,
+                        [
+                            student.class_name
+                        ]
+                    )
+
+                ]);
+
+
+            // =============================
+            // KELOMPOKKAN MENTION
+            // =============================
+
+            const announcementMentionMap =
+                new Map();
+
+            const replyMentionMap =
+                new Map();
+
+
+            mentionRows.forEach(
+                (row) => {
+
+                    const mention =
+                        row.mentioned_student_id
+                            ? {
+                                id:
+                                    row.mentioned_student_id,
+
+                                type:
+                                    "student",
+
+                                name:
+                                    row.student_name
+                            }
+                            : {
+                                id:
+                                    row.mentioned_admin_id,
+
+                                type:
+                                    "admin",
+
+                                name:
+                                    row.admin_name
                             };
 
+
+                    if (row.reply_id) {
+
+                        const replyId =
+                            Number(row.reply_id);
+
+
+                        if (
+                            !replyMentionMap.has(
+                                replyId
+                            )
+                        ) {
+
+                            replyMentionMap.set(
+                                replyId,
+                                []
+                            );
+
                         }
-                    )
+
+
+                        replyMentionMap
+                            .get(replyId)
+                            .push(mention);
+
+
+                        return;
+
+                    }
+
+
+                    const announcementId =
+                        Number(
+                            row.announcement_id
+                        );
+
+
+                    if (
+                        !announcementMentionMap.has(
+                            announcementId
+                        )
+                    ) {
+
+                        announcementMentionMap.set(
+                            announcementId,
+                            []
+                        );
+
+                    }
+
+
+                    announcementMentionMap
+                        .get(announcementId)
+                        .push(mention);
+
+                }
+            );
+
+
+            // =============================
+            // FORMAT + KELOMPOKKAN REPLY
+            // =============================
+
+            const repliesByAnnouncement =
+                new Map();
+
+
+            replies.forEach(
+                (reply) => {
+
+                    const formattedReply =
+                        reply.student_id
+                            ? {
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions:
+                                    replyMentionMap.get(
+                                        Number(reply.id)
+                                    ) || [],
+
+                                sender_id:
+                                    reply.student_id,
+
+                                sender_name:
+                                    reply.student_name ||
+                                    "Siswa",
+
+                                sender_type:
+                                    "student",
+
+                                sender_role:
+                                    "student",
+
+                                class_name:
+                                    reply.student_class_name ||
+                                    null
+                            }
+                            : {
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions:
+                                    replyMentionMap.get(
+                                        Number(reply.id)
+                                    ) || [],
+
+                                sender_id:
+                                    reply.admin_id,
+
+                                sender_name:
+                                    reply.admin_name ||
+                                    "Admin / Guru",
+
+                                sender_type:
+                                    "admin",
+
+                                sender_role:
+                                    reply.admin_role ||
+                                    "admin",
+
+                                class_name:
+                                    null
+                            };
+
+
+                    const announcementId =
+                        Number(
+                            reply.announcement_id
+                        );
+
+
+                    if (
+                        !repliesByAnnouncement.has(
+                            announcementId
+                        )
+                    ) {
+
+                        repliesByAnnouncement.set(
+                            announcementId,
+                            []
+                        );
+
+                    }
+
+
+                    repliesByAnnouncement
+                        .get(announcementId)
+                        .push(
+                            formattedReply
+                        );
+
+                }
+            );
+
+
+            // =============================
+            // NEST REPLY DI DALAM POST
+            // =============================
+
+            const formattedAnnouncements =
+                announcements.map(
+                    (announcement) => {
+
+                        const announcementId =
+                            Number(
+                                announcement.id
+                            );
+
+
+                        return {
+
+                            ...announcement,
+
+                            mentions:
+                                announcementMentionMap.get(
+                                    announcementId
+                                ) || [],
+
+                            replies:
+                                repliesByAnnouncement.get(
+                                    announcementId
+                                ) || []
+
+                        };
+
+                    }
                 );
 
 
             return res.json({
+
                 success: true,
 
                 announcements:
                     formattedAnnouncements
+
             });
 
 
         } catch (error) {
 
             console.error(
-                "Error mengambil announcement:",
+                "Error mengambil announcement siswa:",
                 error
             );
 
@@ -2990,37 +3586,9 @@ app.delete(
             }
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM notifications
-                    WHERE reply_id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_mentions
-                    WHERE reply_id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_replies
-                    WHERE id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
+await deleteReplyFeedData(
+    replyId
+);
 
 
             return res.json({
@@ -3141,37 +3709,9 @@ app.delete(
             }
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM notifications
-                    WHERE reply_id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_mentions
-                    WHERE reply_id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_replies
-                    WHERE id = ?
-                `,
-                [
-                    replyId
-                ]
-            );
+await deleteReplyFeedData(
+    replyId
+);
 
 
             return res.json({
@@ -3356,24 +3896,166 @@ app.get(
                     ORDER BY announcements.id DESC
                 `);
 
+            const replies =
+    await tursoDb.all(
+        `
+            SELECT
+                announcement_replies.id,
+                announcement_replies.announcement_id,
+                announcement_replies.message,
+                announcement_replies.created_at,
+                announcement_replies.student_id,
+                announcement_replies.admin_id,
 
-            const formattedAnnouncements =
-                await Promise.all(
-                    announcements.map(
-                        async (announcement) => {
+                students.name
+                    AS student_name,
 
-                            return {
-                                ...announcement,
+                students.class_name
+                    AS student_class_name,
 
-                                mentions:
-                                    await getAnnouncementMentions(
-                                        announcement.id
-                                    )
-                            };
+                admins.name
+                    AS admin_name,
 
-                        }
-                    )
-                );
+                admins.role
+                    AS admin_role
+
+            FROM announcement_replies
+
+            LEFT JOIN students
+            ON students.id =
+                announcement_replies.student_id
+
+            LEFT JOIN admins
+            ON admins.id =
+                announcement_replies.admin_id
+
+            ORDER BY
+                announcement_replies.id ASC
+        `
+    );
+
+
+const formattedReplies =
+    await Promise.all(
+        replies.map(
+            async (reply) => {
+
+                const mentions =
+                    await getReplyMentions(
+                        reply.id
+                    );
+
+
+                if (reply.student_id) {
+
+                    return {
+
+                        id:
+                            reply.id,
+
+                        announcement_id:
+                            reply.announcement_id,
+
+                        message:
+                            reply.message,
+
+                        created_at:
+                            reply.created_at,
+
+                        mentions,
+
+                        sender_id:
+                            reply.student_id,
+
+                        sender_name:
+                            reply.student_name ||
+                            "Siswa",
+
+                        sender_type:
+                            "student",
+
+                        sender_role:
+                            "student",
+
+                        class_name:
+                            reply.student_class_name ||
+                            null
+
+                    };
+
+                }
+
+
+                return {
+
+                    id:
+                        reply.id,
+
+                    announcement_id:
+                        reply.announcement_id,
+
+                    message:
+                        reply.message,
+
+                    created_at:
+                        reply.created_at,
+
+                    mentions,
+
+                    sender_id:
+                        reply.admin_id,
+
+                    sender_name:
+                        reply.admin_name ||
+                        "Admin / Guru",
+
+                    sender_type:
+                        "admin",
+
+                    sender_role:
+                        reply.admin_role ||
+                        "admin",
+
+                    class_name:
+                        null
+
+                };
+
+            }
+        )
+    );
+
+
+const formattedAnnouncements =
+    await Promise.all(
+        announcements.map(
+            async (announcement) => {
+
+                return {
+
+                    ...announcement,
+
+                    mentions:
+                        await getAnnouncementMentions(
+                            announcement.id
+                        ),
+
+                    replies:
+                        formattedReplies.filter(
+                            (reply) =>
+                                Number(
+                                    reply.announcement_id
+                                ) ===
+                                Number(
+                                    announcement.id
+                                )
+                        )
+
+                };
+
+            }
+        )
+    );
 
 
             return res.json({
@@ -3463,48 +4145,9 @@ app.delete(
             }
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM notifications
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_mentions
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcement_replies
-                    WHERE announcement_id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM announcements
-                    WHERE id = ?
-                `,
-                [
-                    announcementId
-                ]
-            );
+await deleteAnnouncementFeedData(
+    announcementId
+);
 
 
             return res.json({
@@ -3921,65 +4564,67 @@ app.post(
 
         try {
 
-            // =====================================
-            // CEK ANNOUNCEMENT
-            // =====================================
+   // =====================================
+// CEK ANNOUNCEMENT + SISWA
+// PARALEL
+// =====================================
 
-            const announcement =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            id,
-                            class_name
-                        FROM announcements
-                        WHERE id = ?
-                    `,
-                    [
-                        announcementId
-                    ]
-                );
+const [
+    announcement,
+    student
+] =
+    await Promise.all([
 
+        tursoDb.get(
+            `
+                SELECT
+                    id,
+                    class_name
+                FROM announcements
+                WHERE id = ?
+            `,
+            [
+                announcementId
+            ]
+        ),
 
-            if (!announcement) {
+        tursoDb.get(
+            `
+                SELECT
+                    id,
+                    name,
+                    class_name
+                FROM students
+                WHERE id = ?
+            `,
+            [
+                numericStudentId
+            ]
+        )
 
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Announcement tidak ditemukan."
-                });
-
-            }
-
-
-            // =====================================
-            // CEK SISWA
-            // =====================================
-
-            const student =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            id,
-                            name,
-                            class_name
-                        FROM students
-                        WHERE id = ?
-                    `,
-                    [
-                        numericStudentId
-                    ]
-                );
+    ]);
 
 
-            if (!student) {
+if (!announcement) {
 
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Siswa tidak ditemukan."
-                });
+    return res.status(404).json({
+        success: false,
+        message:
+            "Announcement tidak ditemukan."
+    });
 
-            }
+}
+
+
+if (!student) {
+
+    return res.status(404).json({
+        success: false,
+        message:
+            "Siswa tidak ditemukan."
+    });
+
+}
 
 
             // =====================================
@@ -4232,6 +4877,28 @@ app.post(
 
             }
 
+const createdReply =
+    await tursoDb.get(
+        `
+            SELECT
+                id,
+                announcement_id,
+                message,
+                created_at
+            FROM announcement_replies
+            WHERE id = ?
+        `,
+        [
+            replyId
+        ]
+    );
+
+
+const savedMentions =
+    await getReplyMentions(
+        replyId
+    );
+
 
             return res.json({
 
@@ -4240,20 +4907,39 @@ app.post(
                 message:
                     "Reply berhasil dikirim.",
 
-                reply: {
+reply: {
 
-                    id:
-                        replyId,
+    id:
+        createdReply.id,
 
-                    announcementId,
+    announcement_id:
+        createdReply.announcement_id,
 
-                    studentId:
-                        numericStudentId,
+    sender_type:
+        "student",
 
-                    message:
-                        message.trim()
+    sender_id:
+        numericStudentId,
 
-                }
+    sender_name:
+        student.name,
+
+    sender_role:
+        "student",
+
+    class_name:
+        student.class_name,
+
+    message:
+        createdReply.message,
+
+    created_at:
+        createdReply.created_at,
+
+    mentions:
+        savedMentions
+
+}
 
             });
 
@@ -4468,11 +5154,15 @@ app.get(
                         ON admins.id =
                             announcement_replies.admin_id
 
-                        WHERE
-                            announcement_replies.id > ?
+WHERE
+    announcement_replies.id > ?
 
-                        ORDER BY
-                            announcement_replies.id ASC
+AND
+    announcement_replies.created_at <=
+        datetime('now', '-1 second')
+
+ORDER BY
+    announcement_replies.id ASC
                     `,
                     [
                         afterId
@@ -4845,65 +5535,67 @@ app.post(
 
         try {
 
-            // =====================================
-            // CEK ANNOUNCEMENT
-            // =====================================
+// =====================================
+// CEK ANNOUNCEMENT + GURU
+// PARALEL
+// =====================================
 
-            const announcement =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            id,
-                            class_name
-                        FROM announcements
-                        WHERE id = ?
-                    `,
-                    [
-                        announcementId
-                    ]
-                );
+const [
+    announcement,
+    currentAdmin
+] =
+    await Promise.all([
 
+        tursoDb.get(
+            `
+                SELECT
+                    id,
+                    class_name
+                FROM announcements
+                WHERE id = ?
+            `,
+            [
+                announcementId
+            ]
+        ),
 
-            if (!announcement) {
+        tursoDb.get(
+            `
+                SELECT
+                    id,
+                    name,
+                    role
+                FROM admins
+                WHERE id = ?
+            `,
+            [
+                numericAdminId
+            ]
+        )
 
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Announcement tidak ditemukan."
-                });
-
-            }
-
-
-            // =====================================
-            // CEK GURU
-            // =====================================
-
-            const currentAdmin =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            id,
-                            name,
-                            role
-                        FROM admins
-                        WHERE id = ?
-                    `,
-                    [
-                        numericAdminId
-                    ]
-                );
+    ]);
 
 
-            if (!currentAdmin) {
+if (!announcement) {
 
-                return res.status(404).json({
-                    success: false,
-                    message:
-                        "Admin/Guru tidak ditemukan."
-                });
+    return res.status(404).json({
+        success: false,
+        message:
+            "Announcement tidak ditemukan."
+    });
 
-            }
+}
+
+
+if (!currentAdmin) {
+
+    return res.status(404).json({
+        success: false,
+        message:
+            "Admin/Guru tidak ditemukan."
+    });
+
+}
 
 
             // =====================================
@@ -5594,6 +6286,97 @@ app.get(
 );
 
 // ========================================
+// JUMLAH NOTIFIKASI BELUM DIBACA SISWA
+// ========================================
+
+app.get(
+    "/api/student/:studentId/notifications/count",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId !== sessionStudentId
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Akses siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            const unread =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            COUNT(*) AS total
+                        FROM notifications
+                        WHERE
+                            recipient_student_id = ?
+                            AND is_read = 0
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            return res.json({
+                success: true,
+
+                unreadCount:
+                    Number(
+                        unread?.total || 0
+                    )
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil jumlah notifikasi siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil jumlah notifikasi."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
 // NOTIFIKASI SISWA
 // ========================================
 
@@ -5635,41 +6418,46 @@ app.get(
 
         try {
 
-            const notifications =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            id,
-                            type,
-                            announcement_id,
-                            reply_id,
-                            message,
-                            is_read,
-                            created_at
-                        FROM notifications
-                        WHERE recipient_student_id = ?
-                        ORDER BY id DESC
-                    `,
-                    [
-                        studentId
-                    ]
-                );
+const [
+    notifications,
+    unread
+] =
+    await Promise.all([
 
+        tursoDb.all(
+            `
+                SELECT
+                    id,
+                    type,
+                    announcement_id,
+                    reply_id,
+                    message,
+                    is_read,
+                    created_at
+                FROM notifications
+                WHERE recipient_student_id = ?
+                ORDER BY id DESC
+            `,
+            [
+                studentId
+            ]
+        ),
 
-            const unread =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            COUNT(*) AS total
-                        FROM notifications
-                        WHERE
-                            recipient_student_id = ?
-                            AND is_read = 0
-                    `,
-                    [
-                        studentId
-                    ]
-                );
+        tursoDb.get(
+            `
+                SELECT
+                    COUNT(*) AS total
+                FROM notifications
+                WHERE
+                    recipient_student_id = ?
+                    AND is_read = 0
+            `,
+            [
+                studentId
+            ]
+        )
+
+    ]);
 
 
             return res.json({
@@ -5745,41 +6533,46 @@ app.get(
 
         try {
 
-            const notifications =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            id,
-                            type,
-                            announcement_id,
-                            reply_id,
-                            message,
-                            is_read,
-                            created_at
-                        FROM notifications
-                        WHERE recipient_admin_id = ?
-                        ORDER BY id DESC
-                    `,
-                    [
-                        adminId
-                    ]
-                );
+const [
+    notifications,
+    unread
+] =
+    await Promise.all([
 
+        tursoDb.all(
+            `
+                SELECT
+                    id,
+                    type,
+                    announcement_id,
+                    reply_id,
+                    message,
+                    is_read,
+                    created_at
+                FROM notifications
+                WHERE recipient_admin_id = ?
+                ORDER BY id DESC
+            `,
+            [
+                adminId
+            ]
+        ),
 
-            const unread =
-                await tursoDb.get(
-                    `
-                        SELECT
-                            COUNT(*) AS total
-                        FROM notifications
-                        WHERE
-                            recipient_admin_id = ?
-                            AND is_read = 0
-                    `,
-                    [
-                        adminId
-                    ]
-                );
+        tursoDb.get(
+            `
+                SELECT
+                    COUNT(*) AS total
+                FROM notifications
+                WHERE
+                    recipient_admin_id = ?
+                    AND is_read = 0
+            `,
+            [
+                adminId
+            ]
+        )
+
+    ]);
 
 
             return res.json({
@@ -8251,17 +9044,21 @@ app.get(
                         ON admins.id =
                             announcements.admin_id
 
-                        WHERE
-                            announcements.id > ?
+WHERE
+    announcements.id > ?
 
-                        AND (
-                            announcements.class_name
-                                IS NULL
+AND
+    announcements.created_at <=
+        datetime('now', '-1 second')
 
-                            OR
+AND (
+    announcements.class_name
+        IS NULL
 
-                            announcements.class_name = ?
-                        )
+    OR
+
+    announcements.class_name = ?
+)
 
                         ORDER BY
                             announcements.id ASC
@@ -8444,17 +9241,21 @@ app.get(
                         ON admins.id =
                             announcement_replies.admin_id
 
-                        WHERE
-                            announcement_replies.id > ?
+WHERE
+    announcement_replies.id > ?
 
-                        AND (
-                            announcements.class_name
-                                IS NULL
+AND
+    announcement_replies.created_at <=
+        datetime('now', '-1 second')
 
-                            OR
+AND (
+    announcements.class_name
+        IS NULL
 
-                            announcements.class_name = ?
-                        )
+    OR
+
+    announcements.class_name = ?
+)
 
                         ORDER BY
                             announcement_replies.id ASC
@@ -8746,12 +9547,53 @@ app.get(
     }
 );
 
-app.listen(
-    PORT,
-    "0.0.0.0",
-    () => {
-        console.log(
-            `Server jalan di port ${PORT}`
+async function startServer() {
+
+    /*
+        Warm-up koneksi Turso sebelum
+        menerima request pertama.
+    */
+    try {
+
+        const startTime =
+            Date.now();
+
+
+        await tursoDb.get(
+            `
+                SELECT 1 AS ready
+            `
         );
+
+
+        console.log(
+            `Turso siap (${Date.now() - startTime} ms)`
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Warm-up Turso gagal:",
+            error.message
+        );
+
     }
-);
+
+
+    app.listen(
+        PORT,
+        "0.0.0.0",
+        () => {
+
+            console.log(
+                `Server jalan di port ${PORT}`
+            );
+
+        }
+    );
+
+}
+
+
+startServer();

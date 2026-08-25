@@ -1238,14 +1238,30 @@ async function openAdminNotification(
 
 }
 
-        function setupAdminMentionAutocomplete() {
+function setupAdminMentionAutocomplete(
+    root = document
+) {
 
-    document
+    root
         .querySelectorAll(
             ".admin-reply-input"
         )
         .forEach(
             (input) => {
+
+                if (
+                    input.dataset.mentionReady ===
+                    "true"
+                ) {
+
+                    return;
+
+                }
+
+
+                input.dataset.mentionReady =
+                    "true";
+
 
                 const form =
                     input.closest(
@@ -1623,37 +1639,25 @@ async function loadClassOptions() {
 
         const response =
             await fetch(
-                "/api/admin/students"
+                "/api/admin/classes"
             );
+
 
         const data =
             await response.json();
 
-        if (!data.success) {
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.classes
+            )
+        ) {
+
             return;
+
         }
 
-        const classes =
-            [
-                ...new Set(
-                    data.students
-                        .map(
-                            (student) =>
-                                student.class_name
-                        )
-                        .filter(Boolean)
-                )
-            ]
-            .sort(
-                (a, b) =>
-                    a.localeCompare(
-                        b,
-                        "id",
-                        {
-                            sensitivity: "base"
-                        }
-                    )
-            );
 
         classNameInput.innerHTML = `
             <option value="">
@@ -1661,25 +1665,30 @@ async function loadClassOptions() {
             </option>
         `;
 
-        classes.forEach(
-            (className) => {
+
+        data.classes.forEach(
+            (classData) => {
 
                 const option =
                     document.createElement(
                         "option"
                     );
 
+
                 option.value =
-                    className;
+                    classData.name;
 
                 option.textContent =
-                    className;
+                    classData.name;
+
 
                 classNameInput.appendChild(
                     option
                 );
+
             }
         );
+
 
     } catch (error) {
 
@@ -1687,16 +1696,12 @@ async function loadClassOptions() {
             "Gagal mengambil daftar kelas:",
             error
         );
+
     }
+
 }
 
-
-        const announcementList =
-            document.getElementById(
-                "announcementList"
-            );
-
-            async function loadAdminAnnouncementMentionUsers() {
+async function loadAdminAnnouncementMentionUsers() {
 
     const target =
         document.querySelector(
@@ -1715,12 +1720,15 @@ async function loadClassOptions() {
             adminResponse
         ] =
             await Promise.all([
+
                 fetch(
                     "/api/admin/students"
                 ),
+
                 fetch(
                     "/api/admin/users/mention-list"
                 )
+
             ]);
 
 
@@ -1735,7 +1743,9 @@ async function loadClassOptions() {
             !studentData.success ||
             !adminData.success
         ) {
+
             return;
+
         }
 
 
@@ -1757,8 +1767,6 @@ async function loadClassOptions() {
             );
 
 
-        // Kalau announcement khusus kelas,
-        // siswa mention hanya dari kelas tersebut
         if (target === "class") {
 
             students =
@@ -2151,27 +2159,91 @@ const filteredUsers =
                         .trim();
 
 
-                if (!msg) {
+if (!msg) {
 
-                    message.textContent =
-                        "Pesan wajib diisi.";
+    message.textContent =
+        "Pesan wajib diisi.";
 
-                    return;
+    return;
+}
 
-                }
 
-                submitButton.disabled =
+/*
+    Ubah tombol SEKARANG.
+    Jangan tunggu request apa pun.
+*/
+submitButton.disabled =
     true;
 
 submitButton.textContent =
     "Memposting...";
 
+message.textContent =
+    "Membuat announcement...";
 
-                message.textContent =
-                    "Membuat announcement...";
+
+/*
+    Setelah tombol berubah,
+    baru refresh daftar mention.
+*/
+await loadAdminAnnouncementMentionUsers();
 
 
-                try {
+const detectedMentions =
+    adminAnnouncementMentionUsers
+        .filter(
+            (user) =>
+                msg.includes(
+                    `@${user.name}`
+                )
+        )
+        .map(
+            (user) => ({
+                id:
+                    user.id,
+
+                type:
+                    user.type,
+
+                name:
+                    user.name
+            })
+        );
+
+
+const finalMentions =
+    [];
+
+
+[
+    ...adminAnnouncementMentions,
+    ...detectedMentions
+].forEach(
+    (mention) => {
+
+        const exists =
+            finalMentions.some(
+                (existing) =>
+                    existing.id ===
+                        mention.id &&
+                    existing.type ===
+                        mention.type
+            );
+
+
+        if (!exists) {
+
+            finalMentions.push(
+                mention
+            );
+
+        }
+
+    }
+);
+
+
+try {
 
                     const response =
                         await fetch(
@@ -2199,7 +2271,7 @@ submitButton.textContent =
                                         className,
 
                                         mentions:
-                                            adminAnnouncementMentions
+                                            finalMentions
 
                                     })
 
@@ -2270,9 +2342,52 @@ if (
 }
 
 
-announcementList.prepend(
-    newCard
-);
+const existingCard =
+    document.getElementById(
+        `announcement-${data.announcement.id}`
+    );
+
+
+if (existingCard) {
+
+    /*
+        LIVE mungkin sudah lebih dulu
+        membuat card dengan mentions
+        yang belum lengkap.
+
+        Response POST adalah versi final,
+        jadi sinkronkan message dari sini.
+    */
+
+    const existingMessage =
+        existingCard.querySelector(
+            ".feed-message"
+        );
+
+
+    const freshMessage =
+        newCard.querySelector(
+            ".feed-message"
+        );
+
+
+    if (
+        existingMessage &&
+        freshMessage
+    ) {
+
+        existingMessage.innerHTML =
+            freshMessage.innerHTML;
+
+    }
+
+} else {
+
+    announcementList.prepend(
+        newCard
+    );
+
+}
 
 latestAnnouncementId =
     Math.max(
@@ -2289,7 +2404,9 @@ submitButton.textContent =
     "Posting";
 
 
-setupAdminMentionAutocomplete();
+setupAdminMentionAutocomplete(
+    announcementList
+);
 
 
                     } else {
@@ -2503,14 +2620,29 @@ ${formatDeviceDateTime(
 
 let latestAnnouncementId = 0;
 
+let adminFeedLoading =
+    false;
+
+let adminLiveSyncRunning =
+    false;
+
         // =================================
         // LOAD ANNOUNCEMENTS
         // =================================
 
-        async function loadAnnouncements() {
+async function loadAnnouncements() {
 
-            announcementList.innerHTML =
-                "Memuat...";
+    if (adminFeedLoading) {
+        return;
+    }
+
+
+    adminFeedLoading =
+        true;
+
+
+    announcementList.innerHTML =
+        "Memuat...";
 
 
             try {
@@ -2551,44 +2683,130 @@ let latestAnnouncementId = 0;
                     "";
 
 
- data.announcements.forEach(
+latestAnnouncementId =
+    0;
+
+latestReplyId =
+    0;
+
+
+data.announcements.forEach(
     (announcement) => {
 
         latestAnnouncementId =
-    Math.max(
-        latestAnnouncementId,
-        Number(announcement.id)
-    );
+            Math.max(
+                latestAnnouncementId,
+                Number(
+                    announcement.id
+                )
+            );
+
 
         const card =
             createAdminAnnouncementCard(
                 announcement
             );
 
+
         announcementList.appendChild(
             card
         );
 
-        loadAdminReplies(
-            announcement.id
+
+        const replyContainer =
+            document.getElementById(
+                `admin-replies-${announcement.id}`
+            );
+
+
+        if (!replyContainer) {
+            return;
+        }
+
+
+        const replies =
+            Array.isArray(
+                announcement.replies
+            )
+                ? announcement.replies
+                : [];
+
+
+        replyContainer.innerHTML =
+            "";
+
+
+        if (replies.length === 0) {
+
+            replyContainer.innerHTML = `
+                <small>
+                    Belum ada reply.
+                </small>
+            `;
+
+            return;
+
+        }
+
+
+        replies.forEach(
+            (reply) => {
+
+                latestReplyId =
+                    Math.max(
+                        latestReplyId,
+                        Number(
+                            reply.id
+                        )
+                    );
+
+
+                if (
+                    document.getElementById(
+                        `reply-${reply.id}`
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                replyContainer.appendChild(
+                    createAdminReplyItem(
+                        announcement.id,
+                        reply
+                    )
+                );
+
+            }
         );
+
     }
 );
 
-                setupAdminMentionAutocomplete();
+
+setupAdminMentionAutocomplete(
+    announcementList
+);
 
 
-            } catch (error) {
+    } catch (error) {
 
-                console.error(error);
+        console.error(error);
 
 
-                announcementList.innerHTML =
-                    "Gagal mengambil announcement.";
+        announcementList.innerHTML =
+            "Gagal mengambil announcement.";
 
-            }
+    } finally {
 
-        }
+        adminFeedLoading =
+            false;
+
+    }
+
+}
 
 let latestReplyId = 0;
 
@@ -2814,16 +3032,24 @@ if (container) {
     }
 
 
-    const replyItem =
-        createAdminReplyItem(
-            announcementId,
-            data.reply
-        );
+const replyItem =
+    createAdminReplyItem(
+        announcementId,
+        data.reply
+    );
 
+
+if (
+    !document.getElementById(
+        `reply-${data.reply.id}`
+    )
+) {
 
     container.appendChild(
         replyItem
     );
+
+}
 
     if (latestReplyId !== null) {
 
@@ -3235,13 +3461,10 @@ async function logout() {
 }
 
 
-        // =================================
-        // LOAD AWAL
-        // =================================
-loadClassOptions();
-
-loadAdminAnnouncementMentionUsers();
-
+// =================================
+// LOAD AWAL
+// FEED JADI PRIORITAS
+// =================================
 
 const skipInitialFeedReload =
     sessionStorage.getItem(
@@ -3372,9 +3595,6 @@ if (skipInitialFeedReload) {
 
 }
 
-
-loadNotificationCount();
-
 let notificationPollingTimer = null;
 
 function startNotificationPolling() {
@@ -3414,6 +3634,10 @@ async function checkLiveReplies() {
 
         return;
     }
+
+    if (adminFeedLoading) {
+    return;
+}
 
 
     try {
@@ -3558,6 +3782,10 @@ async function checkLiveAnnouncements() {
         return;
     }
 
+    if (adminFeedLoading) {
+    return;
+}
+
 
     try {
 
@@ -3668,6 +3896,10 @@ async function checkLiveDeletions() {
         return;
 
     }
+
+    if (adminFeedLoading) {
+    return;
+}
 
 
     try {
@@ -3837,20 +4069,44 @@ function startFeedLivePolling() {
     }
 
 
-feedLivePollingTimer =
-    setInterval(
-        async () => {
+    feedLivePollingTimer =
+        setInterval(
+            async () => {
 
-            await Promise.all([
-                checkLiveAnnouncements(),
-                checkLiveReplies(),
-                checkLiveDeletions(),
-                loadNotificationCount()
-            ]);
+                if (
+                    adminLiveSyncRunning ||
+                    adminFeedLoading
+                ) {
 
-        },
-        5000
-    );
+                    return;
+
+                }
+
+
+                adminLiveSyncRunning =
+                    true;
+
+
+                try {
+
+                    await Promise.all([
+                        checkLiveAnnouncements(),
+                        checkLiveReplies(),
+                        checkLiveDeletions(),
+                        loadNotificationCount()
+                    ]);
+
+                } finally {
+
+                    adminLiveSyncRunning =
+                        false;
+
+                }
+
+            },
+            5000
+        );
+
 }
 
 
@@ -3916,9 +4172,49 @@ document.addEventListener(
 );
 
 
-startNotificationPolling();
+async function startAdminBackgroundTasks() {
 
-startFeedLivePolling();
+    /*
+        Tunggu initial Feed selesai dulu.
+        Jangan rebutan request dengan Feed.
+    */
+    while (adminFeedLoading) {
+
+        await new Promise(
+            (resolve) =>
+                setTimeout(
+                    resolve,
+                    25
+                )
+        );
+
+    }
+
+
+    /*
+        Feed sudah tampil.
+        Baru ambil data pendukung
+        secara background.
+    */
+    Promise.allSettled([
+        loadClassOptions(),
+        loadAdminAnnouncementMentionUsers(),
+        loadNotificationCount()
+    ]);
+
+
+    /*
+        Setelah initial Feed aman,
+        baru hidupkan polling.
+    */
+    startNotificationPolling();
+
+    startFeedLivePolling();
+
+}
+
+
+startAdminBackgroundTasks();
 
 window.addEventListener(
     "message",

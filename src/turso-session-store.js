@@ -8,20 +8,32 @@ const tursoDb =
 class TursoSessionStore
     extends session.Store {
 
-    constructor(options = {}) {
+constructor(options = {}) {
 
-        super();
+    super();
 
-        this.defaultMaxAge =
-            options.defaultMaxAge ||
-            (
-                1000 *
-                60 *
-                60 *
-                8
-            );
+    this.defaultMaxAge =
+        options.defaultMaxAge ||
+        (
+            1000 *
+            60 *
+            60 *
+            8
+        );
 
-    }
+
+    /*
+        Cache waktu touch terakhir
+        di proses Node ini.
+
+        Tujuannya supaya request biasa
+        tidak perlu SELECT + UPDATE
+        session ke Turso terus-menerus.
+    */
+    this.lastTouchAt =
+        new Map();
+
+}
 
 
     get(sid, callback) {
@@ -46,19 +58,20 @@ class TursoSessionStore
 
     async getAsync(sid) {
 
-        const row =
-            await tursoDb.get(
-                `
-                    SELECT
-                        data,
-                        expires_at
-                    FROM sessions
-                    WHERE sid = ?
-                `,
-                [
-                    sid
-                ]
-            );
+const row =
+    await tursoDb.get(
+        `
+            SELECT
+                data,
+                expires_at,
+                updated_at
+            FROM sessions
+            WHERE sid = ?
+        `,
+        [
+            sid
+        ]
+    );
 
 
         if (!row) {
@@ -95,9 +108,29 @@ class TursoSessionStore
         }
 
 
-        return JSON.parse(
-            row.data
-        );
+const updatedAt =
+    Number(
+        row.updated_at
+    );
+
+
+if (
+    Number.isFinite(
+        updatedAt
+    )
+) {
+
+    this.lastTouchAt.set(
+        sid,
+        updatedAt
+    );
+
+}
+
+
+return JSON.parse(
+    row.data
+);
 
     }
 
@@ -187,10 +220,19 @@ class TursoSessionStore
             ]
         );
 
+        this.lastTouchAt.set(
+    sid,
+    now
+);
+
     }
 
 
     destroy(sid, callback) {
+
+        this.lastTouchAt.delete(
+    sid
+);
 
         tursoDb
             .run(
@@ -248,33 +290,23 @@ async touchAsync(
     const now =
         Date.now();
 
-    /*
-        Jangan menulis session ke Turso
-        pada setiap request.
 
-        Session cukup diperpanjang bila
-        terakhir di-update sudah lebih dari
-        5 menit.
-    */
-    const row =
-        await tursoDb.get(
-            `
-                SELECT updated_at
-                FROM sessions
-                WHERE sid = ?
-            `,
-            [
-                sid
-            ]
+    const lastTouch =
+        this.lastTouchAt.get(
+            sid
         );
 
 
+    /*
+        Kalau session ini baru disentuh
+        kurang dari 5 menit lalu,
+        tidak perlu akses Turso sama sekali.
+    */
     if (
-        row &&
         Number.isFinite(
-            Number(row.updated_at)
+            lastTouch
         ) &&
-        now - Number(row.updated_at) <
+        now - lastTouch <
             5 * 60 * 1000
     ) {
 
@@ -288,47 +320,54 @@ async touchAsync(
         this.defaultMaxAge;
 
 
+    if (
+        sessionData.cookie &&
+        sessionData.cookie.expires
+    ) {
+
+        const cookieExpires =
+            new Date(
+                sessionData.cookie.expires
+            ).getTime();
+
+
         if (
-            sessionData.cookie &&
-            sessionData.cookie.expires
+            Number.isFinite(
+                cookieExpires
+            )
         ) {
 
-            const cookieExpires =
-                new Date(
-                    sessionData.cookie.expires
-                ).getTime();
-
-
-            if (
-                Number.isFinite(
-                    cookieExpires
-                )
-            ) {
-
-                expiresAt =
-                    cookieExpires;
-
-            }
+            expiresAt =
+                cookieExpires;
 
         }
 
+    }
 
-await tursoDb.run(
-    `
-        UPDATE sessions
-        SET
-            expires_at = ?,
-            updated_at = ?
-        WHERE sid = ?
-    `,
-    [
-        expiresAt,
-        now,
-        sid
-    ]
+
+    await tursoDb.run(
+        `
+            UPDATE sessions
+            SET
+                expires_at = ?,
+                updated_at = ?
+            WHERE sid = ?
+        `,
+        [
+            expiresAt,
+            now,
+            sid
+        ]
+    );
+
+
+this.lastTouchAt.set(
+    sid,
+    now
 );
 
-    }
+}
+
 
 }
 

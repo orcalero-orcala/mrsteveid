@@ -6514,6 +6514,7 @@ body {
     border:
         1px solid #28517c;
     position: relative;
+    align-items: flex-start;
 }
 
 
@@ -8895,6 +8896,9 @@ margin-bottom: auto;
 .feed-live-status {
     position: relative;
     top: 35px;
+    .admin-feed-intro .feed-live-status {
+    margin-top: 0;
+}
 
 margin-left: auto;
 flex-shrink: 0;
@@ -9651,4 +9655,13 @@ input::placeholder {
 .feed-intro:not(.admin-feed-intro)
 .feed-live-status {
     top: 0px !important;
+}
+
+/* =========================================
+   FIX ADMIN LIVE POSITION
+   ========================================= */
+
+.admin-feed-intro #feedLiveStatus {
+    align-self: flex-start !important;
+    margin-top: 2px !important;
 }
