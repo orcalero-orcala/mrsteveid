@@ -185,6 +185,14 @@
                 <div class="feed-topbar-actions">
 
                     <button
+    type="button"
+    class="feed-moderation-button"
+    onclick="openFeedModeration()"
+>
+    Moderasi
+</button>
+
+                    <button
                         type="button"
                         class="notification-button"
                         onclick="goToNotifications()"
@@ -493,6 +501,525 @@
     </section>
 </div>
 
+<!-- ======================================
+     CLASSROOM FEED MODERATION
+======================================= -->
+
+<div
+    id="feedModerationOverlay"
+    class="feed-moderation-overlay"
+    style="display: none;"
+>
+
+    <section
+        class="
+            feed-moderation-panel
+            feed-moderation-panel-wide
+        "
+    >
+
+        <button
+            type="button"
+            class="notification-close-button"
+            onclick="closeFeedModeration()"
+            aria-label="Tutup moderation"
+        >
+            ×
+        </button>
+
+
+        <div class="feed-moderation-header">
+
+            <small class="eyebrow">
+                CLASSROOM FEED
+            </small>
+
+            <h1>
+                Moderasi
+            </h1>
+
+            <p>
+                Tambahkan tindakan moderation
+                dan pantau seluruh moderation
+                yang sedang berjalan.
+            </p>
+
+        </div>
+
+
+        <div class="feed-moderation-workspace">
+
+            <!-- =========================
+                 KIRI - TAMBAH TINDAKAN
+            ========================== -->
+
+            <section
+                class="feed-moderation-create-column"
+            >
+
+                <div
+                    class="feed-moderation-column-header"
+                >
+                    <div>
+                        <small>
+                            TINDAKAN BARU
+                        </small>
+
+                        <h2>
+                            Tambah Moderasi
+                        </h2>
+                    </div>
+                </div>
+
+
+                <div
+                    class="feed-moderation-field"
+                >
+
+                    <label for="feedModerationStudent">
+                        Pilih siswa
+                    </label>
+
+                    <select
+                        id="feedModerationStudent"
+                    >
+
+                        <option value="">
+                            Pilih siswa
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+<div
+    id="feedModerationSelectedStudent"
+    class="
+        feed-moderation-selected-student
+    "
+    style="display: none;"
+>
+
+    <div
+        class="
+            feed-moderation-selected-student-top
+        "
+    >
+
+        <strong
+            id="feedModerationStudentName"
+        >
+            -
+        </strong>
+
+
+        <span
+            id="feedModerationSelectedStatus"
+            class="
+                feed-moderation-selected-status
+                safe
+            "
+        >
+            Aman
+        </span>
+
+    </div>
+
+
+    <span
+        id="feedModerationStudentClass"
+    >
+        -
+    </span>
+
+</div>
+                <div
+                    class="feed-moderation-create-actions"
+                >
+
+<button
+    id="feedModerationMuteButton"
+    type="button"
+    class="feed-mute-button"
+    onclick="openFeedMutePanel()"
+    disabled
+>
+    + Tambah Mute
+</button>
+
+
+<button
+    id="feedModerationBanButton"
+    type="button"
+    class="danger-button"
+    onclick="openFeedBanPanel()"
+    disabled
+    title="Ban akan langsung menghentikan seluruh mute siswa"
+>
+    + Tambah Ban
+</button>
+
+                </div>
+
+
+                <p
+                    class="
+                        feed-moderation-create-hint
+                    "
+                >
+                    Jika siswa sudah memiliki
+                    mute aktif, mute baru akan
+                    masuk antrean dan dimulai
+                    setelah mute sebelumnya selesai.
+                </p>
+
+            </section>
+
+
+            <!-- =========================
+                 KANAN - LOG LIVE
+            ========================== -->
+
+            <section
+                class="feed-moderation-log-column"
+            >
+
+              <div
+    class="feed-moderation-column-header"
+>
+
+    <div>
+
+        <small>
+            LIVE MONITORING
+        </small>
+
+        <h2>
+            Log Moderasi
+        </h2>
+
+    </div>
+
+
+    <div
+        class="
+            feed-moderation-log-header-actions
+        "
+    >
+
+        <select
+            id="feedModerationLogFilter"
+            class="
+                feed-moderation-log-filter
+            "
+            aria-label="
+                Filter siswa moderation
+            "
+        >
+
+            <option value="all">
+                Semua siswa
+            </option>
+
+        </select>
+
+
+        <span
+            id="feedModerationLogCount"
+            class="
+                feed-moderation-log-count
+            "
+        >
+            0
+        </span>
+
+    </div>
+
+</div>
+
+
+                <div
+                    id="feedModerationLog"
+                    class="feed-moderation-log"
+                >
+
+                    <div
+                        class="
+                            feed-moderation-log-empty
+                        "
+                    >
+                        Belum ada moderation aktif.
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ======================================
+     MUTE PANEL
+======================================= -->
+
+<div
+    id="feedMuteOverlay"
+    class="feed-moderation-overlay"
+    style="display: none;"
+>
+
+    <section class="feed-moderation-dialog">
+
+        <h2>
+            Mute Siswa
+        </h2>
+
+        <p>
+            Pilih durasi mute Classroom Feed.
+            Maksimum 7 hari.
+        </p>
+
+
+        <div class="feed-mute-presets">
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(30)"
+            >
+                30 menit
+            </button>
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(60)"
+            >
+                1 jam
+            </button>
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(360)"
+            >
+                6 jam
+            </button>
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(1440)"
+            >
+                1 hari
+            </button>
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(4320)"
+            >
+                3 hari
+            </button>
+
+            <button
+                type="button"
+                onclick="setFeedMuteDuration(10080)"
+            >
+                7 hari
+            </button>
+
+        </div>
+
+
+ <div class="feed-moderation-field">
+
+    <label>
+        Durasi mute
+    </label>
+
+
+    <div class="feed-mute-custom-time">
+
+        <div class="feed-mute-time-part">
+
+            <input
+                id="feedMuteMinutes"
+                type="number"
+                min="0"
+                max="59"
+                step="1"
+                value="30"
+                inputmode="numeric"
+                placeholder="0"
+            >
+
+            <span>
+                menit
+            </span>
+
+        </div>
+
+
+        <div class="feed-mute-time-part">
+
+            <input
+                id="feedMuteHours"
+                type="number"
+                min="0"
+                max="23"
+                step="1"
+                value="0"
+                inputmode="numeric"
+                placeholder="0"
+            >
+
+            <span>
+                jam
+            </span>
+
+        </div>
+
+
+        <div class="feed-mute-time-part">
+
+            <input
+                id="feedMuteDays"
+                type="number"
+                min="0"
+                max="7"
+                step="1"
+                value="0"
+                inputmode="numeric"
+                placeholder="0"
+            >
+
+            <span>
+                hari
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <small class="feed-mute-limit-text">
+        Maksimum total durasi 7 hari.
+    </small>
+
+</div>
+
+
+        <div class="feed-moderation-field">
+
+            <label for="feedMuteReason">
+                Alasan
+                <small>
+                    (opsional)
+                </small>
+            </label>
+
+            <textarea
+                id="feedMuteReason"
+                rows="3"
+                maxlength="500"
+                placeholder="Tuliskan alasan mute jika diperlukan..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="feed-moderation-dialog-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                onclick="closeFeedMutePanel()"
+            >
+                Batal
+            </button>
+
+            <button
+                id="feedMuteConfirmButton"
+                type="button"
+                onclick="confirmFeedMute()"
+            >
+                Mute
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ======================================
+     BAN PANEL
+======================================= -->
+
+<div
+    id="feedBanOverlay"
+    class="feed-moderation-overlay"
+    style="display: none;"
+>
+
+    <section class="feed-moderation-dialog">
+
+        <h2>
+            Nonaktifkan Akses Feed
+        </h2>
+
+        <p>
+            Siswa tidak akan dapat mengakses
+            Classroom Feed sampai larangan dicabut.
+        </p>
+
+
+        <div class="feed-moderation-field">
+
+            <label for="feedBanReason">
+                Alasan
+                <small>
+                    (opsional)
+                </small>
+            </label>
+
+            <textarea
+                id="feedBanReason"
+                rows="3"
+                maxlength="500"
+                placeholder="Tuliskan alasan jika diperlukan..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="feed-moderation-dialog-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                onclick="closeFeedBanPanel()"
+            >
+                Batal
+            </button>
+
+            <button
+                id="feedBanConfirmButton"
+                type="button"
+                class="danger-button"
+                onclick="confirmFeedBan()"
+            >
+                Ban
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
 <script src="/time.js"></script>
     <script>
 
@@ -789,6 +1316,3305 @@ function formatMessage(
     return safeText;
 
 }
+
+// =====================================
+// CLASSROOM FEED MODERATION
+// =====================================
+
+let feedModerationStudents =
+    [];
+
+let feedModerationActions =
+    [];
+
+let activeFeedModerationLogFilter =
+    "all";
+
+let selectedFeedModerationStudent =
+    null;
+
+
+/*
+    Target siswa yang dikunci saat
+    dialog Mute dibuka.
+
+    Jangan bergantung pada state LIVE
+    selectedFeedModerationStudent
+    ketika request dikirim.
+*/
+let feedMuteTargetStudentId =
+    null;
+
+
+/*
+    Target Ban juga dikunci ketika
+    dialog dibuka.
+
+    LIVE sync tidak boleh memindahkan
+    target request Ban.
+*/
+let feedBanTargetStudentId =
+    null;
+
+
+/*
+    Countdown:
+    update tampilan setiap 1 detik.
+
+    Server sync:
+    cek status asli setiap 5 detik.
+*/
+let adminModerationCountdownTimer =
+    null;
+
+let adminModerationLiveTimer =
+    null;
+
+let adminModerationSyncRunning =
+    false;
+
+
+/*
+    Dipakai untuk membatalkan request LIVE sync
+    ketika Admin melakukan Mute, Ban, atau Hapus.
+*/
+let adminModerationSyncController =
+    null;
+
+
+let feedModerationDeleteRunning =
+    false;
+
+/*
+    Menyimpan ID card yang sudah dikonfirmasi
+    terhapus oleh server.
+
+    Jika Turso sempat mengirim snapshot lama,
+    card tersebut tidak boleh dirender kembali.
+*/
+const feedModerationHiddenActionIds =
+    new Set();
+
+let adminModerationServerOffsetMs =
+    0;
+
+
+function updateAdminModerationServerClock(
+    serverNow,
+    requestStartedAt,
+    responseReceivedAt
+) {
+
+    const serverNowMs =
+        new Date(
+            serverNow
+        ).getTime();
+
+
+    if (
+        Number.isNaN(
+            serverNowMs
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Pakai midpoint request supaya
+        latency network tidak terlalu
+        mempengaruhi sinkronisasi.
+    */
+    const clientMidpoint =
+        requestStartedAt +
+        (
+            (
+                responseReceivedAt -
+                requestStartedAt
+            ) /
+            2
+        );
+
+
+    adminModerationServerOffsetMs =
+        serverNowMs -
+        clientMidpoint;
+
+}
+
+
+function getAdminModerationNowMs() {
+
+    return (
+        Date.now() +
+        adminModerationServerOffsetMs
+    );
+
+}
+
+
+// =====================================
+// OPEN / CLOSE MODERATION
+// =====================================
+
+async function openFeedModeration() {
+
+    const overlay =
+        document.getElementById(
+            "feedModerationOverlay"
+        );
+
+
+    overlay.style.display =
+        "flex";
+
+
+    document.body.style.overflow =
+        "hidden";
+
+
+    await loadFeedModerationStudents();
+
+
+    startAdminModerationLive();
+
+}
+
+
+function closeFeedModeration() {
+
+    const overlay =
+        document.getElementById(
+            "feedModerationOverlay"
+        );
+
+
+    overlay.style.display =
+        "none";
+
+
+    document.body.style.overflow =
+        "";
+
+
+    stopAdminModerationLive();
+
+    closeFeedMutePanel();
+    closeFeedBanPanel();
+
+}
+
+
+// =====================================
+// LOAD STUDENTS
+// =====================================
+
+async function loadFeedModerationStudents() {
+
+    const select =
+        document.getElementById(
+            "feedModerationStudent"
+        );
+
+
+    select.disabled =
+        true;
+
+
+    select.innerHTML = `
+        <option value="">
+            Memuat siswa...
+        </option>
+    `;
+
+
+    try {
+
+const requestStartedAt =
+    Date.now();
+
+
+const response =
+    await fetch(
+        "/api/admin/feed-moderation/students",
+        {
+            cache:
+                "no-store"
+        }
+    );
+
+
+const data =
+    await response.json();
+
+
+const responseReceivedAt =
+    Date.now();
+
+
+updateAdminModerationServerClock(
+    data.serverNow,
+    requestStartedAt,
+    responseReceivedAt
+);
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.students
+            )
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Gagal mengambil siswa."
+            );
+
+        }
+
+
+feedModerationStudents =
+    data.students;
+
+
+feedModerationActions =
+    Array.isArray(
+        data.moderationActions
+    )
+        ? data.moderationActions
+        : [];
+
+
+updateFeedModerationLogFilterOptions();
+
+renderFeedModerationLog();
+
+
+        select.innerHTML = `
+            <option value="">
+                Pilih siswa
+            </option>
+        `;
+
+
+        feedModerationStudents.forEach(
+            (student) => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    student.id;
+
+
+                option.textContent =
+                    `${student.name} — ${student.class_name || "Tanpa kelas"}`;
+
+
+                select.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+        select.disabled =
+            false;
+
+
+        /*
+            Kalau sebelumnya sudah memilih siswa,
+            pertahankan pilihan setelah refresh status.
+        */
+        if (
+            selectedFeedModerationStudent
+        ) {
+
+            select.value =
+                String(
+                    selectedFeedModerationStudent.id
+                );
+
+
+            renderSelectedFeedModerationStudent();
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memuat moderation siswa:",
+            error
+        );
+
+
+        select.innerHTML = `
+            <option value="">
+                Gagal memuat siswa
+            </option>
+        `;
+
+    }
+
+}
+
+
+// =====================================
+// SELECT STUDENT
+// =====================================
+
+function renderSelectedFeedModerationStudent() {
+
+    const select =
+        document.getElementById(
+            "feedModerationStudent"
+        );
+
+
+    const studentId =
+        Number(
+            select.value
+        );
+
+
+    const selectedPanel =
+        document.getElementById(
+            "feedModerationSelectedStudent"
+        );
+
+
+    const muteButton =
+        document.getElementById(
+            "feedModerationMuteButton"
+        );
+
+
+    const banButton =
+        document.getElementById(
+            "feedModerationBanButton"
+        );
+
+
+    if (
+        !Number.isInteger(
+            studentId
+        )
+    ) {
+
+        selectedFeedModerationStudent =
+            null;
+
+
+        selectedPanel.style.display =
+            "none";
+
+
+        muteButton.disabled =
+            true;
+
+
+        banButton.disabled =
+            true;
+
+
+        return;
+
+    }
+
+
+    const student =
+        feedModerationStudents.find(
+            (item) =>
+                Number(
+                    item.id
+                ) ===
+                studentId
+        );
+
+
+    if (!student) {
+
+        selectedFeedModerationStudent =
+            null;
+
+
+        selectedPanel.style.display =
+            "none";
+
+
+        muteButton.disabled =
+            true;
+
+
+        banButton.disabled =
+            true;
+
+
+        return;
+
+    }
+
+
+    selectedFeedModerationStudent =
+        student;
+
+
+    const isBanned =
+        student.moderation_status ===
+        "banned";
+
+
+    /*
+        Saat MUTED:
+        - Mute masih boleh ditambah
+        - Ban boleh override seluruh Mute
+
+        Saat BANNED:
+        - Mute disabled
+        - Ban disabled
+    */
+    muteButton.disabled =
+        isBanned;
+
+
+    banButton.disabled =
+        isBanned;
+
+
+    banButton.title =
+        isBanned
+            ? "Siswa sudah di ban"
+            : "Ban akan langsung menghentikan seluruh mute siswa";
+
+
+    document.getElementById(
+        "feedModerationStudentName"
+    ).textContent =
+        student.name;
+
+
+    document.getElementById(
+        "feedModerationStudentClass"
+    ).textContent =
+        student.class_name ||
+        "Tanpa kelas";
+
+
+    const statusElement =
+        document.getElementById(
+            "feedModerationSelectedStatus"
+        );
+
+
+    if (
+        student.moderation_status ===
+        "banned"
+    ) {
+
+        statusElement.textContent =
+            "Di ban";
+
+
+        statusElement.className =
+            "feed-moderation-selected-status banned";
+
+
+    } else {
+
+        const hasMute =
+            feedModerationActions.some(
+                (action) =>
+                    Number(
+                        action.student_id
+                    ) ===
+                        studentId &&
+                    action.action_type ===
+                        "mute" &&
+                    (
+                        action.status ===
+                            "active" ||
+                        action.status ===
+                            "queued"
+                    )
+            );
+
+
+        if (
+            student.moderation_status ===
+                "muted" ||
+            hasMute
+        ) {
+
+            statusElement.textContent =
+                "Di mute";
+
+
+            statusElement.className =
+                "feed-moderation-selected-status muted";
+
+
+        } else {
+
+            statusElement.textContent =
+                "Aman";
+
+
+            statusElement.className =
+                "feed-moderation-selected-status safe";
+
+        }
+
+    }
+
+
+    selectedPanel.style.display =
+        "flex";
+
+}
+
+
+// =====================================
+// DATE
+// =====================================
+
+function formatModerationDateTime(
+    value
+) {
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return date.toLocaleString(
+        "id-ID",
+        {
+            dateStyle:
+                "medium",
+
+            timeStyle:
+                "short"
+        }
+    );
+
+}
+
+// =====================================
+// FORMAT DURASI CARD
+// =====================================
+
+function formatModerationDurationMinutes(
+    totalMinutes
+) {
+
+    const minutes =
+        Number(
+            totalMinutes ||
+            0
+        );
+
+
+    if (
+        !Number.isFinite(
+            minutes
+        ) ||
+        minutes <= 0
+    ) {
+
+        return "-";
+
+    }
+
+
+    const days =
+        Math.floor(
+            minutes /
+            1440
+        );
+
+
+    const remainingAfterDays =
+        minutes %
+        1440;
+
+
+    const hours =
+        Math.floor(
+            remainingAfterDays /
+            60
+        );
+
+
+    const remainingMinutes =
+        remainingAfterDays %
+        60;
+
+
+    const parts =
+        [];
+
+
+    if (days > 0) {
+
+        parts.push(
+            `${days} hari`
+        );
+
+    }
+
+
+    if (hours > 0) {
+
+        parts.push(
+            `${hours} jam`
+        );
+
+    }
+
+
+    if (
+        remainingMinutes > 0
+    ) {
+
+        parts.push(
+            `${remainingMinutes} menit`
+        );
+
+    }
+
+
+    return parts.join(
+        " "
+    ) || "0 menit";
+
+}
+
+
+// =====================================
+// COUNTDOWN PER ACTION
+// =====================================
+
+function getModerationActionRemainingMs(
+    action
+) {
+
+    if (
+        action.status !==
+            "active" ||
+        !action.ends_at
+    ) {
+
+        return null;
+
+    }
+
+
+    const endsAtMs =
+        new Date(
+            action.ends_at
+        ).getTime();
+
+
+    if (
+        Number.isNaN(
+            endsAtMs
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return Math.max(
+        0,
+        endsAtMs -
+        getAdminModerationNowMs()
+    );
+
+}
+
+// =====================================
+// FILTER SISWA DI LOG MODERATION
+// =====================================
+
+function updateFeedModerationLogFilterOptions() {
+
+    const select =
+        document.getElementById(
+            "feedModerationLogFilter"
+        );
+
+
+    if (!select) {
+
+        return;
+
+    }
+
+
+    /*
+        Ingat pilihan sebelumnya.
+    */
+    const previousValue =
+        activeFeedModerationLogFilter;
+
+
+    /*
+        Hanya siswa yang benar-benar
+        ada dalam moderationActions.
+
+        Tidak mengambil semua siswa.
+    */
+    const studentsMap =
+        new Map();
+
+
+    feedModerationActions.forEach(
+        (action) => {
+
+            const studentId =
+                Number(
+                    action.student_id
+                );
+
+
+            if (
+                !Number.isInteger(
+                    studentId
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !studentsMap.has(
+                    studentId
+                )
+            ) {
+
+                studentsMap.set(
+                    studentId,
+                    {
+                        id:
+                            studentId,
+
+                        name:
+                            action.student_name ||
+                            "Siswa",
+
+                        className:
+                            action.student_class ||
+                            "Tanpa kelas"
+                    }
+                );
+
+            }
+
+        }
+    );
+
+
+    const monitoringStudents =
+        Array.from(
+            studentsMap.values()
+        ).sort(
+            (a, b) =>
+                a.name.localeCompare(
+                    b.name,
+                    "id",
+                    {
+                        sensitivity:
+                            "base"
+                    }
+                )
+        );
+
+
+    select.innerHTML = `
+        <option value="all">
+            Semua siswa
+        </option>
+    `;
+
+
+    monitoringStudents.forEach(
+        (student) => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                String(
+                    student.id
+                );
+
+
+            option.textContent =
+                `${student.name} — ${student.className}`;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    /*
+        Kalau siswa yang sebelumnya dipilih
+        masih ada di monitoring log,
+        pertahankan filter.
+
+        Kalau sudah tidak ada card,
+        kembali ke Semua siswa.
+    */
+    const previousStillExists =
+        previousValue ===
+            "all" ||
+        monitoringStudents.some(
+            (student) =>
+                String(
+                    student.id
+                ) ===
+                previousValue
+        );
+
+
+    if (
+        previousStillExists
+    ) {
+
+        select.value =
+            previousValue;
+
+
+    } else {
+
+        activeFeedModerationLogFilter =
+            "all";
+
+
+        select.value =
+            "all";
+
+    }
+
+}
+
+// =====================================
+// RENDER LOG MODERATION
+// =====================================
+
+function renderFeedModerationLog() {
+
+    const container =
+        document.getElementById(
+            "feedModerationLog"
+        );
+
+
+    const count =
+        document.getElementById(
+            "feedModerationLogCount"
+        );
+
+
+    if (
+        !container ||
+        !count
+    ) {
+
+        return;
+
+    }
+
+
+const allActions =
+    Array.isArray(
+        feedModerationActions
+    )
+        ? feedModerationActions
+        : [];
+
+
+/*
+    Filter hanya mempengaruhi tampilan.
+
+    feedModerationActions tetap menyimpan
+    seluruh card LIVE.
+*/
+const actions =
+    activeFeedModerationLogFilter ===
+        "all"
+        ? allActions
+        : allActions.filter(
+            (action) =>
+                String(
+                    action.student_id
+                ) ===
+                activeFeedModerationLogFilter
+        );
+
+
+count.textContent =
+    String(
+        actions.length
+    );
+
+
+    if (
+        actions.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div
+                class="
+                    feed-moderation-log-empty
+                "
+            >
+                Belum ada moderation aktif.
+            </div>
+        `;
+
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        "";
+
+
+    actions.forEach(
+        (action) => {
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+
+            card.className =
+                "feed-moderation-log-card";
+
+
+            card.dataset.actionId =
+                String(
+                    action.id
+                );
+
+
+            card.dataset.actionStatus =
+                action.status;
+
+
+            card.dataset.actionType =
+                action.action_type;
+
+
+            const isActive =
+                action.status ===
+                "active";
+
+
+            const isBan =
+                action.action_type ===
+                "ban";
+
+
+            const statusText =
+                isActive
+                    ? "Aktif"
+                    : "Antrean";
+
+
+            const moderatorText =
+                action.moderator_name
+                    ? (
+                        action.moderator_role
+                            ? `${action.moderator_name} — ${action.moderator_role}`
+                            : action.moderator_name
+                    )
+                    : "Admin / Guru";
+
+
+            const reason =
+                String(
+                    action.reason ||
+                    ""
+                ).trim();
+
+
+            const activeRemaining =
+                isBan
+                    ? null
+                    : getModerationActionRemainingMs(
+                        action
+                    );
+
+
+            const timerText =
+                isBan
+                    ? "Sampai dihapus"
+                    : isActive
+                        ? (
+                            activeRemaining ===
+                                null
+                                ? "-"
+                                : formatAdminModerationCountdown(
+                                    activeRemaining
+                                )
+                        )
+                        : formatModerationDurationMinutes(
+                            action.duration_minutes
+                        );
+
+
+            card.innerHTML = `
+
+                <div
+                    class="
+                        feed-moderation-log-card-header
+                    "
+                >
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                action.student_name ||
+                                "Siswa"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                action.student_class ||
+                                "Tanpa kelas"
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <span
+                        class="
+                            feed-moderation-action-status
+                            ${
+                                isActive
+                                    ? "active"
+                                    : "queued"
+                            }
+                        "
+                    >
+                        ${statusText}
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="
+                        feed-moderation-action-type
+                    "
+                >
+                    ${
+                        isBan
+                            ? "BAN"
+                            : "MUTE"
+                    }
+                </div>
+
+
+                <div
+                    class="
+                        feed-moderation-action-timer
+                    "
+                >
+
+                    <small>
+                        ${
+                            isBan
+                                ? "Berlaku"
+                                : isActive
+                                    ? "Sisa waktu"
+                                    : "Durasi antrean"
+                        }
+                    </small>
+
+                    <strong
+                        class="
+                            ${
+                                isBan
+                                    ? ""
+                                    : "feed-moderation-action-countdown"
+                            }
+                        "
+                        data-action-id="${action.id}"
+                    >
+                        ${escapeHtml(
+                            timerText
+                        )}
+                    </strong>
+
+                </div>
+
+
+                ${
+                    !isBan &&
+                    isActive &&
+                    action.ends_at
+                        ? `
+                            <div
+                                class="
+                                    feed-moderation-action-meta
+                                "
+                            >
+                                <small>
+                                    Berakhir
+                                </small>
+
+                                <span>
+                                    ${escapeHtml(
+                                        formatModerationDateTime(
+                                            action.ends_at
+                                        )
+                                    )}
+                                </span>
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <div
+                    class="
+                        feed-moderation-action-meta
+                    "
+                >
+
+                    <small>
+                        Alasan
+                    </small>
+
+                    <span>
+                        ${
+                            reason
+                                ? escapeHtml(
+                                    reason
+                                )
+                                : "Tidak ada alasan."
+                        }
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="
+                        feed-moderation-action-meta
+                    "
+                >
+
+                    <small>
+                        Diberikan oleh
+                    </small>
+
+                    <span>
+                        ${escapeHtml(
+                            moderatorText
+                        )}
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="
+                        feed-moderation-action-meta
+                    "
+                >
+
+                    <small>
+                        Dibuat
+                    </small>
+
+                    <span>
+                        ${escapeHtml(
+                            formatModerationDateTime(
+                                action.created_at
+                            )
+                        )}
+                    </span>
+
+                </div>
+
+                <div
+    class="
+        feed-moderation-card-actions
+    "
+>
+
+    <button
+        type="button"
+        class="
+            feed-moderation-delete-action
+        "
+        onclick="
+            deleteFeedModerationAction(
+                ${Number(action.id)}
+            )
+        "
+    >
+        Hapus
+    </button>
+
+</div>
+
+            `;
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// UPDATE COUNTDOWN SEMUA CARD
+// =====================================
+
+function updateFeedModerationLogCountdowns() {
+
+    if (
+        !Array.isArray(
+            feedModerationActions
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    feedModerationActions.forEach(
+        (action) => {
+
+            if (
+                action.status !==
+                "active"
+            ) {
+
+                return;
+
+            }
+
+
+            const element =
+                document.querySelector(
+                    `.feed-moderation-action-countdown[data-action-id="${action.id}"]`
+                );
+
+
+            if (!element) {
+
+                return;
+
+            }
+
+
+            const remaining =
+                getModerationActionRemainingMs(
+                    action
+                );
+
+
+            if (
+                remaining ===
+                null
+            ) {
+
+                element.textContent =
+                    "-";
+
+
+                return;
+
+            }
+
+
+            element.textContent =
+                formatAdminModerationCountdown(
+                    remaining
+                );
+
+
+            if (
+                remaining <= 0
+            ) {
+
+                /*
+                    Tidak mengubah status lokal.
+
+                    Tunggu server yang menentukan:
+                    - completed
+                    - queue berikutnya active
+                */
+                syncFeedModerationDashboard();
+
+            }
+
+        }
+    );
+
+}
+
+// =====================================
+// HAPUS CARD MODERATION
+// =====================================
+
+async function deleteFeedModerationAction(
+    actionId
+) {
+
+    const numericActionId =
+        Number(
+            actionId
+        );
+
+
+    if (
+        !Number.isInteger(
+            numericActionId
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Mencegah dua penghapusan berjalan
+        bersamaan atau double click.
+    */
+    if (
+        feedModerationDeleteRunning
+    ) {
+
+        return;
+
+    }
+
+
+    const action =
+        feedModerationActions.find(
+            (item) =>
+                Number(
+                    item.id
+                ) ===
+                numericActionId
+        );
+
+
+    if (!action) {
+
+        return;
+
+    }
+
+
+    const isActive =
+        action.status ===
+        "active";
+
+
+    const isBan =
+        action.action_type ===
+        "ban";
+
+
+    const confirmed =
+        confirm(
+            isBan
+                ? "Hapus Ban dan pulihkan akses Classroom Feed siswa?"
+                : isActive
+                    ? (
+                        "Hapus mute yang sedang aktif ini? " +
+                        "Jika ada antrean berikutnya, mute berikutnya akan langsung dimulai."
+                    )
+                    : "Hapus mute dari antrean?"
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    feedModerationDeleteRunning =
+        true;
+
+
+    const overlay =
+        document.getElementById(
+            "feedModerationOverlay"
+        );
+
+
+    /*
+        Hentikan polling baru selama proses
+        penghapusan berlangsung.
+
+        Ini mencegah respons polling lama
+        memasukkan card yang sudah dihapus
+        kembali ke tampilan.
+    */
+    stopAdminModerationLive();
+
+
+    let deleteButton =
+        null;
+
+
+    try {
+
+        const card =
+            document.querySelector(
+                `.feed-moderation-log-card[data-action-id="${numericActionId}"]`
+            );
+
+
+        deleteButton =
+            card
+                ? card.querySelector(
+                    ".feed-moderation-delete-action"
+                )
+                : null;
+
+
+        /*
+            Card tidak langsung dihilangkan.
+
+            Siswa bisa melihat bahwa request
+            sedang diproses dan tidak dapat
+            menekan tombol dua kali.
+        */
+        if (deleteButton) {
+
+            deleteButton.disabled =
+                true;
+
+
+            deleteButton.textContent =
+                "Menghapus...";
+
+        }
+
+
+        const response =
+            await fetch(
+                `/api/admin/feed-moderation/actions/${numericActionId}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Gagal menghapus moderation."
+            );
+
+        }
+
+        /*
+    Mulai sekarang ID ini tidak boleh dimasukkan
+    kembali oleh respons dashboard yang basi.
+*/
+feedModerationHiddenActionIds.add(
+    numericActionId
+);
+
+/*
+    DELETE sudah dikonfirmasi server.
+
+    Hapus card dari data lokal agar perubahan
+    langsung terlihat tanpa menunggu seluruh
+    dashboard dimuat ulang.
+*/
+feedModerationActions =
+    feedModerationActions.filter(
+        (item) =>
+            Number(
+                item.id
+            ) !==
+            numericActionId
+    );
+
+
+renderFeedModerationLog();
+
+
+/*
+    Jika card milik siswa yang sedang dipilih,
+    tampilkan status sementara berdasarkan
+    card yang masih tersisa.
+
+    Server tetap akan mengirim kondisi final
+    pada background sync.
+*/
+if (
+    selectedFeedModerationStudent &&
+    Number(
+        selectedFeedModerationStudent.id
+    ) ===
+        Number(
+            action.student_id
+        )
+) {
+
+    const remainingStudentActions =
+        feedModerationActions.filter(
+            (item) =>
+                Number(
+                    item.student_id
+                ) ===
+                Number(
+                    action.student_id
+                )
+        );
+
+
+    const remainingBan =
+        remainingStudentActions.find(
+            (item) =>
+                item.action_type ===
+                    "ban" &&
+                item.status ===
+                    "active"
+        );
+
+
+    const remainingMute =
+        remainingStudentActions.find(
+            (item) =>
+                item.action_type ===
+                    "mute" &&
+                item.status ===
+                    "active"
+        );
+
+
+    selectedFeedModerationStudent = {
+        ...selectedFeedModerationStudent,
+
+        moderation_status:
+            remainingBan
+                ? "banned"
+                : remainingMute
+                    ? "muted"
+                    : "active",
+
+        muted_until:
+            remainingMute
+                ? (
+                    remainingMute.ends_at ||
+                    null
+                )
+                : null,
+
+        reason:
+            remainingBan
+                ? (
+                    remainingBan.reason ||
+                    null
+                )
+                : remainingMute
+                    ? (
+                        remainingMute.reason ||
+                        null
+                    )
+                    : null
+    };
+
+
+    renderSelectedFeedModerationStudent();
+
+}
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus moderation:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "Gagal menghapus moderation."
+        );
+
+
+        if (
+            deleteButton &&
+            deleteButton.isConnected
+        ) {
+
+            deleteButton.disabled =
+                false;
+
+
+            deleteButton.textContent =
+                "Hapus";
+
+        }
+
+
+        /*
+            Pulihkan seluruh tampilan dari
+            kondisi asli di server.
+        */
+        await syncFeedModerationDashboard();
+
+
+    } finally {
+
+        feedModerationDeleteRunning =
+            false;
+
+
+        /*
+            Hidupkan kembali countdown dan
+            polling hanya jika panel Moderasi
+            masih terbuka.
+        */
+if (
+    overlay &&
+    overlay.style.display !==
+        "none"
+) {
+
+    startAdminModerationLive();
+
+
+    /*
+        Ambil kondisi authoritative setelah
+        tampilan lokal selesai diperbarui.
+
+        Tidak memakai await agar tombol dan UI
+        tidak menunggu request dashboard.
+    */
+    syncFeedModerationDashboard();
+
+}
+
+    }
+
+}
+
+// =====================================
+// MUTE PANEL
+// =====================================
+
+function openFeedMutePanel() {
+
+    /*
+        Dropdown yang terlihat oleh Admin/Guru
+        adalah satu-satunya sumber target.
+
+        Jangan mengambil ID dari object
+        selectedFeedModerationStudent karena
+        object tersebut bisa tertinggal akibat
+        LIVE sync.
+    */
+    const select =
+        document.getElementById(
+            "feedModerationStudent"
+        );
+
+
+    const dropdownStudentId =
+        Number(
+            select.value
+        );
+
+
+    if (
+        !Number.isInteger(
+            dropdownStudentId
+        ) ||
+        dropdownStudentId <= 0
+    ) {
+
+        alert(
+            "Pilih siswa terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    const dropdownStudent =
+        feedModerationStudents.find(
+            (student) =>
+                Number(
+                    student.id
+                ) ===
+                dropdownStudentId
+        );
+
+
+    if (!dropdownStudent) {
+
+        alert(
+            "Data siswa pada dropdown tidak ditemukan. Silakan pilih ulang siswa."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        Sinkronkan object terpilih dengan
+        siswa yang benar-benar terlihat
+        pada dropdown.
+    */
+    selectedFeedModerationStudent =
+        dropdownStudent;
+
+
+    /*
+        Snapshot ID langsung dari dropdown.
+
+        Setelah ini LIVE sync boleh berjalan,
+        tetapi target request tidak berubah.
+    */
+    feedMuteTargetStudentId =
+        dropdownStudentId;
+
+
+    document.getElementById(
+        "feedMuteOverlay"
+    ).style.display =
+        "flex";
+
+
+    document.getElementById(
+        "feedMuteReason"
+    ).value =
+        "";
+
+}
+
+function closeFeedMutePanel(
+    clearTarget = true
+) {
+
+    const overlay =
+        document.getElementById(
+            "feedMuteOverlay"
+        );
+
+
+    if (overlay) {
+
+        overlay.style.display =
+            "none";
+
+    }
+
+
+    if (clearTarget) {
+
+        feedMuteTargetStudentId =
+            null;
+
+    }
+
+}
+
+
+function setFeedMuteDuration(
+    totalMinutes
+) {
+
+    const days =
+        Math.floor(
+            totalMinutes / 1440
+        );
+
+
+    const remainingAfterDays =
+        totalMinutes %
+        1440;
+
+
+    const hours =
+        Math.floor(
+            remainingAfterDays /
+            60
+        );
+
+
+    const minutes =
+        remainingAfterDays %
+        60;
+
+
+    document.getElementById(
+        "feedMuteDays"
+    ).value =
+        String(
+            days
+        );
+
+
+    document.getElementById(
+        "feedMuteHours"
+    ).value =
+        String(
+            hours
+        );
+
+
+    document.getElementById(
+        "feedMuteMinutes"
+    ).value =
+        String(
+            minutes
+        );
+
+}
+
+
+async function confirmFeedMute() {
+
+if (
+    !Number.isInteger(
+        feedMuteTargetStudentId
+    ) ||
+    feedMuteTargetStudentId <= 0
+) {
+
+    alert(
+        "Target siswa untuk mute tidak valid."
+    );
+
+    return;
+
+}
+
+
+    const button =
+        document.getElementById(
+            "feedMuteConfirmButton"
+        );
+
+
+const muteMinutes =
+    Number(
+        document.getElementById(
+            "feedMuteMinutes"
+        ).value ||
+        0
+    );
+
+
+const muteHours =
+    Number(
+        document.getElementById(
+            "feedMuteHours"
+        ).value ||
+        0
+    );
+
+
+const muteDays =
+    Number(
+        document.getElementById(
+            "feedMuteDays"
+        ).value ||
+        0
+    );
+
+
+if (
+    !Number.isInteger(
+        muteMinutes
+    ) ||
+    !Number.isInteger(
+        muteHours
+    ) ||
+    !Number.isInteger(
+        muteDays
+    ) ||
+    muteMinutes < 0 ||
+    muteMinutes > 59 ||
+    muteHours < 0 ||
+    muteHours > 23 ||
+    muteDays < 0 ||
+    muteDays > 7
+) {
+
+    alert(
+        "Durasi mute tidak valid."
+    );
+
+    return;
+
+}
+
+
+const durationMinutes =
+    muteMinutes +
+    (
+        muteHours *
+        60
+    ) +
+    (
+        muteDays *
+        1440
+    );
+
+
+if (
+    durationMinutes < 1
+) {
+
+    alert(
+        "Durasi mute minimal 1 menit."
+    );
+
+    return;
+
+}
+
+
+if (
+    durationMinutes > 10080
+) {
+
+    alert(
+        "Durasi mute maksimal 7 hari."
+    );
+
+    return;
+
+}
+
+
+    const reason =
+        document.getElementById(
+            "feedMuteReason"
+        ).value.trim();
+
+
+    button.disabled =
+        true;
+
+
+button.textContent =
+    "Memproses...";
+
+
+/*
+    Jangan biarkan polling lama bersaing dengan
+    request Mute atau membuat request menunggu.
+*/
+stopAdminModerationLive();
+
+
+try {
+
+        const response =
+            await fetch(
+                `/api/admin/feed-moderation/${feedMuteTargetStudentId}/mute`,
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            durationMinutes,
+                            reason
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.message ||
+                "Gagal mute siswa."
+            );
+
+        }
+
+
+/*
+    false = tutup dialog tapi target
+    tetap tersedia sampai finally.
+*/
+/*
+    Ambil data siswa sebelum target dilepas
+    oleh bagian finally.
+*/
+const mutedStudent =
+    feedModerationStudents.find(
+        (student) =>
+            Number(
+                student.id
+            ) ===
+            Number(
+                feedMuteTargetStudentId
+            )
+    );
+
+
+/*
+    Endpoint Mute sudah mengirim action yang
+    baru dibuat. Masukkan langsung ke log lokal
+    agar card muncul tanpa menunggu GET dashboard.
+*/
+if (
+    data.action &&
+    Number.isInteger(
+        Number(
+            data.action.id
+        )
+    )
+) {
+
+    const actionAlreadyExists =
+        feedModerationActions.some(
+            (item) =>
+                Number(
+                    item.id
+                ) ===
+                Number(
+                    data.action.id
+                )
+        );
+
+
+    if (!actionAlreadyExists) {
+
+feedModerationActions.push({
+    ...data.action,
+
+    student_name:
+        mutedStudent
+            ? mutedStudent.name
+            : "Siswa",
+
+    student_class:
+        mutedStudent
+            ? (
+                mutedStudent.class_name ||
+                null
+            )
+            : null,
+
+    /*
+        Identitas pemberi sudah tersedia
+        pada halaman Admin/Guru.
+
+        Card tidak perlu menunggu polling
+        untuk menampilkan bagian ini.
+    */
+    moderator_name:
+        adminName ||
+        "Admin / Guru",
+
+    moderator_role:
+        adminRole ||
+        null
+});
+
+    }
+
+}
+
+
+/*
+    Perbarui status siswa langsung dari
+    hasil authoritative POST Mute.
+*/
+if (mutedStudent) {
+
+    const updatedStudent = {
+        ...mutedStudent,
+
+        moderation_status:
+            data.moderation &&
+            data.moderation.status
+                ? data.moderation.status
+                : "muted",
+
+        muted_until:
+            data.moderation
+                ? (
+                    data.moderation.mutedUntil ||
+                    null
+                )
+                : null,
+
+        reason:
+            data.moderation
+                ? (
+                    data.moderation.reason ||
+                    null
+                )
+                : (
+                    reason ||
+                    null
+                )
+    };
+
+
+    feedModerationStudents =
+        feedModerationStudents.map(
+            (student) =>
+                Number(
+                    student.id
+                ) ===
+                    Number(
+                        feedMuteTargetStudentId
+                    )
+                    ? updatedStudent
+                    : student
+        );
+
+
+    if (
+        selectedFeedModerationStudent &&
+        Number(
+            selectedFeedModerationStudent.id
+        ) ===
+            Number(
+                feedMuteTargetStudentId
+            )
+    ) {
+
+        selectedFeedModerationStudent =
+            updatedStudent;
+
+
+        renderSelectedFeedModerationStudent();
+
+    }
+
+}
+
+
+updateFeedModerationLogFilterOptions();
+
+
+renderFeedModerationLog();
+
+
+closeFeedMutePanel(
+    false
+);
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "Gagal mute siswa."
+        );
+
+
+} finally {
+
+    button.disabled =
+        false;
+
+
+    button.textContent =
+        "Mute";
+
+
+    /*
+        Request sudah selesai.
+        Target lama boleh dilepas.
+    */
+feedMuteTargetStudentId =
+    null;
+
+
+/*
+    Hidupkan kembali polling, lalu konfirmasi
+    kondisi final tanpa menahan tombol Mute.
+*/
+startAdminModerationLive();
+
+
+syncFeedModerationDashboard();
+
+}
+
+}
+
+
+// =====================================
+// BAN PANEL
+// =====================================
+
+function openFeedBanPanel() {
+
+    /*
+        Target Ban harus berasal langsung
+        dari dropdown yang sedang terlihat.
+    */
+    const select =
+        document.getElementById(
+            "feedModerationStudent"
+        );
+
+
+    const dropdownStudentId =
+        Number(
+            select.value
+        );
+
+
+    if (
+        !Number.isInteger(
+            dropdownStudentId
+        ) ||
+        dropdownStudentId <= 0
+    ) {
+
+        alert(
+            "Pilih siswa terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+
+    const dropdownStudent =
+        feedModerationStudents.find(
+            (student) =>
+                Number(
+                    student.id
+                ) ===
+                dropdownStudentId
+        );
+
+
+    if (!dropdownStudent) {
+
+        alert(
+            "Data siswa pada dropdown tidak ditemukan. Silakan pilih ulang siswa."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        dropdownStudent.moderation_status ===
+        "banned"
+    ) {
+
+        alert(
+            "Siswa ini sudah di ban."
+        );
+
+        return;
+
+    }
+
+
+    selectedFeedModerationStudent =
+        dropdownStudent;
+
+
+    /*
+        Snapshot target langsung dari
+        nilai dropdown.
+    */
+    feedBanTargetStudentId =
+        dropdownStudentId;
+
+
+    document.getElementById(
+        "feedBanReason"
+    ).value =
+        "";
+
+
+    document.getElementById(
+        "feedBanOverlay"
+    ).style.display =
+        "flex";
+
+}
+
+
+function closeFeedBanPanel(
+    clearTarget = true
+) {
+
+    const overlay =
+        document.getElementById(
+            "feedBanOverlay"
+        );
+
+
+    if (overlay) {
+
+        overlay.style.display =
+            "none";
+
+    }
+
+
+    if (clearTarget) {
+
+        feedBanTargetStudentId =
+            null;
+
+    }
+
+}
+
+
+async function confirmFeedBan() {
+
+    if (
+        !Number.isInteger(
+            feedBanTargetStudentId
+        ) ||
+        feedBanTargetStudentId <= 0
+    ) {
+
+        alert(
+            "Target siswa untuk Ban tidak valid."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        document.getElementById(
+            "feedBanConfirmButton"
+        );
+
+
+    const reason =
+        document.getElementById(
+            "feedBanReason"
+        ).value.trim();
+
+
+    button.disabled =
+        true;
+
+
+button.textContent =
+    "Memproses...";
+
+
+/*
+    Batalkan polling dashboard yang mungkin
+    masih berjalan sebelum POST Ban dikirim.
+*/
+stopAdminModerationLive();
+
+
+try {
+
+        const response =
+            await fetch(
+                `/api/admin/feed-moderation/${feedBanTargetStudentId}/ban`,
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            reason
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Gagal ban siswa."
+            );
+
+        }
+
+
+const bannedStudentId =
+    Number(
+        feedBanTargetStudentId
+    );
+
+
+/*
+    Server sudah mengangkat seluruh Mute ketika
+    Ban berhasil. Hilangkan card Mute siswa dari
+    tampilan lokal saat itu juga.
+*/
+feedModerationActions =
+    feedModerationActions.filter(
+        (action) =>
+            Number(
+                action.student_id
+            ) !==
+            bannedStudentId
+    );
+
+
+const bannedStudent =
+    feedModerationStudents.find(
+        (student) =>
+            Number(
+                student.id
+            ) ===
+            bannedStudentId
+    );
+
+
+/*
+    Respons POST Ban sekarang membawa card
+    yang baru dibuat beserta ID authoritative.
+
+    Masukkan langsung agar card dan nama
+    pemberi muncul dalam render yang sama.
+*/
+if (
+    data.action &&
+    Number.isInteger(
+        Number(
+            data.action.id
+        )
+    )
+) {
+
+    feedModerationActions.push({
+        ...data.action,
+
+        student_name:
+            bannedStudent
+                ? bannedStudent.name
+                : "Siswa",
+
+        student_class:
+            bannedStudent
+                ? (
+                    bannedStudent.class_name ||
+                    null
+                )
+                : null,
+
+        moderator_name:
+            adminName ||
+            "Admin / Guru",
+
+        moderator_role:
+            adminRole ||
+            null
+    });
+
+}
+
+
+if (bannedStudent) {
+
+    const updatedStudent = {
+        ...bannedStudent,
+
+        moderation_status:
+            "banned",
+
+        muted_until:
+            null,
+
+        reason:
+            data.moderation
+                ? (
+                    data.moderation.reason ||
+                    null
+                )
+                : (
+                    reason ||
+                    null
+                )
+    };
+
+
+    feedModerationStudents =
+        feedModerationStudents.map(
+            (student) =>
+                Number(
+                    student.id
+                ) ===
+                    bannedStudentId
+                    ? updatedStudent
+                    : student
+        );
+
+
+    if (
+        selectedFeedModerationStudent &&
+        Number(
+            selectedFeedModerationStudent.id
+        ) ===
+            bannedStudentId
+    ) {
+
+        selectedFeedModerationStudent =
+            updatedStudent;
+
+
+        renderSelectedFeedModerationStudent();
+
+    }
+
+}
+
+
+updateFeedModerationLogFilterOptions();
+
+
+renderFeedModerationLog();
+
+
+closeFeedBanPanel(
+    false
+);
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "Gagal ban siswa."
+        );
+
+
+    } finally {
+
+        button.disabled =
+            false;
+
+
+        button.textContent =
+            "Ban";
+
+
+feedBanTargetStudentId =
+    null;
+
+
+/*
+    Ambil card Ban lengkap dari server di
+    belakang tanpa menahan tombol dialog.
+*/
+startAdminModerationLive();
+
+
+syncFeedModerationDashboard();
+
+}
+
+}
+
+// =====================================
+// ADMIN MODERATION COUNTDOWN
+// =====================================
+
+function formatAdminModerationCountdown(
+    milliseconds
+) {
+
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.ceil(
+                milliseconds /
+                1000
+            )
+        );
+
+
+    const days =
+        Math.floor(
+            totalSeconds /
+            86400
+        );
+
+
+    const remainingAfterDays =
+        totalSeconds %
+        86400;
+
+
+    const hours =
+        Math.floor(
+            remainingAfterDays /
+            3600
+        );
+
+
+    const remainingAfterHours =
+        remainingAfterDays %
+        3600;
+
+
+    const minutes =
+        Math.floor(
+            remainingAfterHours /
+            60
+        );
+
+
+    const seconds =
+        remainingAfterHours %
+        60;
+
+
+    const parts =
+        [];
+
+
+    if (days > 0) {
+
+        parts.push(
+            `${days} Hari`
+        );
+
+    }
+
+
+    if (
+        hours > 0 ||
+        days > 0
+    ) {
+
+        parts.push(
+            `${hours} Jam`
+        );
+
+    }
+
+
+    if (
+        minutes > 0 ||
+        hours > 0 ||
+        days > 0
+    ) {
+
+        parts.push(
+            `${minutes} Menit`
+        );
+
+    }
+
+
+    parts.push(
+        `${seconds} Detik`
+    );
+
+
+    return parts.join(
+        ", "
+    );
+
+}
+
+// =====================================
+// ADMIN MODERATION SERVER SYNC
+// =====================================
+
+async function syncFeedModerationDashboard() {
+
+    if (
+        adminModerationSyncRunning
+    ) {
+
+        return;
+
+    }
+
+
+    const overlay =
+        document.getElementById(
+            "feedModerationOverlay"
+        );
+
+
+    if (
+        !overlay ||
+        overlay.style.display ===
+            "none"
+    ) {
+
+        return;
+
+    }
+
+
+adminModerationSyncRunning =
+    true;
+
+
+/*
+    Setiap LIVE sync mempunyai controller
+    sendiri agar request dapat dibatalkan.
+*/
+const syncController =
+    new AbortController();
+
+
+adminModerationSyncController =
+    syncController;
+
+
+try {
+
+    const selectedId =
+            selectedFeedModerationStudent
+                ? Number(
+                    selectedFeedModerationStudent.id
+                )
+                : null;
+
+
+        const requestStartedAt =
+            Date.now();
+
+
+const response =
+    await fetch(
+        "/api/admin/feed-moderation/students",
+        {
+            cache:
+                "no-store",
+
+            signal:
+                syncController.signal
+        }
+    );
+
+
+        const data =
+            await response.json();
+
+
+        const responseReceivedAt =
+            Date.now();
+
+
+        updateAdminModerationServerClock(
+            data.serverNow,
+            requestStartedAt,
+            responseReceivedAt
+        );
+
+
+        if (
+            !data.success ||
+            !Array.isArray(
+                data.students
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        feedModerationStudents =
+            data.students;
+
+
+const serverModerationActions =
+    Array.isArray(
+        data.moderationActions
+    )
+        ? data.moderationActions
+        : [];
+
+
+/*
+    ID yang sudah dikonfirmasi DELETE tetap
+    disembunyikan selama halaman Admin ini
+    masih terbuka.
+
+    ID action memakai AUTOINCREMENT sehingga
+    tidak akan digunakan kembali.
+*/
+feedModerationActions =
+    serverModerationActions.filter(
+        (action) =>
+            !feedModerationHiddenActionIds.has(
+                Number(
+                    action.id
+                )
+            )
+    );
+
+
+
+
+/*
+    Respons lama mungkin masih membawa card
+    yang baru dihapus. Jangan masukkan card
+    tersebut ke state atau DOM.
+*/
+feedModerationActions =
+    serverModerationActions.filter(
+        (action) =>
+            !feedModerationHiddenActionIds.has(
+                Number(
+                    action.id
+                )
+            )
+    );
+
+
+updateFeedModerationLogFilterOptions();
+
+renderFeedModerationLog();
+
+
+/*
+    Kalau siswa kiri sedang dipilih,
+    status Aman / Di mute / Di ban
+    juga ikut update LIVE.
+*/
+if (
+    selectedFeedModerationStudent
+) {
+
+    renderSelectedFeedModerationStudent();
+
+}
+
+
+        if (
+            Number.isInteger(
+                selectedId
+            )
+        ) {
+
+            const freshStudent =
+                feedModerationStudents.find(
+                    (student) =>
+                        Number(
+                            student.id
+                        ) ===
+                        selectedId
+                );
+
+
+            if (freshStudent) {
+
+                selectedFeedModerationStudent =
+                    freshStudent;
+
+            }
+
+        }
+
+
+} catch (error) {
+
+    /*
+        AbortError bukan kegagalan server.
+        Request memang sengaja dihentikan ketika
+        Admin melakukan sebuah action.
+    */
+    if (
+        error.name !==
+        "AbortError"
+    ) {
+
+        console.error(
+            "Gagal LIVE sync moderation:",
+            error
+        );
+
+    }
+
+
+} finally {
+
+    /*
+        Request lama yang sudah di-abort bisa
+        selesai setelah request baru dimulai.
+
+        Karena itu hanya request yang masih
+        memiliki controller aktif yang boleh
+        mengubah state sync.
+    */
+    if (
+        adminModerationSyncController ===
+        syncController
+    ) {
+
+        adminModerationSyncController =
+            null;
+
+
+        adminModerationSyncRunning =
+            false;
+
+    }
+
+}
+
+}
+
+
+// =====================================
+// START / STOP ADMIN MODERATION LIVE
+// =====================================
+
+function startAdminModerationLive() {
+
+    /*
+        Bersihkan timer lama dulu
+        supaya tidak terjadi duplicate polling.
+    */
+    stopAdminModerationLive();
+
+
+    /*
+        Countdown visual:
+        1 detik.
+
+        Tidak mengakses Turso.
+    */
+    adminModerationCountdownTimer =
+        setInterval(
+            () => {
+
+                if (
+                    document.visibilityState ===
+                    "visible"
+                ) {
+
+                    updateFeedModerationLogCountdowns();
+
+                }
+
+            },
+            1000
+        );
+
+
+/*
+    Status asli dari server:
+    3 detik.
+
+    Endpoint dashboard sekarang sudah
+    menyinkronkan hanya queue yang memang
+    perlu berubah.
+*/
+    adminModerationLiveTimer =
+        setInterval(
+            () => {
+
+                if (
+                    document.visibilityState !==
+                    "visible"
+                ) {
+
+                    return;
+
+                }
+
+
+                syncFeedModerationDashboard();
+
+            },
+            3000
+        );
+
+
+    updateFeedModerationLogCountdowns();
+
+}
+
+
+function stopAdminModerationLive() {
+
+        /*
+        Timer yang dihentikan tidak otomatis
+        membatalkan fetch yang sudah berjalan.
+        Karena itu fetch aktif harus di-abort.
+    */
+    if (
+        adminModerationSyncController
+    ) {
+
+        adminModerationSyncController.abort();
+
+
+        adminModerationSyncController =
+            null;
+
+
+        adminModerationSyncRunning =
+            false;
+
+    }
+
+    if (
+        adminModerationCountdownTimer
+    ) {
+
+        clearInterval(
+            adminModerationCountdownTimer
+        );
+
+
+        adminModerationCountdownTimer =
+            null;
+
+    }
+
+
+    if (
+        adminModerationLiveTimer
+    ) {
+
+        clearInterval(
+            adminModerationLiveTimer
+        );
+
+
+        adminModerationLiveTimer =
+            null;
+
+    }
+
+}
+
+// =====================================
+// EVENTS
+// =====================================
+
+document.getElementById(
+    "feedModerationStudent"
+).addEventListener(
+    "change",
+    renderSelectedFeedModerationStudent
+);
+
+document.getElementById(
+    "feedModerationLogFilter"
+).addEventListener(
+    "change",
+    () => {
+
+        activeFeedModerationLogFilter =
+            document.getElementById(
+                "feedModerationLogFilter"
+            ).value;
+
+
+        renderFeedModerationLog();
+
+    }
+);
+
+
+/*
+    Kalau Admin meninggalkan tab lalu kembali,
+    jangan tunggu interval polling berikutnya.
+
+    Langsung ambil status terbaru dari server.
+*/
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.visibilityState !==
+            "visible"
+        ) {
+
+            return;
+
+        }
+
+
+        const overlay =
+            document.getElementById(
+                "feedModerationOverlay"
+            );
+
+
+        if (
+            !overlay ||
+            overlay.style.display ===
+                "none"
+        ) {
+
+            return;
+
+        }
+
+
+updateFeedModerationLogCountdowns();
+
+syncFeedModerationDashboard();
+
+    }
+);
+
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const moderationOverlay =
+            document.getElementById(
+                "feedModerationOverlay"
+            );
+
+
+        const muteOverlay =
+            document.getElementById(
+                "feedMuteOverlay"
+            );
+
+
+        const banOverlay =
+            document.getElementById(
+                "feedBanOverlay"
+            );
+
+
+        if (
+            event.target ===
+            moderationOverlay
+        ) {
+
+            closeFeedModeration();
+
+        }
+
+
+        if (
+            event.target ===
+            muteOverlay
+        ) {
+
+            closeFeedMutePanel();
+
+        }
+
+
+        if (
+            event.target ===
+            banOverlay
+        ) {
+
+            closeFeedBanPanel();
+
+        }
+
+    }
+);
 
 function goToNotifications() {
 

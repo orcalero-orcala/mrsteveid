@@ -9849,3 +9849,1784 @@ input::placeholder {
     }
 
 }
+
+/* =========================================
+   CLASSROOM FEED MODERATION
+   ========================================= */
+
+.feed-moderation-button {
+    min-height: 40px;
+
+    padding:
+        8px 14px;
+
+    background:
+         #111924;
+
+    border:
+        1px solid
+        #263345;
+
+    color:
+        #ffffff;
+
+    box-shadow:
+        none;
+}
+
+
+.feed-moderation-button:hover {
+    background:
+         #111924;
+
+    border-color:
+        #263345;
+
+    transform:
+        none;
+}
+
+
+.feed-moderation-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 10020;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(3, 8, 15, 0.76);
+
+    backdrop-filter:
+        blur(6px);
+}
+
+
+.feed-moderation-panel,
+.feed-moderation-dialog {
+    position: relative;
+
+    width: 100%;
+
+    max-width: 620px;
+
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    padding: 28px;
+
+    background:
+        #0f1824;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        20px;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0, 0, 0, 0.42);
+}
+
+
+.feed-moderation-dialog {
+    max-width: 500px;
+}
+
+
+.feed-moderation-header {
+    padding-right:
+        42px;
+
+    margin-bottom:
+        24px;
+}
+
+
+.feed-moderation-header h1 {
+    margin:
+        5px 0 8px;
+
+    font-size:
+        1.7rem;
+}
+
+
+.feed-moderation-header p {
+    margin: 0;
+}
+
+
+.feed-moderation-field {
+    margin-bottom:
+        18px;
+}
+
+
+.feed-moderation-field label {
+    display: block;
+}
+
+
+.feed-moderation-field select,
+.feed-moderation-field textarea {
+    max-width: none;
+}
+
+
+.feed-moderation-student-panel {
+    margin-top: 20px;
+
+    padding: 20px;
+
+    background:
+        rgba(15, 23, 42, 0.72);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        var(--radius);
+}
+
+
+.feed-moderation-student-info {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+}
+
+
+.feed-moderation-student-info
+> div {
+    min-width: 0;
+}
+
+
+.feed-moderation-student-info
+strong,
+.feed-moderation-student-info
+span {
+    display: block;
+}
+
+
+.feed-moderation-student-info
+> div
+span {
+    margin-top:
+        3px;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        13px;
+}
+
+
+.feed-moderation-status {
+    flex-shrink: 0;
+
+    padding:
+        6px 10px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+}
+
+
+.feed-moderation-status.active {
+    color:
+        #86efac;
+
+    background:
+        rgba(34, 197, 94, 0.12);
+
+    border:
+        1px solid
+        rgba(34, 197, 94, 0.25);
+}
+
+
+.feed-moderation-status.muted {
+    color:
+        #fde68a;
+
+    background:
+        rgba(245, 158, 11, 0.12);
+
+    border:
+        1px solid
+        rgba(245, 158, 11, 0.25);
+}
+
+
+.feed-moderation-status.banned {
+    color:
+        #fca5a5;
+
+    background:
+        rgba(239, 68, 68, 0.12);
+
+    border:
+        1px solid
+        rgba(239, 68, 68, 0.25);
+}
+
+
+.feed-moderation-current-info {
+    display: grid;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
+    padding-top: 16px;
+
+    border-top:
+        1px solid
+        var(--border);
+}
+
+
+.feed-moderation-current-info
+small {
+    display: block;
+
+    margin-bottom: 3px;
+}
+
+
+.feed-moderation-current-info
+p {
+    margin: 0;
+
+    white-space:
+        pre-wrap;
+}
+
+
+.feed-moderation-actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+.feed-mute-button {
+    background:
+        rgba(245, 158, 11, 0.14);
+
+    border:
+        1px solid
+        rgba(245, 158, 11, 0.32);
+
+    color:
+        #fde68a;
+}
+
+
+.feed-mute-button:hover {
+    background:
+        rgba(245, 158, 11, 0.23);
+
+    transform: none;
+}
+
+
+.feed-mute-presets {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 8px;
+
+    margin:
+        18px 0;
+}
+
+
+.feed-mute-presets button {
+    padding:
+        9px 8px;
+
+    background:
+        rgba(59, 130, 246, 0.1);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:
+        var(--text-soft);
+
+    box-shadow:
+        none;
+}
+
+
+.feed-mute-presets button:hover {
+    background:
+        var(--primary-soft);
+
+    transform:
+        none;
+}
+
+
+.feed-moderation-dialog-actions {
+    display: flex;
+
+    justify-content:
+        flex-end;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================
+   CLASSROOM FEED MODERATION - MOBILE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .feed-moderation-button {
+        min-height: 36px;
+
+        padding:
+            7px 10px;
+
+        font-size:
+            12px;
+    }
+
+
+    .feed-moderation-overlay {
+        padding: 12px;
+    }
+
+
+    .feed-moderation-panel,
+    .feed-moderation-dialog {
+        max-height:
+            92vh;
+
+        padding: 20px;
+
+        border-radius: 16px;
+    }
+
+
+    .feed-moderation-header h1 {
+        font-size:
+            1.4rem;
+    }
+
+
+    .feed-moderation-student-info {
+        align-items:
+            flex-start;
+    }
+
+
+    .feed-mute-presets {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+
+    .feed-moderation-actions,
+    .feed-moderation-dialog-actions {
+        width: 100%;
+    }
+
+
+    .feed-moderation-actions
+    button,
+    .feed-moderation-dialog-actions
+    button {
+        flex:
+            1 1 0;
+    }
+
+}
+
+/* =========================================
+   CLASSROOM FEED MODERATION
+   CUSTOM MUTE TIME
+   ========================================= */
+
+.feed-mute-custom-time {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+}
+
+
+.feed-mute-time-part {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.feed-mute-time-part
+input {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+
+    margin: 0;
+
+    text-align: center;
+}
+
+
+.feed-mute-time-part
+span {
+    flex-shrink: 0;
+
+    color:
+        var(--text-soft);
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.feed-mute-limit-text {
+    display: block;
+
+    margin-top: 7px;
+
+    color:
+        var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+@media (max-width: 600px) {
+
+    .feed-mute-custom-time {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .feed-mute-time-part {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            55px;
+    }
+
+}
+
+
+.feed-mute-custom-time
+input,
+
+.feed-mute-custom-time
+select {
+    width: 100%;
+    max-width: none;
+
+    margin: 0;
+}
+
+
+.feed-mute-limit-text {
+    display: block;
+
+    margin-top: 7px;
+
+    color:
+        var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+@media (max-width: 500px) {
+
+    .feed-mute-custom-time {
+        grid-template-columns:
+            minmax(0, 1fr)
+            105px;
+    }
+
+}
+
+/* =========================================
+   STUDENT CLASSROOM FEED MODERATION
+   ========================================= */
+
+.student-feed-content-locked {
+    filter:
+        blur(5px);
+
+    opacity:
+        0.42;
+
+    pointer-events:
+        none;
+
+    user-select:
+        none;
+
+    transition:
+        filter 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+.notification-button.student-feed-notification-locked {
+    opacity:
+        0.45;
+
+    cursor:
+        not-allowed;
+
+    pointer-events:
+        none;
+}
+
+
+.student-feed-moderation-blocker {
+    position:
+        relative;
+
+    z-index:
+        20;
+
+    margin:
+        20px 24px 0;
+
+    padding:
+        24px;
+
+    background:
+        #111924;
+
+    border:
+        1px solid #263345;
+
+    border-radius:
+        14px;
+
+    text-align:
+        center;
+}
+
+
+.student-feed-moderation-blocker
+h2 {
+    margin:
+        6px 0 8px;
+
+    font-size:
+        21px;
+}
+
+
+.student-feed-moderation-message {
+    margin:
+        0 auto 20px;
+
+    max-width:
+        540px;
+
+    color:
+        #94a3b8;
+}
+
+
+.student-feed-moderation-details {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap:
+        12px;
+
+    max-width:
+        520px;
+
+    margin:
+        0 auto;
+}
+
+
+.student-feed-moderation-details
+> div {
+    padding:
+        14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.03
+        );
+
+    border:
+        1px solid #263345;
+
+    border-radius:
+        10px;
+}
+
+
+.student-feed-moderation-details
+small {
+    display:
+        block;
+
+    margin-bottom:
+        6px;
+
+    color:
+        #94a3b8;
+
+    font-size:
+        11px;
+}
+
+
+#studentFeedModerationCountdown {
+    font-size:
+        24px;
+
+    font-variant-numeric:
+        tabular-nums;
+
+    letter-spacing:
+        1px;
+}
+
+
+.student-feed-moderation-reason {
+    max-width:
+        520px;
+
+    margin:
+        12px auto 0;
+
+    padding:
+        12px 14px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.03
+        );
+
+    border:
+        1px solid #263345;
+
+    border-radius:
+        10px;
+
+    text-align:
+        left;
+}
+
+
+.student-feed-moderation-reason
+small {
+    display:
+        block;
+
+    margin-bottom:
+        5px;
+
+    color:
+        #94a3b8;
+}
+
+
+.student-feed-moderation-reason
+p {
+    margin:
+        0;
+}
+
+
+/* =========================================
+   STUDENT FEED RECOVERY
+   ========================================= */
+
+.student-feed-recovery-overlay {
+    position:
+        fixed;
+
+    inset:
+        0;
+
+    z-index:
+        9999;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        20px;
+
+background:
+    rgba(
+        4,
+        10,
+        18,
+        0.72
+    );
+
+-webkit-backdrop-filter:
+    blur(10px);
+
+backdrop-filter:
+    blur(10px);
+}
+
+
+.student-feed-recovery-panel {
+    width:
+        min(
+            440px,
+            100%
+        );
+
+    padding:
+        24px;
+
+    background:
+        #111924;
+
+    border:
+        1px solid #263345;
+
+    border-radius:
+        14px;
+
+    text-align:
+        center;
+}
+
+
+.student-feed-recovery-panel
+h2 {
+    margin:
+        7px 0 9px;
+}
+
+
+.student-feed-recovery-panel
+p {
+    margin:
+        0 0 20px;
+
+    color:
+        #94a3b8;
+}
+
+
+.student-feed-recovery-panel
+button {
+    min-width:
+        120px;
+}
+
+
+@media (max-width: 600px) {
+
+    .student-feed-moderation-blocker {
+background:
+    rgba(4, 10, 18, 0.22);
+
+-webkit-backdrop-filter:
+    blur(3px);
+
+backdrop-filter:
+    blur(3px);
+    }
+
+
+    .student-feed-moderation-details {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    #studentFeedModerationCountdown {
+        font-size:
+            21px;
+    }
+
+}
+
+/* =========================================
+   ADMIN MODERATION WORKSPACE V2
+   ========================================= */
+
+.feed-moderation-panel-wide {
+    width: min(1080px, calc(100vw - 40px));
+    max-width: 1080px;
+}
+
+
+.feed-moderation-workspace {
+    display: grid;
+    grid-template-columns:
+        minmax(260px, 0.8fr)
+        minmax(420px, 1.6fr);
+    gap: 18px;
+    min-height: 480px;
+}
+
+
+.feed-moderation-create-column,
+.feed-moderation-log-column {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #263345;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+
+.feed-moderation-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+
+.feed-moderation-column-header small {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-column-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+
+.feed-moderation-selected-student {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 12px;
+    padding: 13px 14px;
+    border: 1px solid #263345;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+
+.feed-moderation-selected-student span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-create-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+
+.feed-moderation-create-actions button {
+    width: 100%;
+}
+
+
+.feed-moderation-create-hint {
+    margin: 14px 0 0;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-log-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid #263345;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.feed-moderation-log {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 58vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+
+.feed-moderation-log-empty {
+    padding: 28px 16px;
+    border: 1px dashed #263345;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+
+.feed-moderation-log-card {
+    padding: 16px;
+    border: 1px solid #263345;
+    border-radius: 12px;
+    background: #111924;
+}
+
+
+.feed-moderation-log-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+.feed-moderation-log-card-header > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+
+.feed-moderation-log-card-header strong {
+    font-size: 14px;
+}
+
+
+.feed-moderation-log-card-header span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-action-status {
+    flex-shrink: 0;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+.feed-moderation-action-status.active {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.32);
+}
+
+
+.feed-moderation-action-status.queued {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.32);
+}
+
+
+.feed-moderation-action-type {
+    margin-top: 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-action-timer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 11px 12px;
+    border: 1px solid #263345;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+
+.feed-moderation-action-timer small {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+
+.feed-moderation-action-timer strong {
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.03em;
+}
+
+
+.feed-moderation-action-meta {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
+    margin-top: 9px;
+    font-size: 11px;
+}
+
+
+.feed-moderation-action-meta small {
+    color: var(--text-muted);
+}
+
+
+.feed-moderation-action-meta span {
+    overflow-wrap: anywhere;
+}
+
+
+@media (max-width: 850px) {
+
+    .feed-moderation-panel-wide {
+        width: calc(100vw - 24px);
+    }
+
+
+    .feed-moderation-workspace {
+        grid-template-columns: 1fr;
+    }
+
+
+    .feed-moderation-log {
+        max-height: 45vh;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .feed-moderation-create-actions {
+        grid-template-columns: 1fr;
+    }
+
+
+    .feed-moderation-action-meta {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+}
+
+/* =========================================
+   MODERATION BUTTON FIX
+   ========================================= */
+
+.feed-moderation-create-actions button {
+    min-height: 44px;
+    padding: 10px 12px;
+
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+
+    white-space: nowrap;
+}
+
+.feed-moderation-create-actions {
+    align-items: stretch;
+}
+
+.feed-moderation-action-timer {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    justify-items: center;
+    align-items: center;
+
+    gap: 5px;
+
+    text-align: center;
+}
+
+.feed-moderation-action-timer small {
+    width: 100%;
+    text-align: center;
+}
+
+.feed-moderation-action-timer strong {
+    width: 100%;
+    text-align: center;
+}
+
+/* =========================================
+   MODERATION SELECTED STUDENT STATUS
+   ========================================= */
+
+.feed-moderation-selected-student-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+
+.feed-moderation-selected-status {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+.feed-moderation-selected-status.safe {
+    border: 1px solid
+        rgba(34, 197, 94, 0.35);
+
+    background:
+        rgba(34, 197, 94, 0.10);
+}
+
+
+.feed-moderation-selected-status.muted {
+    border: 1px solid
+        rgba(245, 158, 11, 0.38);
+
+    background:
+        rgba(245, 158, 11, 0.11);
+}
+
+
+.feed-moderation-selected-status.banned {
+    border: 1px solid
+        rgba(239, 68, 68, 0.38);
+
+    background:
+        rgba(239, 68, 68, 0.11);
+}
+
+
+/* =========================================
+   MODERATION LOG STUDENT FILTER
+   ========================================= */
+
+.feed-moderation-live-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 3px;
+}
+
+
+.feed-moderation-live-filter-row small {
+    margin: 0;
+}
+
+
+.feed-moderation-log-filter {
+    width: auto;
+    max-width: 190px;
+    height: 28px;
+    padding: 3px 26px 3px 9px;
+    margin: 0;
+    border-radius: 7px;
+    font-size: 10px;
+}
+
+
+@media (max-width: 600px) {
+
+    .feed-moderation-live-filter-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+
+    .feed-moderation-log-filter {
+        width: 100%;
+        max-width: none;
+    }
+
+}
+
+/* =========================================
+   MODERATION LOG HEADER FIX
+   ========================================= */
+
+.feed-moderation-log-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+
+.feed-moderation-log-filter {
+    width: 150px;
+    max-width: 150px;
+    height: 30px;
+    margin: 0;
+    padding: 4px 28px 4px 9px;
+    font-size: 10px;
+}
+
+
+.feed-moderation-log-count {
+    flex-shrink: 0;
+}
+
+
+@media (max-width: 600px) {
+
+    .feed-moderation-column-header {
+        align-items: flex-start;
+    }
+
+
+    .feed-moderation-log-header-actions {
+        margin-left: 0;
+    }
+
+
+    .feed-moderation-log-filter {
+        width: 130px;
+        max-width: 130px;
+    }
+
+}
+
+/* =========================================
+   MODERATION CARD DELETE
+   ========================================= */
+
+.feed-moderation-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #263345;
+}
+
+
+.feed-moderation-delete-action {
+    min-width: 74px;
+    padding: 7px 12px;
+
+    border: 1px solid
+        rgba(239, 68, 68, 0.38);
+
+    border-radius: 8px;
+
+    background:
+        rgba(239, 68, 68, 0.08);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.feed-moderation-delete-action:hover {
+    background:
+        rgba(239, 68, 68, 0.14);
+}
+
+/* =========================================
+   STUDENT MODERATION MUTE CARDS
+   ========================================= */
+
+.student-feed-moderation-details {
+    display: block;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+
+.student-feed-moderation-details
+> .student-feed-moderation-cards {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+
+.student-feed-moderation-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.student-feed-mute-card {
+    padding: 15px;
+
+    border: 1px solid #263345;
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.03);
+
+    text-align: left;
+}
+
+
+.student-feed-mute-card.active {
+    border-color:
+        rgba(239, 68, 68, 0.38);
+}
+
+
+.student-feed-mute-card.queued {
+    border-color:
+        rgba(245, 158, 11, 0.32);
+}
+
+
+.student-feed-mute-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+.student-feed-mute-card-header
+> div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+
+.student-feed-mute-card-header
+small {
+    color: #94a3b8;
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+
+.student-feed-mute-card-header
+strong {
+    font-size: 15px;
+}
+
+
+.student-feed-mute-card-status {
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+.student-feed-mute-card-status.active {
+    border:
+        1px solid
+        rgba(239, 68, 68, 0.32);
+
+    background:
+        rgba(239, 68, 68, 0.12);
+}
+
+
+.student-feed-mute-card-status.queued {
+    border:
+        1px solid
+        rgba(245, 158, 11, 0.32);
+
+    background:
+        rgba(245, 158, 11, 0.12);
+}
+
+
+.student-feed-mute-card-timing {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+    margin-top: 12px;
+}
+
+
+.student-feed-mute-card-timing
+> div {
+    padding: 11px 12px;
+
+    border: 1px solid #263345;
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.student-feed-mute-card-timing
+small,
+.student-feed-mute-card-reason
+small {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+
+.student-feed-mute-card-timing
+strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    font-size: 12px;
+}
+
+
+.student-feed-mute-card-countdown {
+    font-size: 20px !important;
+
+    font-variant-numeric:
+        tabular-nums;
+
+    letter-spacing: 1px;
+}
+
+
+.student-feed-mute-card-reason {
+    margin-top: 10px;
+    padding: 11px 12px;
+
+    border: 1px solid #263345;
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.student-feed-mute-card-reason
+p {
+    margin: 0;
+
+    overflow-wrap: anywhere;
+
+    font-size: 12px;
+}
+
+
+@media (max-width: 600px) {
+
+    .student-feed-mute-card-timing {
+        grid-template-columns: 1fr;
+    }
+
+
+    .student-feed-mute-card-countdown {
+        font-size: 18px !important;
+    }
+
+}
+
+/* =========================================
+   MODERATION READABLE COUNTDOWN
+   ========================================= */
+
+.feed-moderation-action-countdown,
+.student-feed-mute-card-countdown {
+    white-space: normal;
+
+    overflow-wrap: normal;
+    word-break: normal;
+
+    line-height: 1.45;
+    letter-spacing: 0;
+}
+
+
+.feed-moderation-action-countdown {
+    font-size: 16px !important;
+}
+
+
+.student-feed-mute-card-countdown {
+    font-size: 17px !important;
+}
+
+
+@media (max-width: 600px) {
+
+    .feed-moderation-action-countdown,
+    .student-feed-mute-card-countdown {
+        font-size: 15px !important;
+    }
+
+}
+
+/* =========================================
+   STUDENT MODERATION DESKTOP MODAL
+   ========================================= */
+
+@media (min-width: 601px) {
+
+    /*
+        Blocker menjadi backdrop layar penuh,
+        bukan card lebar di dalam halaman.
+    */
+ .student-feed-moderation-blocker {
+    position: fixed;
+
+    inset:
+        0
+        0
+        0
+        250px;
+
+    z-index: 9998;
+
+    width: auto;
+    height: auto;
+
+    margin: 0;
+    padding: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow-y: auto;
+
+    border: 0;
+    border-radius: 0;
+
+    background:
+        rgba(4, 10, 18, 0.25);
+
+    -webkit-backdrop-filter:
+        blur(7px);
+
+    backdrop-filter:
+        blur(7px);
+
+    text-align: center;
+}
+
+
+    /*
+        Kotak panel kecil di tengah desktop.
+    */
+    .student-feed-moderation-panel {
+        width:
+            min(
+                620px,
+                calc(100vw - 64px)
+            );
+
+        max-height:
+            calc(100vh - 64px);
+
+        overflow-y:
+            auto;
+
+        padding:
+            24px;
+
+        border:
+            1px solid #263345;
+
+        border-radius:
+            16px;
+
+        background:
+            #111924;
+
+        box-shadow:
+            0 24px 70px
+            rgba(0, 0, 0, 0.46);
+    }
+
+
+    .student-feed-moderation-message {
+        max-width:
+            480px;
+    }
+
+
+    .student-feed-moderation-details {
+        max-width:
+            560px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    /*
+        Mobile tetap memakai panel dalam alur
+        halaman seperti tampilan sebelumnya.
+    */
+    .student-feed-moderation-blocker {
+        position:
+            relative;
+
+        inset:
+            auto;
+
+        z-index:
+            20;
+
+        display:
+            block;
+
+        width:
+            auto;
+
+        height:
+            auto;
+
+        margin:
+            14px 14px 0;
+
+        padding:
+            0;
+
+        overflow:
+            visible;
+
+        border:
+            0;
+
+        border-radius:
+            0;
+
+        background:
+            transparent;
+
+        -webkit-backdrop-filter:
+            none;
+
+        backdrop-filter:
+            none;
+    }
+
+
+    .student-feed-moderation-panel {
+        width:
+            auto;
+
+        max-height:
+            none;
+
+        overflow:
+            visible;
+
+        padding:
+            20px 16px;
+
+        border:
+            1px solid #263345;
+
+        border-radius:
+            14px;
+
+        background:
+            #111924;
+
+        box-shadow:
+            none;
+    }
+
+}

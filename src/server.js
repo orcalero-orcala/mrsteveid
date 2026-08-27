@@ -566,6 +566,1161 @@ async function ensureClassesTable() {
 }
 
 
+
+// ========================================
+// CLASSROOM FEED MODERATION
+// ========================================
+
+async function initializeFeedModerationTables() {
+
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS feed_moderation (
+            student_id INTEGER PRIMARY KEY,
+            status TEXT NOT NULL DEFAULT 'active',
+            muted_until DATETIME,
+            reason TEXT,
+            moderated_by INTEGER,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (student_id)
+                REFERENCES students(id)
+                ON DELETE CASCADE
+        )
+    `);
+
+
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS feed_moderation_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            event_type TEXT NOT NULL,
+            reason TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            seen_at DATETIME,
+
+            FOREIGN KEY (student_id)
+                REFERENCES students(id)
+                ON DELETE CASCADE
+        )
+    `);
+
+
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+    idx_feed_moderation_events_student
+    ON feed_moderation_events (
+        student_id,
+        id DESC
+    )
+`);
+
+
+/*
+    Satu row = satu tindakan moderation.
+
+    Untuk Mute:
+    - active = sedang berjalan
+    - queued = menunggu mute sebelumnya
+    - completed = selesai normal
+    - lifted = dihentikan Admin/Guru
+
+    Nanti sistem Ban juga bisa memakai
+    tabel ini tanpa bongkar arsitektur lagi.
+*/
+await tursoDb.run(`
+    CREATE TABLE IF NOT EXISTS
+    feed_moderation_actions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        student_id INTEGER NOT NULL,
+
+        action_type TEXT NOT NULL,
+
+        status TEXT NOT NULL,
+
+        duration_minutes INTEGER,
+
+        starts_at DATETIME,
+
+        ends_at DATETIME,
+
+        reason TEXT,
+
+        moderated_by INTEGER,
+
+        created_at DATETIME
+            DEFAULT CURRENT_TIMESTAMP,
+
+        completed_at DATETIME,
+
+        lifted_at DATETIME,
+
+        FOREIGN KEY (student_id)
+            REFERENCES students(id)
+            ON DELETE CASCADE
+    )
+`);
+
+
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+    idx_feed_moderation_actions_student
+    ON feed_moderation_actions (
+        student_id,
+        action_type,
+        status,
+        id
+    )
+`);
+
+}
+
+/*
+    Simpan proses inisialisasi tabel agar
+    CREATE TABLE dan CREATE INDEX tidak
+    dijalankan berulang pada setiap request.
+*/
+let feedModerationTablesReadyPromise =
+    null;
+
+
+async function ensureFeedModerationTables() {
+
+    if (
+        feedModerationTablesReadyPromise
+    ) {
+
+        return (
+            feedModerationTablesReadyPromise
+        );
+
+    }
+
+
+    feedModerationTablesReadyPromise =
+        initializeFeedModerationTables();
+
+
+    try {
+
+        await feedModerationTablesReadyPromise;
+
+    } catch (error) {
+
+        /*
+            Jika koneksi database gagal,
+            izinkan request berikutnya mencoba
+            melakukan inisialisasi kembali.
+        */
+        feedModerationTablesReadyPromise =
+            null;
+
+
+        throw error;
+
+    }
+
+}
+
+// ========================================
+// SYNC MUTE QUEUE SISWA
+// ========================================
+
+async function syncStudentMuteQueue(
+    studentId
+) {
+
+    await ensureFeedModerationTables();
+
+
+    let moderation =
+        await tursoDb.get(
+            `
+                SELECT
+                    student_id,
+                    status,
+                    muted_until,
+                    reason,
+                    moderated_by,
+                    updated_at
+                FROM feed_moderation
+                WHERE student_id = ?
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    /*
+        BAN tetap prioritas tertinggi.
+
+        Untuk sekarang Ban belum kita ubah
+        ke card system.
+    */
+    if (
+        moderation &&
+        moderation.status ===
+            "banned"
+    ) {
+
+        return moderation;
+
+    }
+
+
+    const nowMs =
+        Date.now();
+
+
+    /*
+        =====================================
+        MIGRASI MUTE LAMA
+        =====================================
+
+        Kalau ada mute dari sistem lama
+        tetapi belum punya action card,
+        pindahkan sekali ke tabel baru.
+    */
+    let activeAction =
+        await tursoDb.get(
+            `
+                SELECT *
+                FROM feed_moderation_actions
+                WHERE
+                    student_id = ?
+                    AND action_type = 'mute'
+                    AND status = 'active'
+                ORDER BY id ASC
+                LIMIT 1
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    let queuedAction =
+        await tursoDb.get(
+            `
+                SELECT *
+                FROM feed_moderation_actions
+                WHERE
+                    student_id = ?
+                    AND action_type = 'mute'
+                    AND status = 'queued'
+                ORDER BY id ASC
+                LIMIT 1
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    if (
+        !activeAction &&
+        !queuedAction &&
+        moderation &&
+        moderation.status ===
+            "muted" &&
+        moderation.muted_until
+    ) {
+
+        const legacyEndMs =
+            new Date(
+                moderation.muted_until
+            ).getTime();
+
+
+        if (
+            !Number.isNaN(
+                legacyEndMs
+            ) &&
+            legacyEndMs >
+                nowMs
+        ) {
+
+            const remainingMinutes =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        (
+                            legacyEndMs -
+                            nowMs
+                        ) /
+                        60000
+                    )
+                );
+
+
+            await tursoDb.run(
+                `
+                    INSERT INTO
+                    feed_moderation_actions (
+                        student_id,
+                        action_type,
+                        status,
+                        duration_minutes,
+                        starts_at,
+                        ends_at,
+                        reason,
+                        moderated_by
+                    )
+                    VALUES (
+                        ?,
+                        'mute',
+                        'active',
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?
+                    )
+                `,
+                [
+                    studentId,
+                    remainingMinutes,
+                    new Date(
+                        nowMs
+                    ).toISOString(),
+                    moderation.muted_until,
+                    moderation.reason ||
+                        null,
+                    moderation.moderated_by ||
+                        null
+                ]
+            );
+
+        }
+
+    }
+
+
+    /*
+        =====================================
+        SELESAIKAN ACTIVE MUTE YANG EXPIRED
+        =====================================
+    */
+
+    activeAction =
+        await tursoDb.get(
+            `
+                SELECT *
+                FROM feed_moderation_actions
+                WHERE
+                    student_id = ?
+                    AND action_type = 'mute'
+                    AND status = 'active'
+                ORDER BY id ASC
+                LIMIT 1
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    if (
+        activeAction &&
+        activeAction.ends_at
+    ) {
+
+        const activeEndMs =
+            new Date(
+                activeAction.ends_at
+            ).getTime();
+
+
+        if (
+            !Number.isNaN(
+                activeEndMs
+            ) &&
+            activeEndMs <=
+                Date.now()
+        ) {
+
+            await tursoDb.run(
+                `
+                    UPDATE
+                        feed_moderation_actions
+                    SET
+                        status = 'completed',
+                        completed_at =
+                            CURRENT_TIMESTAMP
+                    WHERE
+                        id = ?
+                        AND status = 'active'
+                `,
+                [
+                    activeAction.id
+                ]
+            );
+
+
+            activeAction =
+                null;
+
+        }
+
+    }
+
+
+    /*
+        =====================================
+        AKTIFKAN QUEUE BERIKUTNYA
+        =====================================
+
+        starts_at dan ends_at baru dihitung
+        ketika card BENAR-BENAR mulai.
+
+        Jadi mute queued 1 hari tetap mendapat
+        1 hari penuh.
+    */
+
+    if (!activeAction) {
+
+        queuedAction =
+            await tursoDb.get(
+                `
+                    SELECT *
+                    FROM feed_moderation_actions
+                    WHERE
+                        student_id = ?
+                        AND action_type = 'mute'
+                        AND status = 'queued'
+                    ORDER BY id ASC
+                    LIMIT 1
+                `,
+                [
+                    studentId
+                ]
+            );
+
+
+        if (queuedAction) {
+
+            const startMs =
+                Date.now();
+
+
+            const endMs =
+                startMs +
+                (
+                    Number(
+                        queuedAction
+                            .duration_minutes
+                    ) *
+                    60 *
+                    1000
+                );
+
+
+            const startsAt =
+                new Date(
+                    startMs
+                ).toISOString();
+
+
+            const endsAt =
+                new Date(
+                    endMs
+                ).toISOString();
+
+
+            const activationResult =
+                await tursoDb.run(
+                    `
+                        UPDATE
+                            feed_moderation_actions
+                        SET
+                            status = 'active',
+                            starts_at = ?,
+                            ends_at = ?
+                        WHERE
+                            id = ?
+                            AND status = 'queued'
+                    `,
+                    [
+                        startsAt,
+                        endsAt,
+                        queuedAction.id
+                    ]
+                );
+
+
+            if (
+                Number(
+                    activationResult.changes ||
+                    0
+                ) > 0
+            ) {
+
+                activeAction = {
+                    ...queuedAction,
+
+                    status:
+                        "active",
+
+                    starts_at:
+                        startsAt,
+
+                    ends_at:
+                        endsAt
+                };
+
+            } else {
+
+                /*
+                    Kalau ada request lain yang
+                    mengaktifkan queue bersamaan,
+                    ambil kondisi terbaru.
+                */
+                activeAction =
+                    await tursoDb.get(
+                        `
+                            SELECT *
+                            FROM
+                                feed_moderation_actions
+                            WHERE
+                                student_id = ?
+                                AND action_type =
+                                    'mute'
+                                AND status =
+                                    'active'
+                            ORDER BY id ASC
+                            LIMIT 1
+                        `,
+                        [
+                            studentId
+                        ]
+                    );
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        =====================================
+        ADA ACTIVE MUTE
+        =====================================
+    */
+
+    if (activeAction) {
+
+        await tursoDb.run(
+            `
+                INSERT INTO feed_moderation (
+                    student_id,
+                    status,
+                    muted_until,
+                    reason,
+                    moderated_by,
+                    updated_at
+                )
+                VALUES (
+                    ?,
+                    'muted',
+                    ?,
+                    ?,
+                    ?,
+                    CURRENT_TIMESTAMP
+                )
+
+                ON CONFLICT(student_id)
+                DO UPDATE SET
+                    status =
+                        'muted',
+
+                    muted_until =
+                        excluded.muted_until,
+
+                    reason =
+                        excluded.reason,
+
+                    moderated_by =
+                        excluded.moderated_by,
+
+                    updated_at =
+                        CURRENT_TIMESTAMP
+            `,
+            [
+                studentId,
+                activeAction.ends_at,
+                activeAction.reason ||
+                    null,
+                activeAction.moderated_by ||
+                    null
+            ]
+        );
+
+
+        return {
+            student_id:
+                studentId,
+
+            status:
+                "muted",
+
+            muted_until:
+                activeAction.ends_at,
+
+            reason:
+                activeAction.reason ||
+                null,
+
+            moderated_by:
+                activeAction.moderated_by ||
+                null,
+
+            action_id:
+                Number(
+                    activeAction.id
+                )
+        };
+
+    }
+
+
+    /*
+        =====================================
+        TIDAK ADA ACTIVE / QUEUED MUTE
+        =====================================
+
+        Baru SEKARANG siswa benar-benar
+        dianggap pulih.
+    */
+
+    const remainingQueue =
+        await tursoDb.get(
+            `
+                SELECT id
+                FROM feed_moderation_actions
+                WHERE
+                    student_id = ?
+                    AND action_type = 'mute'
+                    AND status = 'queued'
+                ORDER BY id ASC
+                LIMIT 1
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    if (remainingQueue) {
+
+        /*
+            Guard saja. Normalnya queue sudah
+            diaktifkan di atas.
+        */
+        return syncStudentMuteQueue(
+            studentId
+        );
+
+    }
+
+
+    const recoveryResult =
+        await tursoDb.run(
+            `
+                UPDATE feed_moderation
+                SET
+                    status = 'active',
+                    muted_until = NULL,
+                    reason = NULL,
+                    updated_at =
+                        CURRENT_TIMESTAMP
+                WHERE
+                    student_id = ?
+                    AND status = 'muted'
+            `,
+            [
+                studentId
+            ]
+        );
+
+
+    /*
+        Event "unmuted" HANYA dibuat setelah
+        seluruh queue benar-benar habis.
+    */
+    if (
+        Number(
+            recoveryResult.changes ||
+            0
+        ) > 0
+    ) {
+
+        await tursoDb.run(
+            `
+                INSERT INTO
+                feed_moderation_events (
+                    student_id,
+                    event_type,
+                    reason
+                )
+                VALUES (
+                    ?,
+                    'unmuted',
+                    ?
+                )
+            `,
+            [
+                studentId,
+                "Seluruh durasi mute telah selesai."
+            ]
+        );
+
+    }
+
+
+    return {
+        student_id:
+            studentId,
+
+        status:
+            "active",
+
+        muted_until:
+            null,
+
+        reason:
+            null,
+
+        moderated_by:
+            null,
+
+        action_id:
+            null
+    };
+
+}
+
+
+// ========================================
+// AMBIL DAFTAR CARD MUTE SISWA
+// ========================================
+
+async function getStudentMuteActions(
+    studentId,
+    skipQueueSync = false
+) {
+
+    /*
+        Pada beberapa route, queue sudah
+        disinkronkan tepat sebelum fungsi ini
+        dipanggil.
+
+        skipQueueSync mencegah proses database
+        yang sama dijalankan dua kali.
+    */
+    if (!skipQueueSync) {
+
+        await syncStudentMuteQueue(
+            studentId
+        );
+
+    }
+
+
+    return tursoDb.all(
+        `
+            SELECT
+                id,
+                student_id,
+                action_type,
+                status,
+                duration_minutes,
+                starts_at,
+                ends_at,
+                reason,
+                moderated_by,
+                created_at,
+                completed_at,
+                lifted_at
+            FROM feed_moderation_actions
+            WHERE
+                student_id = ?
+                AND action_type = 'mute'
+                AND status IN (
+                    'active',
+                    'queued'
+                )
+            ORDER BY
+                CASE
+                    WHEN status = 'active'
+                        THEN 0
+                    ELSE 1
+                END,
+                id ASC
+        `,
+        [
+            studentId
+        ]
+    );
+
+}
+
+
+// ========================================
+// STATUS MODERATION SISWA
+// ========================================
+
+async function getStudentFeedModeration(
+    studentId
+) {
+
+    return syncStudentMuteQueue(
+        studentId
+    );
+
+}
+
+async function requireStudentFeedAccess(
+    studentId
+) {
+
+    const moderation =
+        await getStudentFeedModeration(
+            studentId
+        );
+
+
+    if (
+        moderation.status ===
+        "banned"
+    ) {
+
+        return {
+            allowed:
+                false,
+
+            moderation
+        };
+
+    }
+
+
+    if (
+        moderation.status ===
+        "muted"
+    ) {
+
+        return {
+            allowed:
+                false,
+
+            moderation
+        };
+
+    }
+
+
+    return {
+        allowed:
+            true,
+
+        moderation
+    };
+
+}
+
+// ========================================
+// PROTEKSI CLASSROOM FEED SISWA
+// MUTE / BAN
+// ========================================
+
+function isStudentClassroomFeedRequest(
+    req
+) {
+
+    const requestPath =
+        req.path;
+
+
+    /*
+        Endpoint moderation sendiri
+        HARUS tetap bisa diakses.
+
+        Ini dipakai frontend untuk:
+        - mendeteksi mute / ban LIVE
+        - mendeteksi unmute / unban
+        - menandai recovery event seen
+    */
+    if (
+        /^\/api\/student\/\d+\/feed-moderation(?:\/|$)/
+            .test(
+                requestPath
+            )
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+        Semua API Classroom Feed
+        yang memakai prefix student.
+    */
+    if (
+        /^\/api\/student\/\d+\/announcements(?:\/|$)/
+            .test(
+                requestPath
+            )
+    ) {
+
+        return true;
+
+    }
+
+
+    if (
+        /^\/api\/student\/\d+\/replies\/live$/
+            .test(
+                requestPath
+            )
+    ) {
+
+        return true;
+
+    }
+
+
+    if (
+        /^\/api\/student\/\d+\/classroom-feed\/state$/
+            .test(
+                requestPath
+            )
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+        Notification Classroom Feed siswa
+        juga tidak boleh bisa dibuka
+        saat sedang mute / ban.
+    */
+if (
+    /^\/api\/student\/\d+\/notifications(?:\/|$)/
+        .test(
+            requestPath
+        )
+) {
+
+    return true;
+
+}
+
+
+/*
+    Mark-read notification memakai
+    endpoint generic.
+
+    Tetap bagian Classroom Feed
+    ketika session aktif adalah Student.
+*/
+if (
+    /^\/api\/notifications\/\d+\/read$/
+        .test(
+            requestPath
+        )
+) {
+
+    return true;
+
+}
+
+
+/*
+    Route reply lama tidak memakai
+        /api/student prefix.
+
+        Admin juga memakai route feed,
+        jadi yang diblokir nanti hanya
+        ketika session aktif adalah Student.
+    */
+    if (
+        /^\/api\/announcements\/\d+\/replies(?:\/\d+)?$/
+            .test(
+                requestPath
+            )
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+        Autocomplete mention juga merupakan
+        bagian Classroom Feed.
+    */
+    if (
+        requestPath ===
+        "/api/admin/users/mention-list"
+    ) {
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+// ========================================
+// ENFORCEMENT MUTE / BAN SISWA
+// ========================================
+
+app.use(
+    async (
+        req,
+        res,
+        next
+    ) => {
+
+        /*
+            Tidak ada session Student:
+            bukan urusan middleware ini.
+
+            Request Admin tetap jalan normal.
+        */
+        if (
+            !req.session.studentId
+        ) {
+
+            return next();
+
+        }
+
+
+        /*
+            Hanya periksa request yang benar-benar
+            berkaitan dengan Classroom Feed.
+        */
+        if (
+            !isStudentClassroomFeedRequest(
+                req
+            )
+        ) {
+
+            return next();
+
+        }
+
+
+        const studentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        if (
+            !Number.isInteger(
+                studentId
+            )
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Session siswa tidak valid."
+                });
+
+        }
+
+
+        try {
+
+            const access =
+                await requireStudentFeedAccess(
+                    studentId
+                );
+
+
+            if (
+                access.allowed
+            ) {
+
+                return next();
+
+            }
+
+
+            const moderation =
+                access.moderation;
+
+
+            return res
+                .status(403)
+                .json({
+                    success:
+                        false,
+
+                    code:
+                        "FEED_MODERATED",
+
+                    message:
+                        moderation.status ===
+                            "banned"
+                            ? "Akses Classroom Feed kamu sedang dinonaktifkan."
+                            : "Akses Classroom Feed kamu sedang dibatasi sementara.",
+
+                    moderation:
+                        {
+                            status:
+                                moderation.status,
+
+                            mutedUntil:
+                                moderation.muted_until ||
+                                null,
+
+                            reason:
+                                moderation.reason ||
+                                null
+                        }
+                });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error proteksi Classroom Feed siswa:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal memeriksa akses Classroom Feed."
+                });
+
+        }
+
+    }
+);
+
+
 // ========================================
 // AMBIL SEMUA KELAS
 // ========================================
@@ -921,6 +2076,1638 @@ app.get(
                     success: false,
                     message:
                         "Gagal mengambil data siswa."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// DAFTAR SISWA - FEED MODERATION
+// ========================================
+
+app.get(
+    "/api/admin/feed-moderation/students",
+    async (req, res) => {
+
+        if (
+            !req.session.adminId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai Admin / Guru."
+                });
+
+        }
+
+
+        try {
+await ensureFeedModerationTables();
+
+
+/*
+    Pastikan mute yang sudah habis
+    langsung dipulihkan sebelum
+    daftar moderation dikirim ke Admin.
+*/
+/*
+    Sinkronkan hanya siswa yang punya
+    mute aktif / antrean.
+
+    Kalau card aktif habis:
+    - completed
+    - queue berikutnya langsung active
+    - tidak muncul unmuted di tengah.
+*/
+/*
+    Dashboard hanya perlu menjalankan queue sync
+    apabila ada kondisi yang benar-benar harus
+    berubah.
+
+    Kondisi tersebut:
+    1. Mute aktif sudah mencapai waktu berakhir.
+    2. Ada antrean tetapi tidak ada Mute aktif.
+    3. Ada snapshot Mute lama yang belum memiliki
+       action card.
+*/
+const muteQueueStudents =
+    await tursoDb.all(`
+        SELECT DISTINCT
+            active.student_id
+
+        FROM
+            feed_moderation_actions active
+
+        WHERE
+            active.action_type =
+                'mute'
+
+            AND active.status =
+                'active'
+
+            AND active.ends_at
+                IS NOT NULL
+
+            AND julianday(
+                active.ends_at
+            ) <= julianday(
+                'now'
+            )
+
+
+        UNION
+
+
+        SELECT DISTINCT
+            queued.student_id
+
+        FROM
+            feed_moderation_actions queued
+
+        WHERE
+            queued.action_type =
+                'mute'
+
+            AND queued.status =
+                'queued'
+
+            AND NOT EXISTS (
+                SELECT
+                    1
+
+                FROM
+                    feed_moderation_actions running
+
+                WHERE
+                    running.student_id =
+                        queued.student_id
+
+                    AND running.action_type =
+                        'mute'
+
+                    AND running.status =
+                        'active'
+            )
+
+
+        UNION
+
+
+        SELECT
+            moderation.student_id
+
+        FROM
+            feed_moderation moderation
+
+        WHERE
+            moderation.status =
+                'muted'
+
+            AND NOT EXISTS (
+                SELECT
+                    1
+
+                FROM
+                    feed_moderation_actions action
+
+                WHERE
+                    action.student_id =
+                        moderation.student_id
+
+                    AND action.action_type =
+                        'mute'
+
+                    AND action.status IN (
+                        'active',
+                        'queued'
+                    )
+            )
+    `);
+
+
+/*
+    Setiap row mempunyai student_id berbeda.
+
+    Karena itu, sinkronisasi beberapa siswa
+    boleh berjalan bersamaan tanpa membuat
+    dua proses mengubah queue siswa yang sama.
+*/
+await Promise.all(
+    muteQueueStudents.map(
+        (row) =>
+            syncStudentMuteQueue(
+                Number(
+                    row.student_id
+                )
+            )
+    )
+);
+
+
+const students =
+    await tursoDb.all(`
+                    SELECT
+                        s.id,
+                        s.name,
+                        s.class_name,
+
+                        COALESCE(
+                            fm.status,
+                            'active'
+                        ) AS moderation_status,
+
+                        fm.muted_until,
+                        fm.reason,
+                        fm.updated_at
+
+                    FROM students s
+
+                    LEFT JOIN
+                        feed_moderation fm
+                    ON
+                        fm.student_id =
+                            s.id
+
+                    ORDER BY
+                        s.name
+                        COLLATE NOCASE
+                        ASC
+                `);
+
+const moderationActions =
+    await tursoDb.all(
+        `
+            SELECT
+                fma.id,
+                fma.student_id,
+                fma.action_type,
+                fma.status,
+                fma.duration_minutes,
+                fma.starts_at,
+                fma.ends_at,
+                fma.reason,
+                fma.moderated_by,
+                fma.created_at,
+
+                s.name AS student_name,
+                s.class_name AS student_class,
+
+                a.name AS moderator_name,
+                a.role AS moderator_role
+
+            FROM feed_moderation_actions fma
+
+            INNER JOIN students s
+                ON s.id =
+                    fma.student_id
+
+            LEFT JOIN admins a
+                ON a.id =
+                    fma.moderated_by
+
+            WHERE
+                fma.status IN (
+                    'active',
+                    'queued'
+                )
+
+            ORDER BY
+                CASE
+                    WHEN fma.status =
+                        'active'
+                        THEN 0
+                    ELSE 1
+                END,
+
+                fma.student_id ASC,
+                fma.id ASC
+        `
+    );
+
+return res.json({
+    success:
+        true,
+
+    serverNow:
+        new Date().toISOString(),
+
+    students,
+
+    moderationActions:
+        Array.isArray(
+            moderationActions
+        )
+            ? moderationActions
+            : []
+});
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil siswa moderation:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil data moderation."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// MUTE SISWA DARI CLASSROOM FEED
+// ========================================
+
+app.post(
+    "/api/admin/feed-moderation/:studentId/mute",
+    async (req, res) => {
+
+        if (
+            !req.session.adminId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai Admin / Guru."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const durationMinutes =
+            Number(
+                req.body.durationMinutes
+            );
+
+        const reason =
+            String(
+                req.body.reason ||
+                ""
+            ).trim();
+
+
+        if (
+            !Number.isInteger(
+                studentId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "ID siswa tidak valid."
+                });
+
+        }
+
+
+        /*
+            Maksimum:
+            7 hari × 24 jam × 60 menit
+            = 10080 menit.
+        */
+        if (
+            !Number.isInteger(
+                durationMinutes
+            ) ||
+            durationMinutes < 1 ||
+            durationMinutes > 10080
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Durasi mute harus antara 1 menit dan 7 hari."
+                });
+
+        }
+
+
+        try {
+
+            await ensureFeedModerationTables();
+
+/*
+    Dalam satu query, pastikan siswa ada dan
+    periksa apakah siswa sedang memiliki Ban.
+*/
+const studentState =
+    await tursoDb.get(
+        `
+            SELECT
+                students.id,
+
+                COALESCE(
+                    moderation.status,
+                    'active'
+                ) AS moderation_status,
+
+                EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        feed_moderation_actions ban
+                    WHERE
+                        ban.student_id =
+                            students.id
+                        AND ban.action_type =
+                            'ban'
+                        AND ban.status =
+                            'active'
+                ) AS has_active_ban
+
+            FROM students
+
+            LEFT JOIN
+                feed_moderation moderation
+            ON
+                moderation.student_id =
+                    students.id
+
+            WHERE
+                students.id = ?
+        `,
+        [
+            studentId
+        ]
+    );
+
+
+if (!studentState) {
+
+    return res
+        .status(404)
+        .json({
+            success:
+                false,
+
+            message:
+                "Siswa tidak ditemukan."
+        });
+
+}
+
+
+/*
+    Cek snapshot dan card Ban sekaligus.
+
+    has_active_ban berasal dari SQLite dan
+    biasanya bernilai 0 atau 1.
+*/
+if (
+    studentState.moderation_status ===
+        "banned" ||
+    Number(
+        studentState.has_active_ban
+    ) ===
+        1
+) {
+
+    return res
+        .status(409)
+        .json({
+            success:
+                false,
+
+            message:
+                "Siswa sedang diban dari Classroom Feed."
+        });
+
+}
+
+
+const startsAt =
+    new Date().toISOString();
+
+
+const endsAt =
+    new Date(
+        Date.now() +
+        (
+            durationMinutes *
+            60 *
+            1000
+        )
+    ).toISOString();
+
+
+/*
+    Seluruh proses penambahan Mute dikirim
+    sebagai satu batch transaksi.
+
+    SQL menentukan sendiri:
+    - belum ada Mute → langsung active
+    - sudah ada active/queued → queued
+*/
+const muteBatchResults =
+    await tursoDb.batch(
+        [
+            /*
+                Buat card Mute.
+
+                CTE pending hanya dihitung satu kali
+                untuk menentukan active atau queued.
+            */
+            {
+                sql: `
+                    WITH pending AS (
+                        SELECT
+                            EXISTS (
+                                SELECT
+                                    1
+                                FROM
+                                    feed_moderation_actions
+                                WHERE
+                                    student_id = ?
+                                    AND action_type =
+                                        'mute'
+                                    AND status IN (
+                                        'active',
+                                        'queued'
+                                    )
+                            ) AS has_pending
+                    )
+
+                    INSERT INTO
+                        feed_moderation_actions (
+                            student_id,
+                            action_type,
+                            status,
+                            duration_minutes,
+                            starts_at,
+                            ends_at,
+                            reason,
+                            moderated_by
+                        )
+
+                    SELECT
+                        ?,
+                        'mute',
+
+                        CASE
+                            WHEN has_pending = 1
+                                THEN 'queued'
+                            ELSE 'active'
+                        END,
+
+                        ?,
+
+                        CASE
+                            WHEN has_pending = 1
+                                THEN NULL
+                            ELSE ?
+                        END,
+
+                        CASE
+                            WHEN has_pending = 1
+                                THEN NULL
+                            ELSE ?
+                        END,
+
+                        ?,
+                        ?
+
+                    FROM pending
+                `,
+
+                args: [
+                    studentId,
+                    studentId,
+                    durationMinutes,
+                    startsAt,
+                    endsAt,
+                    reason ||
+                        null,
+                    Number(
+                        req.session.adminId
+                    )
+                ]
+            },
+
+
+            /*
+                Jika card baru menjadi active,
+                perbarui snapshot utama.
+
+                Kalau card queued, SELECT tidak
+                menghasilkan row dan snapshot Mute
+                aktif yang lama tidak disentuh.
+            */
+            {
+                sql: `
+                    INSERT INTO feed_moderation (
+                        student_id,
+                        status,
+                        muted_until,
+                        reason,
+                        moderated_by,
+                        updated_at
+                    )
+
+                    SELECT
+                        student_id,
+                        'muted',
+                        ends_at,
+                        reason,
+                        moderated_by,
+                        CURRENT_TIMESTAMP
+
+                    FROM feed_moderation_actions
+
+                    WHERE
+                        id =
+                            last_insert_rowid()
+                        AND status =
+                            'active'
+
+                    ON CONFLICT(student_id)
+                    DO UPDATE SET
+                        status =
+                            'muted',
+
+                        muted_until =
+                            excluded.muted_until,
+
+                        reason =
+                            excluded.reason,
+
+                        moderated_by =
+                            excluded.moderated_by,
+
+                        updated_at =
+                            CURRENT_TIMESTAMP
+                `,
+
+                args: []
+            },
+
+
+            /*
+                Buat histori event Mute.
+            */
+            {
+                sql: `
+                    INSERT INTO
+                        feed_moderation_events (
+                            student_id,
+                            event_type,
+                            reason
+                        )
+                    VALUES (
+                        ?,
+                        'muted',
+                        ?
+                    )
+                `,
+
+                args: [
+                    studentId,
+                    reason ||
+                        null
+                ]
+            },
+
+
+            /*
+                Ambil card yang baru dibuat dan
+                kondisi moderation utama dalam
+                batch yang sama.
+            */
+            {
+                sql: `
+                    SELECT
+                        action.id,
+                        action.student_id,
+                        action.action_type,
+                        action.status,
+                        action.duration_minutes,
+                        action.starts_at,
+                        action.ends_at,
+                        action.reason,
+                        action.moderated_by,
+                        action.created_at,
+
+                        COALESCE(
+                            moderation.status,
+                            'active'
+                        ) AS moderation_status,
+
+                        moderation.muted_until
+                            AS moderation_muted_until,
+
+                        moderation.reason
+                            AS moderation_reason
+
+                    FROM
+                        feed_moderation_actions action
+
+                    LEFT JOIN
+                        feed_moderation moderation
+                    ON
+                        moderation.student_id =
+                            action.student_id
+
+                    WHERE
+                        action.id = (
+                            SELECT
+                                MAX(latest.id)
+                            FROM
+                                feed_moderation_actions latest
+                            WHERE
+                                latest.student_id = ?
+                                AND latest.action_type =
+                                    'mute'
+                        )
+
+                    LIMIT 1
+                `,
+
+                args: [
+                    studentId
+                ]
+            }
+        ],
+        "immediate"
+    );
+
+
+const actionQueryResult =
+    muteBatchResults[
+        muteBatchResults.length -
+        1
+    ];
+
+
+const action =
+    actionQueryResult &&
+    Array.isArray(
+        actionQueryResult.rows
+    )
+        ? (
+            actionQueryResult.rows[0] ||
+            null
+        )
+        : null;
+
+
+if (!action) {
+
+    throw new Error(
+        "Card Mute yang baru dibuat tidak ditemukan."
+    );
+
+}
+
+
+/*
+    Status utama tetap berasal dari snapshot
+    server, bukan ditebak oleh frontend.
+*/
+const moderation = {
+    status:
+        action.moderation_status ||
+        "muted",
+
+    muted_until:
+        action.moderation_muted_until ||
+        null,
+
+    reason:
+        action.moderation_reason ||
+        null
+};
+
+return res.json({
+    success:
+        true,
+
+    moderation:
+        {
+            status:
+                moderation.status,
+
+            mutedUntil:
+                moderation.muted_until ||
+                null,
+
+            reason:
+                moderation.reason ||
+                null
+        },
+
+action:
+    {
+        id:
+            Number(
+                action.id
+            ),
+
+        student_id:
+            Number(
+                action.student_id
+            ),
+
+        action_type:
+            action.action_type,
+
+        status:
+            action.status,
+
+        duration_minutes:
+            Number(
+                action.duration_minutes
+            ),
+
+        starts_at:
+            action.starts_at ||
+            null,
+
+        ends_at:
+            action.ends_at ||
+            null,
+
+        reason:
+            action.reason ||
+            null,
+
+        moderated_by:
+            action.moderated_by
+                ? Number(
+                    action.moderated_by
+                )
+                : null,
+
+        created_at:
+            action.created_at
+    }
+});
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mute Classroom Feed:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mute siswa."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// HAPUS CARD MODERATION
+// ========================================
+
+app.delete(
+    "/api/admin/feed-moderation/actions/:actionId",
+    async (req, res) => {
+
+        if (
+            !req.session.adminId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai Admin / Guru."
+                });
+
+        }
+
+
+        const actionId =
+            Number(
+                req.params.actionId
+            );
+
+
+        if (
+            !Number.isInteger(
+                actionId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "ID moderation tidak valid."
+                });
+
+        }
+
+
+        try {
+
+            await ensureFeedModerationTables();
+
+
+            const action =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            student_id,
+                            action_type,
+                            status
+                        FROM
+                            feed_moderation_actions
+                        WHERE id = ?
+                    `,
+                    [
+                        actionId
+                    ]
+                );
+
+
+            if (!action) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Card moderation tidak ditemukan."
+                    });
+
+            }
+
+
+            if (
+                action.status !==
+                    "active" &&
+                action.status !==
+                    "queued"
+            ) {
+
+                return res.json({
+                    success:
+                        true
+                });
+
+            }
+
+
+            const wasActive =
+                action.status ===
+                "active";
+
+
+            /*
+                Jangan hard-delete.
+
+                Status lifted membuat card
+                hilang dari monitoring tetapi
+                histori tetap tersimpan.
+            */
+            const result =
+                await tursoDb.run(
+                    `
+                        UPDATE
+                            feed_moderation_actions
+                        SET
+                            status = 'lifted',
+                            lifted_at =
+                                CURRENT_TIMESTAMP
+                        WHERE
+                            id = ?
+                            AND status IN (
+                                'active',
+                                'queued'
+                            )
+                    `,
+                    [
+                        actionId
+                    ]
+                );
+
+
+            if (
+                Number(
+                    result.changes ||
+                    0
+                ) === 0
+            ) {
+
+                return res.json({
+                    success:
+                        true
+                });
+
+            }
+
+                        /*
+                Menghapus card BAN berarti
+                mencabut larangan sepenuhnya.
+
+                Seluruh Mute sudah di-lift ketika
+                Ban dibuat, jadi siswa langsung
+                kembali ACTIVE.
+            */
+            if (
+                action.action_type ===
+                    "ban"
+            ) {
+
+                await tursoDb.run(
+                    `
+                        UPDATE feed_moderation
+                        SET
+                            status = 'active',
+                            muted_until = NULL,
+                            reason = NULL,
+                            moderated_by = NULL,
+                            updated_at =
+                                CURRENT_TIMESTAMP
+                        WHERE
+                            student_id = ?
+                            AND status = 'banned'
+                    `,
+                    [
+                        action.student_id
+                    ]
+                );
+
+
+                await tursoDb.run(
+                    `
+                        INSERT INTO
+                            feed_moderation_events (
+                                student_id,
+                                event_type,
+                                reason
+                            )
+                        VALUES (
+                            ?,
+                            'unbanned',
+                            ?
+                        )
+                    `,
+                    [
+                        action.student_id,
+                        "Larangan Classroom Feed telah dicabut."
+                    ]
+                );
+
+
+                return res.json({
+                    success:
+                        true,
+
+                    moderation:
+                        {
+                            status:
+                                "active",
+
+                            mutedUntil:
+                                null,
+
+                            reason:
+                                null
+                        }
+                });
+
+            }
+
+
+            /*
+                Kalau yang dihapus hanya QUEUED,
+                mute ACTIVE tidak perlu disentuh.
+            */
+            if (!wasActive) {
+
+                return res.json({
+                    success:
+                        true
+                });
+
+            }
+
+
+            /*
+                Kalau ACTIVE dihapus, bersihkan
+                snapshot lama di feed_moderation
+                terlebih dahulu.
+
+                Ini juga mencegah sistem migrasi
+                legacy membuat card yang baru saja
+                dihapus muncul kembali.
+            */
+            await tursoDb.run(
+                `
+                    UPDATE feed_moderation
+                    SET
+                        status = 'active',
+                        muted_until = NULL,
+                        reason = NULL,
+                        updated_at =
+                            CURRENT_TIMESTAMP
+                    WHERE
+                        student_id = ?
+                        AND status = 'muted'
+                `,
+                [
+                    action.student_id
+                ]
+            );
+
+            /*
+                Server menentukan kondisi berikutnya:
+
+                - ada QUEUED → langsung ACTIVE
+                - queue kosong → siswa dipulihkan
+                  dan event unmuted dibuat.
+            */
+            const moderation =
+                await syncStudentMuteQueue(
+                    Number(
+                        action.student_id
+                    )
+                );
+
+              /*
+    Saat Mute aktif dicabut, snapshot
+    feed_moderation sudah dibuat active sebelum
+    sync untuk mencegah migrasi legacy membuat
+    card lama kembali.
+
+    Karena itu syncStudentMuteQueue() tidak
+    membuat event unmuted secara otomatis.
+    Buat event secara eksplisit jika queue
+    benar-benar sudah kosong.
+*/
+if (
+    moderation.status ===
+    "active"
+) {
+
+    await tursoDb.run(
+        `
+            INSERT INTO
+                feed_moderation_events (
+                    student_id,
+                    event_type,
+                    reason
+                )
+            VALUES (
+                ?,
+                'unmuted',
+                ?
+            )
+        `,
+        [
+            Number(
+                action.student_id
+            ),
+
+            "Mute Classroom Feed telah dicabut."
+        ]
+    );
+
+}
+
+
+            return res.json({
+                success:
+                    true,
+
+                moderation:
+                    {
+                        status:
+                            moderation.status,
+
+                        mutedUntil:
+                            moderation.muted_until ||
+                            null,
+
+                        reason:
+                            moderation.reason ||
+                            null
+                    }
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error hapus moderation card:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal menghapus card moderation."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// BAN SISWA DARI CLASSROOM FEED
+// ========================================
+
+app.post(
+    "/api/admin/feed-moderation/:studentId/ban",
+    async (req, res) => {
+
+        if (
+            !req.session.adminId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai Admin / Guru."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const reason =
+            String(
+                req.body.reason ||
+                ""
+            ).trim();
+
+
+        if (
+            !Number.isInteger(
+                studentId
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "ID siswa tidak valid."
+                });
+
+        }
+
+
+        if (
+            reason.length >
+                500
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Alasan ban maksimal 500 karakter."
+                });
+
+        }
+
+
+        try {
+
+            await ensureFeedModerationTables();
+
+
+  /*
+    Pemeriksaan siswa dan Ban aktif tidak saling
+    bergantung, jadi jalankan dalam waktu yang
+    sama untuk mengurangi satu round-trip Turso.
+*/
+const [
+    student,
+    existingBan
+] =
+    await Promise.all([
+        tursoDb.get(
+            `
+                SELECT
+                    id
+                FROM students
+                WHERE id = ?
+            `,
+            [
+                studentId
+            ]
+        ),
+
+        tursoDb.get(
+            `
+                SELECT
+                    id
+                FROM feed_moderation_actions
+                WHERE
+                    student_id = ?
+                    AND action_type = 'ban'
+                    AND status = 'active'
+                ORDER BY id DESC
+                LIMIT 1
+            `,
+            [
+                studentId
+            ]
+        )
+    ]);
+
+
+if (!student) {
+
+    return res
+        .status(404)
+        .json({
+            success:
+                false,
+
+            message:
+                "Siswa tidak ditemukan."
+        });
+
+}
+
+
+if (existingBan) {
+
+    return res
+        .status(409)
+        .json({
+            success:
+                false,
+
+            message:
+                "Siswa sudah di ban."
+        });
+
+}
+
+/*
+    Semua perubahan Ban harus berhasil bersama.
+
+    Satu batch:
+    - hanya satu round-trip penulisan ke Turso
+    - memakai transaksi immediate
+    - tidak meninggalkan status setengah jadi
+*/
+const banCreatedAt =
+    new Date().toISOString();
+
+
+const banBatchResults =
+    await tursoDb.batch(
+    [
+        {
+            sql: `
+                INSERT INTO feed_moderation (
+                    student_id,
+                    status,
+                    muted_until,
+                    reason,
+                    moderated_by,
+                    updated_at
+                )
+                VALUES (
+                    ?,
+                    'banned',
+                    NULL,
+                    ?,
+                    ?,
+                    CURRENT_TIMESTAMP
+                )
+
+                ON CONFLICT(student_id)
+                DO UPDATE SET
+                    status =
+                        'banned',
+
+                    muted_until =
+                        NULL,
+
+                    reason =
+                        excluded.reason,
+
+                    moderated_by =
+                        excluded.moderated_by,
+
+                    updated_at =
+                        CURRENT_TIMESTAMP
+            `,
+
+            args: [
+                studentId,
+                reason ||
+                    null,
+                Number(
+                    req.session.adminId
+                )
+            ]
+        },
+
+
+        /*
+            Ban mengalahkan seluruh Mute aktif
+            dan antrean milik siswa.
+        */
+        {
+            sql: `
+                UPDATE feed_moderation_actions
+                SET
+                    status = 'lifted',
+                    lifted_at =
+                        CURRENT_TIMESTAMP
+                WHERE
+                    student_id = ?
+                    AND action_type = 'mute'
+                    AND status IN (
+                        'active',
+                        'queued'
+                    )
+            `,
+
+            args: [
+                studentId
+            ]
+        },
+
+
+        /*
+            Buat satu card Ban aktif.
+        */
+        {
+            sql: `
+                INSERT INTO
+                    feed_moderation_actions (
+                        student_id,
+                        action_type,
+                        status,
+                        duration_minutes,
+                        starts_at,
+                        ends_at,
+                        reason,
+                        moderated_by
+                    )
+                VALUES (
+                    ?,
+                    'ban',
+                    'active',
+                    NULL,
+                    CURRENT_TIMESTAMP,
+                    NULL,
+                    ?,
+                    ?
+                )
+            `,
+
+            args: [
+                studentId,
+                reason ||
+                    null,
+                Number(
+                    req.session.adminId
+                )
+            ]
+        },
+
+
+        /*
+            Catat event Ban untuk sistem
+            moderasi Student.
+        */
+        {
+            sql: `
+                INSERT INTO
+                    feed_moderation_events (
+                        student_id,
+                        event_type,
+                        reason
+                    )
+                VALUES (
+                    ?,
+                    'banned',
+                    ?
+                )
+            `,
+
+            args: [
+                studentId,
+                reason ||
+                    null
+            ]
+        }
+    ],
+    "immediate"
+);
+
+const banInsertResult =
+    banBatchResults[2];
+
+
+const banActionId =
+    Number(
+        banInsertResult &&
+        banInsertResult.lastInsertRowid
+    );
+
+
+if (
+    !Number.isInteger(
+        banActionId
+    ) ||
+    banActionId <= 0
+) {
+
+    throw new Error(
+        "ID card Ban yang baru dibuat tidak ditemukan."
+    );
+
+}
+
+return res.json({
+    success:
+        true,
+
+    moderation:
+        {
+            status:
+                "banned",
+
+            mutedUntil:
+                null,
+
+            reason:
+                reason ||
+                null
+        },
+
+    action:
+        {
+            id:
+                banActionId,
+
+            student_id:
+                studentId,
+
+            action_type:
+                "ban",
+
+            status:
+                "active",
+
+            duration_minutes:
+                null,
+
+            starts_at:
+                banCreatedAt,
+
+            ends_at:
+                null,
+
+            reason:
+                reason ||
+                null,
+
+            moderated_by:
+                Number(
+                    req.session.adminId
+                ),
+
+            created_at:
+                banCreatedAt
+        }
+});
+
+
+        } catch (error) {
+
+            console.error(
+                "Error ban Classroom Feed:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal ban siswa."
                 });
 
         }
@@ -6361,6 +9148,298 @@ app.get(
                 message:
                     "Gagal mengambil daftar mention."
             });
+
+        }
+
+    }
+);
+
+// ========================================
+// STATUS MODERATION CLASSROOM FEED SISWA
+// ========================================
+
+app.get(
+    "/api/student/:studentId/feed-moderation",
+    async (req, res) => {
+
+        if (
+            !req.session.studentId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        if (
+            !Number.isInteger(
+                studentId
+            ) ||
+            studentId !==
+                sessionStudentId
+        ) {
+
+            return res
+                .status(403)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Akses siswa tidak valid."
+                });
+
+        }
+
+
+        try {
+
+const moderation =
+    await getStudentFeedModeration(
+        studentId
+    );
+
+
+/*
+    getStudentFeedModeration() di atas sudah
+    menjalankan syncStudentMuteQueue().
+
+    true berarti getStudentMuteActions()
+    hanya mengambil daftar card tanpa
+    mengulang seluruh proses sinkronisasi.
+*/
+const muteActions =
+    await getStudentMuteActions(
+        studentId,
+        true
+    );
+
+
+const pendingEvent =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            event_type,
+                            reason,
+                            created_at
+                        FROM
+                            feed_moderation_events
+                        WHERE
+                            student_id = ?
+                            AND seen_at IS NULL
+                            AND event_type IN (
+                                'unmuted',
+                                'unbanned'
+                            )
+                        ORDER BY id DESC
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+return res.json({
+    success:
+        true,
+
+    serverNow:
+        new Date().toISOString(),
+
+moderation:
+    {
+        status:
+            moderation.status ||
+            "active",
+
+        mutedUntil:
+            moderation.muted_until ||
+            null,
+
+        reason:
+            moderation.reason ||
+            null,
+
+        activeActionId:
+            moderation.action_id ||
+            null
+    },
+
+
+muteActions:
+    Array.isArray(
+        muteActions
+    )
+        ? muteActions
+        : [],
+
+
+pendingEvent:
+                    pendingEvent ||
+                    null
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil status moderation feed:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil status moderation."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// TANDAI EVENT MODERATION SUDAH DILIHAT
+// ========================================
+
+app.post(
+    "/api/student/:studentId/feed-moderation/events/:eventId/seen",
+    async (req, res) => {
+
+        if (
+            !req.session.studentId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+        const eventId =
+            Number(
+                req.params.eventId
+            );
+
+        const sessionStudentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        if (
+            !Number.isInteger(
+                studentId
+            ) ||
+            studentId !==
+                sessionStudentId ||
+            !Number.isInteger(
+                eventId
+            )
+        ) {
+
+            return res
+                .status(403)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Akses moderation tidak valid."
+                });
+
+        }
+
+
+        try {
+
+            await ensureFeedModerationTables();
+
+
+await tursoDb.run(
+    `
+        UPDATE
+            feed_moderation_events
+        SET
+            seen_at =
+                CURRENT_TIMESTAMP
+        WHERE
+            student_id = ?
+            AND seen_at IS NULL
+            AND event_type IN (
+                'unmuted',
+                'unbanned'
+            )
+            AND id <= ?
+    `,
+    [
+        studentId,
+        eventId
+    ]
+);
+
+
+            return res.json({
+                success:
+                    true
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error menandai event moderation:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal memperbarui event moderation."
+                });
 
         }
 

@@ -263,10 +263,76 @@
 
                 </div>
 
-            </header>
+</header>
 
 
-            <div class="feed-page-content">
+<section
+    id="studentFeedModerationBlocker"
+    class="student-feed-moderation-blocker"
+    style="display: none;"
+>
+
+    <div
+        class="student-feed-moderation-panel"
+    >
+
+    <small class="eyebrow">
+        CLASSROOM FEED
+    </small>
+
+
+    <h2 id="studentFeedModerationTitle">
+        Akses Classroom Feed Dibatasi
+    </h2>
+
+
+    <p
+        id="studentFeedModerationMessage"
+        class="student-feed-moderation-message"
+    >
+        Kamu sementara tidak dapat
+        mengakses Classroom Feed.
+    </p>
+
+
+      <div
+        id="studentFeedModerationDetails"
+        class="student-feed-moderation-details"
+    >
+
+        <div
+            id="studentFeedModerationCards"
+            class="student-feed-moderation-cards"
+        ></div>
+
+    </div>
+
+
+    <div
+        id="studentFeedModerationReasonRow"
+        class="student-feed-moderation-reason"
+        style="display: none;"
+    >
+
+        <small>
+            Alasan
+        </small>
+
+        <p
+            id="studentFeedModerationReason"
+        >
+            -
+        </p>
+
+    </div>
+
+
+    </div>
+
+</section>
+
+
+<div class="feed-page-content">
 
 
                 <!-- =========================
@@ -533,6 +599,43 @@
 
         </section>
     </div>
+
+<div
+    id="studentFeedRecoveryOverlay"
+    class="student-feed-recovery-overlay"
+    style="display: none;"
+>
+
+    <section class="student-feed-recovery-panel">
+
+        <small class="eyebrow">
+            CLASSROOM FEED
+        </small>
+
+
+        <h2>
+            Akses Classroom Feed Dipulihkan
+        </h2>
+
+
+        <p>
+            Kamu sudah dapat menggunakan
+            Classroom Feed kembali.
+        </p>
+
+
+<button
+    id="studentFeedRecoveryButton"
+    type="button"
+    onclick="acknowledgeStudentFeedRecovery()"
+>
+    Mengerti
+</button>
+
+    </section>
+
+</div>
+
 <script src="/student-session.js"></script>
 <script src="/time.js"></script>
     <script>
@@ -636,15 +739,1817 @@ let activeStudentFeedFilter =
 
         let latestAnnouncementId = 0;
 
-        let studentFeedLoading =
+let studentFeedLoading =
     false;
+
+
+/*
+    Controller khusus load utama Student Feed.
+
+    Ketika siswa di-Mute/Ban, request lama
+    dibatalkan agar tidak memasukkan post
+    kembali setelah Feed dikosongkan.
+*/
+let studentFeedLoadController =
+    null;
+
 
 let studentLiveSyncRunning =
     false;
 
-        let latestReplyId = 0;
+let latestReplyId = 0;
 
-        let studentLivePollingTimer = null;
+let studentLivePollingTimer =
+    null;
+
+
+// =====================================
+// STUDENT FEED MODERATION STATE
+// =====================================
+
+let studentFeedModerationStatus =
+    "checking";
+
+let studentFeedModerationMutedUntil =
+    null;
+
+let studentFeedModerationReason =
+    null;
+
+let studentFeedMuteActions =
+    [];
+
+let studentFeedModerationCheckRunning =
+    false;
+
+let studentFeedModerationPollingTimer =
+    null;
+
+let studentFeedModerationCountdownTimer =
+    null;
+
+let studentFeedInitialized =
+    false;
+
+let studentFeedResumeRunning =
+    false;
+
+let studentFeedPendingRecoveryEvent =
+    null;
+
+let studentModerationServerOffsetMs =
+    0;
+
+
+function updateStudentModerationServerClock(
+    serverNow,
+    requestStartedAt,
+    responseReceivedAt
+) {
+
+    const serverNowMs =
+        new Date(
+            serverNow
+        ).getTime();
+
+
+    if (
+        Number.isNaN(
+            serverNowMs
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const clientMidpoint =
+        requestStartedAt +
+        (
+            (
+                responseReceivedAt -
+                requestStartedAt
+            ) /
+            2
+        );
+
+
+    studentModerationServerOffsetMs =
+        serverNowMs -
+        clientMidpoint;
+
+}
+
+
+function getStudentModerationNowMs() {
+
+    return (
+        Date.now() +
+        studentModerationServerOffsetMs
+    );
+
+}
+
+// =====================================
+// STUDENT MODERATION COUNTDOWN
+// =====================================
+
+function formatStudentMuteCountdown(
+    milliseconds
+) {
+
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.ceil(
+                milliseconds /
+                1000
+            )
+        );
+
+
+    const days =
+        Math.floor(
+            totalSeconds /
+            86400
+        );
+
+
+    const remainingAfterDays =
+        totalSeconds %
+        86400;
+
+
+    const hours =
+        Math.floor(
+            remainingAfterDays /
+            3600
+        );
+
+
+    const remainingAfterHours =
+        remainingAfterDays %
+        3600;
+
+
+    const minutes =
+        Math.floor(
+            remainingAfterHours /
+            60
+        );
+
+
+    const seconds =
+        remainingAfterHours %
+        60;
+
+
+    const parts =
+        [];
+
+
+    /*
+        Hari hanya ditampilkan jika
+        durasi mencapai minimal 1 hari.
+    */
+    if (days > 0) {
+
+        parts.push(
+            `${days} Hari`
+        );
+
+    }
+
+
+    /*
+        Jika sudah memiliki Hari,
+        Jam tetap ditampilkan walaupun 0.
+
+        Contoh:
+        7 Hari, 0 Jam, ...
+    */
+    if (
+        hours > 0 ||
+        days > 0
+    ) {
+
+        parts.push(
+            `${hours} Jam`
+        );
+
+    }
+
+
+    /*
+        Jika sudah memiliki Jam atau Hari,
+        Menit tetap ditampilkan walaupun 0.
+    */
+    if (
+        minutes > 0 ||
+        hours > 0 ||
+        days > 0
+    ) {
+
+        parts.push(
+            `${minutes} Menit`
+        );
+
+    }
+
+
+    /*
+        Detik selalu ditampilkan.
+    */
+    parts.push(
+        `${seconds} Detik`
+    );
+
+
+    return parts.join(
+        ", "
+    );
+
+}
+
+
+function formatStudentModerationDateTime(
+    value
+) {
+
+    const date =
+        new Date(
+            value
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "-";
+
+    }
+
+
+    return date.toLocaleString(
+        "id-ID",
+        {
+            dateStyle:
+                "medium",
+
+            timeStyle:
+                "short"
+        }
+    );
+
+}
+
+function formatStudentMuteDurationMinutes(
+    totalMinutes
+) {
+
+    const minutes =
+        Number(
+            totalMinutes
+        );
+
+
+    if (
+        !Number.isFinite(
+            minutes
+        ) ||
+        minutes <= 0
+    ) {
+
+        return "-";
+
+    }
+
+
+    const days =
+        Math.floor(
+            minutes /
+            1440
+        );
+
+
+    const hours =
+        Math.floor(
+            (
+                minutes %
+                1440
+            ) /
+            60
+        );
+
+
+    const remainingMinutes =
+        minutes %
+        60;
+
+
+    const parts =
+        [];
+
+
+    if (days > 0) {
+
+        parts.push(
+            `${days} hari`
+        );
+
+    }
+
+
+    if (hours > 0) {
+
+        parts.push(
+            `${hours} jam`
+        );
+
+    }
+
+
+    if (remainingMinutes > 0) {
+
+        parts.push(
+            `${remainingMinutes} menit`
+        );
+
+    }
+
+
+    return parts.join(
+        " "
+    ) || "0 menit";
+
+}
+
+
+function renderStudentFeedMuteCards() {
+
+    const container =
+        document.getElementById(
+            "studentFeedModerationCards"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    let queuedNumber =
+        0;
+
+
+    container.innerHTML =
+        studentFeedMuteActions.map(
+            (action) => {
+
+                const isActive =
+                    action.status ===
+                    "active";
+
+
+                if (!isActive) {
+
+                    queuedNumber +=
+                        1;
+
+                }
+
+
+                const actionId =
+                    Number(
+                        action.id
+                    );
+
+
+                const reason =
+                    String(
+                        action.reason ||
+                        ""
+                    ).trim();
+
+
+                const endsAtMs =
+                    new Date(
+                        action.ends_at ||
+                        studentFeedModerationMutedUntil
+                    ).getTime();
+
+
+                const countdownText =
+                    isActive &&
+                    !Number.isNaN(
+                        endsAtMs
+                    )
+                        ? formatStudentMuteCountdown(
+                            Math.max(
+                                0,
+                                endsAtMs -
+                                getStudentModerationNowMs()
+                            )
+                        )
+                        : "-";
+
+
+                return `
+                    <article
+                        class="
+                            student-feed-mute-card
+                            ${
+                                isActive
+                                    ? "active"
+                                    : "queued"
+                            }
+                        "
+                    >
+
+                        <div
+                            class="
+                                student-feed-mute-card-header
+                            "
+                        >
+
+                            <div>
+
+                                <small>
+                                    CLASSROOM FEED
+                                </small>
+
+                                <strong>
+                                    ${
+                                        isActive
+                                            ? "Mute aktif"
+                                            : `Mute antrean ${queuedNumber}`
+                                    }
+                                </strong>
+
+                            </div>
+
+
+                            <span
+                                class="
+                                    student-feed-mute-card-status
+                                    ${
+                                        isActive
+                                            ? "active"
+                                            : "queued"
+                                    }
+                                "
+                            >
+                                ${
+                                    isActive
+                                        ? "Aktif"
+                                        : "Antrean"
+                                }
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="
+                                student-feed-mute-card-timing
+                            "
+                        >
+
+                            <div>
+
+                                <small>
+                                    ${
+                                        isActive
+                                            ? "Sisa waktu"
+                                            : "Durasi"
+                                    }
+                                </small>
+
+                                <strong
+                                    ${
+                                        isActive &&
+                                        Number.isInteger(
+                                            actionId
+                                        )
+                                            ? `class="student-feed-mute-card-countdown" data-action-id="${actionId}"`
+                                            : ""
+                                    }
+                                >
+                                    ${
+                                        isActive
+                                            ? escapeHtml(
+                                                countdownText
+                                            )
+                                            : escapeHtml(
+                                                formatStudentMuteDurationMinutes(
+                                                    action.duration_minutes
+                                                )
+                                            )
+                                    }
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <small>
+                                    ${
+                                        isActive
+                                            ? "Berakhir"
+                                            : "Mulai"
+                                    }
+                                </small>
+
+                                <strong>
+                                    ${
+                                        isActive
+                                            ? escapeHtml(
+                                                formatStudentModerationDateTime(
+                                                    action.ends_at ||
+                                                    studentFeedModerationMutedUntil
+                                                )
+                                            )
+                                            : "Setelah mute sebelumnya"
+                                    }
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="
+                                student-feed-mute-card-reason
+                            "
+                        >
+
+                            <small>
+                                Alasan
+                            </small>
+
+                            <p>
+                                ${
+                                    reason
+                                        ? escapeHtml(
+                                            reason
+                                        )
+                                        : "Tidak ada alasan."
+                                }
+                            </p>
+
+                        </div>
+
+                    </article>
+                `;
+
+            }
+        ).join(
+            ""
+        );
+
+}
+
+
+function updateStudentMuteCountdown() {
+
+    if (
+        studentFeedModerationStatus !==
+            "muted"
+    ) {
+
+        return;
+
+    }
+
+
+    let activeExpired =
+        false;
+
+
+    studentFeedMuteActions.forEach(
+        (action) => {
+
+            if (
+                action.status !==
+                    "active"
+            ) {
+
+                return;
+
+            }
+
+
+            const actionId =
+                Number(
+                    action.id
+                );
+
+
+            if (
+                !Number.isInteger(
+                    actionId
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const element =
+                document.querySelector(
+                    `.student-feed-mute-card-countdown[data-action-id="${actionId}"]`
+                );
+
+
+            if (!element) {
+
+                return;
+
+            }
+
+
+            const endsAtMs =
+                new Date(
+                    action.ends_at ||
+                    studentFeedModerationMutedUntil
+                ).getTime();
+
+
+            if (
+                Number.isNaN(
+                    endsAtMs
+                )
+            ) {
+
+                element.textContent =
+                    "-";
+
+                return;
+
+            }
+
+
+            const remaining =
+                endsAtMs -
+                getStudentModerationNowMs();
+
+
+            element.textContent =
+                formatStudentMuteCountdown(
+                    Math.max(
+                        0,
+                        remaining
+                    )
+                );
+
+
+            if (remaining <= 0) {
+
+                activeExpired =
+                    true;
+
+            }
+
+        }
+    );
+
+
+    if (activeExpired) {
+
+        /*
+            Jangan mengaktifkan antrean atau
+            membuka Feed dari frontend.
+
+            Server tetap menentukan action
+            berikutnya.
+        */
+        checkStudentFeedModeration();
+
+    }
+
+}
+
+
+function startStudentMuteCountdown() {
+
+    stopStudentMuteCountdown();
+
+
+    updateStudentMuteCountdown();
+
+
+    studentFeedModerationCountdownTimer =
+        setInterval(
+            updateStudentMuteCountdown,
+            1000
+        );
+
+}
+
+
+function stopStudentMuteCountdown() {
+
+    if (
+        !studentFeedModerationCountdownTimer
+    ) {
+
+        return;
+
+    }
+
+
+    clearInterval(
+        studentFeedModerationCountdownTimer
+    );
+
+
+    studentFeedModerationCountdownTimer =
+        null;
+
+}
+
+
+// =====================================
+// MUTE UI
+// =====================================
+
+function showStudentFeedMute(
+    moderation,
+    muteActions = []
+) {
+
+    studentFeedModerationStatus =
+        "muted";
+
+
+    studentFeedModerationMutedUntil =
+        moderation.mutedUntil ||
+        null;
+
+
+    studentFeedModerationReason =
+        moderation.reason ||
+        null;
+
+
+    studentFeedMuteActions =
+        Array.isArray(
+            muteActions
+        )
+            ? muteActions.filter(
+                (action) =>
+                    action &&
+                    (
+                        action.status ===
+                            "active" ||
+                        action.status ===
+                            "queued"
+                    )
+            )
+            : [];
+
+
+    /*
+        moderation.activeActionId dan
+        moderation.mutedUntil berasal dari
+        status utama server.
+
+        Ini menjadi sumber authoritative jika
+        respons action berada tepat pada batas
+        perubahan queued menjadi active.
+    */
+    const activeActionId =
+        Number(
+            moderation.activeActionId
+        );
+
+
+    if (
+        Number.isInteger(
+            activeActionId
+        ) &&
+        activeActionId > 0
+    ) {
+
+        studentFeedMuteActions =
+            studentFeedMuteActions.map(
+                (action) =>
+                    Number(
+                        action.id
+                    ) ===
+                        activeActionId
+                        ? {
+                            ...action,
+
+                            status:
+                                "active",
+
+                            ends_at:
+                                action.ends_at ||
+                                studentFeedModerationMutedUntil
+                        }
+                        : action
+            );
+
+    }
+
+
+    const hasActiveAction =
+        studentFeedMuteActions.some(
+            (action) =>
+                action.status ===
+                "active"
+        );
+
+
+    /*
+        Fallback untuk respons lama.
+
+        Jika status utama MUTED dan ada
+        mutedUntil, pasti terdapat satu Mute
+        yang sedang berjalan.
+
+        Query server mengurutkan card aktif
+        paling atas, sehingga card pertama
+        dapat ditetapkan sebagai active.
+    */
+    if (
+        !hasActiveAction &&
+        studentFeedMuteActions.length > 0 &&
+        studentFeedModerationMutedUntil
+    ) {
+
+        studentFeedMuteActions[0] = {
+            ...studentFeedMuteActions[0],
+
+            status:
+                "active",
+
+            ends_at:
+                studentFeedModerationMutedUntil
+        };
+
+    }
+
+
+    /*
+        Fallback untuk data Mute lama.
+
+        Normalnya server selalu mengirim
+        minimal satu action aktif.
+    */
+    if (
+        studentFeedMuteActions.length ===
+            0
+    ) {
+
+        studentFeedMuteActions = [
+            {
+                id:
+                    moderation.activeActionId ||
+                    null,
+
+                status:
+                    "active",
+
+                duration_minutes:
+                    null,
+
+                ends_at:
+                    studentFeedModerationMutedUntil,
+
+                reason:
+                    studentFeedModerationReason
+            }
+        ];
+
+    }
+
+
+/*
+    Stop request berat Classroom Feed.
+    Watcher moderation tetap hidup.
+*/
+stopStudentLivePolling();
+
+
+/*
+    Batalkan load Feed yang mungkin sudah
+    berjalan sebelum status Mute/Ban diterima.
+*/
+if (
+    studentFeedLoadController
+) {
+
+    studentFeedLoadController.abort();
+
+
+    studentFeedLoadController =
+        null;
+
+}
+
+
+studentFeedLoading =
+    false;
+
+
+closeStudentNotifications();
+
+
+    const feedContent =
+        document.querySelector(
+            ".feed-page-content"
+        );
+
+
+    const blocker =
+        document.getElementById(
+            "studentFeedModerationBlocker"
+        );
+
+
+    const notificationButton =
+        document.querySelector(
+            ".notification-button"
+        );
+
+
+if (feedContent) {
+
+    /*
+        Hapus seluruh post dan reply dari DOM
+        agar isi Feed tidak tetap tersimpan
+        ketika akses sedang dibatasi.
+    */
+    if (announcementList) {
+
+        announcementList.innerHTML =
+            "";
+
+    }
+
+
+    latestAnnouncementId =
+        0;
+
+
+    latestReplyId =
+        0;
+
+
+/*
+    Post dan reply sudah dikosongkan dari
+    announcementList di atas.
+
+    Kerangka halaman tetap ditampilkan agar
+    backdrop Mute/Ban mempunyai isi di belakang
+    yang bisa diblur dengan ringan.
+*/
+feedContent.style.display =
+    "";
+
+
+/*
+    Jangan gunakan blur dan opacity lama pada
+    feedContent karena blocker desktop sudah
+    mempunyai backdrop-filter sendiri.
+
+    Overlay blocker tetap mencegah interaksi
+    dengan seluruh area utama.
+*/
+feedContent.classList.remove(
+    "student-feed-content-locked"
+);
+
+}
+
+
+    if (notificationButton) {
+
+        notificationButton.disabled =
+            true;
+
+
+        notificationButton.classList.add(
+            "student-feed-notification-locked"
+        );
+
+    }
+
+
+    const badge =
+        document.getElementById(
+            "notificationBadge"
+        );
+
+
+    if (badge) {
+
+        badge.textContent =
+            "";
+
+    }
+
+
+/*
+    Hapus inline display:none dari HTML.
+
+    CSS akan menentukan:
+    - Desktop: flex, sehingga modal di tengah.
+    - Mobile: block, mempertahankan UI lama.
+*/
+blocker.style.display =
+    "";
+
+        document.getElementById(
+        "studentFeedModerationTitle"
+    ).textContent =
+        "Akses Classroom Feed Dibatasi";
+
+
+    document.getElementById(
+        "studentFeedModerationMessage"
+    ).textContent =
+        "Kamu sementara tidak dapat mengakses Classroom Feed.";
+
+
+        document.getElementById(
+        "studentFeedModerationDetails"
+    ).style.display =
+        "block";
+
+
+    /*
+        Baris alasan tunggal hanya dipakai
+        untuk Ban.
+
+        Setiap Mute mempunyai alasan
+        di dalam card masing-masing.
+    */
+    document.getElementById(
+        "studentFeedModerationReasonRow"
+    ).style.display =
+        "none";
+
+
+    renderStudentFeedMuteCards();
+
+
+    startStudentMuteCountdown();
+
+}
+
+// =====================================
+// BAN UI
+// =====================================
+
+function showStudentFeedBan(
+    moderation
+) {
+
+    /*
+        Gunakan mekanisme penguncian yang
+        sudah aman dari sistem Mute:
+        - hentikan heavy polling
+        - blokir notifikasi
+        - blur dan nonaktifkan Feed
+        - tampilkan alasan
+    */
+    showStudentFeedMute({
+        mutedUntil:
+            null,
+
+        reason:
+            moderation.reason ||
+            null
+    });
+
+
+    studentFeedModerationStatus =
+        "banned";
+
+
+    studentFeedModerationMutedUntil =
+        null;
+
+
+    stopStudentMuteCountdown();
+
+
+    document.getElementById(
+        "studentFeedModerationTitle"
+    ).textContent =
+        "Akses Classroom Feed Dinonaktifkan";
+
+
+    document.getElementById(
+        "studentFeedModerationMessage"
+    ).textContent =
+        "Kamu tidak dapat mengakses Classroom Feed sampai larangan dicabut oleh Admin atau Guru.";
+
+
+    document.getElementById(
+        "studentFeedModerationDetails"
+    ).style.display =
+        "none";
+
+        const reasonRow =
+        document.getElementById(
+            "studentFeedModerationReasonRow"
+        );
+
+
+    if (
+        studentFeedModerationReason
+    ) {
+
+        reasonRow.style.display =
+            "block";
+
+
+        document.getElementById(
+            "studentFeedModerationReason"
+        ).textContent =
+            studentFeedModerationReason;
+
+
+    } else {
+
+        reasonRow.style.display =
+            "none";
+
+    }
+
+}
+
+
+function hideStudentFeedMute() {
+
+    stopStudentMuteCountdown();
+
+
+    const feedContent =
+        document.querySelector(
+            ".feed-page-content"
+        );
+
+
+    const blocker =
+        document.getElementById(
+            "studentFeedModerationBlocker"
+        );
+
+
+    const notificationButton =
+        document.querySelector(
+            ".notification-button"
+        );
+
+
+if (feedContent) {
+
+    /*
+        Tampilkan kembali kerangka Feed.
+
+        Daftar post masih kosong dan akan diisi
+        oleh loadAnnouncements() di background.
+    */
+    feedContent.style.display =
+        "";
+
+
+    feedContent.classList.remove(
+        "student-feed-content-locked"
+    );
+
+}
+
+
+    if (notificationButton) {
+
+        notificationButton.disabled =
+            false;
+
+
+        notificationButton.classList.remove(
+            "student-feed-notification-locked"
+        );
+
+    }
+
+
+    if (blocker) {
+
+        blocker.style.display =
+            "none";
+
+    }
+
+
+    studentFeedModerationMutedUntil =
+        null;
+
+    studentFeedModerationReason =
+        null;
+
+
+    studentFeedMuteActions =
+        [];
+
+
+    const cards =
+        document.getElementById(
+            "studentFeedModerationCards"
+        );
+
+
+    if (cards) {
+
+        cards.innerHTML =
+            "";
+
+    }
+
+}
+
+
+// =====================================
+// RESUME FEED SETELAH UNMUTE
+// =====================================
+
+async function resumeStudentFeedAfterModeration(
+    forceReload = false
+) {
+
+    if (
+        studentFeedResumeRunning ||
+        studentFeedModerationStatus !==
+            "active"
+    ) {
+
+        return;
+
+    }
+
+
+    studentFeedResumeRunning =
+        true;
+
+
+    try {
+
+if (
+    forceReload ||
+    !studentFeedInitialized
+) {
+
+    /*
+        Feed sebelumnya dikosongkan saat siswa
+        di-Mute/Ban.
+
+        Tampilkan loading sebelum request dimulai
+        agar setelah popup ditutup tidak terlihat
+        area kosong.
+    */
+    if (announcementList) {
+
+        announcementList.innerHTML =
+            "Memuat feed...";
+
+    }
+
+
+    /*
+        Berikan satu frame agar browser sempat
+        merender teks loading sebelum fetch Feed.
+    */
+    await new Promise(
+        (resolve) =>
+            requestAnimationFrame(
+                resolve
+            )
+    );
+
+
+    await loadAnnouncements();
+
+
+    studentFeedInitialized =
+        true;
+
+}
+
+
+        startStudentLivePolling();
+
+
+        Promise.allSettled([
+            loadStudentAnnouncementMentionUsers(),
+            loadNotificationCount()
+        ]);
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memulihkan Student Feed:",
+            error
+        );
+
+
+    } finally {
+
+        studentFeedResumeRunning =
+            false;
+
+    }
+
+}
+
+
+// =====================================
+// RECOVERY EVENT
+// =====================================
+
+function showStudentFeedRecovery(
+    event
+) {
+
+    if (
+        !event ||
+        ![
+            "unmuted",
+            "unbanned"
+        ].includes(
+            event.event_type
+        )
+    ) {
+
+        return;
+
+    }
+
+    const eventId =
+    Number(
+        event.id
+    );
+
+
+if (
+    !Number.isInteger(
+        eventId
+    )
+) {
+
+    return;
+
+}
+
+
+const storageKey =
+    `studentFeedRecoverySeen:${studentId}`;
+
+
+const locallySeenEventId =
+    Number(
+        sessionStorage.getItem(
+            storageKey
+        ) ||
+        0
+    );
+
+
+if (
+    eventId <=
+    locallySeenEventId
+) {
+
+    /*
+        Browser sudah menganggap event ini
+        selesai.
+
+        Server mungkin masih menerima
+        request background, jadi jangan
+        munculkan popup lagi.
+    */
+    return;
+
+}
+
+
+    if (
+        studentFeedPendingRecoveryEvent &&
+        Number(
+            studentFeedPendingRecoveryEvent.id
+        ) ===
+        Number(
+            event.id
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    studentFeedPendingRecoveryEvent =
+        event;
+
+
+    document.getElementById(
+        "studentFeedRecoveryOverlay"
+    ).style.display =
+        "flex";
+
+}
+
+
+function acknowledgeStudentFeedRecovery() {
+
+    const event =
+        studentFeedPendingRecoveryEvent;
+
+
+    if (!event) {
+
+        return;
+
+    }
+
+
+    const eventId =
+        Number(
+            event.id
+        );
+
+
+    /*
+        UI harus langsung selesai.
+
+        Tidak menunggu server.
+    */
+    document.getElementById(
+        "studentFeedRecoveryOverlay"
+    ).style.display =
+        "none";
+
+
+    studentFeedPendingRecoveryEvent =
+        null;
+
+
+    if (
+        !Number.isInteger(
+            eventId
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Simpan sementara di browser.
+
+        Kalau user refresh sangat cepat
+        sebelum request background selesai,
+        popup tidak muncul lagi.
+    */
+    const storageKey =
+        `studentFeedRecoverySeen:${studentId}`;
+
+
+    const previousSeenId =
+        Number(
+            sessionStorage.getItem(
+                storageKey
+            ) ||
+            0
+        );
+
+
+    sessionStorage.setItem(
+        storageKey,
+        String(
+            Math.max(
+                previousSeenId,
+                eventId
+            )
+        )
+    );
+
+
+    /*
+        Update server di background.
+    */
+    fetch(
+        `/api/student/${studentId}/feed-moderation/events/${eventId}/seen`,
+        {
+            method:
+                "POST",
+
+            keepalive:
+                true
+        }
+    )
+        .then(
+            async (response) => {
+
+                const data =
+                    await response
+                        .json()
+                        .catch(
+                            () => null
+                        );
+
+
+                if (
+                    !response.ok ||
+                    !data ||
+                    !data.success
+                ) {
+
+                    console.error(
+                        "Gagal menandai recovery event di server."
+                    );
+
+                }
+
+            }
+        )
+        .catch(
+            (error) => {
+
+                console.error(
+                    "Gagal menandai recovery event:",
+                    error
+                );
+
+            }
+        );
+
+}
+
+
+// =====================================
+// CHECK MODERATION SERVER
+// =====================================
+
+async function checkStudentFeedModeration() {
+
+    if (
+        studentFeedModerationCheckRunning
+    ) {
+
+        return;
+
+    }
+
+
+    studentFeedModerationCheckRunning =
+        true;
+
+
+    try {
+
+        const previousStatus =
+            studentFeedModerationStatus;
+
+
+const requestStartedAt =
+    Date.now();
+
+
+const response =
+    await fetch(
+        `/api/student/${studentId}/feed-moderation`,
+        {
+            cache:
+                "no-store"
+        }
+    );
+
+
+const data =
+    await response.json();
+
+
+const responseReceivedAt =
+    Date.now();
+
+
+updateStudentModerationServerClock(
+    data.serverNow,
+    requestStartedAt,
+    responseReceivedAt
+);
+
+
+        if (
+            !data.success ||
+            !data.moderation
+        ) {
+
+            return;
+
+        }
+
+
+        const moderation =
+            data.moderation;
+
+
+        const freshStatus =
+            moderation.status ||
+            "active";
+
+
+        if (
+            freshStatus ===
+            "muted"
+        ) {
+
+            showStudentFeedMute(
+                moderation,
+                data.muteActions
+            );
+
+
+            return;
+
+        }
+
+                if (
+            freshStatus ===
+            "banned"
+        ) {
+
+            showStudentFeedBan(
+                moderation
+            );
+
+
+            return;
+
+        }
+
+
+        /*
+            Untuk sekarang fokus MUTE.
+
+            Status active membuka kembali Feed.
+        */
+ if (
+    freshStatus ===
+    "active"
+) {
+
+    const restoredFromModeration =
+        previousStatus ===
+            "muted" ||
+        previousStatus ===
+            "banned";
+
+
+const recoveryEvent =
+    data.pendingEvent &&
+    [
+        "unmuted",
+        "unbanned"
+    ].includes(
+        data.pendingEvent.event_type
+    )
+        ? data.pendingEvent
+        : null;
+
+
+/*
+    Status active kadang terbaca sedikit lebih
+    dahulu daripada event unmuted/unbanned.
+
+    Jika siswa baru saja dipulihkan tetapi event
+    belum tersedia, pertahankan blocker dan ulangi
+    pemeriksaan dengan cepat.
+
+    Jangan membuka Feed terlebih dahulu karena
+    popup recovery harus selalu muncul sebelum Feed.
+*/
+if (
+    restoredFromModeration &&
+    !recoveryEvent
+) {
+
+    setTimeout(
+        () => {
+            checkStudentFeedModeration();
+        },
+        300
+    );
+
+
+    return;
+
+}
+
+
+/*
+    Event pemulihan sudah tersedia sehingga
+    state boleh diubah menjadi active.
+*/
+studentFeedModerationStatus =
+    "active";
+
+
+    /*
+        Popup dipasang sebelum blocker dibuka
+        dan sebelum Feed mulai dimuat.
+    */
+    if (recoveryEvent) {
+
+        showStudentFeedRecovery(
+            recoveryEvent
+        );
+
+    }
+
+
+    /*
+        Beri browser kesempatan menampilkan
+        popup lebih dahulu.
+
+        Setelah popup sudah terpasang, blocker
+        dibuka dan Feed dimuat di belakangnya.
+    */
+    setTimeout(
+        () => {
+
+            hideStudentFeedMute();
+
+
+            resumeStudentFeedAfterModeration(
+                restoredFromModeration
+            );
+
+        },
+        recoveryEvent
+            ? 100
+            : 0
+    );
+
+}
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memeriksa moderation Student Feed:",
+            error
+        );
+
+
+    } finally {
+
+        studentFeedModerationCheckRunning =
+            false;
+
+    }
+
+}
+
+
+// =====================================
+// MODERATION WATCHER
+// =====================================
+
+function startStudentFeedModerationWatcher() {
+
+    if (
+        studentFeedModerationPollingTimer
+    ) {
+
+        return;
+
+    }
+
+
+    studentFeedModerationPollingTimer =
+        setInterval(
+            checkStudentFeedModeration,
+            2000
+        );
+
+}
 
         function applyStudentFeedFilter() {
 
@@ -1046,9 +2951,19 @@ const response =
         // NOTIFICATION OVERLAY
         // =====================================
 
-        function goToNotifications() {
+function goToNotifications() {
 
-            const overlay =
+    if (
+        studentFeedModerationStatus !==
+        "active"
+    ) {
+
+        return;
+
+    }
+
+
+    const overlay =
                 document.getElementById(
                     "studentNotificationOverlay"
                 );
@@ -2680,7 +4595,23 @@ async function loadAnnouncements(
 ) {
 
     if (studentFeedLoading) {
+
         return;
+
+    }
+
+
+    /*
+        Jangan memuat isi Feed selama akses
+        masih dibatasi.
+    */
+    if (
+        studentFeedModerationStatus !==
+            "active"
+    ) {
+
+        return;
+
     }
 
 
@@ -2688,19 +4619,51 @@ async function loadAnnouncements(
         true;
 
 
+    const loadController =
+        new AbortController();
+
+
+    studentFeedLoadController =
+        loadController;
+
+
     try {
 
-        const response =
-            await fetch(
-                `/api/student/${studentId}/announcements`
-            );
+const response =
+    await fetch(
+        `/api/student/${studentId}/announcements`,
+        {
+            cache:
+                "no-store",
+
+            signal:
+                loadController.signal
+        }
+    );
 
 
-        const data =
-            await response.json();
+const data =
+    await response.json();
 
 
-        if (!data.success) {
+/*
+    Walaupun respons berhasil diterima, jangan
+    gunakan hasilnya jika siswa sudah kembali
+    di-Mute/Ban atau request sudah digantikan.
+*/
+if (
+    studentFeedLoadController !==
+        loadController ||
+    studentFeedModerationStatus !==
+        "active"
+) {
+
+    return;
+
+}
+
+
+if (!data.success) {
 
             announcementList.innerHTML = `
                 <p>
@@ -2873,7 +4836,16 @@ async function loadAnnouncements(
         scrollToMention();
 
 
-    } catch (error) {
+} catch (error) {
+
+    /*
+        AbortError terjadi secara normal ketika
+        siswa baru saja di-Mute atau di-Ban.
+    */
+    if (
+        error.name !==
+            "AbortError"
+    ) {
 
         console.error(
             "Gagal load Student Feed:",
@@ -2881,19 +4853,50 @@ async function loadAnnouncements(
         );
 
 
-        announcementList.innerHTML = `
-            <p>
-                Gagal mengambil announcement.
-            </p>
-        `;
+        /*
+            Pesan error hanya boleh masuk jika
+            akses masih aktif dan request ini
+            masih menjadi request terbaru.
+        */
+        if (
+            studentFeedModerationStatus ===
+                "active" &&
+            studentFeedLoadController ===
+                loadController
+        ) {
+
+            announcementList.innerHTML = `
+                <p>
+                    Gagal mengambil announcement.
+                </p>
+            `;
+
+        }
+
+    }
 
 
-    } finally {
+} finally {
+
+    /*
+        Request lama tidak boleh membersihkan
+        state milik request yang lebih baru.
+    */
+    if (
+        studentFeedLoadController ===
+        loadController
+    ) {
+
+        studentFeedLoadController =
+            null;
+
 
         studentFeedLoading =
             false;
 
     }
+
+}
 
 }
 
@@ -4099,6 +6102,16 @@ async function checkLiveDeletions() {
 
 async function hardRefreshStudentFeed() {
 
+    if (
+        studentFeedModerationStatus !==
+        "active"
+    ) {
+
+        return;
+
+    }
+
+
     const button =
         document.getElementById(
             "studentFeedRefreshButton"
@@ -4118,7 +6131,7 @@ async function hardRefreshStudentFeed() {
 
 
     announcementList.innerHTML =
-        "Memuat announcement...";
+        "Memuat feed...";
 
 
     /*
@@ -4201,7 +6214,14 @@ async function hardRefreshStudentFeed() {
             "↻ Refresh";
 
 
-        startStudentLivePolling();
+        if (
+    studentFeedModerationStatus ===
+        "active"
+) {
+
+    startStudentLivePolling();
+
+}
 
     }
 
@@ -4228,14 +6248,16 @@ if (studentFeedRefreshButton) {
 
   async function runStudentLiveSync() {
 
-    if (
-        studentLiveSyncRunning ||
-        studentFeedLoading
-    ) {
+if (
+    studentLiveSyncRunning ||
+    studentFeedLoading ||
+    studentFeedModerationStatus !==
+        "active"
+) {
 
-        return;
+    return;
 
-    }
+}
 
 
     studentLiveSyncRunning =
@@ -4305,28 +6327,53 @@ if (studentFeedRefreshButton) {
         }
 
 
-        document.addEventListener(
-            "visibilitychange",
-            () => {
+document.addEventListener(
+    "visibilitychange",
+    async () => {
 
-                if (
-                    document.visibilityState ===
-                    "visible"
-                ) {
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
 
-                    runStudentLiveSync();
+            /*
+                Selalu cek moderation dulu.
 
-                    startStudentLivePolling();
+                Contoh:
+                Student pindah tab,
+                Admin mute,
+                lalu Student kembali.
+            */
+            await checkStudentFeedModeration();
 
 
-                } else {
+            if (
+                studentFeedModerationStatus ===
+                "active"
+            ) {
 
-                    stopStudentLivePolling();
+                runStudentLiveSync();
 
-                }
+                startStudentLivePolling();
 
             }
-        );
+
+
+        } else {
+
+            /*
+                Heavy polling berhenti.
+
+                Moderation watcher tetap ada,
+                dan akan dicek langsung
+                ketika tab kembali visible.
+            */
+            stopStudentLivePolling();
+
+        }
+
+    }
+);
 
 
         // =====================================
@@ -4336,32 +6383,24 @@ if (studentFeedRefreshButton) {
 async function startStudentFeed() {
 
     /*
-        Prioritas pertama:
-        tampilkan Feed secepat mungkin.
+        Moderation adalah gate pertama.
+
+        Jangan mengambil Feed / replies /
+        notification sebelum status diketahui.
     */
-    await loadAnnouncements();
+    await checkStudentFeedModeration();
 
 
     /*
-        Setelah Feed sudah tampil,
-        baru hidupkan LIVE.
+        Watcher ringan tetap hidup,
+        termasuk selama siswa muted.
     */
-    startStudentLivePolling();
-
-
-    /*
-        Data tambahan tidak boleh
-        menahan tampilan Feed.
-    */
-    Promise.allSettled([
-        loadStudentAnnouncementMentionUsers(),
-        loadNotificationCount()
-    ]);
+    startStudentFeedModerationWatcher();
 
 }
 
 
-        startStudentFeed();
+startStudentFeed();
 
     </script>
 
