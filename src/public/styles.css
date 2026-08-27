@@ -10408,10 +10408,10 @@ select {
 
 .student-feed-content-locked {
     filter:
-        blur(5px);
+        blur(7px);
 
     opacity:
-        0.42;
+        1;
 
     pointer-events:
         none;
@@ -11553,6 +11553,90 @@ p {
 }
 
 @media (max-width: 600px) {
+
+    /*
+        Blocker mobile menjadi overlay di bawah
+        topbar sehingga Feed di belakangnya diblur.
+    */
+    .student-feed-moderation-blocker {
+        position:
+            fixed;
+
+        inset:
+            76px 0 0 0;
+
+        z-index:
+            9998;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        width:
+            auto;
+
+        height:
+            auto;
+
+        margin:
+            0;
+
+        padding:
+            14px;
+
+        overflow:
+            auto;
+
+        border:
+            0;
+
+        border-radius:
+            0;
+
+        background:
+            rgba(4, 10, 18, 0.25);
+
+        -webkit-backdrop-filter:
+            blur(8px);
+
+        backdrop-filter:
+            blur(8px);
+    }
+
+
+    .student-feed-moderation-panel {
+        width:
+            auto;
+
+        max-height:
+            calc(100dvh - 104px);
+
+        overflow:
+            auto;
+
+        padding:
+            20px 16px;
+
+        border:
+            1px solid #263345;
+
+        border-radius:
+            14px;
+
+        background:
+            #111924;
+
+        box-shadow:
+            0 20px 55px
+            rgba(0, 0, 0, 0.42);
+    }
+
+}@media (max-width: 600px) {
 
     /*
         Mobile tetap memakai panel dalam alur

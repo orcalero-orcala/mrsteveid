@@ -1,25 +1,5 @@
-Fitur baru:
-
-Classroom feed moderation:
-Di sisi admin/guru di class feed, samping tombol notif akan ada tombol Moderasi, disitu, bisa pilih siswa
-Contoh, budi misal
-Nanti setelah itu ada panel isinya info budi di class feed, serta ada 2 tombol ini: Mute dan ban
-Kalau pencet mute, akan ada panel lagi, bisa mute beberapa menit hingga beberapa hari, maks 1 minggu deh, terus baru pencet ok. Nanti mute ditambahkan ke Budi, bisa kita
-angkatkan mutenya/ di stop, bisa juga kita perpanjang. BIsa juga kita isi alasan jika mau
-Kalau pencet tombol ban, maka Budi akan ke perma ban di class feed kecuali kita pencet lift bannya atau pardon ban. BIsa juga kita isi alasan jika mau
-
-Sisi budi, kalau di mute, nanti budi gak bisa akses class feed sama sekali, notif gk bisa di akses jg, pokoknya layout class feednya diblur terus ada panel "Kamu telah di mute"
-Di panel setelah teks itu akan ada durasi timernya, misal timer 1 hari (23:59:59) kek begini
-bawah timer besar ada area untuk alasan di mute juga
-Kalau misal budi buka feed lagi pada setelah di unmute, brarti Akan ada muncul panel "Kamu telah di unmute", SEKALI aja. selanjutnya tidak muncul itu lagi kecuali kena mute terus di unmute atau waktu mute habis
-
-Jadi cara kerja code, misal kita mau 1 hari, brarti di kode budi akan di unmute pada Jam tombol itu dipencet misal 17.31 26/08/26, program menambahkan 1 hari jadi akan diunmute 17.31 27/08/26, sisi siswa frontend lakukan timernya dia cuma dapat waktu unmutenya pada 17.31 27/08/26
-
-Kalau budi di ban, brarti panel langsung tulisannya "Kamu telah diban di feed" atau yg lebih sopan dikit dengan dibawahnya alasannya
-Kalau budi di pardon ban, berarti panel juga sama akan ada tulisan "Kamu telah di unban" atau lebih sopan lagi, hanya muncul SEKALI, selanjutnya gak muncul lagi
-kecuali dan ban, dan di unban lagi
-
-Fitur DM siswa ke siswa atau siswa ke guru
+Fitur DM siswa ke siswa atau siswa ke guru (belum tentu diadd)
+Online quiz
 
 Notif system:
 Add -Kamu dapat reply

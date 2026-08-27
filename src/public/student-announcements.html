@@ -1727,9 +1727,30 @@ feedContent.style.display =
     Overlay blocker tetap mencegah interaksi
     dengan seluruh area utama.
 */
-feedContent.classList.remove(
-    "student-feed-content-locked"
-);
+/*
+    Mobile memakai filter langsung pada konten
+    karena backdrop-filter tidak selalu bekerja
+    pada struktur overlay mobile.
+
+    Desktop tetap memakai backdrop blocker.
+*/
+if (
+    window.matchMedia(
+        "(max-width: 600px)"
+    ).matches
+) {
+
+    feedContent.classList.add(
+        "student-feed-content-locked"
+    );
+
+} else {
+
+    feedContent.classList.remove(
+        "student-feed-content-locked"
+    );
+
+}
 
 }
 
