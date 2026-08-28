@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Hasil Quiz</title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+</head>
+
+<body class="student-result-body">
+
+    <main class="student-result-shell">
+
+        <div
+            id="resultContent"
+            class="student-result-loading"
+        >
+            Memuat hasil Quiz...
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const resultContent =
+            document.getElementById(
+                "resultContent"
+            );
+
+        const resultParameters =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const previousResultState =
+            window.history.state ||
+            {};
+
+
+        const attemptId =
+            Number(
+                resultParameters.get(
+                    "attemptId"
+                ) ||
+                previousResultState.attemptId
+            );
+
+
+        let reviewMode =
+            resultParameters.get(
+                "review"
+            ) === "1" ||
+            previousResultState.reviewMode === true;
+
+
+        let currentAttempt =
+            null;
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            ).replace(
+                /[&<>"']/g,
+                (
+                    character
+                ) => {
+
+                    return {
+                        "&":
+                            "&amp;",
+
+                        "<":
+                            "&lt;",
+
+                        ">":
+                            "&gt;",
+
+                        "\"":
+                            "&quot;",
+
+                        "'":
+                            "&#39;"
+                    }[character];
+
+                }
+            );
+
+        }
+
+
+        function parseServerDate(
+            value
+        ) {
+
+            if (!value) {
+
+                return null;
+
+            }
+
+
+            const source =
+                String(
+                    value
+                );
+
+
+            /*
+                Timestamp SQLite yang tidak mempunyai
+                timezone dianggap UTC.
+            */
+            const normalizedValue =
+                /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/
+                    .test(
+                        source
+                    )
+
+                    ? source.replace(
+                        " ",
+                        "T"
+                    ) + "Z"
+
+                    : source;
+
+
+            const parsedDate =
+                new Date(
+                    normalizedValue
+                );
+
+
+            return Number.isNaN(
+                parsedDate.getTime()
+            )
+                ? null
+                : parsedDate;
+
+        }
+
+
+        function formatDateTime(
+            value
+        ) {
+
+            const parsedDate =
+                parseServerDate(
+                    value
+                );
+
+
+            if (!parsedDate) {
+
+                return "-";
+
+            }
+
+
+            return new Intl.DateTimeFormat(
+                "id-ID",
+                {
+                    dateStyle:
+                        "long",
+
+                    timeStyle:
+                        "short"
+                }
+            ).format(
+                parsedDate
+            );
+
+        }
+
+
+        function goToQuizDashboard() {
+
+            window.location.href =
+                "/student-quizzes.html";
+
+        }
+
+
+        function showSummary() {
+
+            reviewMode =
+                false;
+
+
+            window.history.replaceState(
+                {
+                    attemptId:
+                        currentAttempt.id,
+
+                    reviewMode:
+                        false
+                },
+                "",
+                "/student-quiz-result.html"
+            );
+
+
+            renderSummary();
+
+
+            window.scrollTo({
+                top:
+                    0,
+
+                behavior:
+                    "smooth"
+            });
+
+        }
+
+
+        function showReview() {
+
+            reviewMode =
+                true;
+
+
+            window.history.replaceState(
+                {
+                    attemptId:
+                        currentAttempt.id,
+
+                    reviewMode:
+                        true
+                },
+                "",
+                "/student-quiz-result.html"
+            );
+
+
+            renderReview();
+
+
+            window.scrollTo({
+                top:
+                    0,
+
+                behavior:
+                    "smooth"
+            });
+
+        }
+
+
+        function renderSummary() {
+
+            const attempt =
+                currentAttempt;
+
+
+            resultContent.className =
+                "student-result-content";
+
+
+            resultContent.innerHTML =
+                `
+                    <section class="student-result-summary">
+
+                        <div class="student-result-eyebrow">
+                            QUIZ SELESAI
+                        </div>
+
+                        <h1>
+                            ${escapeHtml(
+                                attempt.title
+                            )}
+                        </h1>
+
+                        <p class="student-result-subtitle">
+                            Jawaban kamu sudah dikirim dan
+                            dinilai secara otomatis.
+                        </p>
+
+
+                        <div class="student-result-score-block">
+
+                            <span class="student-result-score-label">
+                                SCORE
+                            </span>
+
+                            <strong class="student-result-score">
+                                ${attempt.score}
+                            </strong>
+
+                            <span class="student-result-score-maximum">
+                                / 100
+                            </span>
+
+                        </div>
+
+
+<div class="student-result-formula">
+
+    <strong>
+        ${attempt.correctCount}
+        dari
+        ${attempt.totalQuestions}
+        soal benar
+    </strong>
+
+</div>
+
+
+                        <div class="student-result-information">
+
+                            <div>
+
+                                <span>Mapel</span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        attempt.subject ||
+                                        "Tanpa mapel"
+                                    )}
+                                </strong>
+
+                            </div>
+
+                            <div>
+
+                                <span>Materi</span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        attempt.material ||
+                                        "Tanpa materi"
+                                    )}
+                                </strong>
+
+                            </div>
+
+                            <div>
+
+                                <span>Dikirim</span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        formatDateTime(
+                                            attempt.submittedAt
+                                        )
+                                    )}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="student-result-actions">
+
+                            <button
+                                type="button"
+                                class="student-result-primary-button"
+                                onclick="showReview()"
+                            >
+                                Lihat Quiz
+                            </button>
+
+                            <button
+                                type="button"
+                                class="student-result-secondary-button"
+                                onclick="goToQuizDashboard()"
+                            >
+                                Kembali ke Dashboard Quiz
+                            </button>
+
+                        </div>
+
+                    </section>
+                `;
+
+        }
+
+
+        function renderAnswerCard(
+            answer,
+            answerIndex
+        ) {
+
+            const statusClass =
+                answer.isCorrect
+                    ? "correct"
+                    : "incorrect";
+
+
+            const statusText =
+                answer.isCorrect
+                    ? "Benar"
+                    : "Salah";
+
+
+            const questionType =
+                answer.type === "mcq"
+                    ? "Pilihan Ganda"
+                    : "Isian Singkat";
+
+
+            const correctAnswerSection =
+                answer.isCorrect
+                    ? ""
+                    : `
+                        <div class="student-review-answer correct-answer">
+
+                            <span>
+                                Jawaban benar
+                            </span>
+
+                            <strong>
+                                ${escapeHtml(
+                                    answer.correctAnswer
+                                )}
+                            </strong>
+
+                        </div>
+                    `;
+
+
+            return `
+                <article
+                    class="student-review-card ${statusClass}"
+                >
+
+                    <div class="student-review-card-header">
+
+                        <span class="student-review-number">
+                            No. ${answerIndex + 1}
+                        </span>
+
+                        <span class="student-review-type">
+                            ${questionType}
+                        </span>
+
+                        <span
+                            class="student-review-status ${statusClass}"
+                        >
+                            ${statusText}
+                        </span>
+
+                    </div>
+
+
+                    <h3>
+                        ${escapeHtml(
+                            answer.text
+                        )}
+                    </h3>
+
+
+                    <div class="student-review-answer">
+
+                        <span>
+                            Jawaban kamu
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                answer.studentAnswer
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    ${correctAnswerSection}
+
+                </article>
+            `;
+
+        }
+
+
+        function renderReview() {
+
+            const attempt =
+                currentAttempt;
+
+
+            const answers =
+                Array.isArray(
+                    attempt.answers
+                )
+                    ? attempt.answers
+                    : [];
+
+
+            resultContent.className =
+                "student-result-content";
+
+
+            resultContent.innerHTML =
+                `
+                    <section class="student-review-header">
+
+                        <div>
+
+                            <span class="student-result-eyebrow">
+                                REVIEW JAWABAN
+                            </span>
+
+                            <h1>
+                                ${escapeHtml(
+                                    attempt.title
+                                )}
+                            </h1>
+
+                            <p>
+                                Periksa jawaban yang benar dan
+                                bagian yang perlu dipelajari lagi.
+                            </p>
+
+                        </div>
+
+
+                        <div class="student-review-score">
+
+                            <span>Nilai</span>
+
+                            <strong>
+                                ${attempt.score}
+                            </strong>
+
+                            <small>
+                                ${attempt.correctCount}
+                                /
+                                ${attempt.totalQuestions}
+                                benar
+                            </small>
+
+                        </div>
+
+                    </section>
+
+
+                    <section class="student-review-list">
+
+                        ${
+                            answers.length
+
+                                ? answers.map(
+                                    renderAnswerCard
+                                ).join(
+                                    ""
+                                )
+
+                                : `
+                                    <div class="student-result-empty">
+                                        Detail jawaban tidak tersedia.
+                                    </div>
+                                `
+                        }
+
+                    </section>
+
+
+                    <div class="student-result-bottom-actions">
+
+                        <button
+                            type="button"
+                            class="student-result-secondary-button"
+                            onclick="showSummary()"
+                        >
+                            Lihat Ringkasan Nilai
+                        </button>
+
+                        <button
+                            type="button"
+                            class="student-result-primary-button"
+                            onclick="goToQuizDashboard()"
+                        >
+                            Kembali ke Dashboard Quiz
+                        </button>
+
+                    </div>
+                `;
+
+        }
+
+
+        function renderResult() {
+
+            if (reviewMode) {
+
+                renderReview();
+
+            } else {
+
+                renderSummary();
+
+            }
+
+        }
+
+
+        function showLoadError(
+            message
+        ) {
+
+            resultContent.className =
+                "student-result-error";
+
+
+            resultContent.innerHTML =
+                `
+                    <h2>
+                        Hasil Quiz tidak dapat dibuka
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(
+                            message
+                        )}
+                    </p>
+
+                    <button
+                        type="button"
+                        class="student-result-secondary-button"
+                        onclick="goToQuizDashboard()"
+                    >
+                        Kembali ke Dashboard Quiz
+                    </button>
+                `;
+
+        }
+
+
+        async function loadResult() {
+
+            if (
+                !Number.isInteger(
+                    attemptId
+                ) ||
+                attemptId <= 0
+            ) {
+
+                showLoadError(
+                    "ID hasil Quiz tidak ditemukan."
+                );
+
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/student/quiz-attempts/${attemptId}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    response.status === 401
+                ) {
+
+                    window.location.href =
+                        "/student-login.html";
+
+
+                    return;
+
+                }
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Gagal mengambil hasil Quiz."
+                    );
+
+                }
+
+
+                currentAttempt =
+                    data.attempt;
+
+
+                /*
+                    Hilangkan attemptId dan review dari URL
+                    setelah datanya berhasil diambil.
+                */
+                window.history.replaceState(
+                    {
+                        attemptId:
+                            currentAttempt.id,
+
+                        reviewMode
+                    },
+                    "",
+                    "/student-quiz-result.html"
+                );
+
+
+                renderResult();
+
+            } catch (
+                error
+            ) {
+
+                showLoadError(
+                    error.message
+                );
+
+            }
+
+        }
+
+
+        loadResult();
+
+    </script>
+
+</body>
+
+</html>

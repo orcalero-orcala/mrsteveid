@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Quiz · Admin
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="app-layout admin-layout">
+
+        <!-- =========================
+             ADMIN SIDEBAR
+        ========================== -->
+
+        <aside
+            id="adminQuizSidebar"
+            class="sidebar admin-sidebar"
+        >
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+
+                    <strong>
+                        mrsteveid
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ◫
+                    </span>
+
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToStudents()"
+                >
+                    <span class="nav-icon">
+                        S
+                    </span>
+
+                    Kelola Siswa
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Kelola Nilai
+                </button>
+
+
+                <!-- QUIZ ACTIVE -->
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        ?
+                    </span>
+
+                    Quiz
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToAnnouncement()"
+                >
+                    <span class="nav-icon">
+                        !
+                    </span>
+
+                    Announcement
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToTeachers()"
+                >
+                    <span class="nav-icon">
+                        T
+                    </span>
+
+                    Kelola Guru
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div
+                        class="
+                            profile-avatar
+                            admin-profile-avatar
+                        "
+                    >
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN CONTENT
+        ========================== -->
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        QUIZ MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Quiz
+                    </h2>
+
+                    <p>
+                        Buat assessment dan review
+                        materi untuk siswa.
+                    </p>
+
+                </div>
+
+
+<div class="topbar-user">
+
+    <div
+        class="
+            top-avatar
+            admin-top-avatar
+        "
+    >
+        T
+    </div>
+
+    <div class="admin-top-user-text">
+
+        <strong id="topAdminName">
+            Admin
+        </strong>
+
+        <span id="topAdminRole">
+            Administrator
+        </span>
+
+    </div>
+
+</div>
+
+            </header>
+
+
+            <section class="quiz-dashboard-content">
+
+                <!-- PAGE HEADER -->
+
+                <div class="quiz-dashboard-header">
+
+<div>
+
+    <small class="eyebrow">
+        QUIZ MANAGEMENT
+    </small>
+
+    <h1>
+        Daftar Quiz
+    </h1>
+
+                        <p>
+                            Kelola draft, publikasi,
+                            deadline, dan respons Quiz.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        id="createQuizButton"
+                        class="
+                            admin-primary-button
+                            quiz-create-button
+                        "
+                        type="button"
+                        onclick="createNewQuiz()"
+                    >
+                        + Quiz Baru
+                    </button>
+
+                </div>
+
+
+                <!-- STATUS / FILTER -->
+
+                <div class="quiz-dashboard-toolbar">
+
+                    <div
+                        class="quiz-filter-group"
+                        role="group"
+                        aria-label="Filter Quiz"
+                    >
+
+                        <button
+                            class="
+                                quiz-filter-button
+                                active
+                            "
+                            type="button"
+                            data-filter="all"
+                            onclick="
+                                setQuizFilter(
+                                    'all',
+                                    this
+                                )
+                            "
+                        >
+                            Semua
+                        </button>
+
+
+                        <button
+                            class="quiz-filter-button"
+                            type="button"
+                            data-filter="draft"
+                            onclick="
+                                setQuizFilter(
+                                    'draft',
+                                    this
+                                )
+                            "
+                        >
+                            Draft
+                        </button>
+
+
+                        <button
+                            class="quiz-filter-button"
+                            type="button"
+                            data-filter="published"
+                            onclick="
+                                setQuizFilter(
+                                    'published',
+                                    this
+                                )
+                            "
+                        >
+                            Published
+                        </button>
+
+
+                        <button
+                            class="quiz-filter-button"
+                            type="button"
+                            data-filter="closed"
+                            onclick="
+                                setQuizFilter(
+                                    'closed',
+                                    this
+                                )
+                            "
+                        >
+                            Ditutup
+                        </button>
+
+                    </div>
+
+
+                    <button
+                        class="
+                            secondary-button
+                            quiz-refresh-button
+                        "
+                        type="button"
+                        onclick="loadAdminQuizzes()"
+                    >
+                        ↻ Refresh
+                    </button>
+
+                </div>
+
+
+                <!-- QUIZ LIST -->
+
+                <div
+                    id="adminQuizList"
+                    class="quiz-dashboard-grid"
+                >
+
+                    <div class="quiz-dashboard-loading">
+
+                        Memuat daftar Quiz...
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================
+         MOBILE SIDEBAR
+    ========================== -->
+
+    <button
+        id="adminQuizMobileMenuButton"
+        class="mobile-menu-button"
+        type="button"
+        aria-label="Buka menu"
+        aria-expanded="false"
+    >
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+
+    <div
+        id="adminQuizSidebarBackdrop"
+        class="mobile-sidebar-backdrop"
+    ></div>
+
+
+    <script>
+
+        function parseQuizUtcDate(
+    value
+) {
+
+    if (!value) {
+
+        return null;
+
+    }
+
+
+    const rawValue =
+        String(
+            value
+        ).trim();
+
+
+    /*
+        Timestamp SQLite/Turso seperti:
+
+        2026-08-28 06:30:00
+
+        tidak mempunyai penanda timezone.
+        Nilai tersebut sebenarnya UTC.
+    */
+    if (
+        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(
+            rawValue
+        )
+    ) {
+
+        return new Date(
+            rawValue.replace(
+                " ",
+                "T"
+            ) + "Z"
+        );
+
+    }
+
+
+    /*
+        Timestamp ISO yang sudah mempunyai Z
+        atau offset tidak perlu dimodifikasi.
+    */
+    return new Date(
+        rawValue
+    );
+
+}
+
+        // =====================================
+        // STATE
+        // =====================================
+
+        let adminQuizzes =
+            [];
+
+
+        let activeQuizFilter =
+            "all";
+
+
+        let createQuizRunning =
+            false;
+
+
+        let deleteQuizRunning =
+            false;
+
+
+        // =====================================
+        // SECURITY
+        // =====================================
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            ).replace(
+                /[&<>"']/g,
+
+                (
+                    character
+                ) => ({
+
+                    "&":
+                        "&amp;",
+
+                    "<":
+                        "&lt;",
+
+                    ">":
+                        "&gt;",
+
+                    '"':
+                        "&quot;",
+
+                    "'":
+                        "&#39;"
+
+                })[
+                    character
+                ]
+            );
+
+        }
+
+
+        // =====================================
+        // DATE FORMAT
+        // =====================================
+
+        function formatQuizDate(
+            value
+        ) {
+
+            if (!value) {
+
+                return "Tanpa deadline";
+
+            }
+
+
+const date =
+    parseQuizUtcDate(
+        value
+    );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return "-";
+
+            }
+
+
+            return new Intl.DateTimeFormat(
+                "id-ID",
+                {
+                    dateStyle:
+                        "medium",
+
+                    timeStyle:
+                        "short"
+                }
+            ).format(
+                date
+            );
+
+        }
+
+
+        function formatRelativeUpdate(
+            value
+        ) {
+
+            if (!value) {
+
+                return "-";
+
+            }
+
+
+const parsedDate =
+    parseQuizUtcDate(
+        value
+    );
+
+
+const timestamp =
+    parsedDate
+        ? parsedDate.getTime()
+        : NaN;
+
+
+            if (
+                Number.isNaN(
+                    timestamp
+                )
+            ) {
+
+                return formatQuizDate(
+                    value
+                );
+
+            }
+
+
+            const differenceMs =
+                Date.now() -
+                timestamp;
+
+
+            const minute =
+                60 *
+                1000;
+
+
+            const hour =
+                60 *
+                minute;
+
+
+            const day =
+                24 *
+                hour;
+
+
+            if (
+                differenceMs <
+                minute
+            ) {
+
+                return "Baru saja";
+
+            }
+
+
+            if (
+                differenceMs <
+                hour
+            ) {
+
+                return (
+                    `${Math.floor(
+                        differenceMs /
+                        minute
+                    )} menit lalu`
+                );
+
+            }
+
+
+            if (
+                differenceMs <
+                day
+            ) {
+
+                return (
+                    `${Math.floor(
+                        differenceMs /
+                        hour
+                    )} jam lalu`
+                );
+
+            }
+
+
+            if (
+                differenceMs <
+                7 *
+                day
+            ) {
+
+                return (
+                    `${Math.floor(
+                        differenceMs /
+                        day
+                    )} hari lalu`
+                );
+
+            }
+
+
+            return formatQuizDate(
+                value
+            );
+
+        }
+
+
+        // =====================================
+        // QUIZ STATUS
+        // =====================================
+
+        function getQuizDisplayStatus(
+            quiz
+        ) {
+
+            /*
+                Published dengan deadline lewat
+                ditampilkan sebagai Deadline Berakhir,
+                tetapi status database tetap published.
+            */
+            if (
+                quiz.status ===
+                    "published" &&
+                quiz.dueAt &&
+                new Date(
+                    quiz.dueAt
+                ).getTime() <=
+                    Date.now()
+            ) {
+
+                return {
+                    key:
+                        "expired",
+
+                    label:
+                        "Deadline Berakhir"
+                };
+
+            }
+
+
+            if (
+                quiz.status ===
+                "published"
+            ) {
+
+                return {
+                    key:
+                        "published",
+
+                    label:
+                        "Dipublikasikan"
+                };
+
+            }
+
+
+            if (
+                quiz.status ===
+                "closed"
+            ) {
+
+                return {
+                    key:
+                        "closed",
+
+                    label:
+                        "Ditutup"
+                };
+
+            }
+
+
+            return {
+                key:
+                    "draft",
+
+                label:
+                    "Draft"
+            };
+
+        }
+
+
+        // =====================================
+        // RENDER
+        // =====================================
+
+        function renderAdminQuizzes() {
+
+            const list =
+                document.getElementById(
+                    "adminQuizList"
+                );
+
+
+            if (!list) {
+
+                return;
+
+            }
+
+
+            const filteredQuizzes =
+                adminQuizzes.filter(
+                    (
+                        quiz
+                    ) => {
+
+                        if (
+                            activeQuizFilter ===
+                            "all"
+                        ) {
+
+                            return true;
+
+                        }
+
+
+                        return (
+                            quiz.status ===
+                            activeQuizFilter
+                        );
+
+                    }
+                );
+
+
+            if (
+                filteredQuizzes.length ===
+                0
+            ) {
+
+                const emptyTitle =
+                    adminQuizzes.length ===
+                    0
+
+                        ? "Belum ada Quiz"
+                        : "Tidak ada Quiz pada filter ini";
+
+
+                const emptyMessage =
+                    adminQuizzes.length ===
+                    0
+
+                        ? `
+                            Buat Quiz pertama untuk
+                            assessment atau review materi.
+                        `
+
+                        : `
+                            Pilih filter lain untuk
+                            melihat Quiz yang tersedia.
+                        `;
+
+
+                list.innerHTML = `
+                    <div class="quiz-dashboard-empty">
+
+                        <div class="quiz-empty-icon">
+                            ?
+                        </div>
+
+                        <h3>
+                            ${emptyTitle}
+                        </h3>
+
+                        <p>
+                            ${emptyMessage}
+                        </p>
+
+                        ${
+                            adminQuizzes.length ===
+                            0
+
+                                ? `
+                                    <button
+                                        class="
+                                            admin-primary-button
+                                        "
+                                        type="button"
+                                        onclick="
+                                            createNewQuiz()
+                                        "
+                                    >
+                                        + Quiz Baru
+                                    </button>
+                                `
+
+                                : ""
+                        }
+
+                    </div>
+                `;
+
+
+                return;
+
+            }
+
+
+            list.innerHTML =
+                filteredQuizzes
+                    .map(
+                        (
+                            quiz
+                        ) =>
+                            createQuizCardHtml(
+                                quiz
+                            )
+                    )
+                    .join(
+                        ""
+                    );
+
+        }
+
+
+        function createQuizCardHtml(
+            quiz
+        ) {
+
+            const displayStatus =
+                getQuizDisplayStatus(
+                    quiz
+                );
+
+
+            const subject =
+                quiz.subject ||
+                "Tanpa mapel";
+
+
+            const material =
+                quiz.material ||
+                "Tanpa materi";
+
+
+            return `
+                <article
+                    class="quiz-dashboard-card"
+                    tabindex="0"
+
+                    onclick="
+                        openQuizEditor(
+                            ${quiz.id}
+                        )
+                    "
+
+                    onkeydown="
+                        if (
+                            event.key === 'Enter' ||
+                            event.key === ' '
+                        ) {
+                            event.preventDefault();
+
+                            openQuizEditor(
+                                ${quiz.id}
+                            );
+                        }
+                    "
+                >
+
+                    <div class="quiz-card-top-row">
+
+                        <span
+                            class="
+                                quiz-status-badge
+                                quiz-status-${displayStatus.key}
+                            "
+                        >
+                            ${
+                                escapeHtml(
+                                    displayStatus.label
+                                )
+                            }
+                        </span>
+
+
+                        <span class="quiz-card-owner">
+
+                            ${
+                                escapeHtml(
+                                    quiz.creatorName ||
+                                    "Admin / Guru"
+                                )
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <h3 class="quiz-card-title">
+
+                        ${
+                            escapeHtml(
+                                quiz.title
+                            )
+                        }
+
+                    </h3>
+
+
+                    <p class="quiz-card-subtitle">
+
+                        ${
+                            escapeHtml(
+                                subject
+                            )
+                        }
+
+                        <span aria-hidden="true">
+                            •
+                        </span>
+
+                        ${
+                            escapeHtml(
+                                material
+                            )
+                        }
+
+                    </p>
+
+
+                    <div class="quiz-card-stat-grid">
+
+                        <div>
+
+                            <strong>
+                                ${
+                                    Number(
+                                        quiz.questionCount ||
+                                        0
+                                    )
+                                }
+                            </strong>
+
+                            <span>
+                                Soal
+                            </span>
+
+                        </div>
+
+
+                        <div>
+
+                            <strong>
+                                ${
+                                    Number(
+                                        quiz.responseCount ||
+                                        0
+                                    )
+                                }
+                            </strong>
+
+                            <span>
+                                Respons
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="quiz-card-date-row">
+
+                        <div>
+
+                            <small>
+                                Deadline
+                            </small>
+
+                            <strong>
+                                ${
+                                    escapeHtml(
+                                        formatQuizDate(
+                                            quiz.dueAt
+                                        )
+                                    )
+                                }
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Terakhir diubah
+                            </small>
+
+                            <strong>
+                                ${
+                                    escapeHtml(
+                                        formatRelativeUpdate(
+                                            quiz.updatedAt
+                                        )
+                                    )
+                                }
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="quiz-card-action-row"
+                        onclick="
+                            event.stopPropagation()
+                        "
+                    >
+
+                        <button
+                            class="
+                                secondary-button
+                                quiz-card-action-button
+                            "
+                            type="button"
+
+                            onclick="
+                                openQuizEditor(
+                                    ${quiz.id}
+                                )
+                            "
+                        >
+                            Edit
+                        </button>
+
+
+                        <button
+                            class="
+                                secondary-button
+                                quiz-card-action-button
+                            "
+                            type="button"
+
+                            onclick="
+                                openQuizRespondents(
+                                    ${quiz.id}
+                                )
+                            "
+                        >
+                            Responden
+                        </button>
+
+
+                        <button
+                            class="
+                                quiz-card-delete-button
+                            "
+                            type="button"
+
+                            onclick="
+                                deleteQuiz(
+                                    ${quiz.id}
+                                )
+                            "
+                        >
+                            Hapus
+                        </button>
+
+                    </div>
+
+                </article>
+            `;
+
+        }
+
+
+        // =====================================
+        // LOAD QUIZ
+        // =====================================
+
+        async function loadAdminQuizzes() {
+
+            const list =
+                document.getElementById(
+                    "adminQuizList"
+                );
+
+
+            if (list) {
+
+                list.innerHTML = `
+                    <div class="quiz-dashboard-loading">
+                        Memuat daftar Quiz...
+                    </div>
+                `;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/quizzes"
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Gagal mengambil Quiz."
+                    );
+
+                }
+
+
+                adminQuizzes =
+                    Array.isArray(
+                        data.quizzes
+                    )
+
+                        ? data.quizzes
+                        : [];
+
+
+                renderAdminQuizzes();
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal load dashboard Quiz:",
+                    error
+                );
+
+
+                if (list) {
+
+                    list.innerHTML = `
+                        <div class="quiz-dashboard-empty">
+
+                            <h3>
+                                Gagal memuat Quiz
+                            </h3>
+
+                            <p>
+                                ${
+                                    escapeHtml(
+                                        error.message
+                                    )
+                                }
+                            </p>
+
+                            <button
+                                class="secondary-button"
+                                type="button"
+                                onclick="
+                                    loadAdminQuizzes()
+                                "
+                            >
+                                Coba lagi
+                            </button>
+
+                        </div>
+                    `;
+
+                }
+
+            }
+
+        }
+
+
+        // =====================================
+        // CREATE QUIZ
+        // =====================================
+
+        async function createNewQuiz() {
+
+            if (createQuizRunning) {
+
+                return;
+
+            }
+
+
+            const button =
+                document.getElementById(
+                    "createQuizButton"
+                );
+
+
+            createQuizRunning =
+                true;
+
+
+            if (button) {
+
+                button.disabled =
+                    true;
+
+                button.textContent =
+                    "Membuat...";
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/quizzes",
+                        {
+                            method:
+                                "POST"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Gagal membuat Quiz."
+                    );
+
+                }
+
+
+                window.location.href =
+                    `/admin-quiz-editor.html?id=${
+                        Number(
+                            data.quizId
+                        )
+                    }`;
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal membuat Quiz:",
+                    error
+                );
+
+
+                alert(
+                    error.message ||
+                    "Gagal membuat Quiz."
+                );
+
+
+                createQuizRunning =
+                    false;
+
+
+                if (button) {
+
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        "+ Quiz Baru";
+
+                }
+
+            }
+
+        }
+
+
+        // =====================================
+        // DELETE QUIZ
+        // =====================================
+
+        async function deleteQuiz(
+            quizId
+        ) {
+
+            if (deleteQuizRunning) {
+
+                return;
+
+            }
+
+
+            const quiz =
+                adminQuizzes.find(
+                    (
+                        item
+                    ) =>
+                        Number(
+                            item.id
+                        ) ===
+                        Number(
+                            quizId
+                        )
+                );
+
+
+            if (!quiz) {
+
+                return;
+
+            }
+
+
+            const hasResponses =
+                Number(
+                    quiz.responseCount ||
+                    0
+                ) > 0;
+
+
+            const confirmationMessage =
+                hasResponses
+
+                    ? (
+                        `Hapus Quiz "${quiz.title}"?\n\n` +
+                        `${quiz.responseCount} respons dan seluruh nilai siswa akan ikut terhapus permanen.`
+                    )
+
+                    : (
+                        `Hapus Quiz "${quiz.title}"?\n\n` +
+                        "Quiz dan seluruh soalnya akan dihapus permanen."
+                    );
+
+
+            if (
+                !window.confirm(
+                    confirmationMessage
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            deleteQuizRunning =
+                true;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/admin/quizzes/${
+                            Number(
+                                quizId
+                            )
+                        }`,
+                        {
+                            method:
+                                "DELETE"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Gagal menghapus Quiz."
+                    );
+
+                }
+
+
+                /*
+                    Hapus langsung dari state agar
+                    card tidak muncul kembali sambil
+                    menunggu reload.
+                */
+                adminQuizzes =
+                    adminQuizzes.filter(
+                        (
+                            item
+                        ) =>
+                            Number(
+                                item.id
+                            ) !==
+                            Number(
+                                quizId
+                            )
+                    );
+
+
+                renderAdminQuizzes();
+
+            } catch (error) {
+
+                console.error(
+                    "Gagal menghapus Quiz:",
+                    error
+                );
+
+
+                alert(
+                    error.message ||
+                    "Gagal menghapus Quiz."
+                );
+
+            } finally {
+
+                deleteQuizRunning =
+                    false;
+
+            }
+
+        }
+
+
+        // =====================================
+        // FILTER
+        // =====================================
+
+        function setQuizFilter(
+            filter,
+            button
+        ) {
+
+            activeQuizFilter =
+                filter;
+
+
+            document
+                .querySelectorAll(
+                    ".quiz-filter-button"
+                )
+                .forEach(
+                    (
+                        filterButton
+                    ) => {
+
+                        filterButton
+                            .classList
+                            .toggle(
+                                "active",
+                                filterButton ===
+                                    button
+                            );
+
+                    }
+                );
+
+
+            renderAdminQuizzes();
+
+        }
+
+
+        // =====================================
+        // NAVIGATION
+        // =====================================
+
+        function openQuizEditor(
+            quizId
+        ) {
+
+            window.location.href =
+                `/admin-quiz-editor.html?id=${
+                    Number(
+                        quizId
+                    )
+                }`;
+
+        }
+
+
+        function openQuizRespondents(
+            quizId
+        ) {
+
+            window.location.href =
+                `/admin-quiz-editor.html?id=${
+                    Number(
+                        quizId
+                    )
+                }&tab=responses`;
+
+        }
+
+
+        function goToDashboard() {
+
+            window.location.href =
+                "/admin-dashboard.html";
+
+        }
+
+
+        function goToStudents() {
+
+            window.location.href =
+                "/admin-students.html";
+
+        }
+
+
+        function goToPoints() {
+
+            window.location.href =
+                "/admin-points.html";
+
+        }
+
+
+        function goToExamScores() {
+
+            window.location.href =
+                "/admin-exam-scores.html";
+
+        }
+
+
+        function goToClassroomFeed() {
+
+            window.location.href =
+                "/admin-announcements.html";
+
+        }
+
+
+        function goToAnnouncement() {
+
+            window.location.href =
+                "/admin-announcement.html";
+
+        }
+
+
+        function goToTeachers() {
+
+            window.location.href =
+                "/admin-users.html";
+
+        }
+
+
+        // =====================================
+        // ADMIN IDENTITY
+        // =====================================
+
+        function loadAdminIdentity() {
+
+            const username =
+                localStorage.getItem(
+                    "adminUsername"
+                );
+
+
+            const adminName =
+                localStorage.getItem(
+                    "adminName"
+                );
+
+
+            const adminRole =
+                localStorage.getItem(
+                    "adminRole"
+                );
+
+
+            /*
+                Session server tetap menjadi
+                perlindungan utama halaman.
+            */
+            const displayName =
+                adminName ||
+                username ||
+                "Admin";
+
+
+const displayRole =
+    adminRole
+
+        ? (
+            adminRole
+                .charAt(0)
+                .toUpperCase() +
+
+            adminRole
+                .slice(1)
+                .toLowerCase()
+        )
+
+        : "Administrator";
+
+
+            const sidebarName =
+                document.getElementById(
+                    "sidebarAdminName"
+                );
+
+
+            const sidebarRole =
+                document.getElementById(
+                    "sidebarAdminRole"
+                );
+
+
+            const topName =
+                document.getElementById(
+                    "topAdminName"
+                );
+
+            const topRole =
+    document.getElementById(
+        "topAdminRole"
+    );
+
+
+            if (sidebarName) {
+
+                sidebarName.textContent =
+                    displayName;
+
+            }
+
+
+            if (sidebarRole) {
+
+                sidebarRole.textContent =
+                    displayRole;
+
+            }
+
+
+            if (topName) {
+
+                topName.textContent =
+                    displayName;
+
+            }
+
+            if (topRole) {
+
+    topRole.textContent =
+        displayRole;
+
+}
+
+        }
+
+
+        // =====================================
+        // MOBILE SIDEBAR
+        // =====================================
+
+        const mobileMenuButton =
+            document.getElementById(
+                "adminQuizMobileMenuButton"
+            );
+
+
+        const sidebar =
+            document.getElementById(
+                "adminQuizSidebar"
+            );
+
+
+        const sidebarBackdrop =
+            document.getElementById(
+                "adminQuizSidebarBackdrop"
+            );
+
+
+        function setMobileSidebarOpen(
+            open
+        ) {
+
+            sidebar.classList.toggle(
+                "mobile-sidebar-open",
+                open
+            );
+
+
+            mobileMenuButton
+                .classList
+                .toggle(
+                    "is-open",
+                    open
+                );
+
+
+            sidebarBackdrop
+                .classList
+                .toggle(
+                    "is-visible",
+                    open
+                );
+
+
+            document.body
+                .classList
+                .toggle(
+                    "mobile-sidebar-active",
+                    open
+                );
+
+
+            mobileMenuButton.setAttribute(
+                "aria-expanded",
+                open
+                    ? "true"
+                    : "false"
+            );
+
+        }
+
+
+        mobileMenuButton.addEventListener(
+            "click",
+            () => {
+
+                setMobileSidebarOpen(
+                    !sidebar.classList.contains(
+                        "mobile-sidebar-open"
+                    )
+                );
+
+            }
+        );
+
+
+        sidebarBackdrop.addEventListener(
+            "click",
+            () => {
+
+                setMobileSidebarOpen(
+                    false
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            "resize",
+            () => {
+
+                if (
+                    window.innerWidth >
+                    900
+                ) {
+
+                    setMobileSidebarOpen(
+                        false
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =====================================
+        // LOGOUT
+        // =====================================
+
+        async function logout() {
+
+            try {
+
+                await fetch(
+                    "/api/logout",
+                    {
+                        method:
+                            "POST"
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
+
+
+            localStorage.removeItem(
+                "adminId"
+            );
+
+            localStorage.removeItem(
+                "adminUsername"
+            );
+
+            localStorage.removeItem(
+                "adminName"
+            );
+
+            localStorage.removeItem(
+                "adminRole"
+            );
+
+
+            window.location.href =
+                "/admin-login.html";
+
+        }
+
+
+        // =====================================
+        // START
+        // =====================================
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+                loadAdminIdentity();
+
+                loadAdminQuizzes();
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Kerjakan Quiz</title>
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
+</head>
+
+
+<body class="student-quiz-attempt-body">
+
+    <!-- TOPBAR -->
+
+    <header class="student-quiz-attempt-topbar">
+
+<button
+    type="button"
+    class="quiz-attempt-back-button"
+    onclick="returnToStudentQuizDashboard()"
+>
+    ← Kembali
+</button>
+
+
+        <div class="student-quiz-attempt-title">
+
+            <strong id="studentQuizTopTitle">
+                Memuat Quiz...
+            </strong>
+
+            <span id="studentQuizSaveStatus">
+                Jawaban tersimpan di perangkat
+            </span>
+
+        </div>
+
+
+        <div class="student-quiz-progress-summary">
+
+            <span id="studentQuizProgressText">
+                0/0 dijawab
+            </span>
+
+            <div class="student-quiz-progress-track">
+
+                <div
+                    id="studentQuizProgressFill"
+                    class="student-quiz-progress-fill"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+
+    <main class="student-quiz-attempt-main">
+
+        <section
+            id="studentQuizAttemptHero"
+            class="student-quiz-attempt-hero"
+        >
+
+<div class="quiz-attempt-information-loading">
+
+    <span>
+        Memuat informasi Quiz...
+    </span>
+
+</div>
+
+        </section>
+
+
+        <section
+            id="studentQuizDescriptionPanel"
+            class="student-quiz-description-panel"
+            hidden
+        >
+
+            <strong>
+                Instruksi
+            </strong>
+
+            <p id="studentQuizDescription"></p>
+
+        </section>
+
+
+        <div
+            id="studentQuizQuestionList"
+            class="student-quiz-attempt-question-list"
+        >
+
+            <div class="student-quiz-attempt-loading">
+                Memuat soal...
+            </div>
+
+        </div>
+
+
+<section
+    id="studentQuizSubmitPanel"
+    class="
+        student-quiz-submit-panel
+        quiz-attempt-final-submit
+    "
+    hidden
+>
+
+    <div>
+
+        <strong>
+            Selesai mengerjakan?
+        </strong>
+
+        <p id="studentQuizSubmitSummary">
+            Memeriksa jawaban...
+        </p>
+
+    </div>
+
+
+    <button
+        id="submitStudentQuizButton"
+        class="student-quiz-primary-button"
+        type="button"
+        onclick="requestStudentQuizSubmission()"
+    >
+        Submit Quiz
+    </button>
+
+</section>
+
+    </main>
+
+
+    <!-- SUBMIT CONFIRMATION -->
+
+    <div
+        id="studentQuizSubmitOverlay"
+        class="student-quiz-submit-overlay"
+        hidden
+    >
+
+        <section
+            class="student-quiz-submit-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="studentQuizSubmitDialogTitle"
+        >
+
+            <small class="eyebrow">
+                ONLINE QUIZ
+            </small>
+
+
+            <h2 id="studentQuizSubmitDialogTitle">
+                Submit Quiz?
+            </h2>
+
+
+            <p id="studentQuizSubmitDialogMessage">
+                Jawaban tidak dapat diubah setelah dikirim.
+            </p>
+
+
+            <div class="student-quiz-submit-dialog-actions">
+
+                <button
+                    id="cancelStudentQuizSubmit"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Periksa Lagi
+                </button>
+
+
+                <button
+                    id="confirmStudentQuizSubmit"
+                    class="student-quiz-primary-button"
+                    type="button"
+                >
+                    Submit Quiz
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+<script>
+
+    // =====================================
+    // STATE
+    // =====================================
+
+    const studentQuizAttemptParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const studentQuizIdFromUrl =
+        Number(
+            studentQuizAttemptParams.get(
+                "id"
+            )
+        );
+
+
+    const currentStudentQuizId =
+        Number.isInteger(
+            studentQuizIdFromUrl
+        ) &&
+        studentQuizIdFromUrl > 0
+
+            ? studentQuizIdFromUrl
+            : Number(
+                window.history.state &&
+                window.history.state.quizId
+            );
+
+
+    const studentQuizDraftKey =
+        `student-quiz-draft-${
+            currentStudentQuizId
+        }`;
+
+
+    let currentStudentQuiz =
+        null;
+
+
+    let studentQuizAnswers =
+        {};
+
+
+    let studentQuizServerOffset =
+        0;
+
+
+    let studentQuizSubmitRunning =
+        false;
+
+
+    let studentQuizDeadlineTimer =
+        null;
+
+
+    // =====================================
+    // ELEMENTS
+    // =====================================
+
+    const studentQuizTopTitle =
+        document.getElementById(
+            "studentQuizTopTitle"
+        );
+
+
+    const studentQuizQuestionList =
+        document.getElementById(
+            "studentQuizQuestionList"
+        );
+
+
+    const studentQuizProgressText =
+        document.getElementById(
+            "studentQuizProgressText"
+        );
+
+
+    const studentQuizProgressFill =
+        document.getElementById(
+            "studentQuizProgressFill"
+        );
+
+
+    const studentQuizSubmitSummary =
+        document.getElementById(
+            "studentQuizSubmitSummary"
+        );
+
+
+    const submitStudentQuizButton =
+        document.getElementById(
+            "submitStudentQuizButton"
+        );
+
+
+    // =====================================
+    // HELPERS
+    // =====================================
+
+    function escapeStudentQuizAttemptHtml(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        ).replace(
+            /[&<>"']/g,
+
+            (
+                character
+            ) => ({
+
+                "&":
+                    "&amp;",
+
+                "<":
+                    "&lt;",
+
+                ">":
+                    "&gt;",
+
+                '"':
+                    "&quot;",
+
+                "'":
+                    "&#39;"
+
+            })[
+                character
+            ]
+        );
+
+    }
+
+
+    function parseStudentQuizAttemptDate(
+        value
+    ) {
+
+        if (!value) {
+
+            return null;
+
+        }
+
+
+        const rawValue =
+            String(
+                value
+            ).trim();
+
+
+        if (
+            /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(
+                rawValue
+            )
+        ) {
+
+            return new Date(
+                rawValue.replace(
+                    " ",
+                    "T"
+                ) +
+                "Z"
+            );
+
+        }
+
+
+        return new Date(
+            rawValue
+        );
+
+    }
+
+
+    function formatStudentQuizAttemptDate(
+        value
+    ) {
+
+        const date =
+            parseStudentQuizAttemptDate(
+                value
+            );
+
+
+        if (
+            !date ||
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "Tanpa deadline";
+
+        }
+
+
+        return new Intl.DateTimeFormat(
+            "id-ID",
+            {
+                dateStyle:
+                    "long",
+
+                timeStyle:
+                    "short"
+            }
+        ).format(
+            date
+        );
+
+    }
+
+
+    function returnToStudentQuizDashboard() {
+
+        window.location.href =
+            "/student-quizzes.html";
+
+    }
+
+
+    // =====================================
+    // LOCAL DRAFT
+    // =====================================
+
+    function loadStudentQuizDraft() {
+
+        try {
+
+            const savedDraft =
+                sessionStorage.getItem(
+                    studentQuizDraftKey
+                );
+
+
+            studentQuizAnswers =
+                savedDraft
+                    ? JSON.parse(
+                        savedDraft
+                    )
+                    : {};
+
+        } catch (error) {
+
+            studentQuizAnswers =
+                {};
+
+        }
+
+    }
+
+
+    function saveStudentQuizDraft() {
+
+        sessionStorage.setItem(
+            studentQuizDraftKey,
+            JSON.stringify(
+                studentQuizAnswers
+            )
+        );
+
+
+        const saveStatus =
+            document.getElementById(
+                "studentQuizSaveStatus"
+            );
+
+
+        saveStatus.textContent =
+            "Jawaban tersimpan di perangkat";
+
+    }
+
+
+    // =====================================
+    // ANSWER PROGRESS
+    // =====================================
+
+    function isStudentQuizQuestionAnswered(
+        question
+    ) {
+
+        const answer =
+            studentQuizAnswers[
+                question.id
+            ];
+
+
+        if (!answer) {
+
+            return false;
+
+        }
+
+
+        if (
+            question.type ===
+            "mcq"
+        ) {
+
+            return Number.isInteger(
+                Number(
+                    answer.optionId
+                )
+            );
+
+        }
+
+
+        return Boolean(
+            String(
+                answer.textAnswer ||
+                ""
+            ).trim()
+        );
+
+    }
+
+
+    function updateStudentQuizProgress() {
+
+        if (!currentStudentQuiz) {
+
+            return;
+
+        }
+
+
+        const totalQuestions =
+            currentStudentQuiz.questions.length;
+
+
+        const answeredQuestions =
+            currentStudentQuiz.questions.filter(
+                isStudentQuizQuestionAnswered
+            ).length;
+
+
+        const progressPercentage =
+            totalQuestions > 0
+
+                ? (
+                    answeredQuestions /
+                    totalQuestions
+                ) *
+                100
+
+                : 0;
+
+
+        studentQuizProgressText.textContent =
+            `${answeredQuestions}/${totalQuestions} dijawab`;
+
+
+        studentQuizProgressFill.style.width =
+            `${progressPercentage}%`;
+
+
+        const emptyQuestions =
+            totalQuestions -
+            answeredQuestions;
+
+
+        studentQuizSubmitSummary.textContent =
+            emptyQuestions === 0
+
+                ? "Semua soal sudah dijawab."
+                : `${emptyQuestions} soal masih kosong dan akan dihitung salah.`;
+
+    }
+
+
+    // =====================================
+    // SET ANSWERS
+    // =====================================
+
+    function selectStudentQuizOption(
+        questionId,
+        optionId
+    ) {
+
+        if (
+            studentQuizSubmitRunning
+        ) {
+
+            return;
+
+        }
+
+
+        studentQuizAnswers[
+            questionId
+        ] = {
+            questionId:
+                Number(
+                    questionId
+                ),
+
+            optionId:
+                Number(
+                    optionId
+                )
+        };
+
+
+        const questionCard =
+            document.querySelector(
+                `[data-student-question-id="${
+                    questionId
+                }"]`
+            );
+
+
+        if (questionCard) {
+
+            questionCard
+                .querySelectorAll(
+                    ".student-quiz-answer-option"
+                )
+                .forEach(
+                    (
+                        optionElement
+                    ) => {
+
+                        optionElement.classList.toggle(
+                            "selected",
+                            Number(
+                                optionElement.dataset.optionId
+                            ) ===
+                                Number(
+                                    optionId
+                                )
+                        );
+
+                    }
+                );
+
+        }
+
+
+        saveStudentQuizDraft();
+
+        updateStudentQuizProgress();
+
+    }
+
+
+    function updateStudentQuizTextAnswer(
+        questionId,
+        value
+    ) {
+
+        if (
+            studentQuizSubmitRunning
+        ) {
+
+            return;
+
+        }
+
+
+        studentQuizAnswers[
+            questionId
+        ] = {
+            questionId:
+                Number(
+                    questionId
+                ),
+
+            textAnswer:
+                value
+        };
+
+
+        saveStudentQuizDraft();
+
+        updateStudentQuizProgress();
+
+    }
+
+
+    // =====================================
+    // RENDER
+    // =====================================
+
+    function renderStudentQuizAttempt() {
+
+        const quiz =
+            currentStudentQuiz;
+
+
+        studentQuizTopTitle.textContent =
+            quiz.title;
+
+
+        document.title =
+            `${quiz.title} · Quiz`;
+
+
+        const hero =
+            document.getElementById(
+                "studentQuizAttemptHero"
+            );
+
+
+        hero.innerHTML = `
+            <div>
+
+                <small class="eyebrow">
+                    ACTIVE ASSESSMENT
+                </small>
+
+                <h1>
+                    ${escapeStudentQuizAttemptHtml(
+                        quiz.title
+                    )}
+                </h1>
+
+
+                <p>
+                    ${escapeStudentQuizAttemptHtml(
+                        quiz.subject ||
+                        "Tanpa mapel"
+                    )}
+
+                    <span>•</span>
+
+                    ${escapeStudentQuizAttemptHtml(
+                        quiz.material ||
+                        "Tanpa materi"
+                    )}
+
+                    <span>•</span>
+
+                    ${quiz.questions.length} soal
+                </p>
+
+            </div>
+
+
+            <div class="student-quiz-deadline-box">
+
+                <span>
+                    Deadline
+                </span>
+
+                <strong id="studentQuizDeadlineText">
+
+                    ${
+                        quiz.dueAt
+
+                            ? escapeStudentQuizAttemptHtml(
+                                formatStudentQuizAttemptDate(
+                                    quiz.dueAt
+                                )
+                            )
+
+                            : "Tanpa deadline"
+                    }
+
+                </strong>
+
+                <small id="studentQuizCountdown"></small>
+
+            </div>
+        `;
+
+
+        if (
+            quiz.description
+        ) {
+
+            document.getElementById(
+                "studentQuizDescription"
+            ).textContent =
+                quiz.description;
+
+
+            document.getElementById(
+                "studentQuizDescriptionPanel"
+            ).hidden =
+                false;
+
+        }
+
+
+        studentQuizQuestionList.innerHTML =
+            quiz.questions.map(
+                (
+                    question,
+                    questionIndex
+                ) => {
+
+                    const savedAnswer =
+                        studentQuizAnswers[
+                            question.id
+                        ] ||
+                        {};
+
+
+                    return `
+                        <article
+                            class="student-quiz-question-card"
+                            data-student-question-id="${
+                                question.id
+                            }"
+                        >
+
+                            <div class="student-quiz-question-header">
+
+                                <span class="student-quiz-question-number">
+                                    No. ${questionIndex + 1}
+                                </span>
+
+
+                                <span class="student-quiz-question-point">
+                                    1 poin
+                                </span>
+
+                            </div>
+
+
+                            <h2>
+                                ${escapeStudentQuizAttemptHtml(
+                                    question.text
+                                )}
+                            </h2>
+
+
+                            ${
+                                question.type ===
+                                    "mcq"
+
+                                    ? `
+                                        <div class="student-quiz-answer-options">
+
+                                            ${question.options.map(
+                                                (
+                                                    option,
+                                                    optionIndex
+                                                ) => {
+
+                                                    const selected =
+                                                        Number(
+                                                            savedAnswer.optionId
+                                                        ) ===
+                                                        Number(
+                                                            option.id
+                                                        );
+
+
+                                                    return `
+                                                        <label
+                                                            class="
+                                                                student-quiz-answer-option
+
+                                                                ${
+                                                                    selected
+                                                                        ? "selected"
+                                                                        : ""
+                                                                }
+                                                            "
+                                                            data-option-id="${
+                                                                option.id
+                                                            }"
+                                                        >
+
+                                                            <input
+                                                                type="radio"
+                                                                name="student-question-${
+                                                                    question.id
+                                                                }"
+
+                                                                ${
+                                                                    selected
+                                                                        ? "checked"
+                                                                        : ""
+                                                                }
+
+                                                                onchange="
+                                                                    selectStudentQuizOption(
+                                                                        ${question.id},
+                                                                        ${option.id}
+                                                                    )
+                                                                "
+                                                            >
+
+
+                                                            <span class="student-quiz-answer-letter">
+
+                                                                ${String.fromCharCode(
+                                                                    65 +
+                                                                    optionIndex
+                                                                )}
+
+                                                            </span>
+
+
+                                                            <span class="student-quiz-answer-text">
+
+                                                                ${escapeStudentQuizAttemptHtml(
+                                                                    option.text
+                                                                )}
+
+                                                            </span>
+
+                                                        </label>
+                                                    `;
+
+                                                }
+                                            ).join("")}
+
+                                        </div>
+                                    `
+
+                                    : `
+                                        <div class="student-quiz-text-answer">
+
+                                            <label>
+                                                Jawaban kamu
+                                            </label>
+
+
+                                            <input
+                                                type="text"
+
+                                                value="${escapeStudentQuizAttemptHtml(
+                                                    savedAnswer.textAnswer ||
+                                                    ""
+                                                )}"
+
+                                                placeholder="Ketik jawaban kamu..."
+
+                                                maxlength="1000"
+
+                                                oninput="
+                                                    updateStudentQuizTextAnswer(
+                                                        ${question.id},
+                                                        this.value
+                                                    )
+                                                "
+                                            >
+
+                                        </div>
+                                    `
+                            }
+
+                        </article>
+                    `;
+
+                }
+            ).join("");
+
+
+        document.getElementById(
+            "studentQuizSubmitPanel"
+        ).hidden =
+            false;
+
+
+        updateStudentQuizProgress();
+
+        startStudentQuizDeadlineTimer();
+
+    }
+
+
+    // =====================================
+    // DEADLINE
+    // =====================================
+
+    function startStudentQuizDeadlineTimer() {
+
+        clearInterval(
+            studentQuizDeadlineTimer
+        );
+
+
+        updateStudentQuizCountdown();
+
+
+        studentQuizDeadlineTimer =
+            setInterval(
+                updateStudentQuizCountdown,
+                1000
+            );
+
+    }
+
+
+    function updateStudentQuizCountdown() {
+
+        if (
+            !currentStudentQuiz ||
+            !currentStudentQuiz.dueAt
+        ) {
+
+            return;
+
+        }
+
+
+        const countdownElement =
+            document.getElementById(
+                "studentQuizCountdown"
+            );
+
+
+        if (!countdownElement) {
+
+            return;
+
+        }
+
+
+        const dueDate =
+            parseStudentQuizAttemptDate(
+                currentStudentQuiz.dueAt
+            );
+
+
+        const remainingMilliseconds =
+            dueDate.getTime() -
+            (
+                Date.now() +
+                studentQuizServerOffset
+            );
+
+
+        if (
+            remainingMilliseconds <= 0
+        ) {
+
+            countdownElement.textContent =
+                "Deadline berakhir";
+
+
+            countdownElement.classList.add(
+                "expired"
+            );
+
+
+            submitStudentQuizButton.disabled =
+                true;
+
+
+            submitStudentQuizButton.textContent =
+                "Deadline Berakhir";
+
+
+            clearInterval(
+                studentQuizDeadlineTimer
+            );
+
+
+            return;
+
+        }
+
+
+        const totalSeconds =
+            Math.floor(
+                remainingMilliseconds /
+                1000
+            );
+
+
+        const days =
+            Math.floor(
+                totalSeconds /
+                86400
+            );
+
+
+        const hours =
+            Math.floor(
+                (
+                    totalSeconds %
+                    86400
+                ) /
+                3600
+            );
+
+
+        const minutes =
+            Math.floor(
+                (
+                    totalSeconds %
+                    3600
+                ) /
+                60
+            );
+
+
+        const seconds =
+            totalSeconds %
+            60;
+
+
+countdownElement.textContent =
+
+    days > 0
+
+        ? `${days} hari, ${hours} jam, ${minutes} menit lagi`
+
+        : hours > 0
+
+            ? `${hours} jam, ${minutes} menit lagi`
+
+            : minutes >= 10
+
+                ? `${minutes} menit lagi`
+
+                : `${minutes} menit, ${seconds} detik lagi`;
+
+}
+
+
+    // =====================================
+    // LOAD
+    // =====================================
+
+    async function loadStudentQuizAttempt() {
+
+        if (
+            !Number.isInteger(
+                currentStudentQuizId
+            ) ||
+            currentStudentQuizId <= 0
+        ) {
+
+            returnToStudentQuizDashboard();
+
+
+            return;
+
+        }
+
+
+        loadStudentQuizDraft();
+
+
+        try {
+
+            const requestStartedAt =
+                Date.now();
+
+
+            const response =
+                await fetch(
+                    `/api/student/quizzes/${
+                        currentStudentQuizId
+                    }`,
+                    {
+                        cache:
+                            "no-store"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            const responseReceivedAt =
+                Date.now();
+
+
+            if (
+                response.status ===
+                401
+            ) {
+
+                window.location.href =
+                    "/student-login.html";
+
+
+                return;
+
+            }
+
+
+            if (
+                data.attemptId
+            ) {
+
+                window.location.href =
+                    `/student-quiz-result.html?attemptId=${
+                        data.attemptId
+                    }&review=1`;
+
+
+                return;
+
+            }
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Quiz tidak dapat dibuka."
+                );
+
+            }
+
+
+            currentStudentQuiz =
+                data.quiz;
+
+
+            const serverDate =
+                parseStudentQuizAttemptDate(
+                    data.serverNow
+                );
+
+
+            if (
+                serverDate &&
+                !Number.isNaN(
+                    serverDate.getTime()
+                )
+            ) {
+
+                const approximateResponseTime =
+                    requestStartedAt +
+                    (
+                        (
+                            responseReceivedAt -
+                            requestStartedAt
+                        ) /
+                        2
+                    );
+
+
+                studentQuizServerOffset =
+                    serverDate.getTime() -
+                    approximateResponseTime;
+
+            }
+
+
+            /*
+                Hilangkan ?id= dari address bar
+                setelah Quiz berhasil ditemukan.
+            */
+            window.history.replaceState(
+                {
+                    ...(window.history.state || {}),
+
+                    quizId:
+                        currentStudentQuizId
+                },
+                "",
+                "/student-quiz-attempt.html"
+            );
+
+
+            renderStudentQuizAttempt();
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuka Quiz:",
+                error
+            );
+
+
+            studentQuizQuestionList.innerHTML = `
+                <div class="student-quiz-attempt-error">
+
+                    <h2>
+                        Quiz tidak dapat dibuka
+                    </h2>
+
+                    <p>
+                        ${escapeStudentQuizAttemptHtml(
+                            error.message
+                        )}
+                    </p>
+
+                    <button
+                        class="secondary-button"
+                        type="button"
+                        onclick="
+                            returnToStudentQuizDashboard()
+                        "
+                    >
+                        Kembali ke Dashboard Quiz
+                    </button>
+
+                </div>
+            `;
+
+        }
+
+    }
+
+
+    // =====================================
+    // SUBMIT CONFIRMATION
+    // =====================================
+
+    function showStudentQuizSubmitConfirmation(
+        emptyQuestionCount
+    ) {
+
+        const overlay =
+            document.getElementById(
+                "studentQuizSubmitOverlay"
+            );
+
+
+        const message =
+            document.getElementById(
+                "studentQuizSubmitDialogMessage"
+            );
+
+
+        const cancelButton =
+            document.getElementById(
+                "cancelStudentQuizSubmit"
+            );
+
+
+        const confirmButton =
+            document.getElementById(
+                "confirmStudentQuizSubmit"
+            );
+
+
+        message.textContent =
+            emptyQuestionCount > 0
+
+                ? `${emptyQuestionCount} soal masih kosong dan akan dihitung salah. Jawaban tidak dapat diubah setelah dikirim.`
+                : "Jawaban tidak dapat diubah setelah dikirim.";
+
+
+        overlay.hidden =
+            false;
+
+
+        return new Promise(
+            (
+                resolve
+            ) => {
+
+                function finish(
+                    result
+                ) {
+
+                    overlay.hidden =
+                        true;
+
+
+                    cancelButton.onclick =
+                        null;
+
+
+                    confirmButton.onclick =
+                        null;
+
+
+                    overlay.onclick =
+                        null;
+
+
+                    resolve(
+                        result
+                    );
+
+                }
+
+
+                cancelButton.onclick =
+                    () =>
+                        finish(
+                            false
+                        );
+
+
+                confirmButton.onclick =
+                    () =>
+                        finish(
+                            true
+                        );
+
+
+                overlay.onclick =
+                    (
+                        event
+                    ) => {
+
+                        if (
+                            event.target ===
+                            overlay
+                        ) {
+
+                            finish(
+                                false
+                            );
+
+                        }
+
+                    };
+
+            }
+        );
+
+    }
+
+
+    async function requestStudentQuizSubmission() {
+
+        if (
+            !currentStudentQuiz ||
+            studentQuizSubmitRunning
+        ) {
+
+            return;
+
+        }
+
+
+        const answeredCount =
+            currentStudentQuiz.questions.filter(
+                isStudentQuizQuestionAnswered
+            ).length;
+
+
+        const emptyQuestionCount =
+            currentStudentQuiz.questions.length -
+            answeredCount;
+
+
+        const confirmed =
+            await showStudentQuizSubmitConfirmation(
+                emptyQuestionCount
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        submitStudentQuiz();
+
+    }
+
+
+    // =====================================
+    // SUBMIT
+    // =====================================
+
+    async function submitStudentQuiz() {
+
+        if (
+            studentQuizSubmitRunning
+        ) {
+
+            return;
+
+        }
+
+
+        studentQuizSubmitRunning =
+            true;
+
+
+        submitStudentQuizButton.disabled =
+            true;
+
+
+        submitStudentQuizButton.textContent =
+            "Mengirim...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/student/quizzes/${
+                        currentStudentQuizId
+                    }/submit`,
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                answers:
+                                    Object.values(
+                                        studentQuizAnswers
+                                    )
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                response.status ===
+                401
+            ) {
+
+                window.location.href =
+                    "/student-login.html";
+
+
+                return;
+
+            }
+
+
+            if (
+                data.attemptId &&
+                (
+                    response.ok ||
+                    data.code ===
+                        "QUIZ_ALREADY_SUBMITTED"
+                )
+            ) {
+
+                sessionStorage.removeItem(
+                    studentQuizDraftKey
+                );
+
+
+                window.location.href =
+                    `/student-quiz-result.html?attemptId=${
+                        data.attemptId
+                    }`;
+
+
+                return;
+
+            }
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Gagal mengirim jawaban Quiz."
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Submit Quiz gagal:",
+                error
+            );
+
+
+            studentQuizSubmitRunning =
+                false;
+
+
+            submitStudentQuizButton.disabled =
+                false;
+
+
+            submitStudentQuizButton.textContent =
+                "Submit Quiz";
+
+
+            studentQuizSubmitSummary.textContent =
+                error.message ||
+                "Gagal mengirim jawaban Quiz.";
+
+
+            studentQuizSubmitSummary.classList.add(
+                "error"
+            );
+
+        }
+
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadStudentQuizAttempt
+    );
+
+
+    window.addEventListener(
+        "beforeunload",
+        () => {
+
+            clearInterval(
+                studentQuizDeadlineTimer
+            );
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>

@@ -251,7 +251,14 @@ app.use(
         "/admin-announcements.html",
         "/admin-announcement.html",
         "/admin-notifications.html",
-        "/admin-users.html"
+        "/admin-users.html",
+
+        /*
+            ONLINE QUIZ ADMIN
+        */
+        "/admin-quizzes.html",
+        "/admin-quiz-editor.html",
+        "/admin-quiz-response.html"
     ],
     requireAdminPage
 );
@@ -264,15 +271,34 @@ app.use(
         "/student-exam-scores.html",
         "/student-announcements.html",
         "/student-notifications.html",
-        "/student-profile.html"
+        "/student-profile.html",
+
+        /*
+            ONLINE QUIZ STUDENT
+        */
+        "/student-quizzes.html",
+        "/student-quiz-attempt.html",
+        "/student-quiz-result.html"
     ],
     requireStudentPage
 );
 
-// Menyediakan file HTML/CSS/JS dari folder public
+// ========================================
+// SERVE FILE HTML DARI PUBLIC
+// ========================================
+
+/*
+    Ditempatkan setelah perlindungan halaman
+    Admin dan Student.
+
+    Dengan urutan ini:
+    - halaman protected diperiksa session dahulu;
+    - index dan login tetap dapat dibuka;
+    - file HTML di src/public dapat ditemukan.
+*/
 app.use(
     express.static(
-        path.join(__dirname, "public")
+        publicDirectory
     )
 );
 
@@ -429,6 +455,4739 @@ app.use(
     }
 );
 
+// ========================================
+// ONLINE QUIZ - ADMIN DASHBOARD
+// ========================================
+
+app.get(
+    "/api/admin/quizzes",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const quizRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            quizzes.id,
+                            quizzes.title,
+                            quizzes.description,
+                            quizzes.subject,
+                            quizzes.material,
+                            quizzes.status,
+                            quizzes.due_at,
+                            quizzes.created_at,
+                            quizzes.updated_at,
+                            quizzes.published_at,
+
+                            admins.name
+                                AS creator_name,
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM quiz_questions
+
+                                WHERE
+                                    quiz_questions.quiz_id =
+                                        quizzes.id
+                            )
+                                AS question_count,
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM quiz_attempts
+
+                                WHERE
+                                    quiz_attempts.quiz_id =
+                                        quizzes.id
+                            )
+                                AS response_count
+
+                        FROM quizzes
+
+                        LEFT JOIN admins
+                            ON admins.id =
+                                quizzes.created_by
+
+                        ORDER BY
+
+                            /*
+                                Draft selalu berada paling atas.
+                            */
+                            CASE
+                                WHEN quizzes.status =
+                                    'draft'
+                                    THEN 0
+
+                                WHEN quizzes.status =
+                                    'published'
+                                    THEN 1
+
+                                ELSE 2
+                            END ASC,
+
+                            /*
+                                Published yang mempunyai deadline
+                                terdekat berada lebih atas.
+                            */
+                            CASE
+                                WHEN quizzes.status =
+                                    'published'
+                                    AND quizzes.due_at
+                                        IS NOT NULL
+                                    THEN 0
+
+                                ELSE 1
+                            END ASC,
+
+                            quizzes.due_at ASC,
+
+                            quizzes.updated_at DESC,
+
+                            quizzes.id DESC
+                    `
+                );
+
+
+            const quizzes =
+                quizRows.map(
+                    (
+                        quizRow
+                    ) => ({
+
+                        id:
+                            Number(
+                                quizRow.id
+                            ),
+
+                        title:
+                            quizRow.title,
+
+                        description:
+                            quizRow.description,
+
+                        subject:
+                            quizRow.subject,
+
+                        material:
+                            quizRow.material,
+
+                        status:
+                            quizRow.status,
+
+                        dueAt:
+                            quizRow.due_at,
+
+                        createdAt:
+                            quizRow.created_at,
+
+                        updatedAt:
+                            quizRow.updated_at,
+
+                        publishedAt:
+                            quizRow.published_at,
+
+                        creatorName:
+                            quizRow.creator_name,
+
+                        questionCount:
+                            Number(
+                                quizRow.question_count ||
+                                0
+                            ),
+
+                        responseCount:
+                            Number(
+                                quizRow.response_count ||
+                                0
+                            )
+
+                    })
+                );
+
+
+            return res.json({
+                success:
+                    true,
+
+                quizzes
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil dashboard Quiz Admin:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil daftar Quiz."
+                });
+
+        }
+
+    }
+);
+
+app.post(
+    "/api/admin/quizzes",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const adminId =
+                Number(
+                    req.session.adminId
+                );
+
+
+            if (
+                !Number.isInteger(
+                    adminId
+                ) ||
+                adminId <= 0
+            ) {
+
+                return res
+                    .status(401)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Session Admin tidak valid."
+                    });
+
+            }
+
+
+            /*
+                Draft langsung dibuat agar editor
+                memperoleh ID authoritative.
+            */
+            const result =
+                await tursoDb.run(
+                    `
+                        INSERT INTO quizzes (
+                            title,
+                            status,
+                            created_by,
+                            updated_at
+                        )
+
+                        VALUES (
+                            'Quiz Tanpa Judul',
+                            'draft',
+                            ?,
+                            CURRENT_TIMESTAMP
+                        )
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            const quizId =
+                Number(
+                    result.lastInsertRowid
+                );
+
+
+            if (
+                !Number.isInteger(
+                    quizId
+                ) ||
+                quizId <= 0
+            ) {
+
+                throw new Error(
+                    "ID Quiz baru tidak ditemukan."
+                );
+
+            }
+
+
+            return res
+                .status(201)
+                .json({
+                    success:
+                        true,
+
+                    quizId,
+
+                    message:
+                        "Draft Quiz berhasil dibuat."
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuat draft Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal membuat Quiz baru."
+                });
+
+        }
+
+    }
+);
+
+app.get(
+    "/api/admin/quizzes/:quizId",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                true berarti kunci jawaban boleh
+                disertakan karena endpoint ini
+                sudah dilindungi session Admin.
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    quizId,
+                    true
+                );
+
+
+            if (!quiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                quiz
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuka Quiz Admin:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal membuka Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - AUTOSAVE EDITOR
+// ========================================
+
+app.put(
+    "/api/admin/quizzes/:quizId",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const existingQuiz =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            status,
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM quiz_attempts
+
+                                WHERE
+                                    quiz_attempts.quiz_id =
+                                        quizzes.id
+                            )
+                                AS response_count
+
+                        FROM quizzes
+
+                        WHERE
+                            id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!existingQuiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            let metadata;
+
+
+            try {
+
+                metadata =
+                    cleanQuizMetadata(
+                        req.body
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Jika body tidak mempunyai array
+                questions, request hanya mengubah
+                metadata.
+
+                Ini digunakan setelah Quiz sudah
+                mempunyai responden.
+            */
+            const hasQuestionPayload =
+                Array.isArray(
+                    req.body &&
+                    req.body.questions
+                );
+
+
+            const responseCount =
+                Number(
+                    existingQuiz.response_count ||
+                    0
+                );
+
+
+            /*
+                Setelah ada respons, struktur soal
+                tidak boleh diganti.
+
+                Metadata seperti judul, mapel,
+                materi, dan deadline masih boleh.
+            */
+            if (
+                responseCount > 0 &&
+                hasQuestionPayload
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "QUIZ_STRUCTURE_LOCKED",
+
+                        message:
+                            "Struktur Quiz dikunci karena sudah memiliki respons."
+                    });
+
+            }
+
+
+            /*
+                AUTOSAVE METADATA SAJA
+            */
+            if (!hasQuestionPayload) {
+
+                await tursoDb.run(
+                    `
+                        UPDATE quizzes
+
+                        SET
+                            title = ?,
+                            description = ?,
+                            subject = ?,
+                            material = ?,
+                            due_at = ?,
+                            updated_at =
+                                CURRENT_TIMESTAMP
+
+                        WHERE
+                            id = ?
+                    `,
+                    [
+                        metadata.title,
+                        metadata.description,
+                        metadata.subject,
+                        metadata.material,
+                        metadata.dueAt,
+                        quizId
+                    ]
+                );
+
+
+                return res.json({
+                    success:
+                        true,
+
+                    structureLocked:
+                        responseCount > 0,
+
+                    updatedAt:
+                        new Date()
+                            .toISOString()
+                });
+
+            }
+
+
+            /*
+                Autosave draft memakai strict=false.
+
+                Pertanyaan atau pilihan yang belum
+                selesai tetap boleh disimpan.
+
+                Validasi lengkap baru dijalankan
+                ketika Admin menekan Publish.
+            */
+            let questions;
+
+
+            try {
+
+                questions =
+                    validateQuizQuestions(
+                        req.body.questions,
+                        false
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Satu batch transaction:
+
+                1. Update metadata.
+                2. Hapus pilihan lama.
+                3. Hapus soal lama.
+                4. Masukkan susunan soal terbaru.
+                5. Masukkan pilihan MCQ terbaru.
+
+                Jika satu statement gagal, seluruh
+                perubahan dibatalkan oleh Turso.
+            */
+            const statements = [
+
+                {
+                    sql: `
+                        UPDATE quizzes
+
+                        SET
+                            title = ?,
+                            description = ?,
+                            subject = ?,
+                            material = ?,
+                            due_at = ?,
+                            updated_at =
+                                CURRENT_TIMESTAMP
+
+                        WHERE
+                            id = ?
+                    `,
+
+                    args: [
+                        metadata.title,
+                        metadata.description,
+                        metadata.subject,
+                        metadata.material,
+                        metadata.dueAt,
+                        quizId
+                    ]
+                },
+
+
+                /*
+                    Hapus pilihan lebih dahulu supaya
+                    tidak bergantung pada konfigurasi
+                    foreign_keys koneksi.
+                */
+                {
+                    sql: `
+                        DELETE FROM quiz_options
+
+                        WHERE
+                            question_id IN (
+                                SELECT
+                                    id
+
+                                FROM quiz_questions
+
+                                WHERE
+                                    quiz_id = ?
+                            )
+                    `,
+
+                    args: [
+                        quizId
+                    ]
+                },
+
+
+                {
+                    sql: `
+                        DELETE FROM quiz_questions
+
+                        WHERE
+                            quiz_id = ?
+                    `,
+
+                    args: [
+                        quizId
+                    ]
+                }
+
+            ];
+
+
+            questions.forEach(
+                (
+                    question,
+                    questionIndex
+                ) => {
+
+                    const position =
+                        questionIndex + 1;
+
+
+                    /*
+                        Masukkan soal lebih dahulu.
+                    */
+                    statements.push({
+                        sql: `
+                            INSERT INTO
+                                quiz_questions (
+                                    quiz_id,
+                                    client_key,
+                                    question_type,
+                                    question_text,
+                                    correct_text_answer,
+                                    position
+                                )
+
+                            VALUES (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+                            )
+                        `,
+
+                        args: [
+                            quizId,
+                            question.clientKey,
+                            question.type,
+                            question.text,
+                            question.correctText,
+                            position
+                        ]
+                    });
+
+
+                    /*
+                        Isian Singkat mempunyai
+                        options kosong sehingga
+                        bagian ini otomatis dilewati.
+                    */
+                    question.options.forEach(
+                        (
+                            option,
+                            optionIndex
+                        ) => {
+
+                            /*
+                                Cari ID soal menggunakan
+                                quiz_id + client_key.
+
+                                Jadi kita tidak perlu
+                                menebak lastInsertRowid
+                                di dalam batch.
+                            */
+                            statements.push({
+                                sql: `
+                                    INSERT INTO
+                                        quiz_options (
+                                            question_id,
+                                            option_text,
+                                            position,
+                                            is_correct
+                                        )
+
+                                    SELECT
+                                        id,
+                                        ?,
+                                        ?,
+                                        ?
+
+                                    FROM quiz_questions
+
+                                    WHERE
+                                        quiz_id = ?
+                                        AND client_key = ?
+                                `,
+
+                                args: [
+                                    option.text,
+                                    optionIndex + 1,
+
+                                    option.isCorrect
+                                        ? 1
+                                        : 0,
+
+                                    quizId,
+                                    question.clientKey
+                                ]
+                            });
+
+                        }
+                    );
+
+                }
+            );
+
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            return res.json({
+                success:
+                    true,
+
+                structureLocked:
+                    false,
+
+                questionCount:
+                    questions.length,
+
+                updatedAt:
+                    new Date()
+                        .toISOString()
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal autosave Quiz:",
+                error
+            );
+
+
+            /*
+                Constraint database biasanya berarti
+                clientKey atau posisi mengalami
+                duplikasi yang tidak valid.
+            */
+            const errorMessage =
+                String(
+                    error &&
+                    error.message ||
+                    ""
+                );
+
+
+            if (
+                errorMessage.includes(
+                    "UNIQUE"
+                ) ||
+                errorMessage.includes(
+                    "constraint"
+                )
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Susunan soal mengalami konflik. Muat ulang editor lalu coba lagi."
+                    });
+
+            }
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal menyimpan perubahan Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - PUBLISH
+// ========================================
+
+app.post(
+    "/api/admin/quizzes/:quizId/publish",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Admin memerlukan kunci jawaban
+                untuk validasi publish.
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    quizId,
+                    true
+                );
+
+
+            if (!quiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                Judul bawaan dianggap belum selesai.
+            */
+            if (
+                !quiz.title ||
+                !quiz.title.trim() ||
+                quiz.title.trim() ===
+                    "Quiz Tanpa Judul"
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Ganti nama Quiz sebelum dipublikasikan."
+                    });
+
+            }
+
+
+            if (
+                quiz.questions.length ===
+                0
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Tambahkan minimal satu soal sebelum Publish."
+                    });
+
+            }
+
+
+            /*
+                Ubah bentuk data dari database ke
+                bentuk yang digunakan validator.
+            */
+            const questionsForValidation =
+                quiz.questions.map(
+                    (
+                        question
+                    ) => ({
+
+                        clientKey:
+                            question.clientKey,
+
+                        type:
+                            question.type,
+
+                        text:
+                            question.text,
+
+                        correctText:
+                            question.correctText ||
+                            "",
+
+                        options:
+                            question.options.map(
+                                (
+                                    option
+                                ) => ({
+
+                                    text:
+                                        option.text,
+
+                                    isCorrect:
+                                        Boolean(
+                                            option.isCorrect
+                                        )
+
+                                })
+                            )
+
+                    })
+                );
+
+
+            try {
+
+                /*
+                    strict=true:
+                    seluruh pertanyaan, pilihan,
+                    dan kunci wajib lengkap.
+                */
+                validateQuizQuestions(
+                    questionsForValidation,
+                    true
+                );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Deadline harus berada di masa depan
+                ketika Quiz dipublikasikan.
+            */
+            if (quiz.dueAt) {
+
+                const dueTimestamp =
+                    new Date(
+                        quiz.dueAt
+                    ).getTime();
+
+
+                if (
+                    Number.isNaN(
+                        dueTimestamp
+                    ) ||
+                    dueTimestamp <=
+                        Date.now()
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            success:
+                                false,
+
+                            message:
+                                "Deadline harus berada di masa depan."
+                        });
+
+                }
+
+            }
+
+
+            await tursoDb.run(
+                `
+                    UPDATE quizzes
+
+                    SET
+                        status =
+                            'published',
+
+                        /*
+                            Publish pertama menyimpan
+                            waktu. Publish ulang tidak
+                            mengubah waktu awal.
+                        */
+                        published_at =
+                            COALESCE(
+                                published_at,
+                                CURRENT_TIMESTAMP
+                            ),
+
+                        updated_at =
+                            CURRENT_TIMESTAMP
+
+                    WHERE
+                        id = ?
+                `,
+                [
+                    quizId
+                ]
+            );
+
+
+            return res.json({
+                success:
+                    true,
+
+                status:
+                    "published",
+
+                message:
+                    "Quiz berhasil dipublikasikan."
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal Publish Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal memublikasikan Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - CLOSE
+// ========================================
+
+app.post(
+    "/api/admin/quizzes/:quizId/close",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const quiz =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            status
+
+                        FROM quizzes
+
+                        WHERE
+                            id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!quiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            if (
+                quiz.status ===
+                "closed"
+            ) {
+
+                return res.json({
+                    success:
+                        true,
+
+                    status:
+                        "closed",
+
+                    message:
+                        "Quiz sudah ditutup."
+                });
+
+            }
+
+
+            await tursoDb.run(
+                `
+                    UPDATE quizzes
+
+                    SET
+                        status =
+                            'closed',
+
+                        updated_at =
+                            CURRENT_TIMESTAMP
+
+                    WHERE
+                        id = ?
+                `,
+                [
+                    quizId
+                ]
+            );
+
+
+            return res.json({
+                success:
+                    true,
+
+                status:
+                    "closed",
+
+                message:
+                    "Quiz berhasil ditutup."
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menutup Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal menutup Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - DELETE
+// ========================================
+
+app.delete(
+    "/api/admin/quizzes/:quizId",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const quiz =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            title
+
+                        FROM quizzes
+
+                        WHERE
+                            id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!quiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                Semua data dihapus dalam satu
+                transaction.
+
+                Penghapusan eksplisit tetap dipakai
+                agar aman meskipun foreign_keys
+                pada salah satu koneksi tidak aktif.
+            */
+            await tursoDb.batch(
+                [
+
+                    /*
+                        Jawaban milik semua attempt
+                        pada Quiz tersebut.
+                    */
+                    {
+                        sql: `
+                            DELETE FROM quiz_answers
+
+                            WHERE
+                                attempt_id IN (
+                                    SELECT
+                                        id
+
+                                    FROM quiz_attempts
+
+                                    WHERE
+                                        quiz_id = ?
+                                )
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    },
+
+
+                    /*
+                        Jawaban yang merujuk langsung
+                        pada pertanyaan Quiz.
+                    */
+                    {
+                        sql: `
+                            DELETE FROM quiz_answers
+
+                            WHERE
+                                question_id IN (
+                                    SELECT
+                                        id
+
+                                    FROM quiz_questions
+
+                                    WHERE
+                                        quiz_id = ?
+                                )
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    },
+
+
+                    {
+                        sql: `
+                            DELETE FROM quiz_attempts
+
+                            WHERE
+                                quiz_id = ?
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    },
+
+
+                    {
+                        sql: `
+                            DELETE FROM quiz_options
+
+                            WHERE
+                                question_id IN (
+                                    SELECT
+                                        id
+
+                                    FROM quiz_questions
+
+                                    WHERE
+                                        quiz_id = ?
+                                )
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    },
+
+
+                    {
+                        sql: `
+                            DELETE FROM quiz_questions
+
+                            WHERE
+                                quiz_id = ?
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    },
+
+
+                    {
+                        sql: `
+                            DELETE FROM quizzes
+
+                            WHERE
+                                id = ?
+                        `,
+
+                        args: [
+                            quizId
+                        ]
+                    }
+
+                ],
+                "immediate"
+            );
+
+
+            return res.json({
+                success:
+                    true,
+
+                deletedQuizId:
+                    quizId,
+
+                deletedTitle:
+                    quiz.title,
+
+                message:
+                    "Quiz berhasil dihapus."
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menghapus Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal menghapus Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - STUDENT DASHBOARD
+// ========================================
+
+app.get(
+    "/api/student/quizzes",
+    async (
+        req,
+        res
+    ) => {
+
+        /*
+            Hanya session Student yang boleh
+            mengambil dashboard Quiz Student.
+        */
+        if (!req.session.studentId) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const studentId =
+                Number(
+                    req.session.studentId
+                );
+
+
+            if (
+                !Number.isInteger(
+                    studentId
+                ) ||
+                studentId <= 0
+            ) {
+
+                return res
+                    .status(401)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Session siswa tidak valid."
+                    });
+
+            }
+
+
+/*
+    DAFTAR QUIZ STUDENT
+
+    Mengambil Quiz yang belum pernah disubmit:
+    - published dan masih tersedia = active
+    - published tetapi deadline lewat = missing
+    - ditutup Guru = missing
+
+    Quiz draft tidak pernah diperlihatkan
+    kepada siswa.
+*/
+const studentQuizRows =
+    await tursoDb.all(
+        `
+            SELECT
+                quizzes.id,
+                quizzes.title,
+                quizzes.description,
+                quizzes.subject,
+                quizzes.material,
+                quizzes.status,
+                quizzes.due_at,
+                quizzes.published_at,
+
+                (
+                    SELECT COUNT(*)
+
+                    FROM quiz_questions
+
+                    WHERE
+                        quiz_questions.quiz_id =
+                            quizzes.id
+                )
+                    AS question_count,
+
+                CASE
+
+                    WHEN
+                        quizzes.status =
+                            'published'
+
+                        AND (
+                            quizzes.due_at
+                                IS NULL
+
+                            OR
+
+                            datetime(
+                                quizzes.due_at
+                            ) >
+                            datetime(
+                                'now'
+                            )
+                        )
+
+                    THEN
+                        'active'
+
+                    ELSE
+                        'missing'
+
+                END
+                    AS student_quiz_status,
+
+                CASE
+
+                    WHEN
+                        quizzes.status =
+                            'closed'
+
+                    THEN
+                        'Quiz ditutup oleh Guru'
+
+                    WHEN
+                        quizzes.due_at
+                            IS NOT NULL
+
+                        AND
+                        datetime(
+                            quizzes.due_at
+                        ) <=
+                        datetime(
+                            'now'
+                        )
+
+                    THEN
+                        'Deadline telah berakhir'
+
+                    ELSE
+                        NULL
+
+                END
+                    AS missing_reason
+
+            FROM quizzes
+
+            WHERE
+                quizzes.status IN (
+                    'published',
+                    'closed'
+                )
+
+                AND NOT EXISTS (
+                    SELECT
+                        1
+
+                    FROM quiz_attempts
+
+                    WHERE
+                        quiz_attempts.quiz_id =
+                            quizzes.id
+
+                        AND
+                        quiz_attempts.student_id =
+                            ?
+                )
+
+            ORDER BY
+
+                /*
+                    Active selalu berada sebelum
+                    Missing.
+                */
+                CASE
+
+                    WHEN
+                        quizzes.status =
+                            'published'
+
+                        AND (
+                            quizzes.due_at
+                                IS NULL
+
+                            OR
+
+                            datetime(
+                                quizzes.due_at
+                            ) >
+                            datetime(
+                                'now'
+                            )
+                        )
+
+                    THEN
+                        0
+
+                    ELSE
+                        1
+
+                END ASC,
+
+                /*
+                    Dalam Active, Quiz dengan deadline
+                    tampil lebih dahulu.
+                */
+                CASE
+
+                    WHEN
+                        quizzes.status =
+                            'published'
+
+                        AND
+                        quizzes.due_at
+                            IS NULL
+
+                    THEN
+                        1
+
+                    ELSE
+                        0
+
+                END ASC,
+
+                quizzes.due_at ASC,
+                quizzes.published_at DESC,
+                quizzes.id DESC
+        `,
+        [
+            studentId
+        ]
+    );
+
+
+const quizzes =
+    studentQuizRows.map(
+        (
+            quizRow
+        ) => ({
+
+            id:
+                Number(
+                    quizRow.id
+                ),
+
+            title:
+                quizRow.title,
+
+            description:
+                quizRow.description,
+
+            subject:
+                quizRow.subject,
+
+            material:
+                quizRow.material,
+
+            status:
+                quizRow.status,
+
+            /*
+                active atau missing.
+            */
+            studentStatus:
+                quizRow.student_quiz_status,
+
+            missingReason:
+                quizRow.missing_reason ||
+                null,
+
+            dueAt:
+                quizRow.due_at,
+
+            publishedAt:
+                quizRow.published_at,
+
+            questionCount:
+                Number(
+                    quizRow.question_count ||
+                    0
+                )
+
+        })
+    );
+
+
+            /*
+                RIWAYAT SUBMISSION SISWA
+            */
+            const historyRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            quiz_attempts.id
+                                AS attempt_id,
+
+                            quiz_attempts.quiz_id,
+                            quiz_attempts.correct_count,
+                            quiz_attempts.total_questions,
+                            quiz_attempts.score,
+                            quiz_attempts.submitted_at,
+
+                            quizzes.title,
+                            quizzes.subject,
+                            quizzes.material,
+                            quizzes.status
+
+                        FROM quiz_attempts
+
+                        INNER JOIN quizzes
+                            ON quizzes.id =
+                                quiz_attempts.quiz_id
+
+                        WHERE
+                            quiz_attempts.student_id = ?
+
+                        ORDER BY
+                            quiz_attempts.submitted_at
+                                DESC,
+
+                            quiz_attempts.id
+                                DESC
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            const history =
+                historyRows.map(
+                    (
+                        historyRow
+                    ) => ({
+
+                        attemptId:
+                            Number(
+                                historyRow.attempt_id
+                            ),
+
+                        quizId:
+                            Number(
+                                historyRow.quiz_id
+                            ),
+
+                        title:
+                            historyRow.title,
+
+                        subject:
+                            historyRow.subject,
+
+                        material:
+                            historyRow.material,
+
+                        quizStatus:
+                            historyRow.status,
+
+                        correctCount:
+                            Number(
+                                historyRow.correct_count
+                            ),
+
+                        totalQuestions:
+                            Number(
+                                historyRow.total_questions
+                            ),
+
+                        score:
+                            Number(
+                                historyRow.score
+                            ),
+
+                        submittedAt:
+                            historyRow.submitted_at
+
+                    })
+                );
+
+
+            return res.json({
+                success:
+                    true,
+
+                /*
+                    Digunakan frontend untuk
+                    menghitung teks sisa waktu
+                    tanpa terlalu bergantung pada
+                    jam perangkat siswa.
+                */
+                serverNow:
+                    new Date()
+                        .toISOString(),
+
+                quizzes,
+
+                history
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil dashboard Quiz Student:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil daftar Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - STUDENT OPEN QUIZ
+// ========================================
+
+app.get(
+    "/api/student/quizzes/:quizId",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.studentId) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const studentId =
+                Number(
+                    req.session.studentId
+                );
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Periksa apakah siswa sudah pernah
+                submit Quiz ini.
+            */
+            const existingAttempt =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id
+
+                        FROM quiz_attempts
+
+                        WHERE
+                            quiz_id = ?
+                            AND student_id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        quizId,
+                        studentId
+                    ]
+                );
+
+
+            if (existingAttempt) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "QUIZ_ALREADY_SUBMITTED",
+
+                        message:
+                            "Quiz ini sudah pernah kamu kerjakan.",
+
+                        attemptId:
+                            Number(
+                                existingAttempt.id
+                            )
+                    });
+
+            }
+
+
+            /*
+                false sangat penting.
+
+                Student tidak boleh menerima:
+                - isCorrect
+                - correctText
+                - kunci jawaban lainnya
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    quizId,
+                    false
+                );
+
+
+            const availabilityError =
+                getStudentQuizAvailabilityError(
+                    quiz
+                );
+
+
+            if (availabilityError) {
+
+                return res
+                    .status(
+                        availabilityError.status
+                    )
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            availabilityError.status ===
+                                410
+
+                                ? "QUIZ_DEADLINE_PASSED"
+                                : "QUIZ_NOT_AVAILABLE",
+
+                        message:
+                            availabilityError.message
+                    });
+
+            }
+
+
+            /*
+                Perlindungan tambahan:
+                Quiz published seharusnya selalu
+                mempunyai minimal satu soal.
+            */
+            if (
+                quiz.questions.length ===
+                0
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "QUIZ_HAS_NO_QUESTIONS",
+
+                        message:
+                            "Quiz belum mempunyai soal."
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                serverNow:
+                    new Date()
+                        .toISOString(),
+
+                quiz
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuka Quiz Student:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal membuka Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - STUDENT SUBMIT
+// ========================================
+
+app.post(
+    "/api/student/quizzes/:quizId/submit",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.studentId) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const studentId =
+                Number(
+                    req.session.studentId
+                );
+
+
+            if (
+                !Number.isInteger(
+                    studentId
+                ) ||
+                studentId <= 0
+            ) {
+
+                return res
+                    .status(401)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Session siswa tidak valid."
+                    });
+
+            }
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Backend memerlukan kunci jawaban
+                untuk melakukan autograding.
+
+                Kunci ini hanya digunakan di server
+                dan tidak langsung dikirim ke siswa.
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    quizId,
+                    true
+                );
+
+
+            const availabilityError =
+                getStudentQuizAvailabilityError(
+                    quiz
+                );
+
+
+            if (availabilityError) {
+
+                return res
+                    .status(
+                        availabilityError.status
+                    )
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            availabilityError.status ===
+                                410
+
+                                ? "QUIZ_DEADLINE_PASSED"
+                                : "QUIZ_NOT_AVAILABLE",
+
+                        message:
+                            availabilityError.message
+                    });
+
+            }
+
+
+            if (
+                quiz.questions.length ===
+                0
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz belum mempunyai soal."
+                    });
+
+            }
+
+
+            /*
+                Pemeriksaan awal agar frontend
+                mendapat pesan yang jelas.
+
+                Constraint UNIQUE database tetap
+                menjadi perlindungan utama jika ada
+                dua request bersamaan.
+            */
+            const existingAttempt =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id
+
+                        FROM quiz_attempts
+
+                        WHERE
+                            quiz_id = ?
+                            AND student_id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        quizId,
+                        studentId
+                    ]
+                );
+
+
+            if (existingAttempt) {
+
+                return res
+                    .status(409)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "QUIZ_ALREADY_SUBMITTED",
+
+                        message:
+                            "Quiz hanya dapat dikirim satu kali.",
+
+                        attemptId:
+                            Number(
+                                existingAttempt.id
+                            )
+                    });
+
+            }
+
+
+            const submittedAnswers =
+                req.body &&
+                Array.isArray(
+                    req.body.answers
+                )
+
+                    ? req.body.answers
+                    : [];
+
+
+            /*
+                Maksimal satu payload jawaban untuk
+                setiap soal.
+
+                Jika browser mengirim ID yang sama
+                dua kali, nilai terakhir digunakan.
+            */
+            const submittedByQuestionId =
+                new Map();
+
+
+            submittedAnswers.forEach(
+                (
+                    submittedAnswer
+                ) => {
+
+                    const questionId =
+                        Number(
+                            submittedAnswer &&
+                            submittedAnswer.questionId
+                        );
+
+
+                    if (
+                        Number.isInteger(
+                            questionId
+                        ) &&
+                        questionId > 0
+                    ) {
+
+                        submittedByQuestionId.set(
+                            questionId,
+                            submittedAnswer
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /*
+                Penilaian dilakukan berdasarkan
+                daftar soal authoritative dari Turso.
+
+                ID soal tambahan yang dikirim browser
+                otomatis diabaikan.
+            */
+            const gradedAnswers =
+                quiz.questions.map(
+                    (
+                        question
+                    ) => {
+
+                        const submittedAnswer =
+                            submittedByQuestionId.get(
+                                question.id
+                            ) ||
+                            {};
+
+
+                        /*
+                            PILIHAN GANDA
+                        */
+                        if (
+                            question.type ===
+                            "mcq"
+                        ) {
+
+                            const selectedOptionId =
+                                Number(
+                                    submittedAnswer.optionId
+                                );
+
+
+                            /*
+                                Pastikan option benar-benar
+                                milik pertanyaan ini.
+                            */
+                            const selectedOption =
+                                question.options.find(
+                                    (
+                                        option
+                                    ) =>
+                                        Number(
+                                            option.id
+                                        ) ===
+                                        selectedOptionId
+                                );
+
+
+                            const isCorrect =
+                                Boolean(
+                                    selectedOption &&
+                                    selectedOption.isCorrect
+                                );
+
+
+                            return {
+                                questionId:
+                                    question.id,
+
+                                selectedOptionId:
+                                    selectedOption
+                                        ? Number(
+                                            selectedOption.id
+                                        )
+                                        : null,
+
+                                textAnswer:
+                                    null,
+
+                                isCorrect
+                            };
+
+                        }
+
+
+                        /*
+                            ISIAN SINGKAT
+                        */
+                        const textAnswer =
+                            String(
+                                submittedAnswer.textAnswer ||
+                                ""
+                            )
+                                .slice(
+                                    0,
+                                    3000
+                                );
+
+
+                        const normalizedStudentAnswer =
+                            normalizeQuizAnswer(
+                                textAnswer
+                            );
+
+
+                        const normalizedCorrectAnswer =
+                            normalizeQuizAnswer(
+                                question.correctText
+                            );
+
+
+                        /*
+                            Jawaban kosong tidak boleh
+                            dianggap benar walaupun kunci
+                            mengalami masalah dan kosong.
+                        */
+                        const isCorrect =
+                            Boolean(
+                                normalizedStudentAnswer &&
+                                normalizedCorrectAnswer &&
+                                normalizedStudentAnswer ===
+                                    normalizedCorrectAnswer
+                            );
+
+
+                        return {
+                            questionId:
+                                question.id,
+
+                            selectedOptionId:
+                                null,
+
+                            /*
+                                Jawaban asli tetap disimpan
+                                persis seperti input siswa.
+                            */
+                            textAnswer,
+
+                            isCorrect
+                        };
+
+                    }
+                );
+
+
+            const correctCount =
+                gradedAnswers.filter(
+                    (
+                        answer
+                    ) =>
+                        answer.isCorrect
+                ).length;
+
+
+            const totalQuestions =
+                quiz.questions.length;
+
+
+            /*
+                Pembulatan selalu ke bawah.
+            */
+            const score =
+                Math.floor(
+                    (
+                        correctCount /
+                        totalQuestions
+                    ) *
+                    100
+                );
+
+
+            /*
+                Attempt dan seluruh jawaban disimpan
+                dalam satu transaction Turso.
+
+                Jika satu INSERT gagal, tidak ada
+                attempt setengah jadi.
+            */
+            const statements = [
+
+                {
+                    sql: `
+                        INSERT INTO
+                            quiz_attempts (
+                                quiz_id,
+                                student_id,
+                                correct_count,
+                                total_questions,
+                                score,
+                                submitted_at
+                            )
+
+                        VALUES (
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            CURRENT_TIMESTAMP
+                        )
+                    `,
+
+                    args: [
+                        quizId,
+                        studentId,
+                        correctCount,
+                        totalQuestions,
+                        score
+                    ]
+                }
+
+            ];
+
+
+            gradedAnswers.forEach(
+                (
+                    answer
+                ) => {
+
+                    statements.push({
+                        sql: `
+                            INSERT INTO
+                                quiz_answers (
+                                    attempt_id,
+                                    question_id,
+                                    selected_option_id,
+                                    text_answer,
+                                    is_correct
+                                )
+
+                            SELECT
+                                quiz_attempts.id,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+
+                            FROM quiz_attempts
+
+                            WHERE
+                                quiz_attempts.quiz_id = ?
+                                AND
+                                quiz_attempts.student_id = ?
+                        `,
+
+                        args: [
+                            answer.questionId,
+                            answer.selectedOptionId,
+                            answer.textAnswer,
+
+                            answer.isCorrect
+                                ? 1
+                                : 0,
+
+                            quizId,
+                            studentId
+                        ]
+                    });
+
+                }
+            );
+
+
+            try {
+
+                await tursoDb.batch(
+                    statements,
+                    "immediate"
+                );
+
+            } catch (databaseError) {
+
+                const databaseMessage =
+                    String(
+                        databaseError &&
+                        databaseError.message ||
+                        ""
+                    );
+
+
+                /*
+                    Dua request Submit yang datang
+                    hampir bersamaan akan bertabrakan
+                    dengan UNIQUE(quiz_id, student_id).
+                */
+                if (
+                    databaseMessage.includes(
+                        "UNIQUE"
+                    ) ||
+                    databaseMessage.includes(
+                        "quiz_attempts.quiz_id"
+                    )
+                ) {
+
+                    const savedAttempt =
+                        await tursoDb.get(
+                            `
+                                SELECT
+                                    id
+
+                                FROM quiz_attempts
+
+                                WHERE
+                                    quiz_id = ?
+                                    AND student_id = ?
+
+                                LIMIT 1
+                            `,
+                            [
+                                quizId,
+                                studentId
+                            ]
+                        );
+
+
+                    return res
+                        .status(409)
+                        .json({
+                            success:
+                                false,
+
+                            code:
+                                "QUIZ_ALREADY_SUBMITTED",
+
+                            message:
+                                "Quiz hanya dapat dikirim satu kali.",
+
+                            attemptId:
+                                savedAttempt
+                                    ? Number(
+                                        savedAttempt.id
+                                    )
+                                    : null
+                        });
+
+                }
+
+
+                throw databaseError;
+
+            }
+
+
+            /*
+                Ambil ID authoritative attempt yang
+                baru berhasil disimpan.
+            */
+            const savedAttempt =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            score,
+                            correct_count,
+                            total_questions,
+                            submitted_at
+
+                        FROM quiz_attempts
+
+                        WHERE
+                            quiz_id = ?
+                            AND student_id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        quizId,
+                        studentId
+                    ]
+                );
+
+
+            if (!savedAttempt) {
+
+                throw new Error(
+                    "Attempt yang baru disimpan tidak ditemukan."
+                );
+
+            }
+
+
+            return res
+                .status(201)
+                .json({
+                    success:
+                        true,
+
+                    attemptId:
+                        Number(
+                            savedAttempt.id
+                        ),
+
+                    score:
+                        Number(
+                            savedAttempt.score
+                        ),
+
+                    correctCount:
+                        Number(
+                            savedAttempt.correct_count
+                        ),
+
+                    totalQuestions:
+                        Number(
+                            savedAttempt.total_questions
+                        ),
+
+                    submittedAt:
+                        savedAttempt.submitted_at
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal Submit Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengirim jawaban Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - ATTEMPT DETAIL HELPER
+// ========================================
+
+async function getQuizAttemptDetail(
+    attemptId,
+    studentId = null
+) {
+
+    await ensureQuizTables();
+
+
+    /*
+        Jika studentId diberikan, query hanya
+        boleh menemukan attempt milik siswa itu.
+
+        Jika null, helper dapat digunakan oleh
+        endpoint Admin.
+    */
+    const attempt =
+        await tursoDb.get(
+            `
+                SELECT
+                    quiz_attempts.id,
+                    quiz_attempts.quiz_id,
+                    quiz_attempts.student_id,
+                    quiz_attempts.correct_count,
+                    quiz_attempts.total_questions,
+                    quiz_attempts.score,
+                    quiz_attempts.submitted_at,
+
+                    quizzes.title,
+                    quizzes.description,
+                    quizzes.subject,
+                    quizzes.material,
+
+                    students.name
+                        AS student_name,
+
+                    students.class_name
+
+                FROM quiz_attempts
+
+                INNER JOIN quizzes
+                    ON quizzes.id =
+                        quiz_attempts.quiz_id
+
+                INNER JOIN students
+                    ON students.id =
+                        quiz_attempts.student_id
+
+                WHERE
+                    quiz_attempts.id = ?
+
+                    AND (
+                        ? IS NULL
+
+                        OR
+
+                        quiz_attempts.student_id = ?
+                    )
+            `,
+            [
+                attemptId,
+                studentId,
+                studentId
+            ]
+        );
+
+
+    if (!attempt) {
+
+        return null;
+
+    }
+
+
+    /*
+        Ambil semua jawaban dalam urutan soal.
+
+        selected_option adalah pilihan siswa.
+        correct_option adalah pilihan benar.
+    */
+    const answerRows =
+        await tursoDb.all(
+            `
+                SELECT
+                    quiz_questions.id
+                        AS question_id,
+
+                    quiz_questions.position,
+                    quiz_questions.question_type,
+                    quiz_questions.question_text,
+                    quiz_questions.correct_text_answer,
+
+                    quiz_answers.text_answer,
+                    quiz_answers.is_correct,
+
+                    selected_option.id
+                        AS selected_option_id,
+
+                    selected_option.option_text
+                        AS selected_option_text,
+
+                    selected_option.position
+                        AS selected_option_position,
+
+                    correct_option.id
+                        AS correct_option_id,
+
+                    correct_option.option_text
+                        AS correct_option_text,
+
+                    correct_option.position
+                        AS correct_option_position
+
+                FROM quiz_questions
+
+                LEFT JOIN quiz_answers
+                    ON quiz_answers.question_id =
+                        quiz_questions.id
+
+                    AND
+                    quiz_answers.attempt_id = ?
+
+                LEFT JOIN quiz_options
+                    AS selected_option
+
+                    ON selected_option.id =
+                        quiz_answers.selected_option_id
+
+                LEFT JOIN quiz_options
+                    AS correct_option
+
+                    ON correct_option.question_id =
+                        quiz_questions.id
+
+                    AND
+                    correct_option.is_correct = 1
+
+                WHERE
+                    quiz_questions.quiz_id = ?
+
+                ORDER BY
+                    quiz_questions.position ASC,
+                    quiz_questions.id ASC
+            `,
+            [
+                attemptId,
+                Number(
+                    attempt.quiz_id
+                )
+            ]
+        );
+
+
+    const answers =
+        answerRows.map(
+            (
+                answerRow
+            ) => {
+
+                const type =
+                    answerRow.question_type;
+
+
+                let studentAnswer;
+                let correctAnswer;
+
+
+                if (
+                    type ===
+                    "mcq"
+                ) {
+
+                    studentAnswer =
+                        answerRow
+                            .selected_option_text ||
+                        "Tidak menjawab";
+
+
+                    correctAnswer =
+                        answerRow
+                            .correct_option_text ||
+                        "Kunci jawaban tidak ditemukan";
+
+                } else {
+
+                    /*
+                        Jawaban asli siswa, bukan
+                        hasil normalisasi.
+                    */
+                    studentAnswer =
+                        answerRow.text_answer &&
+                        answerRow.text_answer.trim()
+
+                            ? answerRow.text_answer
+                            : "Tidak menjawab";
+
+
+                    correctAnswer =
+                        answerRow
+                            .correct_text_answer ||
+                        "Kunci jawaban tidak ditemukan";
+
+                }
+
+
+                return {
+                    questionId:
+                        Number(
+                            answerRow.question_id
+                        ),
+
+                    position:
+                        Number(
+                            answerRow.position
+                        ),
+
+                    type,
+
+                    text:
+                        answerRow.question_text,
+
+                    studentAnswer,
+
+                    correctAnswer,
+
+                    selectedOptionId:
+                        answerRow.selected_option_id
+                            ? Number(
+                                answerRow
+                                    .selected_option_id
+                            )
+                            : null,
+
+                    selectedOptionPosition:
+                        answerRow
+                            .selected_option_position
+                            ? Number(
+                                answerRow
+                                    .selected_option_position
+                            )
+                            : null,
+
+                    correctOptionId:
+                        answerRow.correct_option_id
+                            ? Number(
+                                answerRow
+                                    .correct_option_id
+                            )
+                            : null,
+
+                    correctOptionPosition:
+                        answerRow
+                            .correct_option_position
+                            ? Number(
+                                answerRow
+                                    .correct_option_position
+                            )
+                            : null,
+
+                    isCorrect:
+                        Number(
+                            answerRow.is_correct ||
+                            0
+                        ) === 1
+                };
+
+            }
+        );
+
+
+    return {
+        id:
+            Number(
+                attempt.id
+            ),
+
+        quizId:
+            Number(
+                attempt.quiz_id
+            ),
+
+        studentId:
+            Number(
+                attempt.student_id
+            ),
+
+        studentName:
+            attempt.student_name,
+
+        className:
+            attempt.class_name,
+
+        title:
+            attempt.title,
+
+        description:
+            attempt.description,
+
+        subject:
+            attempt.subject,
+
+        material:
+            attempt.material,
+
+        correctCount:
+            Number(
+                attempt.correct_count
+            ),
+
+        totalQuestions:
+            Number(
+                attempt.total_questions
+            ),
+
+        score:
+            Number(
+                attempt.score
+            ),
+
+        submittedAt:
+            attempt.submitted_at,
+
+        answers
+    };
+
+}
+
+// ========================================
+// ONLINE QUIZ - STUDENT RESULT
+// ========================================
+
+app.get(
+    "/api/student/quiz-attempts/:attemptId",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.studentId) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        try {
+
+            await ensureQuizTables();
+
+
+            const studentId =
+                Number(
+                    req.session.studentId
+                );
+
+
+            let attemptId;
+
+
+            try {
+
+                attemptId =
+                    parsePositiveQuizId(
+                        req.params.attemptId,
+                        "ID hasil Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                studentId diteruskan ke helper.
+
+                Jadi attempt milik siswa lain akan
+                terlihat seperti tidak ditemukan.
+            */
+            const attempt =
+                await getQuizAttemptDetail(
+                    attemptId,
+                    studentId
+                );
+
+
+            if (!attempt) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Hasil Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                attempt
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil hasil Quiz Student:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil hasil Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - ADMIN RESPONDENTS
+// ========================================
+
+app.get(
+    "/api/admin/quizzes/:quizId/respondents",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const quiz =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            title,
+                            subject,
+                            material,
+                            status
+
+                        FROM quizzes
+
+                        WHERE
+                            id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!quiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                DAFTAR RESPONDEN
+            */
+            const respondentRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            quiz_attempts.id
+                                AS attempt_id,
+
+                            quiz_attempts.student_id,
+                            quiz_attempts.correct_count,
+                            quiz_attempts.total_questions,
+                            quiz_attempts.score,
+                            quiz_attempts.submitted_at,
+
+                            students.name
+                                AS student_name,
+
+                            students.class_name
+
+                        FROM quiz_attempts
+
+                        INNER JOIN students
+                            ON students.id =
+                                quiz_attempts.student_id
+
+                        WHERE
+                            quiz_attempts.quiz_id = ?
+
+                        ORDER BY
+                            quiz_attempts.submitted_at
+                                DESC,
+
+                            quiz_attempts.id
+                                DESC
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            const respondents =
+                respondentRows.map(
+                    (
+                        respondentRow
+                    ) => ({
+
+                        attemptId:
+                            Number(
+                                respondentRow.attempt_id
+                            ),
+
+                        studentId:
+                            Number(
+                                respondentRow.student_id
+                            ),
+
+                        studentName:
+                            respondentRow.student_name,
+
+                        className:
+                            respondentRow.class_name,
+
+                        correctCount:
+                            Number(
+                                respondentRow.correct_count
+                            ),
+
+                        totalQuestions:
+                            Number(
+                                respondentRow.total_questions
+                            ),
+
+                        score:
+                            Number(
+                                respondentRow.score
+                            ),
+
+                        submittedAt:
+                            respondentRow.submitted_at
+
+                    })
+                );
+
+
+            /*
+                Array nilai untuk menghitung average,
+                median, minimum, dan maximum.
+            */
+            const sortedScores =
+                respondents
+                    .map(
+                        (
+                            respondent
+                        ) =>
+                            respondent.score
+                    )
+                    .sort(
+                        (
+                            firstScore,
+                            secondScore
+                        ) =>
+                            firstScore -
+                            secondScore
+                    );
+
+
+            const totalRespondents =
+                sortedScores.length;
+
+
+            const average =
+                totalRespondents > 0
+
+                    ? Math.round(
+                        sortedScores.reduce(
+                            (
+                                total,
+                                score
+                            ) =>
+                                total +
+                                score,
+
+                            0
+                        ) /
+                        totalRespondents
+                    )
+
+                    : 0;
+
+
+            let median =
+                0;
+
+
+            if (
+                totalRespondents > 0
+            ) {
+
+                const middleIndex =
+                    Math.floor(
+                        totalRespondents /
+                        2
+                    );
+
+
+                if (
+                    totalRespondents %
+                        2 ===
+                    1
+                ) {
+
+                    median =
+                        sortedScores[
+                            middleIndex
+                        ];
+
+                } else {
+
+                    median =
+                        Math.round(
+                            (
+                                sortedScores[
+                                    middleIndex -
+                                    1
+                                ] +
+
+                                sortedScores[
+                                    middleIndex
+                                ]
+                            ) /
+                            2
+                        );
+
+                }
+
+            }
+
+
+            const highest =
+                totalRespondents > 0
+
+                    ? sortedScores[
+                        totalRespondents -
+                        1
+                    ]
+
+                    : 0;
+
+
+            const lowest =
+                totalRespondents > 0
+
+                    ? sortedScores[0]
+                    : 0;
+
+
+            /*
+                DISTRIBUSI NILAI
+
+                10 kelompok:
+                0-9 sampai 90-100.
+            */
+            const scoreDistribution =
+                Array.from(
+                    {
+                        length:
+                            10
+                    },
+
+                    (
+                        unused,
+                        index
+                    ) => {
+
+                        const minimum =
+                            index *
+                            10;
+
+
+                        const maximum =
+                            index ===
+                            9
+
+                                ? 100
+                                : minimum +
+                                    9;
+
+
+                        const count =
+                            sortedScores.filter(
+                                (
+                                    score
+                                ) =>
+                                    score >=
+                                        minimum &&
+
+                                    score <=
+                                        maximum
+                            ).length;
+
+
+                        return {
+                            label:
+                                `${minimum}–${maximum}`,
+
+                            minimum,
+
+                            maximum,
+
+                            count,
+
+                            percentage:
+                                totalRespondents > 0
+
+                                    ? Math.round(
+                                        (
+                                            count /
+                                            totalRespondents
+                                        ) *
+                                        100
+                                    )
+
+                                    : 0
+                        };
+
+                    }
+                );
+
+
+            /*
+                TINGKAT BENAR PER SOAL
+
+                quiz_answers selalu mempunyai satu
+                row untuk setiap soal, termasuk jika
+                siswa tidak menjawab.
+            */
+            const accuracyRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            quiz_questions.id
+                                AS question_id,
+
+                            quiz_questions.position,
+                            quiz_questions.question_text,
+
+                            SUM(
+                                CASE
+                                    WHEN
+                                        quiz_answers.is_correct =
+                                            1
+                                        THEN 1
+
+                                    ELSE 0
+                                END
+                            )
+                                AS correct_count,
+
+                            COUNT(
+                                quiz_answers.id
+                            )
+                                AS answer_count
+
+                        FROM quiz_questions
+
+                        LEFT JOIN quiz_answers
+                            ON quiz_answers.question_id =
+                                quiz_questions.id
+
+                        WHERE
+                            quiz_questions.quiz_id = ?
+
+                        GROUP BY
+                            quiz_questions.id,
+                            quiz_questions.position,
+                            quiz_questions.question_text
+
+                        ORDER BY
+                            quiz_questions.position ASC,
+                            quiz_questions.id ASC
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            const questionAccuracy =
+                accuracyRows.map(
+                    (
+                        accuracyRow
+                    ) => {
+
+                        const correctCount =
+                            Number(
+                                accuracyRow.correct_count ||
+                                0
+                            );
+
+
+                        const answerCount =
+                            Number(
+                                accuracyRow.answer_count ||
+                                0
+                            );
+
+
+                        return {
+                            questionId:
+                                Number(
+                                    accuracyRow.question_id
+                                ),
+
+                            position:
+                                Number(
+                                    accuracyRow.position
+                                ),
+
+                            text:
+                                accuracyRow.question_text,
+
+                            correctCount,
+
+                            incorrectCount:
+                                Math.max(
+                                    0,
+                                    answerCount -
+                                    correctCount
+                                ),
+
+                            answerCount,
+
+                            percentage:
+                                answerCount > 0
+
+                                    ? Math.round(
+                                        (
+                                            correctCount /
+                                            answerCount
+                                        ) *
+                                        100
+                                    )
+
+                                    : 0
+                        };
+
+                    }
+                );
+
+
+            return res.json({
+                success:
+                    true,
+
+                quiz: {
+                    id:
+                        Number(
+                            quiz.id
+                        ),
+
+                    title:
+                        quiz.title,
+
+                    subject:
+                        quiz.subject,
+
+                    material:
+                        quiz.material,
+
+                    status:
+                        quiz.status
+                },
+
+                summary: {
+                    totalRespondents,
+                    average,
+                    median,
+                    highest,
+                    lowest,
+                    scoreDistribution,
+                    questionAccuracy
+                },
+
+                respondents
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil responden Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil responden Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - QUESTION RESPONSE SUMMARY
+// ========================================
+
+app.get(
+    "/api/admin/quizzes/:quizId/questions/:questionId/response-summary",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+            let questionId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+
+                questionId =
+                    parsePositiveQuizId(
+                        req.params.questionId,
+                        "ID soal"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Pastikan soal benar-benar merupakan
+                bagian dari Quiz pada URL.
+            */
+            const question =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            quiz_id,
+                            position,
+                            question_type,
+                            question_text,
+                            correct_text_answer
+
+                        FROM quiz_questions
+
+                        WHERE
+                            id = ?
+                            AND quiz_id = ?
+                    `,
+                    [
+                        questionId,
+                        quizId
+                    ]
+                );
+
+
+            if (!question) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Soal tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                Satu row untuk setiap siswa yang
+                telah submit Quiz.
+
+                LEFT JOIN memastikan siswa yang
+                tidak menjawab tetap muncul.
+            */
+            const responseRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            quiz_attempts.id
+                                AS attempt_id,
+
+                            students.id
+                                AS student_id,
+
+                            students.name
+                                AS student_name,
+
+                            students.class_name,
+
+                            quiz_answers.text_answer,
+                            quiz_answers.is_correct,
+
+                            selected_option.id
+                                AS option_id,
+
+                            selected_option.option_text,
+
+                            selected_option.position
+                                AS option_position
+
+                        FROM quiz_attempts
+
+                        INNER JOIN students
+                            ON students.id =
+                                quiz_attempts.student_id
+
+                        LEFT JOIN quiz_answers
+                            ON quiz_answers.attempt_id =
+                                quiz_attempts.id
+
+                            AND
+                            quiz_answers.question_id = ?
+
+                        LEFT JOIN quiz_options
+                            AS selected_option
+
+                            ON selected_option.id =
+                                quiz_answers.selected_option_id
+
+                        WHERE
+                            quiz_attempts.quiz_id = ?
+
+                        ORDER BY
+                            students.name
+                                COLLATE NOCASE ASC,
+
+                            students.id ASC
+                    `,
+                    [
+                        questionId,
+                        quizId
+                    ]
+                );
+
+
+            const totalRespondents =
+                responseRows.length;
+
+
+            let groups =
+                [];
+
+
+            /*
+                ==================================
+                PILIHAN GANDA
+                ==================================
+            */
+            if (
+                question.question_type ===
+                "mcq"
+            ) {
+
+                const optionRows =
+                    await tursoDb.all(
+                        `
+                            SELECT
+                                id,
+                                option_text,
+                                position,
+                                is_correct
+
+                            FROM quiz_options
+
+                            WHERE
+                                question_id = ?
+
+                            ORDER BY
+                                position ASC,
+                                id ASC
+                        `,
+                        [
+                            questionId
+                        ]
+                    );
+
+
+                groups =
+                    optionRows.map(
+                        (
+                            optionRow
+                        ) => {
+
+                            const optionId =
+                                Number(
+                                    optionRow.id
+                                );
+
+
+                            const matchingRows =
+                                responseRows.filter(
+                                    (
+                                        responseRow
+                                    ) =>
+                                        Number(
+                                            responseRow.option_id
+                                        ) ===
+                                        optionId
+                                );
+
+
+                            return {
+                                key:
+                                    String(
+                                        optionId
+                                    ),
+
+                                optionId,
+
+                                position:
+                                    Number(
+                                        optionRow.position
+                                    ),
+
+                                label:
+                                    optionRow.option_text,
+
+                                isCorrect:
+                                    Number(
+                                        optionRow.is_correct
+                                    ) === 1,
+
+                                count:
+                                    matchingRows.length,
+
+                                percentage:
+                                    totalRespondents > 0
+
+                                        ? Math.round(
+                                            (
+                                                matchingRows.length /
+                                                totalRespondents
+                                            ) *
+                                            100
+                                        )
+
+                                        : 0,
+
+                                students:
+                                    matchingRows.map(
+                                        (
+                                            responseRow
+                                        ) => ({
+
+                                            attemptId:
+                                                Number(
+                                                    responseRow
+                                                        .attempt_id
+                                                ),
+
+                                            studentId:
+                                                Number(
+                                                    responseRow
+                                                        .student_id
+                                                ),
+
+                                            studentName:
+                                                responseRow
+                                                    .student_name,
+
+                                            className:
+                                                responseRow
+                                                    .class_name
+
+                                        })
+                                    )
+                            };
+
+                        }
+                    );
+
+
+                /*
+                    Responden yang tidak memilih
+                    satu pun option mendapat kelompok
+                    Tidak menjawab.
+                */
+                const unansweredRows =
+                    responseRows.filter(
+                        (
+                            responseRow
+                        ) =>
+                            !responseRow.option_id
+                    );
+
+
+                if (
+                    unansweredRows.length >
+                    0
+                ) {
+
+                    groups.push({
+                        key:
+                            "__empty__",
+
+                        optionId:
+                            null,
+
+                        position:
+                            null,
+
+                        label:
+                            "Tidak menjawab",
+
+                        isCorrect:
+                            false,
+
+                        count:
+                            unansweredRows.length,
+
+                        percentage:
+                            totalRespondents > 0
+
+                                ? Math.round(
+                                    (
+                                        unansweredRows.length /
+                                        totalRespondents
+                                    ) *
+                                    100
+                                )
+
+                                : 0,
+
+                        students:
+                            unansweredRows.map(
+                                (
+                                    responseRow
+                                ) => ({
+
+                                    attemptId:
+                                        Number(
+                                            responseRow
+                                                .attempt_id
+                                        ),
+
+                                    studentId:
+                                        Number(
+                                            responseRow
+                                                .student_id
+                                        ),
+
+                                    studentName:
+                                        responseRow
+                                            .student_name,
+
+                                    className:
+                                        responseRow
+                                            .class_name
+
+                                })
+                            )
+                    });
+
+                }
+
+            } else {
+
+                /*
+                    ==================================
+                    ISIAN SINGKAT
+                    ==================================
+
+                    Pengelompokan memakai jawaban
+                    yang sudah dinormalisasi.
+
+                    Jawaban asli tetap disimpan pada
+                    setiap student dalam group.
+                */
+                const groupMap =
+                    new Map();
+
+
+                responseRows.forEach(
+                    (
+                        responseRow
+                    ) => {
+
+                        const rawAnswer =
+                            String(
+                                responseRow.text_answer ||
+                                ""
+                            );
+
+
+                        const normalizedAnswer =
+                            normalizeQuizAnswer(
+                                rawAnswer
+                            );
+
+
+                        const groupKey =
+                            normalizedAnswer ||
+                            "__empty__";
+
+
+                        if (
+                            !groupMap.has(
+                                groupKey
+                            )
+                        ) {
+
+                            groupMap.set(
+                                groupKey,
+                                {
+                                    key:
+                                        groupKey,
+
+                                    /*
+                                        Label memakai jawaban asli
+                                        pertama dalam kelompok.
+                                    */
+                                    label:
+                                        normalizedAnswer
+
+                                            ? rawAnswer.trim()
+                                            : "Tidak menjawab",
+
+                                    isCorrect:
+                                        Number(
+                                            responseRow.is_correct ||
+                                            0
+                                        ) === 1,
+
+                                    count:
+                                        0,
+
+                                    percentage:
+                                        0,
+
+                                    students:
+                                        []
+                                }
+                            );
+
+                        }
+
+
+                        const group =
+                            groupMap.get(
+                                groupKey
+                            );
+
+
+                        group.count +=
+                            1;
+
+
+                        group.students.push({
+                            attemptId:
+                                Number(
+                                    responseRow.attempt_id
+                                ),
+
+                            studentId:
+                                Number(
+                                    responseRow.student_id
+                                ),
+
+                            studentName:
+                                responseRow.student_name,
+
+                            className:
+                                responseRow.class_name,
+
+                            /*
+                                Pertahankan input asli,
+                                termasuk kapitalisasi.
+                            */
+                            rawAnswer:
+                                rawAnswer ||
+                                "Tidak menjawab",
+
+                            isCorrect:
+                                Number(
+                                    responseRow.is_correct ||
+                                    0
+                                ) === 1
+                        });
+
+                    }
+                );
+
+
+                groups =
+                    Array.from(
+                        groupMap.values()
+                    )
+                        .map(
+                            (
+                                group
+                            ) => ({
+
+                                ...group,
+
+                                percentage:
+                                    totalRespondents > 0
+
+                                        ? Math.round(
+                                            (
+                                                group.count /
+                                                totalRespondents
+                                            ) *
+                                            100
+                                        )
+
+                                        : 0
+
+                            })
+                        )
+                        .sort(
+                            (
+                                firstGroup,
+                                secondGroup
+                            ) => {
+
+                                /*
+                                    Jumlah terbanyak di atas.
+                                    Jika sama, urut alfabetis.
+                                */
+                                if (
+                                    secondGroup.count !==
+                                    firstGroup.count
+                                ) {
+
+                                    return (
+                                        secondGroup.count -
+                                        firstGroup.count
+                                    );
+
+                                }
+
+
+                                return (
+                                    firstGroup.label
+                                        .localeCompare(
+                                            secondGroup.label,
+                                            "id"
+                                        )
+                                );
+
+                            }
+                        );
+
+            }
+
+
+            /*
+                Daftar seluruh jawaban untuk tabel
+                di bawah chart.
+            */
+            const answers =
+                responseRows.map(
+                    (
+                        responseRow
+                    ) => {
+
+                        let answer;
+
+
+                        if (
+                            question.question_type ===
+                            "mcq"
+                        ) {
+
+                            answer =
+                                responseRow.option_text ||
+                                "Tidak menjawab";
+
+                        } else {
+
+                            answer =
+                                responseRow.text_answer &&
+                                responseRow.text_answer.trim()
+
+                                    ? responseRow.text_answer
+                                    : "Tidak menjawab";
+
+                        }
+
+
+                        return {
+                            attemptId:
+                                Number(
+                                    responseRow.attempt_id
+                                ),
+
+                            studentId:
+                                Number(
+                                    responseRow.student_id
+                                ),
+
+                            studentName:
+                                responseRow.student_name,
+
+                            className:
+                                responseRow.class_name,
+
+                            optionId:
+                                responseRow.option_id
+
+                                    ? Number(
+                                        responseRow.option_id
+                                    )
+                                    : null,
+
+                            optionPosition:
+                                responseRow.option_position
+
+                                    ? Number(
+                                        responseRow
+                                            .option_position
+                                    )
+                                    : null,
+
+                            answer,
+
+                            isCorrect:
+                                Number(
+                                    responseRow.is_correct ||
+                                    0
+                                ) === 1
+                        };
+
+                    }
+                );
+
+
+            const correctCount =
+                answers.filter(
+                    (
+                        answer
+                    ) =>
+                        answer.isCorrect
+                ).length;
+
+
+            return res.json({
+                success:
+                    true,
+
+                question: {
+                    id:
+                        Number(
+                            question.id
+                        ),
+
+                    quizId:
+                        Number(
+                            question.quiz_id
+                        ),
+
+                    position:
+                        Number(
+                            question.position
+                        ),
+
+                    type:
+                        question.question_type,
+
+                    text:
+                        question.question_text,
+
+                    correctText:
+                        question.correct_text_answer,
+
+                    totalRespondents,
+
+                    correctCount,
+
+                    incorrectCount:
+                        Math.max(
+                            0,
+                            totalRespondents -
+                            correctCount
+                        ),
+
+                    percentageCorrect:
+                        totalRespondents > 0
+
+                            ? Math.round(
+                                (
+                                    correctCount /
+                                    totalRespondents
+                                ) *
+                                100
+                            )
+
+                            : 0,
+
+                    groups,
+
+                    answers
+                }
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil summary jawaban soal:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil ringkasan jawaban."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - ADMIN ATTEMPT DETAIL
+// ========================================
+
+app.get(
+    "/api/admin/quiz-attempts/:attemptId",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let attemptId;
+
+
+            try {
+
+                attemptId =
+                    parsePositiveQuizId(
+                        req.params.attemptId,
+                        "ID respons Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                studentId null berarti Admin boleh
+                membuka attempt siswa mana pun.
+            */
+            const attempt =
+                await getQuizAttemptDetail(
+                    attemptId,
+                    null
+                );
+
+
+            if (!attempt) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Respons Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                attempt
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil detail respons Admin:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil detail respons."
+                });
+
+        }
+
+    }
+);
 
 // ========================================
 // GENERATE KODE SISWA
@@ -532,6 +5291,1273 @@ function generateTeacherCode() {
 
 
     return result;
+}
+
+// ========================================
+// ONLINE QUIZ - DATABASE
+// ========================================
+
+async function initializeQuizTables() {
+
+    /*
+        Metadata utama Quiz.
+
+        status:
+        - draft
+        - published
+        - closed
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS quizzes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            title TEXT NOT NULL
+                DEFAULT 'Quiz Tanpa Judul',
+
+            description TEXT,
+
+            subject TEXT,
+
+            material TEXT,
+
+            status TEXT NOT NULL
+                DEFAULT 'draft',
+
+            due_at DATETIME,
+
+            created_by INTEGER NOT NULL,
+
+            created_at DATETIME NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            updated_at DATETIME NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            published_at DATETIME,
+
+            FOREIGN KEY (created_by)
+                REFERENCES admins(id)
+        )
+    `);
+
+
+    /*
+        Semua soal milik Quiz.
+
+        question_type:
+        - mcq
+        - short_answer
+
+        client_key adalah ID sementara/stabil
+        dari editor browser. Ini membantu backend
+        mencocokkan soal dan pilihan ketika autosave.
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+        quiz_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            quiz_id INTEGER NOT NULL,
+
+            client_key TEXT NOT NULL,
+
+            question_type TEXT NOT NULL,
+
+            question_text TEXT NOT NULL
+                DEFAULT '',
+
+            correct_text_answer TEXT,
+
+            position INTEGER NOT NULL,
+
+            created_at DATETIME NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            updated_at DATETIME NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE (
+                quiz_id,
+                client_key
+            ),
+
+            UNIQUE (
+                quiz_id,
+                position
+            ),
+
+            FOREIGN KEY (quiz_id)
+                REFERENCES quizzes(id)
+                ON DELETE CASCADE
+        )
+    `);
+
+
+    /*
+        Pilihan untuk soal MCQ.
+
+        Soal short_answer tidak mempunyai row
+        pada tabel quiz_options.
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+        quiz_options (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            question_id INTEGER NOT NULL,
+
+            option_text TEXT NOT NULL
+                DEFAULT '',
+
+            position INTEGER NOT NULL,
+
+            is_correct INTEGER NOT NULL
+                DEFAULT 0,
+
+            UNIQUE (
+                question_id,
+                position
+            ),
+
+            FOREIGN KEY (question_id)
+                REFERENCES quiz_questions(id)
+                ON DELETE CASCADE
+        )
+    `);
+
+
+    /*
+        Satu row adalah satu submission siswa.
+
+        Constraint UNIQUE memastikan satu siswa
+        hanya dapat submit satu kali pada Quiz
+        yang sama.
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+        quiz_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            quiz_id INTEGER NOT NULL,
+
+            student_id INTEGER NOT NULL,
+
+            correct_count INTEGER NOT NULL,
+
+            total_questions INTEGER NOT NULL,
+
+            score INTEGER NOT NULL,
+
+            submitted_at DATETIME NOT NULL
+                DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE (
+                quiz_id,
+                student_id
+            ),
+
+            FOREIGN KEY (quiz_id)
+                REFERENCES quizzes(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (student_id)
+                REFERENCES students(id)
+                ON DELETE CASCADE
+        )
+    `);
+
+
+    /*
+        Jawaban siswa untuk setiap soal.
+
+        MCQ menggunakan selected_option_id.
+        Isian menggunakan text_answer.
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+        quiz_answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            attempt_id INTEGER NOT NULL,
+
+            question_id INTEGER NOT NULL,
+
+            selected_option_id INTEGER,
+
+            text_answer TEXT,
+
+            is_correct INTEGER NOT NULL
+                DEFAULT 0,
+
+            UNIQUE (
+                attempt_id,
+                question_id
+            ),
+
+            FOREIGN KEY (attempt_id)
+                REFERENCES quiz_attempts(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (question_id)
+                REFERENCES quiz_questions(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (selected_option_id)
+                REFERENCES quiz_options(id)
+                ON DELETE SET NULL
+        )
+    `);
+
+
+    /*
+        Mempercepat dashboard siswa ketika
+        mencari Quiz published berdasarkan deadline.
+    */
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+        idx_quizzes_status_due
+
+        ON quizzes (
+            status,
+            due_at
+        )
+    `);
+
+
+    /*
+        Mempercepat halaman Responden Admin.
+    */
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+        idx_quiz_attempts_quiz
+
+        ON quiz_attempts (
+            quiz_id,
+            submitted_at DESC
+        )
+    `);
+
+
+    /*
+        Mempercepat pencarian riwayat Quiz
+        milik satu siswa.
+    */
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+        idx_quiz_attempts_student
+
+        ON quiz_attempts (
+            student_id,
+            submitted_at DESC
+        )
+    `);
+
+
+    /*
+        Mempercepat pengambilan soal berurutan.
+    */
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+        idx_quiz_questions_quiz_position
+
+        ON quiz_questions (
+            quiz_id,
+            position
+        )
+    `);
+
+}
+
+
+/*
+    Promise disimpan supaya CREATE TABLE tidak
+    dijalankan berulang oleh banyak request
+    secara bersamaan.
+*/
+let quizTablesReadyPromise =
+    null;
+
+
+async function ensureQuizTables() {
+
+    if (quizTablesReadyPromise) {
+
+        return quizTablesReadyPromise;
+
+    }
+
+
+    quizTablesReadyPromise =
+        initializeQuizTables();
+
+
+    try {
+
+        await quizTablesReadyPromise;
+
+    } catch (error) {
+
+        /*
+            Jika Turso sedang gagal, request
+            berikutnya masih boleh mencoba ulang.
+        */
+        quizTablesReadyPromise =
+            null;
+
+
+        throw error;
+
+    }
+
+
+    return quizTablesReadyPromise;
+
+}
+
+// ========================================
+// ONLINE QUIZ - NORMALISASI
+// ========================================
+
+function normalizeQuizAnswer(
+    value
+) {
+
+    return String(
+        value || ""
+    )
+
+        /*
+            Menyamakan representasi karakter
+            Unicode yang secara visual sama.
+        */
+        .normalize(
+            "NFKC"
+        )
+
+        /*
+            Hapus spasi awal dan akhir.
+        */
+        .trim()
+
+        /*
+            Beberapa spasi, tab, atau line break
+            berurutan diubah menjadi satu spasi.
+        */
+        .replace(
+            /\s+/g,
+            " "
+        )
+
+        /*
+            Kapitalisasi tidak memengaruhi nilai.
+        */
+        .toLocaleLowerCase(
+            "id-ID"
+        );
+
+}
+
+function cleanQuizMetadata(
+    body = {}
+) {
+
+    const title =
+        String(
+            body.title || ""
+        )
+            .trim()
+            .slice(
+                0,
+                160
+            );
+
+
+    const description =
+        String(
+            body.description || ""
+        )
+            .trim()
+            .slice(
+                0,
+                3000
+            );
+
+
+    const subject =
+        String(
+            body.subject || ""
+        )
+            .trim()
+            .slice(
+                0,
+                100
+            );
+
+
+    const material =
+        String(
+            body.material || ""
+        )
+            .trim()
+            .slice(
+                0,
+                160
+            );
+
+
+    let dueAt =
+        null;
+
+
+    if (body.dueAt) {
+
+        const dueDate =
+            new Date(
+                body.dueAt
+            );
+
+
+        if (
+            Number.isNaN(
+                dueDate.getTime()
+            )
+        ) {
+
+            throw new Error(
+                "Deadline Quiz tidak valid."
+            );
+
+        }
+
+
+        /*
+            Database selalu menyimpan UTC.
+        */
+        dueAt =
+            dueDate.toISOString();
+
+    }
+
+
+    return {
+
+        /*
+            Draft kosong tetap mempunyai nama
+            yang dapat ditampilkan pada dashboard.
+        */
+        title:
+            title ||
+            "Quiz Tanpa Judul",
+
+        description:
+            description ||
+            null,
+
+        subject:
+            subject ||
+            null,
+
+        material:
+            material ||
+            null,
+
+        dueAt
+
+    };
+
+}
+
+function validateQuizQuestions(
+    rawQuestions,
+    strict = true
+) {
+
+    if (
+        !Array.isArray(
+            rawQuestions
+        )
+    ) {
+
+        throw new Error(
+            "Daftar soal Quiz tidak valid."
+        );
+
+    }
+
+
+    /*
+        Batasi jumlah soal agar request tidak
+        dapat membuat payload tanpa batas.
+    */
+    if (
+        rawQuestions.length >
+        100
+    ) {
+
+        throw new Error(
+            "Maksimal 100 soal dalam satu Quiz."
+        );
+
+    }
+
+
+    const usedClientKeys =
+        new Set();
+
+
+    return rawQuestions.map(
+        (
+            rawQuestion,
+            questionIndex
+        ) => {
+
+            const questionNumber =
+                questionIndex + 1;
+
+
+            const type =
+                rawQuestion &&
+                rawQuestion.type ===
+                    "short_answer"
+
+                    ? "short_answer"
+                    : "mcq";
+
+
+            const questionText =
+                String(
+                    rawQuestion &&
+                    rawQuestion.text ||
+                    ""
+                )
+                    .trim()
+                    .slice(
+                        0,
+                        3000
+                    );
+
+
+            /*
+                clientKey harus stabil dan unik
+                dalam satu Quiz.
+            */
+            const clientKey =
+                String(
+                    rawQuestion &&
+                    rawQuestion.clientKey ||
+                    `question-${questionNumber}`
+                )
+                    .trim()
+                    .slice(
+                        0,
+                        120
+                    );
+
+
+            if (!clientKey) {
+
+                throw new Error(
+                    `ID internal soal nomor ${questionNumber} tidak valid.`
+                );
+
+            }
+
+
+            if (
+                usedClientKeys.has(
+                    clientKey
+                )
+            ) {
+
+                throw new Error(
+                    `ID internal soal nomor ${questionNumber} duplikat.`
+                );
+
+            }
+
+
+            usedClientKeys.add(
+                clientKey
+            );
+
+
+            /*
+                Saat autosave draft, pertanyaan
+                belum selesai boleh disimpan.
+
+                Saat Publish, strict bernilai true
+                sehingga semua bagian wajib lengkap.
+            */
+            if (
+                strict &&
+                !questionText
+            ) {
+
+                throw new Error(
+                    `Pertanyaan nomor ${questionNumber} masih kosong.`
+                );
+
+            }
+
+
+            /*
+                ISIAN SINGKAT
+            */
+            if (
+                type ===
+                "short_answer"
+            ) {
+
+                const correctText =
+                    String(
+                        rawQuestion &&
+                        rawQuestion.correctText ||
+                        ""
+                    )
+                        .trim()
+                        .slice(
+                            0,
+                            1000
+                        );
+
+
+                if (
+                    strict &&
+                    !correctText
+                ) {
+
+                    throw new Error(
+                        `Kunci jawaban nomor ${questionNumber} masih kosong.`
+                    );
+
+                }
+
+
+                return {
+                    clientKey,
+                    type,
+                    text:
+                        questionText,
+
+                    correctText:
+                        correctText ||
+                        null,
+
+                    options:
+                        []
+                };
+
+            }
+
+
+            /*
+                PILIHAN GANDA
+            */
+            const rawOptions =
+                rawQuestion &&
+                Array.isArray(
+                    rawQuestion.options
+                )
+
+                    ? rawQuestion.options
+                    : [];
+
+
+            /*
+                MCQ selalu harus mempunyai empat
+                slot pilihan, termasuk pada draft.
+            */
+            if (
+                rawOptions.length !==
+                4
+            ) {
+
+                throw new Error(
+                    `Soal nomor ${questionNumber} harus mempunyai tepat 4 pilihan.`
+                );
+
+            }
+
+
+            const options =
+                rawOptions.map(
+                    (
+                        rawOption
+                    ) => ({
+
+                        text:
+                            String(
+                                rawOption &&
+                                rawOption.text ||
+                                ""
+                            )
+                                .trim()
+                                .slice(
+                                    0,
+                                    1000
+                                ),
+
+                        isCorrect:
+                            Boolean(
+                                rawOption &&
+                                rawOption.isCorrect
+                            )
+
+                    })
+                );
+
+
+            if (
+                strict &&
+                options.some(
+                    (option) =>
+                        !option.text
+                )
+            ) {
+
+                throw new Error(
+                    `Semua pilihan soal nomor ${questionNumber} wajib diisi.`
+                );
+
+            }
+
+
+            /*
+                Draft dengan pilihan kosong masih
+                boleh disimpan. Pengecekan duplikat
+                hanya wajib saat Publish.
+            */
+            if (strict) {
+
+                const normalizedOptions =
+                    options.map(
+                        (option) =>
+                            normalizeQuizAnswer(
+                                option.text
+                            )
+                    );
+
+
+                const uniqueOptions =
+                    new Set(
+                        normalizedOptions
+                    );
+
+
+                if (
+                    uniqueOptions.size !==
+                    4
+                ) {
+
+                    throw new Error(
+                        `Pilihan soal nomor ${questionNumber} tidak boleh sama.`
+                    );
+
+                }
+
+            }
+
+
+            const correctOptionCount =
+                options.filter(
+                    (option) =>
+                        option.isCorrect
+                ).length;
+
+
+            if (
+                strict &&
+                correctOptionCount !==
+                    1
+            ) {
+
+                throw new Error(
+                    `Pilih tepat satu jawaban benar untuk soal nomor ${questionNumber}.`
+                );
+
+            }
+
+
+            /*
+                Draft boleh belum mempunyai kunci,
+                tetapi tidak boleh mempunyai lebih
+                dari satu kunci.
+            */
+            if (
+                !strict &&
+                correctOptionCount >
+                    1
+            ) {
+
+                throw new Error(
+                    `Soal nomor ${questionNumber} mempunyai lebih dari satu jawaban benar.`
+                );
+
+            }
+
+
+            return {
+                clientKey,
+                type,
+                text:
+                    questionText,
+
+                correctText:
+                    null,
+
+                options
+            };
+
+        }
+    );
+
+}
+
+function parsePositiveQuizId(
+    value,
+    label = "ID"
+) {
+
+    const numericId =
+        Number(
+            value
+        );
+
+
+    if (
+        !Number.isInteger(
+            numericId
+        ) ||
+        numericId <= 0
+    ) {
+
+        throw new Error(
+            `${label} tidak valid.`
+        );
+
+    }
+
+
+    return numericId;
+
+}
+
+// ========================================
+// ONLINE QUIZ - DATA HELPERS
+// ========================================
+
+async function getQuizWithQuestions(
+    quizId,
+    includeAnswerKeys = false
+) {
+
+    await ensureQuizTables();
+
+
+    /*
+        Ambil metadata Quiz, nama pembuat,
+        dan jumlah responden.
+    */
+    const quiz =
+        await tursoDb.get(
+            `
+                SELECT
+                    quizzes.id,
+                    quizzes.title,
+                    quizzes.description,
+                    quizzes.subject,
+                    quizzes.material,
+                    quizzes.status,
+                    quizzes.due_at,
+                    quizzes.created_by,
+                    quizzes.created_at,
+                    quizzes.updated_at,
+                    quizzes.published_at,
+
+                    admins.name
+                        AS creator_name,
+
+                    (
+                        SELECT COUNT(*)
+
+                        FROM quiz_attempts
+
+                        WHERE
+                            quiz_attempts.quiz_id =
+                                quizzes.id
+                    )
+                        AS response_count
+
+                FROM quizzes
+
+                LEFT JOIN admins
+                    ON admins.id =
+                        quizzes.created_by
+
+                WHERE
+                    quizzes.id = ?
+            `,
+            [
+                quizId
+            ]
+        );
+
+
+    if (!quiz) {
+
+        return null;
+
+    }
+
+
+    /*
+        Ambil semua soal dalam urutan editor.
+    */
+    const questionRows =
+        await tursoDb.all(
+            `
+                SELECT
+                    id,
+                    client_key,
+                    question_type,
+                    question_text,
+                    correct_text_answer,
+                    position,
+                    created_at,
+                    updated_at
+
+                FROM quiz_questions
+
+                WHERE
+                    quiz_id = ?
+
+                ORDER BY
+                    position ASC,
+                    id ASC
+            `,
+            [
+                quizId
+            ]
+        );
+
+
+    /*
+        Semua pilihan diambil dalam satu query,
+        bukan satu request per soal.
+    */
+    const optionRows =
+        await tursoDb.all(
+            `
+                SELECT
+                    quiz_options.id,
+                    quiz_options.question_id,
+                    quiz_options.option_text,
+                    quiz_options.position,
+                    quiz_options.is_correct
+
+                FROM quiz_options
+
+                INNER JOIN quiz_questions
+                    ON quiz_questions.id =
+                        quiz_options.question_id
+
+                WHERE
+                    quiz_questions.quiz_id = ?
+
+                ORDER BY
+                    quiz_questions.position ASC,
+                    quiz_options.position ASC,
+                    quiz_options.id ASC
+            `,
+            [
+                quizId
+            ]
+        );
+
+
+    /*
+        Kelompokkan pilihan berdasarkan ID soal.
+    */
+    const optionsByQuestion =
+        new Map();
+
+
+    optionRows.forEach(
+        (
+            optionRow
+        ) => {
+
+            const questionId =
+                Number(
+                    optionRow.question_id
+                );
+
+
+            if (
+                !optionsByQuestion.has(
+                    questionId
+                )
+            ) {
+
+                optionsByQuestion.set(
+                    questionId,
+                    []
+                );
+
+            }
+
+
+            const option = {
+                id:
+                    Number(
+                        optionRow.id
+                    ),
+
+                text:
+                    optionRow.option_text,
+
+                position:
+                    Number(
+                        optionRow.position
+                    )
+            };
+
+
+            /*
+                Kunci MCQ hanya boleh dimasukkan
+                untuk request Admin/Guru.
+            */
+            if (includeAnswerKeys) {
+
+                option.isCorrect =
+                    Number(
+                        optionRow.is_correct
+                    ) === 1;
+
+            }
+
+
+            optionsByQuestion
+                .get(
+                    questionId
+                )
+                .push(
+                    option
+                );
+
+        }
+    );
+
+
+    const questions =
+        questionRows.map(
+            (
+                questionRow
+            ) => {
+
+                const questionId =
+                    Number(
+                        questionRow.id
+                    );
+
+
+                const question = {
+                    id:
+                        questionId,
+
+                    clientKey:
+                        questionRow.client_key,
+
+                    type:
+                        questionRow.question_type,
+
+                    text:
+                        questionRow.question_text,
+
+                    position:
+                        Number(
+                            questionRow.position
+                        ),
+
+                    options:
+                        optionsByQuestion.get(
+                            questionId
+                        ) ||
+                        []
+                };
+
+
+                /*
+                    Kunci Isian Singkat hanya boleh
+                    dikirim ke Admin/Guru.
+                */
+                if (
+                    includeAnswerKeys &&
+                    questionRow.question_type ===
+                        "short_answer"
+                ) {
+
+                    question.correctText =
+                        questionRow
+                            .correct_text_answer;
+
+                }
+
+
+                return question;
+
+            }
+        );
+
+
+    return {
+        id:
+            Number(
+                quiz.id
+            ),
+
+        title:
+            quiz.title,
+
+        description:
+            quiz.description,
+
+        subject:
+            quiz.subject,
+
+        material:
+            quiz.material,
+
+        status:
+            quiz.status,
+
+        dueAt:
+            quiz.due_at,
+
+        createdBy:
+            Number(
+                quiz.created_by
+            ),
+
+        creatorName:
+            quiz.creator_name,
+
+        createdAt:
+            quiz.created_at,
+
+        updatedAt:
+            quiz.updated_at,
+
+        publishedAt:
+            quiz.published_at,
+
+        responseCount:
+            Number(
+                quiz.response_count ||
+                0
+            ),
+
+        questionCount:
+            questions.length,
+
+        questions
+    };
+
+}
+
+async function quizHasResponses(
+    quizId
+) {
+
+    await ensureQuizTables();
+
+
+    const result =
+        await tursoDb.get(
+            `
+                SELECT EXISTS (
+                    SELECT
+                        1
+
+                    FROM quiz_attempts
+
+                    WHERE
+                        quiz_id = ?
+
+                    LIMIT 1
+                )
+                    AS has_responses
+            `,
+            [
+                quizId
+            ]
+        );
+
+
+    return (
+        Number(
+            result &&
+            result.has_responses ||
+            0
+        ) === 1
+    );
+
+}
+
+function getStudentQuizAvailabilityError(
+    quiz
+) {
+
+    if (!quiz) {
+
+        return {
+            status:
+                404,
+
+            message:
+                "Quiz tidak ditemukan."
+        };
+
+    }
+
+
+    if (
+        quiz.status !==
+        "published"
+    ) {
+
+        return {
+            status:
+                404,
+
+            message:
+                "Quiz tidak tersedia."
+        };
+
+    }
+
+
+    if (
+        quiz.dueAt &&
+        new Date(
+            quiz.dueAt
+        ).getTime() <=
+            Date.now()
+    ) {
+
+        return {
+            status:
+                410,
+
+            message:
+                "Deadline Quiz sudah berakhir."
+        };
+
+    }
+
+
+    return null;
+
 }
 
 // ========================================
@@ -1577,7 +7603,6 @@ if (
     return false;
 
 }
-
 
 // ========================================
 // ENFORCEMENT MUTE / BAN SISWA
