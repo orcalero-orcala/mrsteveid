@@ -6591,6 +6591,39 @@ async function ensureClassesTable() {
     `);
 }
 
+// ========================================
+// MASTER MAPEL
+// ========================================
+
+async function ensureSubjectsTable() {
+
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS subjects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+
+    /*
+        Masukkan otomatis semua mapel lama
+        yang sudah pernah digunakan dalam nilai.
+    */
+    await tursoDb.run(`
+        INSERT OR IGNORE INTO subjects (
+            name
+        )
+        SELECT DISTINCT
+            TRIM(subject)
+        FROM exam_scores
+        WHERE
+            subject IS NOT NULL
+            AND TRIM(subject) <> ''
+    `);
+
+}
+
 
 
 // ========================================
@@ -9847,18 +9880,28 @@ app.get(
     "/api/student/session-status",
     async (req, res) => {
 
-        if (!req.session.studentId) {
+/*
+    Tidak ada session server bukan berarti
+    akun siswa dihapus.
 
-            return res
-                .status(401)
-                .json({
-                    success: false,
-                    loggedOut: true,
-                    message:
-                        "Kamu telah dilogout."
-                });
+    Kondisi ini dapat terjadi setelah deploy,
+    cookie kedaluwarsa, atau membuka website
+    melalui browser/session baru.
+*/
+if (!req.session.studentId) {
 
-        }
+    return res
+        .status(401)
+        .json({
+            success: false,
+
+            loggedOut: false,
+
+            reason:
+                "session-missing"
+        });
+
+}
 
 
         const studentId =
@@ -9921,14 +9964,19 @@ app.get(
                         }
 
 
-                        return res
-                            .status(401)
-                            .json({
-                                success: false,
-                                loggedOut: true,
-                                message:
-                                    "Kamu telah dilogout."
-                            });
+return res
+    .status(401)
+    .json({
+        success: false,
+
+        loggedOut: true,
+
+        reason:
+            "student-data-reset",
+
+        message:
+            "Kamu telah dilogout karena data siswa telah direset."
+    });
 
                     }
                 );
@@ -10260,6 +10308,293 @@ if (
                     message:
                         "Gagal mengambil data poin."
                 });
+
+        }
+
+    }
+);
+
+// ========================================
+// ADMIN AMBIL SEMUA MAPEL
+// ========================================
+
+app.get(
+    "/api/admin/subjects",
+    async (req, res) => {
+
+        try {
+
+            await ensureSubjectsTable();
+
+
+            const subjects =
+                await tursoDb.all(`
+                    SELECT
+                        id,
+                        name,
+                        created_at
+                    FROM subjects
+                    ORDER BY name COLLATE NOCASE ASC
+                `);
+
+
+            return res.json({
+                success: true,
+                subjects
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil mapel:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil daftar mapel."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// ADMIN TAMBAH MAPEL
+// ========================================
+
+app.post(
+    "/api/admin/subjects",
+    async (req, res) => {
+
+        const {
+            name
+        } = req.body;
+
+
+        if (
+            typeof name !== "string" ||
+            name.trim().length === 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Nama mapel wajib diisi."
+            });
+
+        }
+
+
+        const cleanName =
+            name.trim();
+
+
+        if (cleanName.length > 80) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Nama mapel maksimal 80 karakter."
+            });
+
+        }
+
+
+        try {
+
+            await ensureSubjectsTable();
+
+
+            const existingSubject =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name
+                        FROM subjects
+                        WHERE name = ?
+                        COLLATE NOCASE
+                    `,
+                    [
+                        cleanName
+                    ]
+                );
+
+
+            if (existingSubject) {
+
+                return res.status(409).json({
+                    success: false,
+                    message:
+                        "Mapel tersebut sudah terdaftar."
+                });
+
+            }
+
+
+            const result =
+                await tursoDb.run(
+                    `
+                        INSERT INTO subjects (
+                            name
+                        )
+                        VALUES (?)
+                    `,
+                    [
+                        cleanName
+                    ]
+                );
+
+
+            return res.json({
+
+                success: true,
+
+                message:
+                    "Mapel berhasil ditambahkan.",
+
+                subject: {
+
+                    id:
+                        Number(
+                            result.lastInsertRowid
+                        ),
+
+                    name:
+                        cleanName
+
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error menambahkan mapel:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menambahkan mapel."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// ADMIN HAPUS MAPEL
+// ========================================
+
+app.delete(
+    "/api/admin/subjects/:subjectId",
+    async (req, res) => {
+
+        const subjectId =
+            Number(
+                req.params.subjectId
+            );
+
+
+        if (
+            !Number.isInteger(subjectId) ||
+            subjectId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID mapel tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            await ensureSubjectsTable();
+
+
+            const subject =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name
+                        FROM subjects
+                        WHERE id = ?
+                    `,
+                    [
+                        subjectId
+                    ]
+                );
+
+
+            if (!subject) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Mapel tidak ditemukan."
+                });
+
+            }
+
+
+            await tursoDb.run(
+                `
+                    DELETE FROM subjects
+                    WHERE id = ?
+                `,
+                [
+                    subjectId
+                ]
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                message:
+                    "Mapel berhasil dihapus.",
+
+                deletedSubject: {
+                    id:
+                        subject.id,
+
+                    name:
+                        subject.name
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error menghapus mapel:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menghapus mapel."
+            });
 
         }
 
@@ -10853,31 +11188,66 @@ app.post(
                 );
 
 
-            // =====================================
-            // PROSES MENTION
-            // =====================================
+// =====================================
+// PROSES MENTION
+// =====================================
 
-            for (const mention of mentions) {
-
-                const mentionId =
-                    Number(mention.id);
+const processedPostMentions =
+    new Set();
 
 
-                if (
-                    !Number.isInteger(
-                        mentionId
-                    )
-                ) {
+for (const mention of mentions) {
 
-                    continue;
-
-                }
+const mentionId =
+    Number(mention.id);
 
 
-                // =================================
-                // MENTION SISWA
-                // =================================
+if (
+    !Number.isInteger(
+        mentionId
+    )
+) {
 
+    continue;
+
+}
+
+
+/*
+    Student dan Admin dapat mempunyai angka ID
+    yang sama, sehingga type harus ikut disimpan.
+*/
+const mentionKey =
+    `${mention.type}:${mentionId}`;
+
+
+/*
+    Mention ini sudah pernah diproses dalam
+    Post yang sama. Jangan simpan atau membuat
+    notifikasi kedua.
+*/
+if (
+    processedPostMentions.has(
+        mentionKey
+    )
+) {
+
+    continue;
+
+}
+
+
+/*
+    Tandai sebelum masuk ke proses siswa/guru.
+*/
+processedPostMentions.add(
+    mentionKey
+);
+
+
+// =================================
+// MENTION SISWA
+// =================================
                 if (
                     mention.type ===
                     "student"
@@ -13423,11 +13793,14 @@ const [
 
         tursoDb.get(
             `
-                SELECT
-                    id,
-                    class_name
-                FROM announcements
-                WHERE id = ?
+SELECT
+    id,
+    student_id,
+    admin_id,
+    class_name,
+    message
+FROM announcements
+WHERE id = ?
             `,
             [
                 announcementId
@@ -13525,6 +13898,13 @@ if (!student) {
 // =====================================
 
 const processedMentions =
+    new Set();
+
+/*
+    Digunakan untuk memberikan prioritas
+    notifikasi Mention dibanding Reply.
+*/
+const validMentionRecipients =
     new Set();
 
 
@@ -13626,11 +14006,14 @@ for (const mention of mentions) {
                         ]
                     );
 
+validMentionRecipients.add(
+    `student:${mentionId}`
+);
 
-                    if (
-                        mentionId !==
-                        numericStudentId
-                    ) {
+
+if (
+    mentionId !== numericStudentId
+) {
 
                         await tursoDb.run(
                             `
@@ -13668,84 +14051,206 @@ for (const mention of mentions) {
                 }
 
 
-                // =================================
-                // MENTION GURU
-                // =================================
+ // =================================
+// MENTION GURU
+// =================================
 
-                if (
-                    mention.type ===
-                    "admin"
-                ) {
+if (
+    mention.type ===
+    "admin"
+) {
 
-                    const mentionedAdmin =
-                        await tursoDb.get(
-                            `
-                                SELECT id
-                                FROM admins
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedAdmin) {
-
-                        continue;
-
-                    }
+    const mentionedAdmin =
+        await tursoDb.get(
+            `
+                SELECT id
+                FROM admins
+                WHERE id = ?
+            `,
+            [
+                mentionId
+            ]
+        );
 
 
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, ?, NULL, ?)
-                        `,
-                        [
-                            announcementId,
-                            replyId,
-                            mentionId
-                        ]
-                    );
+    if (!mentionedAdmin) {
+
+        continue;
+
+    }
 
 
-                    await tursoDb.run(
-                        `
-                            INSERT INTO notifications (
-                                recipient_admin_id,
-                                sender_student_id,
-                                type,
-                                announcement_id,
-                                reply_id,
-                                message
-                            )
-                            VALUES (
-                                ?,
-                                ?,
-                                'mention',
-                                ?,
-                                ?,
-                                ?
-                            )
-                        `,
-                        [
-                            mentionId,
-                            numericStudentId,
-                            announcementId,
-                            replyId,
-                            `${student.name} mention kamu dalam announcement.`
-                        ]
-                    );
+    await tursoDb.run(
+        `
+            INSERT INTO announcement_mentions (
+                announcement_id,
+                reply_id,
+                mentioned_student_id,
+                mentioned_admin_id
+            )
+            VALUES (?, ?, NULL, ?)
+        `,
+        [
+            announcementId,
+            replyId,
+            mentionId
+        ]
+    );
+
+
+    /*
+        Catat bahwa guru ini benar-benar
+        menerima Mention.
+    */
+    validMentionRecipients.add(
+        `admin:${mentionId}`
+    );
+
+
+    /*
+        Mention memiliki prioritas dibanding
+        notifikasi Reply.
+    */
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_admin_id,
+                sender_student_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (
+                ?,
+                ?,
+                'mention',
+                ?,
+                ?,
+                ?
+            )
+        `,
+        [
+            mentionId,
+            numericStudentId,
+            announcementId,
+            replyId,
+            `${student.name} mention kamu dalam announcement.`
+        ]
+    );
 
                 }
 
             }
+
+// =====================================
+// NOTIFIKASI KEPADA PEMILIK POST
+// =====================================
+
+const normalizedPostMessage =
+    String(
+        announcement.message ||
+        ""
+    )
+        .replace(
+            /\s+/g,
+            " "
+        )
+        .trim();
+
+
+const postMessagePreview =
+    normalizedPostMessage.length > 90
+        ? `${
+            normalizedPostMessage.slice(
+                0,
+                87
+            )
+        }...`
+        : normalizedPostMessage;
+
+
+const replyNotificationMessage =
+    `Kamu mendapat reply dalam Post: "${postMessagePreview}"`;
+
+
+// Post dibuat oleh siswa lain.
+if (
+    announcement.student_id &&
+    Number(
+        announcement.student_id
+    ) !== numericStudentId &&
+    !validMentionRecipients.has(
+        `student:${
+            Number(
+                announcement.student_id
+            )
+        }`
+    )
+) {
+
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_student_id,
+                sender_student_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (?, ?, 'reply', ?, ?, ?)
+        `,
+        [
+            Number(
+                announcement.student_id
+            ),
+            numericStudentId,
+            announcementId,
+            replyId,
+            replyNotificationMessage
+        ]
+    );
+
+}
+
+
+// Post dibuat oleh Admin/Guru.
+if (
+    announcement.admin_id &&
+    !validMentionRecipients.has(
+        `admin:${
+            Number(
+                announcement.admin_id
+            )
+        }`
+    )
+) {
+
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_admin_id,
+                sender_student_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (?, ?, 'reply', ?, ?, ?)
+        `,
+        [
+            Number(
+                announcement.admin_id
+            ),
+            numericStudentId,
+            announcementId,
+            replyId,
+            replyNotificationMessage
+        ]
+    );
+
+}
 
 const createdReply =
     await tursoDb.get(
@@ -14418,11 +14923,14 @@ const [
 
         tursoDb.get(
             `
-                SELECT
-                    id,
-                    class_name
-                FROM announcements
-                WHERE id = ?
+SELECT
+    id,
+    student_id,
+    admin_id,
+    class_name,
+    message
+FROM announcements
+WHERE id = ?
             `,
             [
                 announcementId
@@ -14504,6 +15012,13 @@ if (!currentAdmin) {
 const processedMentions =
     new Set();
 
+/*
+    Digunakan untuk memberikan prioritas
+    notifikasi Mention dibanding Reply.
+*/
+const validMentionRecipients =
+    new Set();
+
 
 for (const mention of mentions) {
 
@@ -14542,98 +15057,112 @@ for (const mention of mentions) {
     );
 
 
-                // =================================
-                // MENTION SISWA
-                // =================================
+ // =================================
+// MENTION SISWA
+// =================================
 
-                if (
-                    mention.type ===
-                    "student"
-                ) {
+if (
+    mention.type ===
+    "student"
+) {
 
-                    const mentionedStudent =
-                        await tursoDb.get(
-                            `
-                                SELECT
-                                    id,
-                                    class_name
-                                FROM students
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedStudent) {
-
-                        continue;
-
-                    }
+    const mentionedStudent =
+        await tursoDb.get(
+            `
+                SELECT
+                    id,
+                    class_name
+                FROM students
+                WHERE id = ?
+            `,
+            [
+                mentionId
+            ]
+        );
 
 
-                    if (
-                        announcement.class_name !== null &&
-                        mentionedStudent.class_name !==
-                            announcement.class_name
-                    ) {
+    if (!mentionedStudent) {
 
-                        continue;
+        continue;
 
-                    }
+    }
 
 
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, ?, ?, NULL)
-                        `,
-                        [
-                            announcementId,
-                            replyId,
-                            mentionId
-                        ]
-                    );
+    if (
+        announcement.class_name !== null &&
+        mentionedStudent.class_name !==
+            announcement.class_name
+    ) {
+
+        continue;
+
+    }
 
 
-                    await tursoDb.run(
-                        `
-                            INSERT INTO notifications (
-                                recipient_student_id,
-                                sender_admin_id,
-                                type,
-                                announcement_id,
-                                reply_id,
-                                message
-                            )
-                            VALUES (
-                                ?,
-                                ?,
-                                'mention',
-                                ?,
-                                ?,
-                                ?
-                            )
-                        `,
-                        [
-                            mentionId,
-                            numericAdminId,
-                            announcementId,
-                            replyId,
-                            `${currentAdmin.name} mention kamu dalam announcement.`
-                        ]
-                    );
+    await tursoDb.run(
+        `
+            INSERT INTO announcement_mentions (
+                announcement_id,
+                reply_id,
+                mentioned_student_id,
+                mentioned_admin_id
+            )
+            VALUES (?, ?, ?, NULL)
+        `,
+        [
+            announcementId,
+            replyId,
+            mentionId
+        ]
+    );
 
 
-                    continue;
+    /*
+        Siswa ini menerima Mention yang valid.
+    */
+    validMentionRecipients.add(
+        `student:${mentionId}`
+    );
 
-                }
+
+    /*
+        Kirim notifikasi Mention meskipun siswa
+        tersebut adalah pemilik post.
+
+        Mention mempunyai prioritas atas Reply.
+    */
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_student_id,
+                sender_admin_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (
+                ?,
+                ?,
+                'mention',
+                ?,
+                ?,
+                ?
+            )
+        `,
+        [
+            mentionId,
+            numericAdminId,
+            announcementId,
+            replyId,
+            `${currentAdmin.name} mention kamu dalam announcement.`
+        ]
+    );
+
+
+    continue;
+
+}
 
 
                 // =================================
@@ -14683,10 +15212,12 @@ for (const mention of mentions) {
                     );
 
 
-                    if (
-                        mentionId !==
-                        numericAdminId
-                    ) {
+if (
+    mentionId !== numericAdminId &&
+    mentionId !== Number(
+        announcement.admin_id
+    )
+) {
 
                         await tursoDb.run(
                             `
@@ -14721,6 +15252,115 @@ for (const mention of mentions) {
                 }
 
             }
+
+// =====================================
+// NOTIFIKASI KEPADA PEMILIK POST
+// =====================================
+
+const normalizedPostMessage =
+    String(
+        announcement.message ||
+        ""
+    )
+        .replace(
+            /\s+/g,
+            " "
+        )
+        .trim();
+
+
+const postMessagePreview =
+    normalizedPostMessage.length > 90
+        ? `${
+            normalizedPostMessage.slice(
+                0,
+                87
+            )
+        }...`
+        : normalizedPostMessage;
+
+
+const replyNotificationMessage =
+    `Kamu mendapat reply dalam Post: "${postMessagePreview}"`;
+
+
+// Post dibuat oleh siswa.
+if (
+    announcement.student_id &&
+    !validMentionRecipients.has(
+        `student:${
+            Number(
+                announcement.student_id
+            )
+        }`
+    )
+) {
+
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_student_id,
+                sender_admin_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (?, ?, 'reply', ?, ?, ?)
+        `,
+        [
+            Number(
+                announcement.student_id
+            ),
+            numericAdminId,
+            announcementId,
+            replyId,
+            replyNotificationMessage
+        ]
+    );
+
+}
+
+
+// Post dibuat oleh Admin/Guru lain.
+if (
+    announcement.admin_id &&
+    Number(
+        announcement.admin_id
+    ) !== numericAdminId &&
+    !validMentionRecipients.has(
+        `admin:${
+            Number(
+                announcement.admin_id
+            )
+        }`
+    )
+) {
+
+    await tursoDb.run(
+        `
+            INSERT INTO notifications (
+                recipient_admin_id,
+                sender_admin_id,
+                type,
+                announcement_id,
+                reply_id,
+                message
+            )
+            VALUES (?, ?, 'reply', ?, ?, ?)
+        `,
+        [
+            Number(
+                announcement.admin_id
+            ),
+            numericAdminId,
+            announcementId,
+            replyId,
+            replyNotificationMessage
+        ]
+    );
+
+}
 
 
 const createdReply =
@@ -15612,17 +16252,18 @@ const [
 
         tursoDb.all(
             `
-                SELECT
-                    id,
-                    type,
-                    announcement_id,
-                    reply_id,
-                    message,
-                    is_read,
-                    created_at
-                FROM notifications
-                WHERE recipient_student_id = ?
-                ORDER BY id DESC
+SELECT
+    id,
+    type,
+    announcement_id,
+    reply_id,
+    message,
+    is_read,
+    created_at
+FROM notifications
+WHERE recipient_student_id = ?
+ORDER BY id DESC
+LIMIT 100
             `,
             [
                 studentId
@@ -15727,17 +16368,18 @@ const [
 
         tursoDb.all(
             `
-                SELECT
-                    id,
-                    type,
-                    announcement_id,
-                    reply_id,
-                    message,
-                    is_read,
-                    created_at
-                FROM notifications
-                WHERE recipient_admin_id = ?
-                ORDER BY id DESC
+SELECT
+    id,
+    type,
+    announcement_id,
+    reply_id,
+    message,
+    is_read,
+    created_at
+FROM notifications
+WHERE recipient_admin_id = ?
+ORDER BY id DESC
+LIMIT 100
             `,
             [
                 adminId
@@ -16229,6 +16871,327 @@ app.get(
 );
 
 // ========================================
+// PUBLIC ANNOUNCEMENT TARGET
+// ========================================
+
+async function initializePublicAnnouncementTargets() {
+
+    /*
+        Pastikan Master Kelas tersedia.
+    */
+    await ensureClassesTable();
+
+
+    /*
+        Periksa apakah public_announcements
+        sudah memiliki kolom target_type.
+    */
+    const announcementColumns =
+        await tursoDb.all(`
+            PRAGMA table_info(
+                public_announcements
+            )
+        `);
+
+
+    const hasTargetType =
+        announcementColumns.some(
+            column =>
+                column.name ===
+                "target_type"
+        );
+
+
+    /*
+        Announcement lama otomatis menjadi Global.
+    */
+    if (!hasTargetType) {
+
+        await tursoDb.run(`
+            ALTER TABLE
+                public_announcements
+            ADD COLUMN
+                target_type TEXT
+                NOT NULL
+                DEFAULT 'global'
+        `);
+
+    }
+
+
+    /*
+        Tabel penghubung Announcement
+        dengan kelas yang dipilih.
+    */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+            public_announcement_classes
+        (
+            announcement_id INTEGER NOT NULL,
+            class_id INTEGER NOT NULL,
+
+            PRIMARY KEY (
+                announcement_id,
+                class_id
+            ),
+
+            FOREIGN KEY (
+                announcement_id
+            )
+            REFERENCES public_announcements(id)
+            ON DELETE CASCADE,
+
+            FOREIGN KEY (
+                class_id
+            )
+            REFERENCES classes(id)
+            ON DELETE CASCADE
+        )
+    `);
+
+
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+            idx_public_announcement_classes_announcement
+        ON public_announcement_classes (
+            announcement_id
+        )
+    `);
+
+
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+            idx_public_announcement_classes_class
+        ON public_announcement_classes (
+            class_id
+        )
+    `);
+
+
+    /*
+        Jaga kompatibilitas apabila ada baris lama
+        yang target_type-nya kosong.
+    */
+    await tursoDb.run(`
+        UPDATE public_announcements
+        SET target_type = 'global'
+        WHERE
+            target_type IS NULL
+            OR TRIM(target_type) = ''
+    `);
+
+}
+
+
+let publicAnnouncementTargetsReadyPromise =
+    null;
+
+
+async function ensurePublicAnnouncementTargets() {
+
+    if (
+        publicAnnouncementTargetsReadyPromise
+    ) {
+
+        return (
+            publicAnnouncementTargetsReadyPromise
+        );
+
+    }
+
+
+    publicAnnouncementTargetsReadyPromise =
+        initializePublicAnnouncementTargets();
+
+
+    try {
+
+        await publicAnnouncementTargetsReadyPromise;
+
+
+    } catch (error) {
+
+        publicAnnouncementTargetsReadyPromise =
+            null;
+
+
+        throw error;
+
+    }
+
+}
+
+
+// ========================================
+// PASANG DATA TARGET KE ANNOUNCEMENT
+// ========================================
+
+async function attachPublicAnnouncementTargets(
+    announcements
+) {
+
+    if (
+        !Array.isArray(announcements) ||
+        announcements.length === 0
+    ) {
+
+        return [];
+
+    }
+
+
+    await ensurePublicAnnouncementTargets();
+
+
+    const announcementIds =
+        announcements
+            .map(
+                announcement =>
+                    Number(
+                        announcement.id
+                    )
+            )
+            .filter(
+                announcementId =>
+                    Number.isInteger(
+                        announcementId
+                    )
+            );
+
+
+    if (
+        announcementIds.length === 0
+    ) {
+
+        return announcements.map(
+            announcement => ({
+                ...announcement,
+
+                target_type:
+                    "global",
+
+                target_classes:
+                    []
+            })
+        );
+
+    }
+
+
+    const placeholders =
+        announcementIds
+            .map(() => "?")
+            .join(", ");
+
+
+    const targetRows =
+        await tursoDb.all(
+            `
+                SELECT
+                    public_announcement_classes
+                        .announcement_id,
+
+                    classes.id
+                        AS class_id,
+
+                    classes.name
+                        AS class_name
+
+                FROM public_announcement_classes
+
+                INNER JOIN classes
+                ON classes.id =
+                    public_announcement_classes
+                        .class_id
+
+                WHERE
+                    public_announcement_classes
+                        .announcement_id
+                    IN (${placeholders})
+
+                ORDER BY
+                    classes.name
+                    COLLATE NOCASE ASC
+            `,
+            announcementIds
+        );
+
+
+    const targetMap =
+        new Map();
+
+
+    targetRows.forEach(row => {
+
+        const announcementId =
+            Number(
+                row.announcement_id
+            );
+
+
+        if (
+            !targetMap.has(
+                announcementId
+            )
+        ) {
+
+            targetMap.set(
+                announcementId,
+                []
+            );
+
+        }
+
+
+        targetMap
+            .get(announcementId)
+            .push({
+                id:
+                    Number(
+                        row.class_id
+                    ),
+
+                name:
+                    row.class_name
+            });
+
+    });
+
+
+    return announcements.map(
+        announcement => {
+
+            const targetType =
+                announcement.target_type ===
+                    "classes"
+                    ? "classes"
+                    : "global";
+
+
+            return {
+                ...announcement,
+
+                target_type:
+                    targetType,
+
+                target_classes:
+                    targetType === "classes"
+                        ? (
+                            targetMap.get(
+                                Number(
+                                    announcement.id
+                                )
+                            ) || []
+                        )
+                        : []
+            };
+
+        }
+    );
+
+}
+
+// ========================================
 // ADMIN BUAT ANNOUNCEMENT
 // ========================================
 
@@ -16248,16 +17211,20 @@ app.post(
 
 
         const adminId =
-            Number(req.session.adminId);
+            Number(
+                req.session.adminId
+            );
+
 
         const {
             title,
-            message
+            message,
+            classIds = []
         } = req.body;
 
 
         if (
-            !title ||
+            typeof title !== "string" ||
             title.trim().length === 0
         ) {
 
@@ -16271,7 +17238,7 @@ app.post(
 
 
         if (
-            !message ||
+            typeof message !== "string" ||
             message.trim().length === 0
         ) {
 
@@ -16284,7 +17251,25 @@ app.post(
         }
 
 
+        if (!Array.isArray(classIds)) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Daftar kelas tidak valid."
+            });
+
+        }
+
+
+        let createdAnnouncementId =
+            null;
+
+
         try {
+
+            await ensurePublicAnnouncementTargets();
+
 
             const admin =
                 await tursoDb.get(
@@ -16312,48 +17297,213 @@ app.post(
             }
 
 
+            const allClasses =
+                await tursoDb.all(`
+                    SELECT
+                        id,
+                        name
+                    FROM classes
+                    ORDER BY
+                        name COLLATE NOCASE ASC
+                `);
+
+
+            const normalizedClassIds =
+                [
+                    ...new Set(
+                        classIds
+                            .map(
+                                classId =>
+                                    Number(
+                                        classId
+                                    )
+                            )
+                            .filter(
+                                classId =>
+                                    Number.isInteger(
+                                        classId
+                                    ) &&
+                                    classId > 0
+                            )
+                    )
+                ];
+
+
+            /*
+                Jika Master Kelas tersedia,
+                minimal satu kelas harus dipilih.
+            */
+            if (
+                allClasses.length > 0 &&
+                normalizedClassIds.length === 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Pilih minimal satu kelas."
+                });
+
+            }
+
+
+            const selectedClasses =
+                allClasses.filter(
+                    classData =>
+                        normalizedClassIds.includes(
+                            Number(
+                                classData.id
+                            )
+                        )
+                );
+
+
+            /*
+                Cegah ID kelas palsu atau
+                kelas yang sudah tidak tersedia.
+            */
+            if (
+                selectedClasses.length !==
+                normalizedClassIds.length
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Salah satu kelas yang dipilih tidak valid."
+                });
+
+            }
+
+
+            /*
+                Semua kelas dipilih otomatis dianggap Global.
+                Jika hanya sebagian, targetnya Classes.
+            */
+            const resolvedTargetType =
+                allClasses.length === 0 ||
+                selectedClasses.length ===
+                    allClasses.length
+                    ? "global"
+                    : "classes";
+
+
             const result =
                 await tursoDb.run(
                     `
-                        INSERT INTO public_announcements
+                        INSERT INTO
+                            public_announcements
                         (
                             admin_id,
                             title,
-                            message
+                            message,
+                            target_type
                         )
-                        VALUES (?, ?, ?)
+                        VALUES (?, ?, ?, ?)
                     `,
                     [
                         adminId,
                         title.trim(),
-                        message.trim()
+                        message.trim(),
+                        resolvedTargetType
                     ]
                 );
 
 
+            createdAnnouncementId =
+                Number(
+                    result.lastInsertRowid
+                );
+
+
+            /*
+                Target kelas hanya disimpan jika
+                tidak semua kelas dipilih.
+            */
+            if (
+                resolvedTargetType ===
+                    "classes"
+            ) {
+
+                const targetQueries =
+                    selectedClasses.map(
+                        classData => ({
+                            sql: `
+                                INSERT INTO
+                                    public_announcement_classes
+                                (
+                                    announcement_id,
+                                    class_id
+                                )
+                                VALUES (?, ?)
+                            `,
+
+                            args: [
+                                createdAnnouncementId,
+                                Number(
+                                    classData.id
+                                )
+                            ]
+                        })
+                    );
+
+
+                await tursoDb.batch(
+                    targetQueries,
+                    "immediate"
+                );
+
+            }
+
+
             return res.json({
+
                 success: true,
 
                 message:
-                    "Announcement berhasil dibuat.",
+                    resolvedTargetType ===
+                        "global"
+                        ? "Announcement Global berhasil dibuat."
+                        : "Announcement kelas berhasil dibuat.",
 
                 announcement: {
+
                     id:
-                        Number(
-                            result.lastInsertRowid
-                        ),
+                        createdAnnouncementId,
 
-                    adminId,
+                    admin_id:
+                        adminId,
 
-                    adminName:
+                    admin_name:
                         admin.name,
 
                     title:
                         title.trim(),
 
                     message:
-                        message.trim()
+                        message.trim(),
+
+                    target_type:
+                        resolvedTargetType,
+
+                    target_classes:
+                        resolvedTargetType ===
+                            "classes"
+                            ? selectedClasses.map(
+                                classData => ({
+                                    id:
+                                        Number(
+                                            classData.id
+                                        ),
+
+                                    name:
+                                        classData.name
+                                })
+                            )
+                            : []
+
                 }
+
             });
 
 
@@ -16363,6 +17513,59 @@ app.post(
                 "Error membuat announcement:",
                 error
             );
+
+
+            if (
+                Number.isInteger(
+                    createdAnnouncementId
+                )
+            ) {
+
+                try {
+
+                    await tursoDb.batch(
+                        [
+                            {
+                                sql: `
+                                    DELETE FROM
+                                        public_announcement_classes
+                                    WHERE
+                                        announcement_id = ?
+                                `,
+
+                                args: [
+                                    createdAnnouncementId
+                                ]
+                            },
+
+                            {
+                                sql: `
+                                    DELETE FROM
+                                        public_announcements
+                                    WHERE id = ?
+                                `,
+
+                                args: [
+                                    createdAnnouncementId
+                                ]
+                            }
+                        ],
+                        "immediate"
+                    );
+
+
+                } catch (
+                    rollbackError
+                ) {
+
+                    console.error(
+                        "Rollback announcement gagal:",
+                        rollbackError
+                    );
+
+                }
+
+            }
 
 
             return res.status(500).json({
@@ -16378,26 +17581,65 @@ app.post(
 
 
 // ========================================
-// AMBIL SEMUA ANNOUNCEMENT
+// AMBIL ANNOUNCEMENT SESUAI AKSES
 // ========================================
 
 app.get(
     "/api/public-announcements",
     async (req, res) => {
 
+        res.set({
+            "Cache-Control":
+                "no-store, no-cache, must-revalidate, private",
+
+            "Pragma":
+                "no-cache",
+
+            "Expires":
+                "0"
+        });
+
+
         try {
 
-            const announcements =
-                await tursoDb.all(
-                    `
+            await ensurePublicAnnouncementTargets();
+
+
+            const isAdmin =
+                Boolean(
+                    req.session.adminId
+                );
+
+
+            const sessionStudentId =
+                Number(
+                    req.session.studentId
+                );
+
+
+            let announcements;
+
+
+            // =================================
+            // ADMIN MELIHAT SEMUA
+            // =================================
+
+            if (isAdmin) {
+
+                announcements =
+                    await tursoDb.all(`
                         SELECT
                             public_announcements.id,
                             public_announcements.title,
                             public_announcements.message,
                             public_announcements.created_at,
+                            public_announcements.target_type,
 
-                            admins.id AS admin_id,
-                            admins.name AS admin_name
+                            admins.id
+                                AS admin_id,
+
+                            admins.name
+                                AS admin_name
 
                         FROM public_announcements
 
@@ -16407,13 +17649,165 @@ app.get(
 
                         ORDER BY
                             public_announcements.id DESC
-                    `
+                    `);
+
+            }
+
+
+            // =================================
+            // SISWA SESUAI KELASNYA
+            // =================================
+
+            else if (
+                Number.isInteger(
+                    sessionStudentId
+                )
+            ) {
+
+                const student =
+                    await tursoDb.get(
+                        `
+                            SELECT
+                                id,
+                                class_name
+                            FROM students
+                            WHERE id = ?
+                        `,
+                        [
+                            sessionStudentId
+                        ]
+                    );
+
+
+                if (!student) {
+
+                    return res.status(404).json({
+                        success: false,
+                        message:
+                            "Siswa tidak ditemukan."
+                    });
+
+                }
+
+
+                announcements =
+                    await tursoDb.all(
+                        `
+                            SELECT
+                                public_announcements.id,
+                                public_announcements.title,
+                                public_announcements.message,
+                                public_announcements.created_at,
+                                public_announcements.target_type,
+
+                                admins.id
+                                    AS admin_id,
+
+                                admins.name
+                                    AS admin_name
+
+                            FROM public_announcements
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                public_announcements.admin_id
+
+                            WHERE
+
+                                public_announcements
+                                    .target_type =
+                                    'global'
+
+                                OR
+
+                                EXISTS (
+
+                                    SELECT
+                                        1
+
+                                    FROM
+                                        public_announcement_classes
+
+                                    INNER JOIN classes
+                                    ON classes.id =
+                                        public_announcement_classes
+                                            .class_id
+
+                                    WHERE
+                                        public_announcement_classes
+                                            .announcement_id =
+                                            public_announcements.id
+
+AND
+    TRIM(classes.name) =
+        TRIM(?)
+    COLLATE NOCASE
+
+                                )
+
+                            ORDER BY
+                                public_announcements.id DESC
+                        `,
+                        [
+                            student.class_name
+                        ]
+                    );
+
+            }
+
+
+            // =================================
+            // TANPA SESSION: GLOBAL SAJA
+            // =================================
+
+            else {
+
+                announcements =
+                    await tursoDb.all(`
+                        SELECT
+                            public_announcements.id,
+                            public_announcements.title,
+                            public_announcements.message,
+                            public_announcements.created_at,
+                            public_announcements.target_type,
+
+                            admins.id
+                                AS admin_id,
+
+                            admins.name
+                                AS admin_name
+
+                        FROM public_announcements
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            public_announcements.admin_id
+
+                        WHERE
+                            public_announcements
+                                .target_type =
+                                'global'
+
+                        ORDER BY
+                            public_announcements.id DESC
+                    `);
+
+            }
+
+
+            const announcementsWithTargets =
+                await attachPublicAnnouncementTargets(
+                    announcements
                 );
 
 
             return res.json({
+
                 success: true,
-                announcements
+
+                announcements:
+                    announcementsWithTargets
+
             });
 
 
@@ -16457,10 +17851,17 @@ app.delete(
 
 
         const announcementId =
-            Number(req.params.id);
+            Number(
+                req.params.id
+            );
 
 
-        if (!Number.isInteger(announcementId)) {
+        if (
+            !Number.isInteger(
+                announcementId
+            ) ||
+            announcementId <= 0
+        ) {
 
             return res.status(400).json({
                 success: false,
@@ -16473,10 +17874,14 @@ app.delete(
 
         try {
 
-            const result =
-                await tursoDb.run(
+            await ensurePublicAnnouncementTargets();
+
+
+            const announcement =
+                await tursoDb.get(
                     `
-                        DELETE FROM public_announcements
+                        SELECT id
+                        FROM public_announcements
                         WHERE id = ?
                     `,
                     [
@@ -16485,11 +17890,7 @@ app.delete(
                 );
 
 
-            if (
-                Number(
-                    result.changes || 0
-                ) === 0
-            ) {
+            if (!announcement) {
 
                 return res.status(404).json({
                     success: false,
@@ -16498,6 +17899,37 @@ app.delete(
                 });
 
             }
+
+
+            await tursoDb.batch(
+                [
+                    {
+                        sql: `
+                            DELETE FROM
+                                public_announcement_classes
+                            WHERE
+                                announcement_id = ?
+                        `,
+
+                        args: [
+                            announcementId
+                        ]
+                    },
+
+                    {
+                        sql: `
+                            DELETE FROM
+                                public_announcements
+                            WHERE id = ?
+                        `,
+
+                        args: [
+                            announcementId
+                        ]
+                    }
+                ],
+                "immediate"
+            );
 
 
             return res.json({
@@ -16510,7 +17942,7 @@ app.delete(
         } catch (error) {
 
             console.error(
-                "Error hapus announcement:",
+                "Error menghapus announcement:",
                 error
             );
 
@@ -17594,6 +19026,18 @@ app.post(
                 `
             );
 
+            /*
+    Factory Reset juga menghapus
+    seluruh katalog Mapel.
+*/
+await ensureSubjectsTable();
+
+await tursoDb.run(
+    `
+        DELETE FROM subjects
+    `
+);
+
 
             await tursoDb.run(
                 `
@@ -17643,6 +19087,7 @@ const sequences = [
     "public_announcements",
     "point_transactions",
     "exam_scores",
+    "subjects",
     "teacher_registration_codes",
     "students",
     "classes",

@@ -12,11 +12,18 @@
 
 <title>Kelola Poin</title>
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
 >
 
+<script src="/admin-profile-initial.js"></script>
 
 </head>
 
@@ -113,7 +120,7 @@
                     onclick="goToPublicAnnouncement()"
                 >
                     <span class="nav-icon">!</span>
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -123,6 +130,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>

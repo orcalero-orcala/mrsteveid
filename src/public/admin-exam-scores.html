@@ -18,6 +18,14 @@
     href="/styles.css"
 >
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
+<script src="/admin-profile-initial.js"></script>
+
 </head>
 
 
@@ -118,7 +126,7 @@
                     onclick="goToPublicAnnouncement()"
                 >
                     <span class="nav-icon">!</span>
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -128,6 +136,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>
@@ -241,6 +260,134 @@
 
                 </section>
 
+<!-- KELOLA MAPEL -->
+
+<section class="admin-form-section admin-subject-section">
+
+    <div class="section-heading admin-subject-heading">
+
+        <div>
+
+            <h2>
+                Kelola Mapel
+            </h2>
+
+            <p>
+                Tambahkan mata pelajaran yang dapat digunakan saat memberi nilai.
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="toggleSubjectTableButton"
+            class="secondary-button"
+            onclick="toggleSubjectTable()"
+        >
+            Sembunyikan Daftar
+        </button>
+
+    </div>
+
+
+    <form
+        id="subjectForm"
+        class="admin-subject-form"
+    >
+
+        <div class="admin-form-field">
+
+            <label for="newSubjectName">
+                Nama Mapel
+            </label>
+
+            <input
+                type="text"
+                id="newSubjectName"
+                maxlength="80"
+                placeholder="Contoh: Matematika"
+                autocomplete="off"
+                required
+            >
+
+        </div>
+
+
+        <div class="admin-form-action">
+
+            <button
+                type="submit"
+                class="admin-primary-button"
+            >
+                + Tambah Mapel
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <p
+        id="subjectMessage"
+        class="admin-form-message"
+    ></p>
+
+
+    <div
+        id="subjectTablePanel"
+        class="admin-subject-table-panel"
+    >
+
+        <div class="admin-subject-table-wrapper">
+
+            <table class="admin-subject-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            No
+                        </th>
+
+                        <th>
+                            Nama Mapel
+                        </th>
+
+                        <th>
+                            Dibuat
+                        </th>
+
+                        <th>
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="subjectList">
+
+                    <tr>
+
+                        <td colspan="4">
+                            Memuat daftar mapel...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
 
                 <!-- TAMBAH NILAI -->
 
@@ -286,20 +433,25 @@
                         </div>
 
 
-                        <div class="admin-form-field">
+<div class="admin-form-field">
 
-                            <label for="subject">
-                                Mapel
-                            </label>
+    <label for="subject">
+        Mapel
+    </label>
 
-                            <input
-                                type="text"
-                                id="subject"
-                                placeholder="Contoh: Matematika"
-                                required
-                            >
+    <select
+        id="subject"
+        required
+        disabled
+    >
 
-                        </div>
+        <option value="">
+            Memuat mapel...
+        </option>
+
+    </select>
+
+</div>
 
 
                         <div class="admin-form-field">
@@ -534,14 +686,13 @@ document.getElementById(
             );
 
 
-        const message =
-            document.getElementById(
-                "message"
-            );
+ const message =
+    document.getElementById(
+        "message"
+    );
 
-            function escapeHtml(text) {
 
-                const scoreStudentSelect =
+const scoreStudentSelect =
     document.getElementById(
         "scoreStudentSelect"
     );
@@ -552,17 +703,644 @@ const examScoreTableContainer =
         "examScoreTableContainer"
     );
 
+
+// =====================================
+// ELEMEN KELOLA MAPEL
+// =====================================
+
+const subjectForm =
+    document.getElementById(
+        "subjectForm"
+    );
+
+
+const newSubjectNameInput =
+    document.getElementById(
+        "newSubjectName"
+    );
+
+
+const subjectMessage =
+    document.getElementById(
+        "subjectMessage"
+    );
+
+
+const subjectList =
+    document.getElementById(
+        "subjectList"
+    );
+
+
+const subjectTablePanel =
+    document.getElementById(
+        "subjectTablePanel"
+    );
+
+
+const toggleSubjectTableButton =
+    document.getElementById(
+        "toggleSubjectTableButton"
+    );
+
+
+let allSubjects = [];
+
+
+// =====================================
+// ESCAPE HTML
+// =====================================
+
+function escapeHtml(text) {
+
     const div =
         document.createElement(
             "div"
         );
 
+
     div.textContent =
         text ?? "";
+
 
     return div.innerHTML;
 
 }
+
+// =====================================
+// HIDE / SHOW DAFTAR MAPEL
+// =====================================
+
+function updateSubjectTableButton() {
+
+    toggleSubjectTableButton.textContent =
+        subjectTablePanel.hidden
+            ? "Tampilkan Daftar"
+            : "Sembunyikan Daftar";
+
+}
+
+
+function toggleSubjectTable() {
+
+    subjectTablePanel.hidden =
+        !subjectTablePanel.hidden;
+
+
+    localStorage.setItem(
+        "adminSubjectTableHidden",
+        subjectTablePanel.hidden
+            ? "true"
+            : "false"
+    );
+
+
+    updateSubjectTableButton();
+
+}
+
+
+function restoreSubjectTableState() {
+
+    subjectTablePanel.hidden =
+        localStorage.getItem(
+            "adminSubjectTableHidden"
+        ) === "true";
+
+
+    updateSubjectTableButton();
+
+}
+
+
+// =====================================
+// ISI DROPDOWN MAPEL
+// =====================================
+
+function renderSubjectDropdown(
+    selectedSubject = ""
+) {
+
+    subjectInput.innerHTML = "";
+
+
+    if (allSubjects.length === 0) {
+
+        const emptyOption =
+            document.createElement(
+                "option"
+            );
+
+
+        emptyOption.value = "";
+
+        emptyOption.textContent =
+            "Belum ada mapel";
+
+
+        subjectInput.appendChild(
+            emptyOption
+        );
+
+
+        subjectInput.disabled = true;
+
+        return;
+
+    }
+
+
+    const placeholder =
+        document.createElement(
+            "option"
+        );
+
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+        "Pilih mapel";
+
+
+    subjectInput.appendChild(
+        placeholder
+    );
+
+
+    allSubjects.forEach(subject => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.value =
+            subject.name;
+
+
+        option.textContent =
+            subject.name;
+
+
+        subjectInput.appendChild(
+            option
+        );
+
+    });
+
+
+    const selectedStillExists =
+        allSubjects.some(
+            subject =>
+                subject.name ===
+                selectedSubject
+        );
+
+
+    subjectInput.value =
+        selectedStillExists
+            ? selectedSubject
+            : "";
+
+
+    subjectInput.disabled = false;
+
+}
+
+
+// =====================================
+// RENDER TABEL MAPEL
+// =====================================
+
+function renderSubjectTable() {
+
+    if (allSubjects.length === 0) {
+
+        subjectList.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="4"
+                    class="admin-subject-empty-cell"
+                >
+
+                    <strong>
+                        Belum ada mapel
+                    </strong>
+
+                    <span>
+                        Tambahkan mapel melalui form di atas.
+                    </span>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    subjectList.innerHTML = "";
+
+
+    allSubjects.forEach(
+        (subject, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+
+                <td>
+
+                    <strong class="admin-subject-name">
+                        ${escapeHtml(
+                            subject.name
+                        )}
+                    </strong>
+
+                </td>
+
+
+                <td>
+
+                    <span class="admin-subject-date">
+                        ${escapeHtml(
+                            formatDeviceDateTime(
+                                subject.created_at
+                            )
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <button
+                        type="button"
+                        class="admin-subject-delete-button"
+                        onclick="deleteSubject(
+                            ${Number(subject.id)}
+                        )"
+                    >
+                        Hapus
+                    </button>
+
+                </td>
+
+            `;
+
+
+            subjectList.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// LOAD DAFTAR MAPEL
+// =====================================
+
+async function loadSubjects(
+    selectedSubject = ""
+) {
+
+    subjectList.innerHTML = `
+
+        <tr>
+
+            <td colspan="4">
+                Memuat daftar mapel...
+            </td>
+
+        </tr>
+
+    `;
+
+
+    subjectInput.disabled = true;
+
+
+    subjectInput.innerHTML = `
+
+        <option value="">
+            Memuat mapel...
+        </option>
+
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/subjects"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            subjectList.innerHTML = `
+
+                <tr>
+
+                    <td colspan="4">
+                        ${escapeHtml(
+                            data.message ||
+                            "Gagal mengambil daftar mapel."
+                        )}
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            subjectInput.innerHTML = `
+
+                <option value="">
+                    Gagal memuat mapel
+                </option>
+
+            `;
+
+            return;
+
+        }
+
+
+        allSubjects =
+            Array.isArray(data.subjects)
+                ? data.subjects
+                : [];
+
+
+        renderSubjectTable();
+
+
+        renderSubjectDropdown(
+            selectedSubject
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memuat mapel:",
+            error
+        );
+
+
+        subjectList.innerHTML = `
+
+            <tr>
+
+                <td colspan="4">
+                    Tidak dapat terhubung ke server.
+                </td>
+
+            </tr>
+
+        `;
+
+
+        subjectInput.innerHTML = `
+
+            <option value="">
+                Gagal memuat mapel
+            </option>
+
+        `;
+
+    }
+
+}
+
+
+// =====================================
+// TAMBAH MAPEL
+// =====================================
+
+subjectForm.addEventListener(
+    "submit",
+    async (event) => {
+
+        event.preventDefault();
+
+
+        const subjectName =
+            newSubjectNameInput
+                .value
+                .trim();
+
+
+        if (!subjectName) {
+
+            subjectMessage.textContent =
+                "Nama mapel wajib diisi.";
+
+            return;
+
+        }
+
+
+        const submitButton =
+            subjectForm.querySelector(
+                'button[type="submit"]'
+            );
+
+
+        submitButton.disabled = true;
+
+
+        subjectMessage.textContent =
+            "Menambahkan mapel...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/admin/subjects",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                name:
+                                    subjectName
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
+
+                subjectMessage.textContent =
+                    data.message ||
+                    "Gagal menambahkan mapel.";
+
+                return;
+
+            }
+
+
+            newSubjectNameInput.value = "";
+
+
+            subjectMessage.textContent =
+                "Mapel berhasil ditambahkan.";
+
+
+            await loadSubjects(
+                data.subject.name
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menambahkan mapel:",
+                error
+            );
+
+
+            subjectMessage.textContent =
+                "Tidak dapat terhubung ke server.";
+
+        } finally {
+
+            submitButton.disabled = false;
+
+        }
+
+    }
+);
+
+
+// =====================================
+// HAPUS MAPEL
+// =====================================
+
+async function deleteSubject(
+    subjectId
+) {
+
+    const subject =
+        allSubjects.find(
+            item =>
+                Number(item.id) ===
+                Number(subjectId)
+        );
+
+
+    if (!subject) {
+
+        subjectMessage.textContent =
+            "Mapel tidak ditemukan.";
+
+        return;
+
+    }
+
+
+    const confirmed =
+        window.confirm(
+            `Hapus mapel "${subject.name}" dari daftar pilihan?\n\nNilai siswa lama tetap tersimpan.`
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    subjectMessage.textContent =
+        "Menghapus mapel...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/subjects/${subjectId}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            subjectMessage.textContent =
+                data.message ||
+                "Gagal menghapus mapel.";
+
+            return;
+
+        }
+
+
+        subjectMessage.textContent =
+            "Mapel berhasil dihapus.";
+
+
+        await loadSubjects();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus mapel:",
+            error
+        );
+
+
+        subjectMessage.textContent =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
+
+
 
         // =====================================
         // LOAD SISWA
@@ -1210,8 +1988,10 @@ async function logout() {
 }
 
 
-        loadStudents();
-        loadExamScores();
+restoreSubjectTableState();
+loadSubjects();
+loadStudents();
+loadExamScores();
 
     </script>
 

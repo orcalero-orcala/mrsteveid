@@ -14,12 +14,18 @@
     Classroom Feed
 </title>
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
 >
 
-
+<script src="/student-profile-initial.js"></script>
 
 <style>
 /* =========================================
@@ -2930,53 +2936,131 @@ function formatMessage(
         // NOTIFICATION BADGE
         // =====================================
 
-        async function loadNotificationCount() {
+/*
+    Notifikasi Feed hanya ditampilkan setelah
+    post atau reply target tersedia di DOM.
+*/
+function isFeedNotificationReady(
+    notification
+) {
 
-            try {
+    if (!notification) {
 
-const response =
-    await fetch(
-        `/api/student/${studentId}/notifications/count`
-    );
+        return false;
 
-
-                const data =
-                    await response.json();
-
-
-                if (!data.success) {
-
-                    return;
-
-                }
+    }
 
 
-                const badge =
-                    document.getElementById(
-                        "notificationBadge"
-                    );
+    if (notification.reply_id) {
+
+        return Boolean(
+            document.getElementById(
+                `reply-${notification.reply_id}`
+            )
+        );
+
+    }
 
 
-                badge.textContent =
-                    Number(
-                        data.unreadCount
-                    ) > 0
-                        ? String(
-                            data.unreadCount
-                        )
-                        : "";
+    if (notification.announcement_id) {
+
+        return Boolean(
+            document.getElementById(
+                `announcement-${
+                    notification.announcement_id
+                }`
+            )
+        );
+
+    }
 
 
-            } catch (error) {
+    /*
+        Notifikasi yang tidak berhubungan
+        dengan Feed boleh langsung tampil.
+    */
+    return true;
 
-                console.error(
-                    "Gagal mengambil notifikasi:",
-                    error
-                );
+}
 
-            }
+
+async function loadNotificationCount() {
+
+    try {
+
+        /*
+            Gunakan endpoint lengkap karena kita
+            perlu mengetahui announcement_id dan
+            reply_id setiap notifikasi.
+        */
+        const response =
+            await fetch(
+                `/api/student/${studentId}/notifications`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            return;
 
         }
+
+
+        const notifications =
+            Array.isArray(
+                data.notifications
+            )
+                ? data.notifications
+                : [];
+
+
+        const readyUnreadCount =
+            notifications.filter(
+                (notification) =>
+                    Number(
+                        notification.is_read
+                    ) === 0 &&
+                    isFeedNotificationReady(
+                        notification
+                    )
+            ).length;
+
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+
+        if (!badge) {
+
+            return;
+
+        }
+
+
+        badge.textContent =
+            readyUnreadCount > 0
+                ? String(
+                    readyUnreadCount
+                )
+                : "";
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil jumlah notifikasi Student:",
+            error
+        );
+
+    }
+
+}
 
 
         // =====================================
@@ -4238,17 +4322,14 @@ form.selectedMentions.push({
                     );
 
 
-            const creatorDetail =
-                isStudentPost
-                    ? (
-                        announcement.student_creator_class ||
-                        className ||
-                        "Siswa"
-                    )
-                    : (
-                        announcement.admin_creator_role ||
-                        "Admin / Guru"
-                    );
+const creatorDetail =
+    isStudentPost
+        ? (
+            announcement.student_creator_class ||
+            className ||
+            "Siswa"
+        )
+        : "Admin / Guru";
 
 
 const createdAt =
@@ -4281,13 +4362,19 @@ const createdAt =
 
                     <div class="feed-author">
 
-                        <div class="feed-avatar">
-                            ${
-                                isStudentPost
-                                    ? "S"
-                                    : "T"
-                            }
-                        </div>
+<div class="feed-avatar">
+    ${
+        isStudentPost
+            ? getProfileInitial(
+                creatorName ||
+                "Siswa"
+            )
+            : getTeacherInitial(
+                creatorName ||
+                "Admin"
+            )
+    }
+</div>
 
 
                         <div>
@@ -4498,19 +4585,15 @@ const createdAt =
                 );
 
 
-            const senderDetail =
-                senderType ===
-                    "admin"
-                    ? (
-                        reply.sender_role ||
-                        reply.admin_role ||
-                        "Admin / Guru"
-                    )
-                    : (
-                        reply.class_name ||
-                        reply.className ||
-                        "Siswa"
-                    );
+const senderDetail =
+    senderType ===
+        "admin"
+        ? "Admin / Guru"
+        : (
+            reply.class_name ||
+            reply.className ||
+            "Siswa"
+        );
 
 
 const createdAt =
@@ -4540,14 +4623,19 @@ const createdAt =
 
                 <div class="reply-author-row">
 
-                    <div class="reply-avatar">
-                        ${
-                            senderType ===
-                                "admin"
-                                ? "T"
-                                : "S"
-                        }
-                    </div>
+<div class="reply-avatar">
+    ${
+        senderType === "admin"
+            ? getTeacherInitial(
+                senderName ||
+                "Admin"
+            )
+            : getProfileInitial(
+                senderName ||
+                "Siswa"
+            )
+    }
+</div>
 
 
                     <div class="reply-author-info">
@@ -6298,14 +6386,17 @@ if (
 
     try {
 
-        await checkLiveAnnouncements();
+/*
+    Feed harus selesai diperbarui dahulu.
+    Notifikasi selalu dijalankan paling akhir.
+*/
+await checkLiveAnnouncements();
 
+await checkLiveReplies();
 
-        await Promise.all([
-            checkLiveReplies(),
-            checkLiveDeletions(),
-            loadNotificationCount()
-        ]);
+await checkLiveDeletions();
+
+await loadNotificationCount();
 
     } finally {
 

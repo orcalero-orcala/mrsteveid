@@ -19,6 +19,14 @@
     href="/styles.css"
 >
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
+<script src="/admin-profile-initial.js"></script>
+
 </head>
 
 
@@ -119,7 +127,7 @@
                     onclick="goToPublicAnnouncement()"
                 >
                     <span class="nav-icon">!</span>
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -129,6 +137,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>
@@ -5313,6 +5332,62 @@ const filteredUsers =
 
         let mentionUsers = [];
 
+/*
+    Notifikasi Feed hanya boleh tampil setelah
+    post atau reply target sudah tersedia di DOM.
+*/
+function isFeedNotificationReady(
+    notification
+) {
+
+    if (!notification) {
+
+        return false;
+
+    }
+
+
+    /*
+        Jika menunjuk sebuah reply, reply tersebut
+        harus sudah muncul di Feed.
+    */
+    if (notification.reply_id) {
+
+        return Boolean(
+            document.getElementById(
+                `reply-${notification.reply_id}`
+            )
+        );
+
+    }
+
+
+    /*
+        Jika hanya menunjuk sebuah post,
+        post tersebut harus sudah muncul.
+    */
+    if (notification.announcement_id) {
+
+        return Boolean(
+            document.getElementById(
+                `announcement-${
+                    notification.announcement_id
+                }`
+            )
+        );
+
+    }
+
+
+    /*
+        Notifikasi non-Feed tidak mempunyai
+        announcement_id atau reply_id.
+    */
+    return true;
+
+}
+
+
 async function loadNotificationCount() {
 
     try {
@@ -5322,33 +5397,69 @@ async function loadNotificationCount() {
                 `/api/admin/${adminId}/notifications`
             );
 
+
         const data =
             await response.json();
 
+
         if (!data.success) {
+
             return;
+
         }
+
+
+        const notifications =
+            Array.isArray(
+                data.notifications
+            )
+                ? data.notifications
+                : [];
+
+
+        /*
+            Hanya hitung notifikasi belum dibaca
+            yang targetnya sudah tersedia.
+        */
+        const readyUnreadCount =
+            notifications.filter(
+                (notification) =>
+                    Number(
+                        notification.is_read
+                    ) === 0 &&
+                    isFeedNotificationReady(
+                        notification
+                    )
+            ).length;
+
 
         const badge =
             document.getElementById(
                 "notificationBadge"
             );
 
-        if (data.unreadCount > 0) {
 
-badge.textContent =
-    data.unreadCount;
+        if (!badge) {
 
-        } else {
-
-            badge.textContent =
-                "";
+            return;
 
         }
 
+
+        badge.textContent =
+            readyUnreadCount > 0
+                ? String(
+                    readyUnreadCount
+                )
+                : "";
+
+
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Gagal mengambil jumlah notifikasi Admin:",
+            error
+        );
 
     }
 
@@ -6360,13 +6471,19 @@ setupAdminMentionAutocomplete(
 
             <div class="feed-author">
 
-                <div class="feed-avatar">
-                    ${
-                        announcement.student_id
-                            ? "S"
-                            : "T"
-                    }
-                </div>
+<div class="feed-avatar">
+    ${
+        announcement.student_id
+            ? getProfileInitial(
+                announcement.student_creator_name ||
+                "Siswa"
+            )
+            : getTeacherInitial(
+                announcement.admin_creator_name ||
+                "Admin"
+            )
+    }
+</div>
 
                 <div>
 
@@ -6840,41 +6957,51 @@ function createAdminReplyItem(
 
     item.innerHTML = `
 
-        <div class="reply-author-row">
+ <div class="reply-author-row">
 
-            <div class="reply-avatar">
-                ${
+    <div class="reply-avatar">
+        ${
+            reply.sender_type === "admin"
+                ? getTeacherInitial(
+                    reply.sender_name ||
+                    "Admin"
+                )
+                : getProfileInitial(
+                    reply.sender_name ||
+                    "Siswa"
+                )
+        }
+    </div>
+
+
+    <div class="reply-author-info">
+
+        <strong>
+            ${escapeHtml(
+                reply.sender_name ||
+                (
                     reply.sender_type === "admin"
-                        ? "T"
-                        : "S"
-                }
-            </div>
+                        ? "Admin / Guru"
+                        : "Siswa"
+                )
+            )}
+        </strong>
 
-            <div>
 
-                <strong>
-                    ${escapeHtml(
-                        reply.sender_name
-                    )}
-                </strong>
+        <span>
+            ${
+                reply.sender_type === "admin"
+                    ? "Admin / Guru"
+                    : escapeHtml(
+                        reply.class_name ||
+                        "Siswa"
+                    )
+            }
+        </span>
 
-                <span>
-                    ${
-                        reply.sender_type === "admin"
-                            ? escapeHtml(
-                                reply.sender_role ||
-                                "Admin / Guru"
-                            )
-                            : escapeHtml(
-                                reply.class_name ||
-                                "Siswa"
-                            )
-                    }
-                </span>
+    </div>
 
-            </div>
-
-        </div>
+</div>
 
 
         <div class="reply-message">${formatMessage(
@@ -7187,44 +7314,51 @@ if (
 
  item.innerHTML = `
 
-    <div class="reply-author-row">
+<div class="reply-author-row">
 
-        <div class="reply-avatar">
+    <div class="reply-avatar">
+        ${
+            reply.sender_type === "admin"
+                ? getTeacherInitial(
+                    reply.sender_name ||
+                    "Admin"
+                )
+                : getProfileInitial(
+                    reply.sender_name ||
+                    "Siswa"
+                )
+        }
+    </div>
+
+
+    <div class="reply-author-info">
+
+        <strong>
+            ${escapeHtml(
+                reply.sender_name ||
+                (
+                    reply.sender_type === "admin"
+                        ? "Admin / Guru"
+                        : "Siswa"
+                )
+            )}
+        </strong>
+
+
+        <span>
             ${
                 reply.sender_type === "admin"
-                    ? "T"
-                    : "S"
+                    ? "Admin / Guru"
+                    : escapeHtml(
+                        reply.class_name ||
+                        "Siswa"
+                    )
             }
-        </div>
-
-
-        <div>
-
-            <strong>
-                ${escapeHtml(
-                    reply.sender_name
-                )}
-            </strong>
-
-            <span>
-
-                ${
-                    reply.sender_type === "admin"
-                        ? escapeHtml(
-                            reply.sender_role ||
-                            "Admin / Guru"
-                        )
-                        : escapeHtml(
-                            reply.class_name ||
-                            "Siswa"
-                        )
-                }
-
-            </span>
-
-        </div>
+        </span>
 
     </div>
+
+</div>
 
 
     <div class="reply-message">${formatMessage(
@@ -8102,12 +8236,19 @@ function startFeedLivePolling() {
 
                 try {
 
-                    await Promise.all([
-                        checkLiveAnnouncements(),
-                        checkLiveReplies(),
-                        checkLiveDeletions(),
-                        loadNotificationCount()
-                    ]);
+/*
+    Urutan tidak boleh dibuat paralel.
+
+    Post dan reply wajib masuk ke DOM dahulu,
+    baru badge notifikasi diperbarui.
+*/
+await checkLiveAnnouncements();
+
+await checkLiveReplies();
+
+await checkLiveDeletions();
+
+await loadNotificationCount();
 
                 } finally {
 
@@ -8156,20 +8297,25 @@ function stopNotificationPolling() {
 
 document.addEventListener(
     "visibilitychange",
-    () => {
+    async () => {
 
         if (
             document.visibilityState ===
             "visible"
         ) {
 
-            loadNotificationCount();
+            /*
+                Saat kembali ke tab ini:
+                Feed dahulu, notifikasi terakhir.
+            */
+            await checkLiveAnnouncements();
 
-            startNotificationPolling();
+            await checkLiveReplies();
 
-            checkLiveAnnouncements();
+            await checkLiveDeletions();
 
-            checkLiveReplies();
+            await loadNotificationCount();
+
 
             startFeedLivePolling();
 
@@ -8177,6 +8323,7 @@ document.addEventListener(
         } else {
 
             stopNotificationPolling();
+
             stopFeedLivePolling();
 
         }
@@ -8216,13 +8363,11 @@ async function startAdminBackgroundTasks() {
     ]);
 
 
-    /*
-        Setelah initial Feed aman,
-        baru hidupkan polling.
-    */
-    startNotificationPolling();
-
-    startFeedLivePolling();
+/*
+    Notifikasi sekarang ikut polling Feed.
+    Jangan hidupkan timer notifikasi terpisah.
+*/
+startFeedLivePolling();
 
 }
 

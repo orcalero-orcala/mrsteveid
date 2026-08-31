@@ -12,10 +12,18 @@
 
     <title>Dashboard Siswa</title>
 
+        <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
     <link
     rel="stylesheet"
     href="/styles.css"
 >
+
+<script src="/student-profile-initial.js"></script>
 
 </head>
 
@@ -278,7 +286,7 @@
                             </h2>
 
                             <p>
-                                Menu utama LMS kamu
+                                Menu utama kamu
                             </p>
 
                         </div>
@@ -385,27 +393,34 @@
 
  <section class="announcement-section">
 
-    <div class="section-heading">
+<div class="section-heading student-information-board-heading">
 
-        <div>
+    <div class="student-information-board-copy">
 
-            <h2>
-                Announcement
-            </h2>
+<div class="student-information-board-title">
 
-            <p>
-                Informasi terbaru dari sekolah
-            </p>
+    <h2>Information Board</h2>
 
-        </div>
+    <div class="student-announcement-live">
+        <span class="student-announcement-live-dot"></span>
+        <span>LIVE</span>
+    </div>
 
+</div>
 
-        <div class="student-announcement-live">
-            <span class="student-announcement-live-dot"></span>
-            <span>LIVE</span>
-        </div>
+        <p>Informasi terbaru dari sekolah</p>
 
     </div>
+
+    <button
+        type="button"
+        class="student-announcement-view-all-button"
+        onclick="openAnnouncementViewAll()"
+    >
+        View All
+    </button>
+
+</div>
 
 
     <div
@@ -423,6 +438,71 @@
         </main>
 
     </div>
+
+<!-- VIEW ALL INFORMATION BOARD -->
+
+<div
+    id="announcementViewAllModal"
+    class="student-announcement-modal"
+    aria-hidden="true"
+    onclick="closeAnnouncementViewAll()"
+>
+
+    <section
+        class="student-announcement-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="announcementViewAllTitle"
+        onclick="event.stopPropagation()"
+    >
+
+        <header class="student-announcement-modal-header">
+
+            <div>
+
+                <small class="eyebrow">
+                    INFORMATION BOARD
+                </small>
+
+                <h2 id="announcementViewAllTitle">
+                    Semua Announcement
+                </h2>
+
+                <p id="announcementViewAllCount">
+                    Memuat announcement...
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="student-announcement-modal-close"
+                onclick="closeAnnouncementViewAll()"
+                aria-label="Tutup panel"
+            >
+                ×
+            </button>
+
+        </header>
+
+
+        <div
+            id="allPublicAnnouncementList"
+            class="student-announcement-modal-list"
+        >
+
+            <div class="empty-state">
+                Memuat announcement...
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
 <script src="/student-session.js"></script>
 <script src="/time.js"></script>
     <script>
@@ -480,13 +560,37 @@
                 "studentLoginCode"
             );
 
-            const publicAnnouncementList =
+const publicAnnouncementList =
     document.getElementById(
         "publicAnnouncementList"
     );
 
-    let publicAnnouncementSignature =
+
+const allPublicAnnouncementList =
+    document.getElementById(
+        "allPublicAnnouncementList"
+    );
+
+
+const announcementViewAllModal =
+    document.getElementById(
+        "announcementViewAllModal"
+    );
+
+
+const announcementViewAllCount =
+    document.getElementById(
+        "announcementViewAllCount"
+    );
+
+
+let currentPublicAnnouncements =
+    [];
+
+
+let publicAnnouncementSignature =
     "";
+
 
 let publicAnnouncementPollingTimer =
     null;
@@ -540,6 +644,378 @@ loadPublicAnnouncements();
 startPublicAnnouncementLive();
 
 // =====================================
+// FORMAT TARGET ANNOUNCEMENT
+// =====================================
+
+function formatPublicAnnouncementTarget(
+    announcement
+) {
+
+    const targetClasses =
+        Array.isArray(
+            announcement.target_classes
+        )
+            ? announcement.target_classes
+            : [];
+
+
+    if (
+        announcement.target_type ===
+            "global" ||
+        targetClasses.length === 0
+    ) {
+
+        return "GLOBAL";
+
+    }
+
+
+    if (targetClasses.length === 1) {
+
+        return targetClasses[0].name;
+
+    }
+
+
+    if (targetClasses.length === 2) {
+
+        return (
+            `${targetClasses[0].name}, ` +
+            `${targetClasses[1].name}`
+        );
+
+    }
+
+
+    return (
+        `${targetClasses[0].name} ` +
+        `+${targetClasses.length - 1} Kelas`
+    );
+
+}
+
+
+// =====================================
+// BUAT CARD ANNOUNCEMENT
+// =====================================
+
+function createPublicAnnouncementCard(
+    announcement
+) {
+
+    const card =
+        document.createElement(
+            "article"
+        );
+
+
+    card.className =
+        "student-public-announcement-card";
+
+
+    const targetLabel =
+        formatPublicAnnouncementTarget(
+            announcement
+        );
+
+
+    const isGlobal =
+        announcement.target_type ===
+            "global" ||
+        !Array.isArray(
+            announcement.target_classes
+        ) ||
+        announcement.target_classes
+            .length === 0;
+
+
+    card.innerHTML = `
+
+        <div class="student-public-announcement-header">
+
+            <div class="student-public-announcement-title">
+
+                <span>
+                    OFFICIAL ANNOUNCEMENT
+                </span>
+
+                <h3>
+                    ${escapeHtml(
+                        announcement.title
+                    )}
+                </h3>
+
+            </div>
+
+
+            <span
+                class="
+                    student-public-announcement-target
+                    ${
+                        isGlobal
+                            ? "global"
+                            : "classes"
+                    }
+                "
+                title="${escapeHtml(
+                    targetLabel
+                )}"
+            >
+                ${escapeHtml(
+                    targetLabel
+                )}
+            </span>
+
+        </div>
+
+
+<div class="student-public-announcement-message">${escapeHtml(
+    String(
+        announcement.message || ""
+    ).trim()
+)}</div>
+
+
+        <div class="student-public-announcement-meta">
+
+            <span>
+
+                Oleh
+
+                <strong>
+                    ${escapeHtml(
+                        announcement.admin_name ||
+                        "Admin / Guru"
+                    )}
+                </strong>
+
+            </span>
+
+
+            <span>
+
+                ${escapeHtml(
+                    announcement.created_at
+                        ? formatDeviceDateTime(
+                            announcement.created_at
+                        )
+                        : "-"
+                )}
+
+            </span>
+
+        </div>
+
+    `;
+
+
+    return card;
+
+}
+
+
+// =====================================
+// RENDER PREVIEW MAKSIMAL 3
+// =====================================
+
+function renderPublicAnnouncementPreview() {
+
+    publicAnnouncementList.innerHTML =
+        "";
+
+
+    if (
+        currentPublicAnnouncements.length ===
+        0
+    ) {
+
+        publicAnnouncementList.innerHTML = `
+
+            <div class="empty-state">
+
+                <strong>
+                    Belum ada announcement
+                </strong>
+
+                <span>
+                    Informasi resmi sekolah akan muncul di sini.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const previewAnnouncements =
+        currentPublicAnnouncements.slice(
+            0,
+            3
+        );
+
+
+    previewAnnouncements.forEach(
+        announcement => {
+
+            publicAnnouncementList.appendChild(
+                createPublicAnnouncementCard(
+                    announcement
+                )
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// RENDER SEMUA DALAM MODAL
+// =====================================
+
+function renderAllPublicAnnouncements() {
+
+    allPublicAnnouncementList.innerHTML =
+        "";
+
+
+    const totalAnnouncements =
+        currentPublicAnnouncements.length;
+
+
+    announcementViewAllCount.textContent =
+        totalAnnouncements === 1
+            ? "1 announcement tersedia"
+            : `${totalAnnouncements} announcement tersedia`;
+
+
+    if (totalAnnouncements === 0) {
+
+        allPublicAnnouncementList.innerHTML = `
+
+            <div class="empty-state">
+
+                <strong>
+                    Belum ada announcement
+                </strong>
+
+                <span>
+                    Informasi resmi sekolah akan muncul di sini.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    currentPublicAnnouncements.forEach(
+        announcement => {
+
+            allPublicAnnouncementList.appendChild(
+                createPublicAnnouncementCard(
+                    announcement
+                )
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// BUKA / TUTUP VIEW ALL
+// =====================================
+
+function openAnnouncementViewAll() {
+
+    renderAllPublicAnnouncements();
+
+
+    announcementViewAllModal.classList.add(
+        "show"
+    );
+
+
+    announcementViewAllModal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.classList.add(
+        "student-announcement-modal-open"
+    );
+
+
+    const closeButton =
+        announcementViewAllModal
+            .querySelector(
+                ".student-announcement-modal-close"
+            );
+
+
+    if (closeButton) {
+
+        setTimeout(
+            () => {
+                closeButton.focus();
+            },
+            30
+        );
+
+    }
+
+}
+
+
+function closeAnnouncementViewAll() {
+
+    announcementViewAllModal.classList.remove(
+        "show"
+    );
+
+
+    announcementViewAllModal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.classList.remove(
+        "student-announcement-modal-open"
+    );
+
+}
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape" &&
+            announcementViewAllModal
+                .classList
+                .contains("show")
+        ) {
+
+            closeAnnouncementViewAll();
+
+        }
+
+    }
+);
+
+
+// =====================================
 // LOAD PUBLIC ANNOUNCEMENT
 // =====================================
 
@@ -557,10 +1033,15 @@ async function loadPublicAnnouncements(
 
     try {
 
-        const response =
-            await fetch(
-                "/api/public-announcements"
-            );
+const response =
+    await fetch(
+        `/api/public-announcements?refresh=${Date.now()}`,
+        {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin"
+        }
+    );
 
 
         const data =
@@ -571,8 +1052,24 @@ async function loadPublicAnnouncements(
 
             if (showLoading) {
 
-                publicAnnouncementList.innerHTML =
-                    "Gagal mengambil announcement.";
+                publicAnnouncementList.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <strong>
+                            Gagal mengambil announcement
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                data.message ||
+                                "Data announcement tidak tersedia."
+                            )}
+                        </span>
+
+                    </div>
+
+                `;
 
             }
 
@@ -590,19 +1087,26 @@ async function loadPublicAnnouncements(
 
 
         /*
-            Signature dipakai supaya DOM
-            hanya dirender ulang kalau
-            daftar Announcement berubah.
+            Target ikut dimasukkan ke signature
+            agar perubahan tujuan juga dirender.
         */
         const newSignature =
             announcements
                 .map(
-                    (announcement) =>
+                    announcement =>
                         [
                             announcement.id,
                             announcement.title,
                             announcement.message,
-                            announcement.created_at
+                            announcement.created_at,
+                            announcement.target_type,
+
+                            JSON.stringify(
+                                announcement
+                                    .target_classes ||
+                                []
+                            )
+
                         ].join(":")
                 )
                 .join("|");
@@ -623,91 +1127,22 @@ async function loadPublicAnnouncements(
             newSignature;
 
 
+        currentPublicAnnouncements =
+            announcements;
+
+
+        renderPublicAnnouncementPreview();
+
+
         if (
-            announcements.length === 0
+            announcementViewAllModal
+                .classList
+                .contains("show")
         ) {
 
-            publicAnnouncementList.innerHTML = `
-                <p>
-                    Belum ada announcement.
-                </p>
-            `;
-
-            return;
+            renderAllPublicAnnouncements();
 
         }
-
-
-        publicAnnouncementList.innerHTML =
-            "";
-
-
-        announcements.forEach(
-            (announcement) => {
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                card.style.border =
-                    "1px solid #ccc";
-
-                card.style.padding =
-                    "15px";
-
-                card.style.marginBottom =
-                    "10px";
-
-                card.style.borderRadius =
-                    "8px";
-
-
-                card.innerHTML = `
-
-                    <h3>
-                        ${escapeHtml(
-                            announcement.title
-                        )}
-                    </h3>
-
-                    <div class="student-public-announcement-message">
-                        ${escapeHtml(
-                            announcement.message
-                        )}
-                    </div>
-
-                    <small>
-
-                        Oleh:
-                        ${escapeHtml(
-                            announcement.admin_name ||
-                            "Admin / Guru"
-                        )}
-
-                        <br>
-
-                        ${escapeHtml(
-                            announcement.created_at
-                                ? formatDeviceDateTime(
-                                    announcement.created_at
-                                )
-                                : "-"
-                        )}
-
-                    </small>
-
-                `;
-
-
-                publicAnnouncementList
-                    .appendChild(
-                        card
-                    );
-
-            }
-        );
 
 
     } catch (error) {
@@ -720,8 +1155,21 @@ async function loadPublicAnnouncements(
 
         if (showLoading) {
 
-            publicAnnouncementList.innerHTML =
-                "Tidak dapat terhubung ke server.";
+            publicAnnouncementList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <strong>
+                        Tidak dapat terhubung
+                    </strong>
+
+                    <span>
+                        Periksa server lalu coba kembali.
+                    </span>
+
+                </div>
+
+            `;
 
         }
 

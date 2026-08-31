@@ -12,11 +12,18 @@
 
     <title>Kelola Siswa</title>
 
+        <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
 >
 
+<script src="/admin-profile-initial.js"></script>
 
 </head>
 
@@ -136,7 +143,7 @@
                         !
                     </span>
 
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -146,6 +153,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>
@@ -475,30 +493,97 @@
 
                 <section class="admin-table-section">
 
-                    <div class="section-heading">
+ <div class="section-heading student-list-heading">
 
-                        <div>
+    <div>
 
-                            <h2>
-                                Daftar Siswa
-                            </h2>
+        <h2>
+            Daftar Siswa
+        </h2>
 
-                            <p>
-                                Semua siswa yang terdaftar di LMS
-                            </p>
+        <p>
+            Semua siswa yang terdaftar di LMS
+        </p>
 
-                        </div>
+    </div>
 
 
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            onclick="loadStudents()"
-                        >
-                            ↻ Refresh
-                        </button>
+    <button
+        type="button"
+        class="secondary-button"
+        onclick="loadStudents()"
+    >
+        ↻ Refresh
+    </button>
 
-                    </div>
+</div>
+
+
+<div class="student-list-controls">
+
+    <div class="student-list-control">
+
+        <label for="studentClassFilter">
+            Kelas
+        </label>
+
+        <select
+            id="studentClassFilter"
+            onchange="renderStudentRows()"
+        >
+            <option value="all">
+                Semua kelas
+            </option>
+        </select>
+
+    </div>
+
+
+    <div class="student-list-control">
+
+        <label for="studentSortFilter">
+            Urutkan
+        </label>
+
+        <select
+            id="studentSortFilter"
+            onchange="renderStudentRows()"
+        >
+            <option value="newest">
+                Terbaru dibuat
+            </option>
+
+            <option value="oldest">
+                Terlama dibuat
+            </option>
+
+            <option value="az">
+                Nama A–Z
+            </option>
+
+            <option value="za">
+                Nama Z–A
+            </option>
+        </select>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="student-filter-reset-button"
+        onclick="resetStudentFilters()"
+    >
+        Reset
+    </button>
+
+</div>
+
+
+<p
+    id="studentFilterSummary"
+    class="student-filter-summary"
+></p>
 
 
                     <div class="admin-table-wrapper">
@@ -990,157 +1075,450 @@ const className =
         );
 
 
-        // =================================
-        // LOAD SEMUA SISWA
-        // =================================
+ // =================================
+// DATA + FILTER DAFTAR SISWA
+// =================================
 
-        async function loadStudents() {
+let allStudents = [];
 
-            const studentList =
-                document.getElementById(
-                    "studentList"
-                );
 
+function getStudentCreatedTime(student) {
+
+    const parsedTime =
+        Date.parse(student.created_at || "");
+
+
+    if (Number.isFinite(parsedTime)) {
+
+        return parsedTime;
+
+    }
+
+
+    return Number(student.id) || 0;
+
+}
+
+
+function populateStudentClassFilter() {
+
+    const classFilter =
+        document.getElementById(
+            "studentClassFilter"
+        );
+
+
+    const previousValue =
+        classFilter.value;
+
+
+    const classes =
+        [
+            ...new Set(
+                allStudents
+                    .map(
+                        student =>
+                            String(
+                                student.class_name || ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ].sort(
+            (classA, classB) =>
+                classA.localeCompare(
+                    classB,
+                    "id",
+                    {
+                        sensitivity: "base",
+                        numeric: true
+                    }
+                )
+        );
+
+
+    classFilter.innerHTML = "";
+
+
+    const allOption =
+        document.createElement("option");
+
+    allOption.value = "all";
+    allOption.textContent =
+        "Semua kelas";
+
+    classFilter.appendChild(allOption);
+
+
+    classes.forEach(className => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = className;
+        option.textContent = className;
+
+        classFilter.appendChild(option);
+
+    });
+
+
+    const previousStillExists =
+        [
+            ...classFilter.options
+        ].some(
+            option =>
+                option.value === previousValue
+        );
+
+
+    classFilter.value =
+        previousStillExists
+            ? previousValue
+            : "all";
+
+}
+
+
+function getVisibleStudents() {
+
+    const selectedClass =
+        document.getElementById(
+            "studentClassFilter"
+        ).value;
+
+
+    const sortMode =
+        document.getElementById(
+            "studentSortFilter"
+        ).value;
+
+
+    const visibleStudents =
+        allStudents.filter(student => {
+
+            if (selectedClass === "all") {
+
+                return true;
+
+            }
+
+
+            return String(
+                student.class_name || ""
+            ).trim() === selectedClass;
+
+        });
+
+
+    visibleStudents.sort((studentA, studentB) => {
+
+        if (sortMode === "az") {
+
+            return String(
+                studentA.name || ""
+            ).localeCompare(
+                String(studentB.name || ""),
+                "id",
+                {
+                    sensitivity: "base",
+                    numeric: true
+                }
+            );
+
+        }
+
+
+        if (sortMode === "za") {
+
+            return String(
+                studentB.name || ""
+            ).localeCompare(
+                String(studentA.name || ""),
+                "id",
+                {
+                    sensitivity: "base",
+                    numeric: true
+                }
+            );
+
+        }
+
+
+        const timeA =
+            getStudentCreatedTime(studentA);
+
+        const timeB =
+            getStudentCreatedTime(studentB);
+
+
+        if (sortMode === "oldest") {
+
+            return timeA - timeB;
+
+        }
+
+
+        return timeB - timeA;
+
+    });
+
+
+    return visibleStudents;
+
+}
+
+
+function renderStudentRows() {
+
+    const studentList =
+        document.getElementById(
+            "studentList"
+        );
+
+
+    const summary =
+        document.getElementById(
+            "studentFilterSummary"
+        );
+
+
+    const visibleStudents =
+        getVisibleStudents();
+
+
+    summary.textContent =
+        `${visibleStudents.length} dari ${allStudents.length} siswa ditampilkan`;
+
+
+    if (visibleStudents.length === 0) {
+
+        studentList.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    Tidak ada siswa yang cocok dengan filter.
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    studentList.innerHTML = "";
+
+
+    visibleStudents.forEach(
+        (student, index) => {
+
+            const row =
+                document.createElement("tr");
+
+
+            const studentName =
+                String(student.name || "");
+
+
+            const studentInitial =
+                studentName
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() || "S";
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+
+                    <div class="student-name-cell">
+
+                        <div class="student-mini-avatar">
+                            ${escapeHtml(
+                                studentInitial
+                            )}
+                        </div>
+
+                        <strong>
+                            ${escapeHtml(
+                                studentName
+                            )}
+                        </strong>
+
+                    </div>
+
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        student.class_name ||
+                        "-"
+                    )}
+                </td>
+
+                <td>
+
+                    <span class="student-login-code">
+                        ${escapeHtml(
+                            student.login_code
+                        )}
+                    </span>
+
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        formatDeviceDateTime(
+                            student.created_at
+                        )
+                    )}
+                </td>
+
+            `;
+
+
+            studentList.appendChild(row);
+
+        }
+    );
+
+}
+
+
+function resetStudentFilters() {
+
+    document
+        .getElementById(
+            "studentClassFilter"
+        )
+        .value = "all";
+
+
+    document
+        .getElementById(
+            "studentSortFilter"
+        )
+        .value = "newest";
+
+
+    renderStudentRows();
+
+}
+
+
+// =================================
+// LOAD SEMUA SISWA
+// =================================
+
+async function loadStudents() {
+
+    const studentList =
+        document.getElementById(
+            "studentList"
+        );
+
+
+    const summary =
+        document.getElementById(
+            "studentFilterSummary"
+        );
+
+
+    studentList.innerHTML = `
+        <tr>
+            <td colspan="5">
+                Memuat data...
+            </td>
+        </tr>
+    `;
+
+
+    summary.textContent = "";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/students"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
 
             studentList.innerHTML = `
                 <tr>
                     <td colspan="5">
-                        Memuat data...
+                        ${escapeHtml(
+                            data.message ||
+                            "Gagal mengambil data siswa."
+                        )}
                     </td>
                 </tr>
             `;
 
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/admin/students"
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!data.success) {
-
-                    studentList.innerHTML = `
-                        <tr>
-                            <td colspan="5">
-                                ${data.message}
-                            </td>
-                        </tr>
-                    `;
-
-                    return;
-
-                }
-
-
-                // Tidak ada siswa
-                if (data.students.length === 0) {
-
-                    studentList.innerHTML = `
-                        <tr>
-                            <td colspan="5">
-                                Belum ada siswa.
-                            </td>
-                        </tr>
-                    `;
-
-                    return;
-
-                }
-
-
-                studentList.innerHTML = "";
-
-
-                data.students.forEach(
-                    (student, index) => {
-
-                        const row =
-                            document.createElement(
-                                "tr"
-                            );
-
-
-                        row.innerHTML = `
-
-                            <td>
-                                ${index + 1}
-                            </td>
-
-                            <td>
-
-                                <div class="student-name-cell">
-
-                                    <div class="student-mini-avatar">
-                                        S
-                                    </div>
-
-                                    <strong>
-                                        ${escapeHtml(
-                                            student.name
-                                        )}
-                                    </strong>
-
-                                </div>
-
-                            </td>
-
-                            <td>
-                                ${escapeHtml(
-                                    student.class_name
-                                )}
-                            </td>
-
-                            <td>
-
-                                <span class="student-login-code">
-                                    ${escapeHtml(
-                                        student.login_code
-                                    )}
-                                </span>
-
-                            </td>
-
-                            <td>
-${escapeHtml(
-    formatDeviceDateTime(
-        student.created_at
-    )
-)}
-                            </td>
-
-                        `;
-
-
-                        studentList.appendChild(
-                            row
-                        );
-
-                    }
-                );
-
-
-            } catch (error) {
-
-                console.error(error);
-
-
-                studentList.innerHTML = `
-                    <tr>
-                        <td colspan="5">
-                            Gagal mengambil data siswa.
-                        </td>
-                    </tr>
-                `;
-
-            }
+            return;
 
         }
+
+
+        allStudents =
+            Array.isArray(data.students)
+                ? data.students
+                : [];
+
+
+        populateStudentClassFilter();
+
+
+        if (allStudents.length === 0) {
+
+            studentList.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        Belum ada siswa.
+                    </td>
+                </tr>
+            `;
+
+            summary.textContent =
+                "0 siswa ditampilkan";
+
+            return;
+
+        }
+
+
+        renderStudentRows();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        studentList.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    Gagal mengambil data siswa.
+                </td>
+            </tr>
+        `;
+
+
+        summary.textContent = "";
+
+    }
+
+}
 
         function goToDashboard() {
 

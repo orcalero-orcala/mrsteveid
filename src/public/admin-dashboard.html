@@ -6,10 +6,18 @@
 
     <title>Admin Dashboard</title>
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
 >
+
+<script src="/admin-profile-initial.js"></script>
 
 </head>
 
@@ -130,7 +138,7 @@
                         !
                     </span>
 
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -140,6 +148,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>
@@ -468,7 +487,7 @@
                             <div>
 
                                 <strong>
-                                    Announcement
+                                    Information Board
                                 </strong>
 
                                 <span>
@@ -521,19 +540,6 @@
                 </section>
 
 </section>
-
-
-<div id="systemResetButtonRow">
-
-    <button
-        id="systemResetButton"
-        type="button"
-        onclick="goToSystemReset()"
-    >
-        System & Reset
-    </button>
-
-</div>
 
         </main>
 
@@ -625,13 +631,6 @@
 
 <script src="/time.js"></script>
     <script>
-
-        function goToSystemReset() {
-
-    window.location.href =
-        "/admin-system-reset.html";
-
-}
 
         function goToTeachers() {
 

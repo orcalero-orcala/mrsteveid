@@ -14,10 +14,18 @@
     Nilai Saya
 </title>
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
 >
+
+<script src="/student-profile-initial.js"></script>
 
 </head>
 
@@ -223,90 +231,456 @@
                 </section>
 
 
-                <!-- INFO SISWA -->
+<!-- METRIK UTAMA -->
 
-                <section
-                    id="studentInfo"
-                    class="score-student-info"
+<section class="score-summary-grid student-score-metrics">
+
+    <article class="score-summary-card">
+
+        <div class="student-score-metric-heading">
+
+            <span>
+                Jumlah Nilai
+            </span>
+
+            <small>
+                Total
+            </small>
+
+        </div>
+
+        <strong id="totalScores">
+            0
+        </strong>
+
+        <p>
+            Nilai ujian yang sudah diberikan
+        </p>
+
+    </article>
+
+
+    <article class="score-summary-card">
+
+        <div class="student-score-metric-heading">
+
+            <span>
+                Rata-rata
+            </span>
+
+            <small>
+                Avg
+            </small>
+
+        </div>
+
+        <strong id="averageScore">
+            0
+        </strong>
+
+        <p>
+            Rata-rata dari seluruh nilai
+        </p>
+
+    </article>
+
+
+    <article class="score-summary-card">
+
+        <div class="student-score-metric-heading">
+
+            <span>
+                Nilai Tertinggi
+            </span>
+
+            <small>
+                Best
+            </small>
+
+        </div>
+
+        <strong id="highestScore">
+            0
+        </strong>
+
+        <p>
+            Nilai terbaik yang pernah dicapai
+        </p>
+
+    </article>
+
+
+    <article class="score-summary-card">
+
+        <div class="student-score-metric-heading">
+
+            <span>
+                Nilai Terbaru
+            </span>
+
+            <small>
+                Latest
+            </small>
+
+        </div>
+
+        <strong id="latestScore">
+            0
+        </strong>
+
+        <p id="latestScoreSubject">
+            Belum ada nilai terbaru
+        </p>
+
+    </article>
+
+</section>
+
+
+<!-- INSIGHT AKADEMIK -->
+
+<section class="student-score-insight-grid">
+
+    <article class="student-score-insight-card">
+
+        <div class="student-score-insight-label">
+            Mapel Terkuat
+        </div>
+
+        <strong id="strongestSubject">
+            —
+        </strong>
+
+        <p id="strongestSubjectValue">
+            Belum cukup data
+        </p>
+
+    </article>
+
+
+    <article class="student-score-insight-card">
+
+        <div class="student-score-insight-label">
+            Perlu Ditingkatkan
+        </div>
+
+        <strong id="focusSubject">
+            —
+        </strong>
+
+        <p id="focusSubjectValue">
+            Belum cukup data
+        </p>
+
+    </article>
+
+
+    <article class="student-score-insight-card">
+
+        <div class="student-score-insight-label">
+            Tren Nilai
+        </div>
+
+        <strong id="scoreTrendValue">
+            —
+        </strong>
+
+        <p id="scoreTrendDescription">
+            Minimal dua nilai diperlukan
+        </p>
+
+    </article>
+
+</section>
+
+
+<!-- ANALISIS NILAI -->
+
+<section class="student-score-analytics-grid">
+
+    <!-- PERFORMA MAPEL -->
+
+    <article class="student-score-analytics-card">
+
+        <div class="student-score-panel-heading">
+
+            <div>
+
+                <small class="eyebrow">
+                    SUBJECT PERFORMANCE
+                </small>
+
+                <h2>
+                    Performa per Mapel
+                </h2>
+
+                <p>
+                    Rata-rata nilai pada setiap mata pelajaran.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="subjectPerformanceChart"
+            class="student-subject-chart"
+        >
+
+            <div class="student-score-chart-loading">
+                Memuat performa mapel...
+            </div>
+
+        </div>
+
+
+        <div class="student-score-chart-legend">
+
+            <span class="high">
+                85–100 Tinggi
+            </span>
+
+            <span class="medium">
+                70–84 Sedang
+            </span>
+
+            <span class="low">
+                Di bawah 70
+            </span>
+
+        </div>
+
+    </article>
+
+
+    <!-- PERKEMBANGAN NILAI -->
+
+    <article class="student-score-analytics-card">
+
+        <div class="student-score-panel-heading">
+
+            <div>
+
+                <small class="eyebrow">
+                    SCORE PROGRESS
+                </small>
+
+                <h2>
+                    Perkembangan Nilai
+                </h2>
+
+                <p>
+                    Perubahan nilai dari waktu ke waktu.
+                </p>
+
+            </div>
+
+
+            <div class="student-score-chart-filter">
+
+                <label for="trendSubjectFilter">
+                    Mapel
+                </label>
+
+                <select
+                    id="trendSubjectFilter"
+                    onchange="renderScoreTrend()"
                 >
-                    Memuat data siswa...
-                </section>
+                    <option value="all">
+                        Semua mapel
+                    </option>
+                </select>
+
+            </div>
+
+        </div>
 
 
-                <!-- SUMMARY -->
+        <div
+            id="scoreTrendChart"
+            class="student-score-trend-chart"
+        >
 
-                <section class="score-summary-grid">
+            <div class="student-score-chart-loading">
+                Memuat perkembangan nilai...
+            </div>
 
-                    <article class="score-summary-card">
-
-                        <span>
-                            Jumlah Nilai
-                        </span>
-
-                        <strong id="totalScores">
-                            0
-                        </strong>
-
-                    </article>
+        </div>
 
 
-                    <article class="score-summary-card">
+        <div
+            id="scoreTrendFooter"
+            class="student-score-trend-footer"
+        >
+            Belum ada data perkembangan.
+        </div>
 
-                        <span>
-                            Rata-rata
-                        </span>
+    </article>
 
-                        <strong id="averageScore">
-                            0
-                        </strong>
-
-                    </article>
-
-
-                    <article class="score-summary-card">
-
-                        <span>
-                            Nilai Tertinggi
-                        </span>
-
-                        <strong id="highestScore">
-                            0
-                        </strong>
-
-                    </article>
-
-                </section>
+</section>
 
 
-                <!-- LIST NILAI -->
+<!-- RIWAYAT NILAI -->
 
-                <section class="score-section">
+<section class="score-section student-score-history-section">
 
-                    <div class="section-heading">
+    <div class="section-heading student-score-history-heading">
 
-                        <div>
+        <div>
 
-                            <h2>
-                                Riwayat Nilai
-                            </h2>
+            <h2>
+                Riwayat Nilai
+            </h2>
 
-                            <p>
-                                Semua nilai ujian yang sudah diberikan
-                            </p>
+            <p>
+                Cari, filter, dan urutkan seluruh nilai ujian kamu.
+            </p>
 
-                        </div>
+        </div>
 
-                    </div>
+    </div>
 
 
-                    <div
-                        id="examScoreContainer"
-                        class="score-list"
-                    >
+    <!-- FILTER -->
+
+    <div class="student-score-history-controls">
+
+        <div class="student-score-search-control">
+
+            <label for="historySearch">
+                Cari
+            </label>
+
+            <input
+                type="search"
+                id="historySearch"
+                placeholder="Cari mapel atau materi..."
+                oninput="renderScoreHistory()"
+            >
+
+        </div>
+
+
+        <div class="student-score-filter-control">
+
+            <label for="historySubjectFilter">
+                Mapel
+            </label>
+
+            <select
+                id="historySubjectFilter"
+                onchange="renderScoreHistory()"
+            >
+                <option value="all">
+                    Semua mapel
+                </option>
+            </select>
+
+        </div>
+
+
+        <div class="student-score-filter-control">
+
+            <label for="historySort">
+                Urutkan
+            </label>
+
+            <select
+                id="historySort"
+                onchange="renderScoreHistory()"
+            >
+                <option value="newest">
+                    Terbaru
+                </option>
+
+                <option value="oldest">
+                    Terlama
+                </option>
+
+                <option value="highest">
+                    Nilai tertinggi
+                </option>
+
+                <option value="lowest">
+                    Nilai terendah
+                </option>
+            </select>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="student-score-filter-reset"
+            onclick="resetScoreHistoryFilters()"
+        >
+            Reset
+        </button>
+
+    </div>
+
+
+    <p
+        id="scoreHistorySummary"
+        class="student-score-history-summary"
+    >
+        Memuat data...
+    </p>
+
+
+    <!-- TABEL -->
+
+    <div class="student-score-table-wrapper">
+
+        <table class="student-score-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Mapel
+                    </th>
+
+                    <th>
+                        Materi
+                    </th>
+
+                    <th>
+                        Nilai
+                    </th>
+
+                    <th>
+                        Dibanding Rata-rata
+                    </th>
+
+                    <th>
+                        Tanggal
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="examScoreContainer">
+
+                <tr>
+
+                    <td colspan="5">
                         Memuat nilai...
-                    </div>
+                    </td>
 
-                </section>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
 
             </div>
 
@@ -324,328 +698,1632 @@
 
 }
 
-        const studentId =
-            localStorage.getItem(
-                "studentId"
+const studentId =
+    localStorage.getItem(
+        "studentId"
+    );
+
+
+const studentInfo =
+    document.getElementById(
+        "studentInfo"
+    );
+
+
+const examScoreContainer =
+    document.getElementById(
+        "examScoreContainer"
+    );
+
+
+let allExamScores = [];
+let overallScoreAverage = 0;
+
+
+// =====================================
+// UTILITAS NILAI
+// =====================================
+
+function getScoreTimestamp(examScore) {
+
+    const parsedTime =
+        Date.parse(
+            examScore.created_at || ""
+        );
+
+
+    if (Number.isFinite(parsedTime)) {
+
+        return parsedTime;
+
+    }
+
+
+    return Number(examScore.id) || 0;
+
+}
+
+
+function formatScoreNumber(value) {
+
+    const numericValue =
+        Number(value);
+
+
+    if (!Number.isFinite(numericValue)) {
+
+        return "0";
+
+    }
+
+
+    return Number.isInteger(numericValue)
+        ? String(numericValue)
+        : numericValue.toFixed(1);
+
+}
+
+
+function getScoreLevel(score) {
+
+    const numericScore =
+        Number(score);
+
+
+    if (numericScore >= 85) {
+
+        return "high";
+
+    }
+
+
+    if (numericScore < 70) {
+
+        return "low";
+
+    }
+
+
+    return "medium";
+
+}
+
+
+function formatScoreShortDate(dateValue) {
+
+    const date =
+        new Date(dateValue);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "—";
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+        "id-ID",
+        {
+            day: "2-digit",
+            month: "short"
+        }
+    ).format(date);
+
+}
+
+
+// =====================================
+// KELOMPOKKAN BERDASARKAN MAPEL
+// =====================================
+
+function getSubjectStatistics() {
+
+    const subjectMap =
+        new Map();
+
+
+    allExamScores.forEach(examScore => {
+
+        const subjectName =
+            String(
+                examScore.subject ||
+                "Tanpa mapel"
+            ).trim();
+
+
+        const subjectKey =
+            subjectName.toLocaleLowerCase(
+                "id-ID"
             );
 
 
-        const studentInfo =
-            document.getElementById(
-                "studentInfo"
-            );
-
-
-        const examScoreContainer =
-            document.getElementById(
-                "examScoreContainer"
-            );
-
-
-        // =====================================
-        // LOAD NILAI SISWA
-        // =====================================
-
-        async function loadExamScores() {
-
-            if (!studentId) {
-
-                examScoreContainer.innerHTML = `
-                    <p>
-                        Data login siswa tidak ditemukan.
-                    </p>
-                `;
-
-                return;
-
-            }
-
-
-            examScoreContainer.innerHTML =
-                "Memuat nilai...";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/student/${studentId}/exam-scores`
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!data.success) {
-
-                    examScoreContainer.innerHTML = `
-                        <p>
-                            ${escapeHtml(
-                                data.message ||
-                                "Gagal mengambil nilai."
-                            )}
-                        </p>
-                    `;
-
-                    return;
-
-                }
-
-
-                // =================================
-                // INFO SISWA
-                // =================================
-
-                        studentInfo.innerHTML = `
-
-                            <div>
-
-                                <span>
-                                    Nama
-                                </span>
-
-                                <strong>
-                                    ${escapeHtml(
-                                        data.student.name
-                                    )}
-                                </strong>
-
-                            </div>
-
-
-                            <div>
-
-                                <span>
-                                    Kelas
-                                </span>
-
-                                <strong>
-                                    ${escapeHtml(
-                                        data.student.className
-                                    )}
-                                </strong>
-
-                            </div>
-
-                        `;
-
-                        document.getElementById(
-                            "sidebarStudentName"
-                        ).textContent =
-                            data.student.name;
-
-
-                        document.getElementById(
-                            "sidebarStudentClass"
-                        ).textContent =
-                            data.student.className;
-
-
-                        document.getElementById(
-                            "topStudentName"
-                        ).textContent =
-                            data.student.name;
-
-                                                const scores =
-                        data.examScores.map(
-                            (item) =>
-                                Number(item.score)
-                        );
-
-
-                    const totalScores =
-                        scores.length;
-
-
-                    const averageScore =
-                        totalScores > 0
-                            ? (
-                                scores.reduce(
-                                    (total, score) =>
-                                        total + score,
-                                    0
-                                ) / totalScores
-                            ).toFixed(1)
-                            : 0;
-
-
-                    const highestScore =
-                        totalScores > 0
-                            ? Math.max(...scores)
-                            : 0;
-
-
-                    document.getElementById(
-                        "totalScores"
-                    ).textContent =
-                        totalScores;
-
-
-                    document.getElementById(
-                        "averageScore"
-                    ).textContent =
-                        averageScore;
-
-
-                    document.getElementById(
-                        "highestScore"
-                    ).textContent =
-                        highestScore;
-
-
-                // =================================
-                // BELUM ADA NILAI
-                // =================================
-
-                        if (
-                            data.examScores.length === 0
-                        ) {
-
-                            examScoreContainer.innerHTML = `
-
-                                <div class="empty-state">
-
-                                    <strong>
-                                        Belum ada nilai
-                                    </strong>
-
-                                    <span>
-                                        Nilai ujian kamu akan muncul di sini.
-                                    </span>
-
-                                </div>
-
-                            `;
-
-                            return;
-
-                        }
-
-
-                // =================================
-                // TABEL NILAI
-                // =================================
-
-                examScoreContainer.innerHTML =
-    "";
-
-
-data.examScores.forEach(
-    (examScore) => {
-
-        const item =
-            document.createElement(
-                "article"
-            );
-
-
-        item.className =
-            "score-item";
-
-
-        const numericScore =
-            Number(
-                examScore.score
-            );
-
-
-        let scoreLevel =
-            "medium";
-
-
-        if (numericScore >= 85) {
-
-            scoreLevel =
-                "high";
-
-        } else if (
-            numericScore < 70
+        if (
+            !subjectMap.has(subjectKey)
         ) {
 
-            scoreLevel =
-                "low";
+            subjectMap.set(
+                subjectKey,
+                {
+                    subject: subjectName,
+                    scores: [],
+                    average: 0
+                }
+            );
 
         }
 
 
-        item.innerHTML = `
+        subjectMap
+            .get(subjectKey)
+            .scores
+            .push(
+                Number(examScore.score) || 0
+            );
 
-            <div class="score-item-main">
-
-                <div class="score-subject-icon">
-                    ▤
-                </div>
-
-
-                <div>
-
-                    <strong>
-                        ${escapeHtml(
-                            examScore.subject
-                        )}
-                    </strong>
-
-                    <span>
-                        ${escapeHtml(
-                            examScore.material
-                        )}
-                    </span>
-
-                </div>
-
-            </div>
+    });
 
 
-            <div class="score-item-date">
+    const statistics =
+        [
+            ...subjectMap.values()
+        ];
 
-                <span>
-                    Tanggal
-                </span>
+
+    statistics.forEach(item => {
+
+        const total =
+            item.scores.reduce(
+                (sum, score) =>
+                    sum + score,
+                0
+            );
+
+
+        item.average =
+            item.scores.length > 0
+                ? total / item.scores.length
+                : 0;
+
+    });
+
+
+    return statistics;
+
+}
+
+
+// =====================================
+// INFO SISWA
+// =====================================
+
+function renderStudentScoreInfo(student) {
+
+    const studentName =
+        student.name || "Student";
+
+
+    const studentClass =
+        student.className || "—";
+
+
+    const sidebarName =
+        document.getElementById(
+            "sidebarStudentName"
+        );
+
+
+    const sidebarClass =
+        document.getElementById(
+            "sidebarStudentClass"
+        );
+
+
+    const topName =
+        document.getElementById(
+            "topStudentName"
+        );
+
+
+    if (sidebarName) {
+
+        sidebarName.textContent =
+            studentName;
+
+    }
+
+
+    if (sidebarClass) {
+
+        sidebarClass.textContent =
+            studentClass;
+
+    }
+
+
+    if (topName) {
+
+        topName.textContent =
+            studentName;
+
+    }
+
+}
+
+
+// =====================================
+// METRIK + INSIGHT
+// =====================================
+
+function renderScoreMetrics() {
+
+    const numericScores =
+        allExamScores.map(
+            examScore =>
+                Number(examScore.score) || 0
+        );
+
+
+    const totalScores =
+        numericScores.length;
+
+
+    overallScoreAverage =
+        totalScores > 0
+            ? numericScores.reduce(
+                (sum, score) =>
+                    sum + score,
+                0
+            ) / totalScores
+            : 0;
+
+
+    const highestScore =
+        totalScores > 0
+            ? Math.max(...numericScores)
+            : 0;
+
+
+    const sortedNewest =
+        [
+            ...allExamScores
+        ].sort(
+            (scoreA, scoreB) =>
+                getScoreTimestamp(scoreB) -
+                getScoreTimestamp(scoreA)
+        );
+
+
+    const latestExamScore =
+        sortedNewest[0] || null;
+
+
+    document
+        .getElementById(
+            "totalScores"
+        )
+        .textContent =
+            totalScores;
+
+
+    document
+        .getElementById(
+            "averageScore"
+        )
+        .textContent =
+            formatScoreNumber(
+                overallScoreAverage
+            );
+
+
+    document
+        .getElementById(
+            "highestScore"
+        )
+        .textContent =
+            formatScoreNumber(
+                highestScore
+            );
+
+
+    document
+        .getElementById(
+            "latestScore"
+        )
+        .textContent =
+            latestExamScore
+                ? formatScoreNumber(
+                    latestExamScore.score
+                )
+                : "0";
+
+
+    document
+        .getElementById(
+            "latestScoreSubject"
+        )
+        .textContent =
+            latestExamScore
+                ? (
+                    latestExamScore.material
+                        ? `${latestExamScore.subject} — ${latestExamScore.material}`
+                        : latestExamScore.subject
+                )
+                : "Belum ada nilai terbaru";
+
+
+    renderScoreInsights();
+
+}
+
+
+function renderScoreInsights() {
+
+    const subjectStatistics =
+        getSubjectStatistics()
+            .sort(
+                (subjectA, subjectB) =>
+                    subjectB.average -
+                    subjectA.average
+            );
+
+
+    const strongestSubject =
+        subjectStatistics[0] || null;
+
+
+    const focusSubject =
+        subjectStatistics.length > 1
+            ? subjectStatistics[
+                subjectStatistics.length - 1
+            ]
+            : null;
+
+
+    document
+        .getElementById(
+            "strongestSubject"
+        )
+        .textContent =
+            strongestSubject
+                ? strongestSubject.subject
+                : "—";
+
+
+    document
+        .getElementById(
+            "strongestSubjectValue"
+        )
+        .textContent =
+            strongestSubject
+                ? (
+                    `Rata-rata ${formatScoreNumber(
+                        strongestSubject.average
+                    )} dari ${strongestSubject.scores.length} nilai`
+                )
+                : "Belum cukup data";
+
+
+    document
+        .getElementById(
+            "focusSubject"
+        )
+        .textContent =
+            focusSubject
+                ? focusSubject.subject
+                : "—";
+
+
+    document
+        .getElementById(
+            "focusSubjectValue"
+        )
+        .textContent =
+            focusSubject
+                ? (
+                    `Rata-rata ${formatScoreNumber(
+                        focusSubject.average
+                    )} dari ${focusSubject.scores.length} nilai`
+                )
+                : (
+                    subjectStatistics.length === 1
+                        ? "Belum ada mapel pembanding"
+                        : "Belum cukup data"
+                );
+
+
+    const chronologicalScores =
+        [
+            ...allExamScores
+        ].sort(
+            (scoreA, scoreB) =>
+                getScoreTimestamp(scoreA) -
+                getScoreTimestamp(scoreB)
+        );
+
+
+    const trendValue =
+        document.getElementById(
+            "scoreTrendValue"
+        );
+
+
+    const trendDescription =
+        document.getElementById(
+            "scoreTrendDescription"
+        );
+
+
+    if (
+        chronologicalScores.length < 2
+    ) {
+
+        trendValue.textContent = "—";
+
+        trendValue.className = "";
+
+        trendDescription.textContent =
+            "Minimal dua nilai diperlukan";
+
+        return;
+
+    }
+
+
+    const previousScore =
+        Number(
+            chronologicalScores[
+                chronologicalScores.length - 2
+            ].score
+        ) || 0;
+
+
+    const latestScore =
+        Number(
+            chronologicalScores[
+                chronologicalScores.length - 1
+            ].score
+        ) || 0;
+
+
+    const difference =
+        latestScore - previousScore;
+
+
+    trendValue.className =
+        difference > 0
+            ? "positive"
+            : (
+                difference < 0
+                    ? "negative"
+                    : "neutral"
+            );
+
+
+    trendValue.textContent =
+        difference > 0
+            ? `+${formatScoreNumber(
+                difference
+            )}`
+            : formatScoreNumber(
+                difference
+            );
+
+
+    if (difference > 0) {
+
+        trendDescription.textContent =
+            "Naik dibanding nilai sebelumnya";
+
+    } else if (difference < 0) {
+
+        trendDescription.textContent =
+            "Turun dibanding nilai sebelumnya";
+
+    } else {
+
+        trendDescription.textContent =
+            "Sama dengan nilai sebelumnya";
+
+    }
+
+}
+
+
+// =====================================
+// ISI FILTER MAPEL
+// =====================================
+
+function populateScoreSubjectFilters() {
+
+    const trendFilter =
+        document.getElementById(
+            "trendSubjectFilter"
+        );
+
+
+    const historyFilter =
+        document.getElementById(
+            "historySubjectFilter"
+        );
+
+
+    const subjects =
+        getSubjectStatistics()
+            .map(item => item.subject)
+            .sort(
+                (subjectA, subjectB) =>
+                    subjectA.localeCompare(
+                        subjectB,
+                        "id",
+                        {
+                            sensitivity: "base",
+                            numeric: true
+                        }
+                    )
+            );
+
+
+    trendFilter.innerHTML = `
+        <option value="all">
+            Semua mapel
+        </option>
+    `;
+
+
+    historyFilter.innerHTML = `
+        <option value="all">
+            Semua mapel
+        </option>
+    `;
+
+
+    subjects.forEach(subject => {
+
+        const trendOption =
+            document.createElement(
+                "option"
+            );
+
+
+        trendOption.value =
+            subject;
+
+        trendOption.textContent =
+            subject;
+
+
+        trendFilter.appendChild(
+            trendOption
+        );
+
+
+        const historyOption =
+            document.createElement(
+                "option"
+            );
+
+
+        historyOption.value =
+            subject;
+
+        historyOption.textContent =
+            subject;
+
+
+        historyFilter.appendChild(
+            historyOption
+        );
+
+    });
+
+}
+
+
+// =====================================
+// GRAFIK PERFORMA MAPEL
+// =====================================
+
+function renderSubjectPerformance() {
+
+    const chart =
+        document.getElementById(
+            "subjectPerformanceChart"
+        );
+
+
+    const subjectStatistics =
+        getSubjectStatistics()
+            .sort(
+                (subjectA, subjectB) =>
+                    subjectB.average -
+                    subjectA.average
+            );
+
+
+    if (
+        subjectStatistics.length === 0
+    ) {
+
+        chart.innerHTML = `
+
+            <div class="student-score-chart-empty">
 
                 <strong>
-                    ${formatDeviceDateTime(
-    examScore.created_at
-)}
+                    Belum ada data mapel
                 </strong>
+
+                <span>
+                    Grafik akan muncul setelah nilai diberikan.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    chart.innerHTML = "";
+
+
+    subjectStatistics.forEach(subject => {
+
+        const average =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    subject.average
+                )
+            );
+
+
+        const scoreLevel =
+            getScoreLevel(average);
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "student-subject-chart-row";
+
+
+        row.innerHTML = `
+
+            <div class="student-subject-chart-heading">
+
+                <strong>
+                    ${escapeHtml(
+                        subject.subject
+                    )}
+                </strong>
+
+                <span>
+                    ${formatScoreNumber(
+                        subject.average
+                    )}
+                </span>
 
             </div>
 
 
-            <div
-                class="
-                    score-badge
-                    ${scoreLevel}
-                "
-            >
-                ${numericScore}
+            <div class="student-subject-chart-track">
+
+                <div
+                    class="
+                        student-subject-chart-fill
+                        ${scoreLevel}
+                    "
+                    style="width: ${average}%"
+                ></div>
+
+            </div>
+
+
+            <small>
+                ${subject.scores.length}
+                nilai tercatat
+            </small>
+
+        `;
+
+
+        chart.appendChild(row);
+
+    });
+
+}
+
+
+// =====================================
+// GRAFIK PERKEMBANGAN
+// =====================================
+
+function renderScoreTrend() {
+
+    const chart =
+        document.getElementById(
+            "scoreTrendChart"
+        );
+
+
+    const footer =
+        document.getElementById(
+            "scoreTrendFooter"
+        );
+
+
+    const selectedSubject =
+        document.getElementById(
+            "trendSubjectFilter"
+        ).value;
+
+
+    const filteredScores =
+        allExamScores
+            .filter(examScore => {
+
+                if (
+                    selectedSubject === "all"
+                ) {
+
+                    return true;
+
+                }
+
+
+                return (
+                    examScore.subject ===
+                    selectedSubject
+                );
+
+            })
+            .sort(
+                (scoreA, scoreB) =>
+                    getScoreTimestamp(scoreA) -
+                    getScoreTimestamp(scoreB)
+            );
+
+
+    if (
+        filteredScores.length === 0
+    ) {
+
+        chart.innerHTML = `
+
+            <div class="student-score-chart-empty">
+
+                <strong>
+                    Belum ada perkembangan
+                </strong>
+
+                <span>
+                    Belum ada nilai untuk filter ini.
+                </span>
+
             </div>
 
         `;
 
 
-        examScoreContainer.appendChild(
-            item
+        footer.textContent =
+            "Belum ada data perkembangan.";
+
+        return;
+
+    }
+
+
+    const graphWidth = 640;
+    const graphHeight = 230;
+
+    const plotLeft = 44;
+    const plotRight = 620;
+    const plotTop = 18;
+    const plotBottom = 184;
+
+    const plotWidth =
+        plotRight - plotLeft;
+
+    const plotHeight =
+        plotBottom - plotTop;
+
+
+    const points =
+        filteredScores.map(
+            (examScore, index) => {
+
+                const x =
+                    filteredScores.length === 1
+                        ? (
+                            plotLeft +
+                            plotWidth / 2
+                        )
+                        : (
+                            plotLeft +
+                            (
+                                index /
+                                (
+                                    filteredScores.length -
+                                    1
+                                )
+                            ) *
+                            plotWidth
+                        );
+
+
+                const numericScore =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Number(
+                                examScore.score
+                            ) || 0
+                        )
+                    );
+
+
+                const y =
+                    plotBottom -
+                    (
+                        numericScore / 100
+                    ) *
+                    plotHeight;
+
+
+                return {
+                    x,
+                    y,
+                    score: numericScore,
+                    examScore
+                };
+
+            }
+        );
+
+
+    const gridValues =
+        [
+            100,
+            75,
+            50,
+            25,
+            0
+        ];
+
+
+    const gridLines =
+        gridValues.map(value => {
+
+            const y =
+                plotBottom -
+                (
+                    value / 100
+                ) *
+                plotHeight;
+
+
+            return `
+
+                <line
+                    x1="${plotLeft}"
+                    y1="${y}"
+                    x2="${plotRight}"
+                    y2="${y}"
+                    class="student-score-grid-line"
+                ></line>
+
+                <text
+                    x="${plotLeft - 10}"
+                    y="${y + 4}"
+                    text-anchor="end"
+                    class="student-score-axis-label"
+                >
+                    ${value}
+                </text>
+
+            `;
+
+        }).join("");
+
+
+    const pointString =
+        points
+            .map(
+                point =>
+                    `${point.x},${point.y}`
+            )
+            .join(" ");
+
+
+    const line =
+        points.length > 1
+            ? `
+                <polyline
+                    points="${pointString}"
+                    class="student-score-trend-line"
+                ></polyline>
+            `
+            : "";
+
+
+    const dots =
+        points.map(point => `
+
+            <circle
+                cx="${point.x}"
+                cy="${point.y}"
+                r="5"
+                class="student-score-trend-dot"
+            >
+
+                <title>
+                    ${escapeHtml(
+                        point.examScore.subject
+                    )} —
+                    ${escapeHtml(
+                        point.examScore.material
+                    )}:
+                    ${formatScoreNumber(
+                        point.score
+                    )}
+                </title>
+
+            </circle>
+
+        `).join("");
+
+
+    const labelIndexes =
+        new Set();
+
+
+    if (points.length <= 5) {
+
+        points.forEach(
+            (point, index) =>
+                labelIndexes.add(index)
+        );
+
+    } else {
+
+        labelIndexes.add(0);
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) * 0.25
+            )
+        );
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) * 0.5
+            )
+        );
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) * 0.75
+            )
+        );
+
+        labelIndexes.add(
+            points.length - 1
         );
 
     }
-);
 
 
-            } catch (error) {
+    const dateLabels =
+        points.map(
+            (point, index) => {
 
-                console.error(error);
+                if (
+                    !labelIndexes.has(index)
+                ) {
 
-                examScoreContainer.innerHTML = `
-                    <p>
-                        Tidak dapat terhubung ke server.
-                    </p>
+                    return "";
+
+                }
+
+
+                return `
+
+                    <text
+                        x="${point.x}"
+                        y="${plotBottom + 28}"
+                        text-anchor="middle"
+                        class="student-score-date-label"
+                    >
+                        ${escapeHtml(
+                            formatScoreShortDate(
+                                point.examScore.created_at
+                            )
+                        )}
+                    </text>
+
                 `;
 
             }
+        ).join("");
+
+
+    chart.innerHTML = `
+
+        <svg
+            viewBox="
+                0 0
+                ${graphWidth}
+                ${graphHeight}
+            "
+            role="img"
+            aria-label="Grafik perkembangan nilai"
+        >
+
+            ${gridLines}
+
+            ${line}
+
+            ${dots}
+
+            ${dateLabels}
+
+        </svg>
+
+    `;
+
+
+    const numericScores =
+        filteredScores.map(
+            examScore =>
+                Number(examScore.score) || 0
+        );
+
+
+    const latestScore =
+        numericScores[
+            numericScores.length - 1
+        ];
+
+
+    const highestScore =
+        Math.max(...numericScores);
+
+
+    let footerText =
+        `Terbaru ${formatScoreNumber(
+            latestScore
+        )} · Tertinggi ${formatScoreNumber(
+            highestScore
+        )}`;
+
+
+    if (
+        numericScores.length > 1
+    ) {
+
+        const previousScore =
+            numericScores[
+                numericScores.length - 2
+            ];
+
+
+        const difference =
+            latestScore - previousScore;
+
+
+        const differenceText =
+            difference > 0
+                ? `+${formatScoreNumber(
+                    difference
+                )}`
+                : formatScoreNumber(
+                    difference
+                );
+
+
+        footerText +=
+            ` · Perubahan ${differenceText}`;
+
+    }
+
+
+    footer.textContent =
+        footerText;
+
+}
+
+
+// =====================================
+// TABEL RIWAYAT NILAI
+// =====================================
+
+function renderScoreHistory() {
+
+    const searchValue =
+        document
+            .getElementById(
+                "historySearch"
+            )
+            .value
+            .trim()
+            .toLocaleLowerCase(
+                "id-ID"
+            );
+
+
+    const selectedSubject =
+        document.getElementById(
+            "historySubjectFilter"
+        ).value;
+
+
+    const sortMode =
+        document.getElementById(
+            "historySort"
+        ).value;
+
+
+    const visibleScores =
+        allExamScores.filter(
+            examScore => {
+
+                const matchesSubject =
+                    selectedSubject === "all" ||
+                    examScore.subject ===
+                        selectedSubject;
+
+
+                const searchableText =
+                    `${
+                        examScore.subject || ""
+                    } ${
+                        examScore.material || ""
+                    }`
+                        .toLocaleLowerCase(
+                            "id-ID"
+                        );
+
+
+                const matchesSearch =
+                    searchValue === "" ||
+                    searchableText.includes(
+                        searchValue
+                    );
+
+
+                return (
+                    matchesSubject &&
+                    matchesSearch
+                );
+
+            }
+        );
+
+
+    visibleScores.sort(
+        (scoreA, scoreB) => {
+
+            if (
+                sortMode === "oldest"
+            ) {
+
+                return (
+                    getScoreTimestamp(scoreA) -
+                    getScoreTimestamp(scoreB)
+                );
+
+            }
+
+
+            if (
+                sortMode === "highest"
+            ) {
+
+                return (
+                    Number(scoreB.score) -
+                    Number(scoreA.score)
+                );
+
+            }
+
+
+            if (
+                sortMode === "lowest"
+            ) {
+
+                return (
+                    Number(scoreA.score) -
+                    Number(scoreB.score)
+                );
+
+            }
+
+
+            return (
+                getScoreTimestamp(scoreB) -
+                getScoreTimestamp(scoreA)
+            );
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "scoreHistorySummary"
+        )
+        .textContent =
+            `${visibleScores.length} dari ${allExamScores.length} nilai ditampilkan`;
+
+
+    if (
+        visibleScores.length === 0
+    ) {
+
+        examScoreContainer.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="student-score-table-empty"
+                >
+
+                    <strong>
+                        Tidak ada nilai ditemukan
+                    </strong>
+
+                    <span>
+                        Coba ubah pencarian atau filter.
+                    </span>
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    examScoreContainer.innerHTML = "";
+
+
+    visibleScores.forEach(
+        examScore => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const numericScore =
+                Number(
+                    examScore.score
+                ) || 0;
+
+
+            const scoreDifference =
+                numericScore -
+                overallScoreAverage;
+
+
+            let comparisonClass =
+                "equal";
+
+
+            let comparisonText =
+                "Sama dengan rata-rata";
+
+
+            if (
+                scoreDifference > 0.05
+            ) {
+
+                comparisonClass =
+                    "above";
+
+                comparisonText =
+                    `+${formatScoreNumber(
+                        scoreDifference
+                    )} di atas rata-rata`;
+
+            } else if (
+                scoreDifference < -0.05
+            ) {
+
+                comparisonClass =
+                    "below";
+
+                comparisonText =
+                    `${formatScoreNumber(
+                        scoreDifference
+                    )} di bawah rata-rata`;
+
+            }
+
+
+            const scoreLevel =
+                getScoreLevel(
+                    numericScore
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+
+                    <strong class="student-score-table-subject">
+                        ${escapeHtml(
+                            examScore.subject ||
+                            "Tanpa mapel"
+                        )}
+                    </strong>
+
+                </td>
+
+
+                <td>
+
+                    <span class="student-score-table-material">
+                        ${escapeHtml(
+                            examScore.material ||
+                            "Tanpa materi"
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="
+                            score-badge
+                            ${scoreLevel}
+                        "
+                    >
+                        ${formatScoreNumber(
+                            numericScore
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="
+                            student-score-comparison
+                            ${comparisonClass}
+                        "
+                    >
+                        ${escapeHtml(
+                            comparisonText
+                        )}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <span class="student-score-table-date">
+                        ${escapeHtml(
+                            formatDeviceDateTime(
+                                examScore.created_at
+                            )
+                        )}
+                    </span>
+
+                </td>
+
+            `;
+
+
+            examScoreContainer.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+function resetScoreHistoryFilters() {
+
+    document
+        .getElementById(
+            "historySearch"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "historySubjectFilter"
+        )
+        .value = "all";
+
+
+    document
+        .getElementById(
+            "historySort"
+        )
+        .value = "newest";
+
+
+    renderScoreHistory();
+
+}
+
+
+// =====================================
+// LOAD NILAI SISWA
+// =====================================
+
+async function loadExamScores() {
+
+    if (!studentId) {
+
+        examScoreContainer.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+                    Data login siswa tidak ditemukan.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    examScoreContainer.innerHTML = `
+
+        <tr>
+
+            <td colspan="5">
+                Memuat nilai...
+            </td>
+
+        </tr>
+
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/exam-scores`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            examScoreContainer.innerHTML = `
+
+                <tr>
+
+                    <td colspan="5">
+                        ${escapeHtml(
+                            data.message ||
+                            "Gagal mengambil nilai."
+                        )}
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
 
         }
 
+
+        renderStudentScoreInfo(
+            data.student
+        );
+
+
+        allExamScores =
+            Array.isArray(data.examScores)
+                ? data.examScores.map(
+                    examScore => ({
+                        ...examScore,
+                        score:
+                            Number(
+                                examScore.score
+                            ) || 0
+                    })
+                )
+                : [];
+
+
+        renderScoreMetrics();
+
+        populateScoreSubjectFilters();
+
+        renderSubjectPerformance();
+
+        renderScoreTrend();
+
+        renderScoreHistory();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        examScoreContainer.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+                    Tidak dapat terhubung ke server.
+                </td>
+
+            </tr>
+
+        `;
+
+
+        document
+            .getElementById(
+                "subjectPerformanceChart"
+            )
+            .innerHTML = `
+
+                <div class="student-score-chart-empty">
+                    Gagal memuat grafik.
+                </div>
+
+            `;
+
+
+        document
+            .getElementById(
+                "scoreTrendChart"
+            )
+            .innerHTML = `
+
+                <div class="student-score-chart-empty">
+                    Gagal memuat grafik.
+                </div>
+
+            `;
+
+    }
+
+}
 
         // =====================================
         // ESCAPE HTML

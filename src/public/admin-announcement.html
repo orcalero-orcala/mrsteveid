@@ -14,6 +14,12 @@
     Announcement
 </title>
 
+    <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
 <link
     rel="stylesheet"
     href="/styles.css"
@@ -114,7 +120,7 @@
                     type="button"
                 >
                     <span class="nav-icon">!</span>
-                    Announcement
+                    Information Board
                 </button>
 
                 <button
@@ -124,6 +130,17 @@
 >
     <span class="nav-icon">T</span>
     Kelola Guru
+</button>
+
+                <button
+    class="nav-item"
+    onclick="
+        window.location.href =
+            '/admin-system-reset.html'
+    "
+>
+    <span class="nav-icon">⚙</span>
+    System & Reset
 </button>
 
             </nav>
@@ -255,7 +272,7 @@
                             </h2>
 
                             <p>
-                                Announcement ini dapat dibaca oleh seluruh siswa.
+                                Pilih kelas yang akan menerima announcement resmi ini.
                             </p>
 
                         </div>
@@ -298,6 +315,59 @@
                             ></textarea>
 
                         </div>
+
+                        <!-- TARGET KELAS -->
+
+<div class="admin-announcement-target">
+
+    <div class="admin-announcement-target-heading">
+
+        <div>
+
+            <strong>
+                Tujuan Announcement
+            </strong>
+
+            <span>
+                Semua kelas terpilih akan dianggap sebagai Global.
+            </span>
+
+        </div>
+
+
+        <label class="admin-announcement-select-all">
+
+            <input
+                type="checkbox"
+                id="selectAllAnnouncementClasses"
+                checked
+            >
+
+            <span>
+                Pilih semua kelas
+            </span>
+
+        </label>
+
+    </div>
+
+
+    <div
+        id="announcementClassChecklist"
+        class="admin-announcement-class-checklist"
+    >
+        Memuat daftar kelas...
+    </div>
+
+
+    <p
+        id="announcementTargetSummary"
+        class="admin-announcement-target-summary"
+    >
+        Target: Memuat...
+    </p>
+
+</div>
 
 
                         <div class="admin-announcement-actions">
@@ -464,128 +534,607 @@ document.getElementById(
                 "announcementList"
             );
 
+// =====================================
+// TARGET KELAS ANNOUNCEMENT
+// =====================================
+
+const selectAllAnnouncementClasses =
+    document.getElementById(
+        "selectAllAnnouncementClasses"
+    );
+
+
+const announcementClassChecklist =
+    document.getElementById(
+        "announcementClassChecklist"
+    );
+
+
+const announcementTargetSummary =
+    document.getElementById(
+        "announcementTargetSummary"
+    );
+
+
+let allAnnouncementClasses = [];
+
+
+// =====================================
+// AMBIL CHECKBOX KELAS
+// =====================================
+
+function getAnnouncementClassCheckboxes() {
+
+    return [
+        ...announcementClassChecklist
+            .querySelectorAll(
+                'input[type="checkbox"][data-class-id]'
+            )
+    ];
+
+}
+
+
+function getSelectedAnnouncementClassIds() {
+
+    return getAnnouncementClassCheckboxes()
+        .filter(
+            checkbox =>
+                checkbox.checked
+        )
+        .map(
+            checkbox =>
+                Number(
+                    checkbox.dataset.classId
+                )
+        )
+        .filter(
+            classId =>
+                Number.isInteger(classId)
+        );
+
+}
+
+
+function getSelectedAnnouncementClasses() {
+
+    const selectedIds =
+        getSelectedAnnouncementClassIds();
+
+
+    return allAnnouncementClasses.filter(
+        classData =>
+            selectedIds.includes(
+                Number(
+                    classData.id
+                )
+            )
+    );
+
+}
+
+
+// =====================================
+// FORMAT LABEL TARGET
+// =====================================
+
+function formatAnnouncementTargetLabel(
+    targetType,
+    targetClasses
+) {
+
+    if (
+        targetType === "global" ||
+        !Array.isArray(targetClasses) ||
+        targetClasses.length === 0
+    ) {
+
+        return "GLOBAL";
+
+    }
+
+
+    if (targetClasses.length === 1) {
+
+        return targetClasses[0].name;
+
+    }
+
+
+    if (targetClasses.length === 2) {
+
+        return (
+            `${targetClasses[0].name}, ` +
+            `${targetClasses[1].name}`
+        );
+
+    }
+
+
+    return (
+        `${targetClasses[0].name} ` +
+        `+${targetClasses.length - 1} Kelas`
+    );
+
+}
+
+
+// =====================================
+// UPDATE STATUS CHECKBOX
+// =====================================
+
+function updateAnnouncementTargetSelection() {
+
+    const checkboxes =
+        getAnnouncementClassCheckboxes();
+
+
+    const selectedClasses =
+        getSelectedAnnouncementClasses();
+
+
+    const selectedCount =
+        selectedClasses.length;
+
+
+    const totalClasses =
+        checkboxes.length;
+
+
+    if (totalClasses === 0) {
+
+        selectAllAnnouncementClasses.checked =
+            true;
+
+        selectAllAnnouncementClasses.indeterminate =
+            false;
+
+        selectAllAnnouncementClasses.disabled =
+            true;
+
+
+        announcementTargetSummary.textContent =
+            "Target: GLOBAL — belum ada Master Kelas.";
+
+        announcementTargetSummary.classList.remove(
+            "invalid"
+        );
+
+        return;
+
+    }
+
+
+    selectAllAnnouncementClasses.disabled =
+        false;
+
+
+    selectAllAnnouncementClasses.checked =
+        selectedCount === totalClasses;
+
+
+    selectAllAnnouncementClasses.indeterminate =
+        selectedCount > 0 &&
+        selectedCount < totalClasses;
+
+
+    if (selectedCount === 0) {
+
+        announcementTargetSummary.textContent =
+            "Pilih minimal satu kelas.";
+
+        announcementTargetSummary.classList.add(
+            "invalid"
+        );
+
+        return;
+
+    }
+
+
+    announcementTargetSummary.classList.remove(
+        "invalid"
+    );
+
+
+    if (selectedCount === totalClasses) {
+
+        announcementTargetSummary.textContent =
+            "Target: GLOBAL";
+
+        return;
+
+    }
+
+
+    announcementTargetSummary.textContent =
+        `Target: ${formatAnnouncementTargetLabel(
+            "classes",
+            selectedClasses
+        )}`;
+
+}
+
+
+// =====================================
+// PILIH / LEPAS SEMUA KELAS
+// =====================================
+
+selectAllAnnouncementClasses.addEventListener(
+    "change",
+    () => {
+
+        const shouldCheck =
+            selectAllAnnouncementClasses.checked;
+
+
+        getAnnouncementClassCheckboxes()
+            .forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        shouldCheck;
+
+                }
+            );
+
+
+        selectAllAnnouncementClasses.indeterminate =
+            false;
+
+
+        updateAnnouncementTargetSelection();
+
+    }
+);
+
+
+// =====================================
+// RESET SELURUH KELAS
+// =====================================
+
+function selectAllClassesForAnnouncement() {
+
+    getAnnouncementClassCheckboxes()
+        .forEach(
+            checkbox => {
+
+                checkbox.checked = true;
+
+            }
+        );
+
+
+    updateAnnouncementTargetSelection();
+
+}
+
+
+// =====================================
+// RENDER CHECKBOX KELAS
+// =====================================
+
+function renderAnnouncementClassChecklist() {
+
+    announcementClassChecklist.innerHTML =
+        "";
+
+
+    if (
+        allAnnouncementClasses.length === 0
+    ) {
+
+        announcementClassChecklist.innerHTML = `
+
+            <div class="admin-announcement-class-empty">
+
+                <strong>
+                    Belum ada Master Kelas
+                </strong>
+
+                <span>
+                    Announcement akan diterbitkan sebagai Global.
+                </span>
+
+            </div>
+
+        `;
+
+
+        updateAnnouncementTargetSelection();
+
+        return;
+
+    }
+
+
+    allAnnouncementClasses.forEach(
+        classData => {
+
+            const label =
+                document.createElement(
+                    "label"
+                );
+
+
+            label.className =
+                "admin-announcement-class-option";
+
+
+            label.innerHTML = `
+
+                <input
+                    type="checkbox"
+                    data-class-id="${Number(
+                        classData.id
+                    )}"
+                    checked
+                >
+
+                <span>
+                    ${escapeHtml(
+                        classData.name
+                    )}
+                </span>
+
+            `;
+
+
+            const checkbox =
+                label.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+
+            checkbox.addEventListener(
+                "change",
+                updateAnnouncementTargetSelection
+            );
+
+
+            announcementClassChecklist.appendChild(
+                label
+            );
+
+        }
+    );
+
+
+    updateAnnouncementTargetSelection();
+
+}
+
+
+// =====================================
+// LOAD MASTER KELAS
+// =====================================
+
+async function loadAnnouncementClasses() {
+
+    announcementClassChecklist.innerHTML =
+        "Memuat daftar kelas...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/classes"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            announcementClassChecklist.innerHTML = `
+
+                <div class="admin-announcement-class-empty">
+
+                    <strong>
+                        Gagal memuat kelas
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(
+                            data.message ||
+                            "Daftar kelas tidak tersedia."
+                        )}
+                    </span>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        allAnnouncementClasses =
+            Array.isArray(data.classes)
+                ? data.classes
+                : [];
+
+
+        renderAnnouncementClassChecklist();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memuat kelas:",
+            error
+        );
+
+
+        announcementClassChecklist.innerHTML = `
+
+            <div class="admin-announcement-class-empty">
+
+                <strong>
+                    Tidak dapat terhubung
+                </strong>
+
+                <span>
+                    Periksa server lalu coba kembali.
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+}
 
         // =====================================
         // BUAT ANNOUNCEMENT
         // =====================================
 
-        announcementForm.addEventListener(
-            "submit",
-            async (event) => {
+ announcementForm.addEventListener(
+    "submit",
+    async (event) => {
 
-                event.preventDefault();
-
-
-                const title =
-                    titleInput
-                        .value
-                        .trim();
+        event.preventDefault();
 
 
-                const message =
-                    messageInput
-                        .value
-                        .trim();
+        const title =
+            titleInput
+                .value
+                .trim();
 
 
-                if (
-                    !title ||
-                    !message
-                ) {
+        const message =
+            messageInput
+                .value
+                .trim();
 
-                    statusMessage.textContent =
-                        "Judul dan isi wajib diisi.";
 
-                    return;
+        const selectedClassIds =
+            getSelectedAnnouncementClassIds();
 
-                }
 
+        if (
+            !title ||
+            !message
+        ) {
+
+            statusMessage.textContent =
+                "Judul dan isi wajib diisi.";
+
+            return;
+
+        }
+
+
+        if (
+            allAnnouncementClasses.length > 0 &&
+            selectedClassIds.length === 0
+        ) {
+
+            statusMessage.textContent =
+                "Pilih minimal satu kelas.";
+
+            return;
+
+        }
+
+
+        const submitButton =
+            announcementForm.querySelector(
+                'button[type="submit"]'
+            );
+
+
+        submitButton.disabled = true;
+
+
+        statusMessage.textContent =
+            "Membuat announcement...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/admin/public-announcements",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                title,
+
+                                message,
+
+                                classIds:
+                                    selectedClassIds
+
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
 
                 statusMessage.textContent =
-                    "Membuat announcement...";
+                    data.message ||
+                    "Gagal membuat announcement.";
 
-
-                try {
-
-                    const response =
-                        await fetch(
-                            "/api/admin/public-announcements",
-                            {
-
-                                method:
-                                    "POST",
-
-                                headers: {
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body:
-                                    JSON.stringify({
-
-                                        adminId:
-                                            Number(
-                                                adminId
-                                            ),
-
-                                        title,
-
-                                        message
-
-                                    })
-
-                            }
-                        );
-
-
-                    const data =
-                        await response.json();
-
-
-                    if (!data.success) {
-
-                        statusMessage.textContent =
-                            data.message ||
-                            "Gagal membuat announcement.";
-
-                        return;
-
-                    }
-
-
-                    statusMessage.textContent =
-                        "Announcement berhasil dibuat.";
-
-
-                    titleInput.value =
-                        "";
-
-
-                    messageInput.value =
-                        "";
-
-
-                    loadAnnouncements();
-
-
-                } catch (error) {
-
-                    console.error(
-                        error
-                    );
-
-
-                    statusMessage.textContent =
-                        "Tidak dapat terhubung ke server.";
-
-                }
+                return;
 
             }
-        );
+
+
+            statusMessage.textContent =
+                data.message ||
+                "Announcement berhasil dibuat.";
+
+
+            titleInput.value = "";
+
+            messageInput.value = "";
+
+
+            selectAllClassesForAnnouncement();
+
+
+            await loadAnnouncements();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            statusMessage.textContent =
+                "Tidak dapat terhubung ke server.";
+
+        } finally {
+
+            submitButton.disabled = false;
+
+        }
+
+    }
+);
 
 async function refreshAnnouncements() {
 
-    await loadAnnouncements(false);
+    await loadAnnouncements(true);
 
 }
 
@@ -606,159 +1155,240 @@ async function loadAnnouncements(
     }
 
 
-            try {
+    try {
 
-                const response =
-                    await fetch(
-                        "/api/public-announcements"
+const response =
+    await fetch(
+        `/api/public-announcements?refresh=${Date.now()}`,
+        {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin"
+        }
+    );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            announcementList.innerHTML =
+                escapeHtml(
+                    data.message ||
+                    "Gagal mengambil announcement."
+                );
+
+            return;
+
+        }
+
+
+        const announcements =
+            Array.isArray(
+                data.announcements
+            )
+                ? data.announcements
+                : [];
+
+
+        if (announcements.length === 0) {
+
+            announcementList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <strong>
+                        Belum ada announcement
+                    </strong>
+
+                    <span>
+                        Announcement resmi yang dibuat akan muncul di sini.
+                    </span>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        announcementList.innerHTML = "";
+
+
+        announcements.forEach(
+            announcement => {
+
+                const targetType =
+                    announcement.target_type ===
+                        "classes"
+                        ? "classes"
+                        : "global";
+
+
+                const targetClasses =
+                    Array.isArray(
+                        announcement.target_classes
+                    )
+                        ? announcement.target_classes
+                        : [];
+
+
+                const targetLabel =
+                    formatAnnouncementTargetLabel(
+                        targetType,
+                        targetClasses
                     );
 
 
-                const data =
-                    await response.json();
+                const targetBadgeClass =
+                    targetType === "global"
+                        ? " global"
+                        : "";
 
 
-                if (!data.success) {
-
-                    announcementList.innerHTML =
-                        "Gagal mengambil announcement.";
-
-                    return;
-
-                }
+                const card =
+                    document.createElement(
+                        "div"
+                    );
 
 
-                if (
-                    data.announcements.length === 0
-                ) {
-
-announcementList.innerHTML = `
-
-    <div class="empty-state">
-
-        <strong>
-            Belum ada announcement
-        </strong>
-
-        <span>
-            Announcement resmi yang dibuat akan muncul di sini.
-        </span>
-
-    </div>
-
-`;
-
-                    return;
-
-                }
+                card.className =
+                    "official-announcement-card";
 
 
-                announcementList.innerHTML =
-                    "";
+                card.innerHTML = `
+
+                    <div class="official-announcement-header">
+
+                        <div class="official-announcement-icon">
+                            !
+                        </div>
 
 
-                data.announcements.forEach(
-                    (announcement) => {
+                        <div class="official-announcement-title">
 
-                        const card =
-                            document.createElement(
-                                "div"
-                            );
+                            <span>
+                                OFFICIAL ANNOUNCEMENT
+                            </span>
 
+                            <h3>
+                                ${escapeHtml(
+                                    announcement.title
+                                )}
+                            </h3>
 
-card.className =
-    "official-announcement-card";
-
-
-  card.innerHTML = `
-
-    <div class="official-announcement-header">
-
-        <div class="official-announcement-icon">
-            !
-        </div>
+                        </div>
 
 
-        <div class="official-announcement-title">
+                        <div class="official-announcement-header-actions">
 
-            <span>
-                OFFICIAL ANNOUNCEMENT
-            </span>
-
-            <h3>
-                ${escapeHtml(
-                    announcement.title
-                )}
-            </h3>
-
-        </div>
-
-
-        <button
-            type="button"
-            class="admin-delete-button"
-            onclick="
-                deleteAnnouncement(
-                    ${announcement.id}
-                )
-            "
-        >
-            Hapus
-        </button>
-
-    </div>
+                            <span
+                                class="official-announcement-target-badge${targetBadgeClass}"
+                                title="${escapeHtml(
+                                    targetLabel
+                                )}"
+                            >
+                                ${escapeHtml(
+                                    targetLabel
+                                )}
+                            </span>
 
 
-<div class="official-announcement-message">${escapeHtml(
-    announcement.message
-)}</div>
+                            <button
+                                type="button"
+                                class="admin-delete-button"
+                                data-announcement-id="${Number(
+                                    announcement.id
+                                )}"
+                            >
+                                Hapus
+                            </button>
+
+                        </div>
+
+                    </div>
 
 
-    <div class="official-announcement-meta">
-
-        <span>
-            Oleh
-            <strong>
-                ${escapeHtml(
-                    announcement.admin_name ||
-                    "Admin / Guru"
-                )}
-            </strong>
-        </span>
+                    <div class="official-announcement-message">${escapeHtml(
+                        String(
+                            announcement.message || ""
+                        ).trim()
+                    )}</div>
 
 
-        <span>
-${formatDeviceDateTime(
-    announcement.created_at
-)}
-        </span>
+                    <div class="official-announcement-meta">
 
-    </div>
+                        <span>
+                            Oleh
+                            <strong>
+                                ${escapeHtml(
+                                    announcement.admin_name ||
+                                    "Admin / Guru"
+                                )}
+                            </strong>
+                        </span>
 
-`;
+
+                        <span>
+                            ${formatDeviceDateTime(
+                                announcement.created_at
+                            )}
+                        </span>
+
+                    </div>
+
+                `;
 
 
-                        announcementList.appendChild(
-                            card
+                const deleteButton =
+                    card.querySelector(
+                        ".admin-delete-button"
+                    );
+
+
+                deleteButton.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteAnnouncement(
+                            Number(
+                                announcement.id
+                            )
                         );
 
                     }
                 );
 
 
-            } catch (error) {
-
-                console.error(
-                    error
+                announcementList.appendChild(
+                    card
                 );
 
-
-                announcementList.innerHTML =
-                    "Tidak dapat terhubung ke server.";
-
             }
+        );
 
-        }
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memuat announcement:",
+            error
+        );
+
+
+        announcementList.innerHTML =
+            "Tidak dapat terhubung ke server.";
+
+    }
+
+}
 
 
         // =====================================
@@ -933,7 +1563,8 @@ async function logout() {
         // START
         // =====================================
 
-        loadAnnouncements();
+loadAnnouncementClasses();
+loadAnnouncements();
 
     </script>
 

@@ -12,10 +12,18 @@
 
     <title>Poin Siswa</title>
 
+        <link
+    rel="icon"
+    type="image/png"
+    href="/favicon.png"
+>
+
     <link
     rel="stylesheet"
     href="/styles.css"
 >
+
+<script src="/student-profile-initial.js"></script>
 
 </head>
 
@@ -199,144 +207,462 @@
             <div class="dashboard-content">
 
 
-                <!-- HERO -->
+<!-- HERO -->
 
-                <section class="points-hero">
+<section class="points-hero student-points-hero">
 
-                    <div>
+    <div>
 
-                        <small class="eyebrow">
-                            BEHAVIOR POINTS
-                        </small>
+        <small class="eyebrow">
+            BEHAVIOR POINTS
+        </small>
 
-                        <h1 id="studentName">
-                            Siswa
-                        </h1>
+        <h1 id="studentName">
+            Siswa
+        </h1>
 
-                        <p id="studentClass">
-                            Kelas: -
-                        </p>
+        <p id="studentClass">
+            Kelas: -
+        </p>
 
-                    </div>
-
-
-                    <div class="points-total-block">
-
-                        <span>
-                            Total Poin
-                        </span>
-
-                        <strong id="totalPoints">
-                            0
-                        </strong>
-
-                    </div>
-
-                </section>
+    </div>
 
 
-                <!-- SUMMARY -->
+    <div class="student-points-hero-actions">
 
-                <section class="points-summary-grid">
+        <div class="points-total-block">
 
-                    <article class="points-summary-card">
+            <span>
+                Total Poin
+            </span>
 
-                        <div class="summary-icon">
-                            ★
-                        </div>
+            <strong id="totalPoints">
+                0
+            </strong>
 
-                        <div>
+        </div>
 
-                            <span>
-                                Total Poin
-                            </span>
+    </div>
 
-                            <strong id="summaryTotalPoints">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </article>
+</section>
 
 
-                    <article class="points-summary-card">
+<!-- METRIK UTAMA -->
 
-                        <div class="summary-icon positive">
-                            +
-                        </div>
+<section class="points-summary-grid student-points-metrics">
 
-                        <div>
+    <article class="points-summary-card">
 
-                            <span>
-                                Poin Positif
-                            </span>
+        <div class="summary-icon">
+            ★
+        </div>
 
-                            <strong id="positivePoints">
-                                0
-                            </strong>
+        <div>
 
-                        </div>
+            <span>
+                Total Poin
+            </span>
 
-                    </article>
+            <strong id="summaryTotalPoints">
+                0
+            </strong>
 
+            <small>
+                Saldo poin saat ini
+            </small>
 
-                    <article class="points-summary-card">
+        </div>
 
-                        <div class="summary-icon negative">
-                            −
-                        </div>
-
-                        <div>
-
-                            <span>
-                                Poin Negatif
-                            </span>
-
-                            <strong id="negativePoints">
-                                0
-                            </strong>
-
-                        </div>
-
-                    </article>
-
-                </section>
+    </article>
 
 
-                <!-- HISTORY -->
+    <article class="points-summary-card">
 
-                <section class="points-history-section">
+        <div class="summary-icon positive">
+            +
+        </div>
 
-                    <div class="section-heading">
+        <div>
 
-                        <div>
+            <span>
+                Poin Positif
+            </span>
 
-                            <h2>
-                                Riwayat Poin
-                            </h2>
+            <strong id="positivePoints">
+                0
+            </strong>
 
-                            <p>
-                                Semua perubahan poin dari guru
-                            </p>
+            <small>
+                Seluruh poin yang diperoleh
+            </small>
 
-                        </div>
+        </div>
 
-                    </div>
+    </article>
 
 
-                    <div
-                        id="transactionList"
-                        class="points-history-list"
-                    >
+    <article class="points-summary-card">
 
-                        <div class="empty-state">
-                            Memuat riwayat poin...
-                        </div>
+        <div class="summary-icon negative">
+            −
+        </div>
 
-                    </div>
+        <div>
 
-                </section>
+            <span>
+                Pengurangan
+            </span>
+
+            <strong id="negativePoints">
+                0
+            </strong>
+
+            <small>
+                Seluruh poin yang dikurangi
+            </small>
+
+        </div>
+
+    </article>
+
+
+    <article class="points-summary-card">
+
+        <div class="summary-icon activity">
+            #
+        </div>
+
+        <div>
+
+            <span>
+                Aktivitas
+            </span>
+
+            <strong id="totalActivities">
+                0
+            </strong>
+
+            <small>
+                Jumlah perubahan poin
+            </small>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- INSIGHT POIN -->
+
+<section class="student-point-insight-grid">
+
+    <article class="student-point-insight-card">
+
+        <span>
+            Aktivitas Positif
+        </span>
+
+        <strong id="positiveActivityRate">
+            0%
+        </strong>
+
+        <p>
+            Persentase aktivitas yang menambah poin
+        </p>
+
+    </article>
+
+
+    <article class="student-point-insight-card">
+
+        <span>
+            Penambahan Terbesar
+        </span>
+
+        <strong
+            id="largestGain"
+            class="positive"
+        >
+            +0
+        </strong>
+
+        <p id="largestGainReason">
+            Belum ada aktivitas positif
+        </p>
+
+    </article>
+
+
+    <article class="student-point-insight-card">
+
+        <span>
+            Pengurangan Terbesar
+        </span>
+
+        <strong
+            id="largestDeduction"
+            class="negative"
+        >
+            0
+        </strong>
+
+        <p id="largestDeductionReason">
+            Belum ada pengurangan poin
+        </p>
+
+    </article>
+
+
+    <article class="student-point-insight-card">
+
+        <span>
+            Perubahan 30 Hari
+        </span>
+
+        <strong id="last30DayChange">
+            0
+        </strong>
+
+        <p>
+            Total perubahan dalam 30 hari terakhir
+        </p>
+
+    </article>
+
+</section>
+
+
+<!-- ANALISIS PERKEMBANGAN -->
+
+<section class="student-point-analytics-grid">
+
+    <!-- GRAFIK PERKEMBANGAN -->
+
+    <article class="student-point-analytics-card">
+
+        <div class="student-point-panel-heading">
+
+            <div>
+
+                <small class="eyebrow">
+                    POINT PROGRESS
+                </small>
+
+                <h2>
+                    Perkembangan Poin
+                </h2>
+
+                <p>
+                    Perubahan saldo poin dari waktu ke waktu.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="pointTrendChart"
+            class="student-point-trend-chart"
+        >
+
+            <div class="student-point-chart-loading">
+                Memuat perkembangan poin...
+            </div>
+
+        </div>
+
+
+        <div
+            id="pointTrendFooter"
+            class="student-point-chart-footer"
+        >
+            Belum ada data perkembangan.
+        </div>
+
+    </article>
+
+
+    <!-- RINGKASAN BULANAN -->
+
+    <article class="student-point-analytics-card">
+
+        <div class="student-point-panel-heading">
+
+            <div>
+
+                <small class="eyebrow">
+                    MONTHLY ACTIVITY
+                </small>
+
+                <h2>
+                    Aktivitas Bulanan
+                </h2>
+
+                <p>
+                    Perbandingan poin positif dan negatif setiap bulan.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="monthlyPointChart"
+            class="student-point-monthly-chart"
+        >
+
+            <div class="student-point-chart-loading">
+                Memuat aktivitas bulanan...
+            </div>
+
+        </div>
+
+
+        <div
+            id="monthlyPointSummary"
+            class="student-point-chart-footer"
+        >
+            Belum ada aktivitas bulanan.
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- RIWAYAT POIN -->
+
+<section class="points-history-section student-point-history-section">
+
+    <div class="section-heading student-point-history-heading">
+
+        <div>
+
+            <h2>
+                Riwayat Poin
+            </h2>
+
+            <p>
+                Cari, filter, dan tinjau seluruh perubahan poin.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="student-point-history-controls">
+
+        <div class="student-point-search-control">
+
+            <label for="pointHistorySearch">
+                Cari
+            </label>
+
+            <input
+                type="search"
+                id="pointHistorySearch"
+                placeholder="Cari alasan perubahan poin..."
+                oninput="renderPointHistory()"
+            >
+
+        </div>
+
+
+        <div class="student-point-filter-control">
+
+            <label for="pointHistoryType">
+                Jenis
+            </label>
+
+            <select
+                id="pointHistoryType"
+                onchange="renderPointHistory()"
+            >
+
+                <option value="all">
+                    Semua
+                </option>
+
+                <option value="positive">
+                    Poin positif
+                </option>
+
+                <option value="negative">
+                    Poin negatif
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="student-point-filter-control">
+
+            <label for="pointHistorySort">
+                Urutkan
+            </label>
+
+            <select
+                id="pointHistorySort"
+                onchange="renderPointHistory()"
+            >
+
+                <option value="newest">
+                    Terbaru
+                </option>
+
+                <option value="oldest">
+                    Terlama
+                </option>
+
+                <option value="largest">
+                    Perubahan terbesar
+                </option>
+
+                <option value="smallest">
+                    Perubahan terkecil
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="student-point-filter-reset"
+            onclick="resetPointHistoryFilters()"
+        >
+            Reset
+        </button>
+
+    </div>
+
+
+    <p
+        id="pointHistorySummary"
+        class="student-point-history-summary"
+    >
+        Memuat data...
+    </p>
+
+
+    <div
+        id="transactionList"
+        class="points-history-list"
+    >
+
+        <div class="empty-state">
+            Memuat riwayat poin...
+        </div>
+
+    </div>
+
+</section>
 
 
             </div>
@@ -344,6 +670,266 @@
         </main>
 
     </div>
+
+<!-- LAPORAN CETAK POIN -->
+
+<section
+    id="printPointReport"
+    class="student-point-print-report"
+    aria-hidden="true"
+>
+
+    <header class="student-point-print-header">
+
+        <div class="student-point-print-brand">
+
+            <div class="student-point-print-logo">
+                LMS
+            </div>
+
+            <div>
+
+                <strong>
+                    mrsteveid
+                </strong>
+
+                <span>
+                    Student Point Record
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="student-point-print-document">
+
+            <span>
+                Dokumen
+            </span>
+
+            <strong id="printReportCode">
+                LMS-POINT
+            </strong>
+
+        </div>
+
+    </header>
+
+
+    <div class="student-point-print-title">
+
+        <small>
+            OFFICIAL STUDENT RECORD
+        </small>
+
+        <h1>
+            Laporan Poin Siswa
+        </h1>
+
+        <p>
+            Ringkasan perkembangan dan riwayat poin siswa.
+        </p>
+
+    </div>
+
+
+    <div class="student-point-print-student">
+
+        <div>
+
+            <span>
+                Nama Siswa
+            </span>
+
+            <strong id="printStudentName">
+                —
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Kelas
+            </span>
+
+            <strong id="printStudentClass">
+                —
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Tanggal Laporan
+            </span>
+
+            <strong id="printGeneratedDate">
+                —
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="student-point-print-total">
+
+        <span>
+            Total Poin Saat Ini
+        </span>
+
+        <strong id="printTotalPoints">
+            0
+        </strong>
+
+    </div>
+
+
+    <div class="student-point-print-summary">
+
+        <div>
+
+            <span>
+                Poin Positif
+            </span>
+
+            <strong id="printPositivePoints">
+                +0
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Pengurangan
+            </span>
+
+            <strong id="printNegativePoints">
+                0
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Jumlah Aktivitas
+            </span>
+
+            <strong id="printTotalActivities">
+                0
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span>
+                Aktivitas Positif
+            </span>
+
+            <strong id="printPositiveRate">
+                0%
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="student-point-print-history">
+
+        <h2>
+            Riwayat Perubahan Poin
+        </h2>
+
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        No
+                    </th>
+
+                    <th>
+                        Alasan
+                    </th>
+
+                    <th>
+                        Tanggal
+                    </th>
+
+                    <th>
+                        Perubahan
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="printTransactionRows">
+
+                <tr>
+
+                    <td colspan="4">
+                        Belum ada riwayat.
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <footer class="student-point-print-footer">
+
+        <div>
+
+            <p>
+                Dokumen ini dibuat secara otomatis berdasarkan data LMS.
+            </p>
+
+            <span id="printFooterDate">
+                —
+            </span>
+
+        </div>
+
+
+        <div class="student-point-print-signature">
+
+            <span>
+                Verifikasi
+            </span>
+
+            <div></div>
+
+            <strong>
+                Guru / Admin
+            </strong>
+
+        </div>
+
+    </footer>
+
+</section>
+
 <script src="/student-session.js"></script>
 <script src="/time.js"></script>
     <script>
@@ -362,256 +948,1875 @@
 
 }
 
-        const studentId =
-            localStorage.getItem(
-                "studentId"
+const studentId =
+    localStorage.getItem(
+        "studentId"
+    );
+
+
+if (!studentId) {
+
+    window.location.href =
+        "/student-login.html";
+
+}
+
+
+const transactionList =
+    document.getElementById(
+        "transactionList"
+    );
+
+
+let allPointTransactions = [];
+
+let pointStudentData = null;
+
+let currentTotalPoints = 0;
+
+let currentPointStats = {
+    positivePoints: 0,
+    negativePoints: 0,
+    totalActivities: 0,
+    positiveRate: 0
+};
+
+
+// =====================================
+// UTILITAS POIN
+// =====================================
+
+function getPointTimestamp(
+    transaction
+) {
+
+    const parsedTime =
+        Date.parse(
+            transaction.created_at ||
+            ""
+        );
+
+
+    if (Number.isFinite(parsedTime)) {
+
+        return parsedTime;
+
+    }
+
+
+    return Number(transaction.id) || 0;
+
+}
+
+
+function formatPointNumber(
+    value
+) {
+
+    const numericValue =
+        Number(value) || 0;
+
+
+    return numericValue.toLocaleString(
+        "id-ID"
+    );
+
+}
+
+
+function formatPointChange(
+    value
+) {
+
+    const numericValue =
+        Number(value) || 0;
+
+
+    return numericValue > 0
+        ? `+${formatPointNumber(
+            numericValue
+        )}`
+        : formatPointNumber(
+            numericValue
+        );
+
+}
+
+
+function formatPointShortDate(
+    dateValue
+) {
+
+    const date =
+        new Date(dateValue);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "—";
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+        "id-ID",
+        {
+            day: "2-digit",
+            month: "short"
+        }
+    ).format(date);
+
+}
+
+
+function setPointValueClass(
+    element,
+    value
+) {
+
+    element.classList.remove(
+        "positive",
+        "negative",
+        "neutral"
+    );
+
+
+    if (value > 0) {
+
+        element.classList.add(
+            "positive"
+        );
+
+    } else if (value < 0) {
+
+        element.classList.add(
+            "negative"
+        );
+
+    } else {
+
+        element.classList.add(
+            "neutral"
+        );
+
+    }
+
+}
+
+
+// =====================================
+// INFORMASI SISWA
+// =====================================
+
+function renderPointStudentInfo() {
+
+    const studentName =
+        pointStudentData.name ||
+        "Student";
+
+
+    const studentClass =
+        pointStudentData.className ||
+        "—";
+
+
+    document
+        .getElementById(
+            "studentName"
+        )
+        .textContent =
+            studentName;
+
+
+    document
+        .getElementById(
+            "studentClass"
+        )
+        .textContent =
+            `Kelas: ${studentClass}`;
+
+
+    const sidebarName =
+        document.getElementById(
+            "sidebarStudentName"
+        );
+
+
+    const sidebarClass =
+        document.getElementById(
+            "sidebarStudentClass"
+        );
+
+
+    const topName =
+        document.getElementById(
+            "topStudentName"
+        );
+
+
+    if (sidebarName) {
+
+        sidebarName.textContent =
+            studentName;
+
+    }
+
+
+    if (sidebarClass) {
+
+        sidebarClass.textContent =
+            studentClass;
+
+    }
+
+
+    if (topName) {
+
+        topName.textContent =
+            studentName;
+
+    }
+
+}
+
+
+// =====================================
+// METRIK DAN INSIGHT
+// =====================================
+
+function renderPointMetrics() {
+
+    const positiveTransactions =
+        allPointTransactions.filter(
+            transaction =>
+                transaction.points > 0
+        );
+
+
+    const negativeTransactions =
+        allPointTransactions.filter(
+            transaction =>
+                transaction.points < 0
+        );
+
+
+    const positivePoints =
+        positiveTransactions.reduce(
+            (total, transaction) =>
+                total +
+                transaction.points,
+            0
+        );
+
+
+    const negativePoints =
+        negativeTransactions.reduce(
+            (total, transaction) =>
+                total +
+                Math.abs(
+                    transaction.points
+                ),
+            0
+        );
+
+
+    const totalActivities =
+        allPointTransactions.length;
+
+
+    const positiveRate =
+        totalActivities > 0
+            ? (
+                positiveTransactions.length /
+                totalActivities
+            ) * 100
+            : 0;
+
+
+    const largestGain =
+        positiveTransactions.length > 0
+            ? positiveTransactions.reduce(
+                (largest, transaction) =>
+                    transaction.points >
+                    largest.points
+                        ? transaction
+                        : largest
+            )
+            : null;
+
+
+    const largestDeduction =
+        negativeTransactions.length > 0
+            ? negativeTransactions.reduce(
+                (largest, transaction) =>
+                    Math.abs(
+                        transaction.points
+                    ) >
+                    Math.abs(
+                        largest.points
+                    )
+                        ? transaction
+                        : largest
+            )
+            : null;
+
+
+    const thirtyDaysAgo =
+        Date.now() -
+        (
+            30 *
+            24 *
+            60 *
+            60 *
+            1000
+        );
+
+
+    const last30DayChange =
+        allPointTransactions.reduce(
+            (total, transaction) => {
+
+                const timestamp =
+                    getPointTimestamp(
+                        transaction
+                    );
+
+
+                if (
+                    timestamp >=
+                    thirtyDaysAgo
+                ) {
+
+                    return (
+                        total +
+                        transaction.points
+                    );
+
+                }
+
+
+                return total;
+
+            },
+            0
+        );
+
+
+    currentPointStats = {
+        positivePoints,
+        negativePoints,
+        totalActivities,
+        positiveRate
+    };
+
+
+    document
+        .getElementById(
+            "totalPoints"
+        )
+        .textContent =
+            formatPointNumber(
+                currentTotalPoints
             );
 
 
-        if (!studentId) {
-
-            window.location.href =
-                "/student-login.html";
-
-        }
-
-
-        async function loadPoints() {
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/student/${studentId}/points`
-                    );
+    document
+        .getElementById(
+            "summaryTotalPoints"
+        )
+        .textContent =
+            formatPointNumber(
+                currentTotalPoints
+            );
 
 
-                const data =
-                    await response.json();
+    document
+        .getElementById(
+            "positivePoints"
+        )
+        .textContent =
+            `+${formatPointNumber(
+                positivePoints
+            )}`;
 
 
-                if (!data.success) {
-
-                    document.getElementById(
-                        "transactionList"
-                    ).innerHTML = `
-                        <tr>
-                            <td colspan="3">
-                                ${data.message}
-                            </td>
-                        </tr>
-                    `;
-
-                    return;
-
-                }
+    document
+        .getElementById(
+            "negativePoints"
+        )
+        .textContent =
+            formatPointNumber(
+                negativePoints
+            );
 
 
-                // Informasi siswa
-                document.getElementById(
-                    "studentName"
-                ).textContent =
-                    data.student.name;
-
-                    document.getElementById(
-                        "sidebarStudentName"
-                    ).textContent =
-                        data.student.name;
-
-                       document.getElementById(
-                        "sidebarStudentClass"
-                    ).textContent =
-                        data.student.className;
+    document
+        .getElementById(
+            "totalActivities"
+        )
+        .textContent =
+            totalActivities;
 
 
-                    document.getElementById(
-                        "topStudentName"
-                    ).textContent =
-                        data.student.name;
+    document
+        .getElementById(
+            "positiveActivityRate"
+        )
+        .textContent =
+            `${positiveRate.toFixed(0)}%`;
 
 
-                document.getElementById(
-                    "studentClass"
-                ).textContent =
-                    `Kelas: ${data.student.className}`;
+    document
+        .getElementById(
+            "largestGain"
+        )
+        .textContent =
+            largestGain
+                ? `+${formatPointNumber(
+                    largestGain.points
+                )}`
+                : "+0";
 
 
-               // Total poin
-                document.getElementById(
-                    "totalPoints"
-                ).textContent =
-                    data.totalPoints;
+    document
+        .getElementById(
+            "largestGainReason"
+        )
+        .textContent =
+            largestGain
+                ? largestGain.reason
+                : "Belum ada aktivitas positif";
 
 
-                document.getElementById(
-                    "summaryTotalPoints"
-                ).textContent =
-                    data.totalPoints;
-
-                                        let positivePoints = 0;
-                    let negativePoints = 0;
-
-
-                    data.transactions.forEach(
-                        (transaction) => {
-
-                            if (transaction.points > 0) {
-                                positivePoints +=
-                                    transaction.points;
-                            }
-
-                            if (transaction.points < 0) {
-                                negativePoints +=
-                                    Math.abs(
-                                        transaction.points
-                                    );
-                            }
-
-                        }
-                    );
+    document
+        .getElementById(
+            "largestDeduction"
+        )
+        .textContent =
+            largestDeduction
+                ? formatPointNumber(
+                    largestDeduction.points
+                )
+                : "0";
 
 
-                    document.getElementById(
-                        "positivePoints"
-                    ).textContent =
-                        `+${positivePoints}`;
+    document
+        .getElementById(
+            "largestDeductionReason"
+        )
+        .textContent =
+            largestDeduction
+                ? largestDeduction.reason
+                : "Belum ada pengurangan poin";
 
 
-                    document.getElementById(
-                        "negativePoints"
-                    ).textContent =
-                        negativePoints;
+    const last30Element =
+        document.getElementById(
+            "last30DayChange"
+        );
 
 
-                const list =
-                    document.getElementById(
-                        "transactionList"
-                    );
+    last30Element.textContent =
+        formatPointChange(
+            last30DayChange
+        );
 
 
-                // Tidak ada transaksi
-                                if (
-                    data.transactions.length === 0
+    setPointValueClass(
+        last30Element,
+        last30DayChange
+    );
+
+}
+
+
+// =====================================
+// GRAFIK PERKEMBANGAN POIN
+// =====================================
+
+function renderPointTrend() {
+
+    const chart =
+        document.getElementById(
+            "pointTrendChart"
+        );
+
+
+    const footer =
+        document.getElementById(
+            "pointTrendFooter"
+        );
+
+
+    const chronologicalTransactions =
+        [
+            ...allPointTransactions
+        ].sort(
+            (transactionA, transactionB) =>
+                getPointTimestamp(
+                    transactionA
+                ) -
+                getPointTimestamp(
+                    transactionB
+                )
+        );
+
+
+    if (
+        chronologicalTransactions.length === 0
+    ) {
+
+        chart.innerHTML = `
+
+            <div class="student-point-chart-empty">
+
+                <strong>
+                    Belum ada perkembangan poin
+                </strong>
+
+                <span>
+                    Grafik akan muncul setelah ada aktivitas poin.
+                </span>
+
+            </div>
+
+        `;
+
+
+        footer.textContent =
+            "Belum ada data perkembangan.";
+
+        return;
+
+    }
+
+
+    let runningBalance = 0;
+
+
+    const balanceData =
+        chronologicalTransactions.map(
+            transaction => {
+
+                runningBalance +=
+                    transaction.points;
+
+
+                return {
+                    balance:
+                        runningBalance,
+
+                    transaction
+                };
+
+            }
+        );
+
+
+    const balances =
+        balanceData.map(
+            item =>
+                item.balance
+        );
+
+
+    const minimumBalance =
+        Math.min(
+            0,
+            ...balances
+        );
+
+
+    const maximumBalance =
+        Math.max(
+            0,
+            ...balances
+        );
+
+
+    const valueRange =
+        Math.max(
+            1,
+            maximumBalance -
+            minimumBalance
+        );
+
+
+    const valuePadding =
+        Math.max(
+            10,
+            valueRange * 0.12
+        );
+
+
+    const graphMinimum =
+        minimumBalance -
+        valuePadding;
+
+
+    const graphMaximum =
+        maximumBalance +
+        valuePadding;
+
+
+    const graphRange =
+        graphMaximum -
+        graphMinimum;
+
+
+    const graphWidth = 640;
+    const graphHeight = 240;
+
+    const plotLeft = 58;
+    const plotRight = 620;
+    const plotTop = 18;
+    const plotBottom = 190;
+
+    const plotWidth =
+        plotRight - plotLeft;
+
+    const plotHeight =
+        plotBottom - plotTop;
+
+
+    const points =
+        balanceData.map(
+            (item, index) => {
+
+                const x =
+                    balanceData.length === 1
+                        ? (
+                            plotLeft +
+                            plotWidth / 2
+                        )
+                        : (
+                            plotLeft +
+                            (
+                                index /
+                                (
+                                    balanceData.length -
+                                    1
+                                )
+                            ) *
+                            plotWidth
+                        );
+
+
+                const y =
+                    plotBottom -
+                    (
+                        (
+                            item.balance -
+                            graphMinimum
+                        ) /
+                        graphRange
+                    ) *
+                    plotHeight;
+
+
+                return {
+                    x,
+                    y,
+                    ...item
+                };
+
+            }
+        );
+
+
+    const gridLineCount = 4;
+
+    let gridLines = "";
+
+
+    for (
+        let index = 0;
+        index <= gridLineCount;
+        index += 1
+    ) {
+
+        const ratio =
+            index / gridLineCount;
+
+
+        const y =
+            plotTop +
+            ratio *
+            plotHeight;
+
+
+        const value =
+            graphMaximum -
+            ratio *
+            graphRange;
+
+
+        gridLines += `
+
+            <line
+                x1="${plotLeft}"
+                y1="${y}"
+                x2="${plotRight}"
+                y2="${y}"
+                class="student-point-grid-line"
+            ></line>
+
+            <text
+                x="${plotLeft - 10}"
+                y="${y + 4}"
+                text-anchor="end"
+                class="student-point-axis-label"
+            >
+                ${Math.round(value)}
+            </text>
+
+        `;
+
+    }
+
+
+    const pointString =
+        points
+            .map(
+                point =>
+                    `${point.x},${point.y}`
+            )
+            .join(" ");
+
+
+    const line =
+        points.length > 1
+            ? `
+
+                <polyline
+                    points="${pointString}"
+                    class="student-point-trend-line"
+                ></polyline>
+
+            `
+            : "";
+
+
+    const dots =
+        points.map(point => `
+
+            <circle
+                cx="${point.x}"
+                cy="${point.y}"
+                r="5"
+                class="
+                    student-point-trend-dot
+                    ${
+                        point.transaction.points >= 0
+                            ? "positive"
+                            : "negative"
+                    }
+                "
+            >
+
+                <title>
+                    ${escapeHtml(
+                        point.transaction.reason
+                    )}:
+                    ${formatPointChange(
+                        point.transaction.points
+                    )}
+                    — Saldo
+                    ${formatPointNumber(
+                        point.balance
+                    )}
+                </title>
+
+            </circle>
+
+        `).join("");
+
+
+    const labelIndexes =
+        new Set();
+
+
+    if (points.length <= 5) {
+
+        points.forEach(
+            (point, index) =>
+                labelIndexes.add(index)
+        );
+
+    } else {
+
+        labelIndexes.add(0);
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) *
+                0.25
+            )
+        );
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) *
+                0.5
+            )
+        );
+
+        labelIndexes.add(
+            Math.round(
+                (points.length - 1) *
+                0.75
+            )
+        );
+
+        labelIndexes.add(
+            points.length - 1
+        );
+
+    }
+
+
+    const dateLabels =
+        points.map(
+            (point, index) => {
+
+                if (
+                    !labelIndexes.has(index)
                 ) {
 
-                    list.innerHTML = `
-
-                        <div class="empty-state">
-
-                            <strong>
-                                Belum ada riwayat poin
-                            </strong>
-
-                            <span>
-                                Riwayat perubahan poin akan muncul di sini.
-                            </span>
-
-                        </div>
-
-                    `;
-
-                    return;
+                    return "";
 
                 }
 
-                list.innerHTML = "";
+
+                return `
+
+                    <text
+                        x="${point.x}"
+                        y="${plotBottom + 28}"
+                        text-anchor="middle"
+                        class="student-point-date-label"
+                    >
+                        ${escapeHtml(
+                            formatPointShortDate(
+                                point.transaction
+                                    .created_at
+                            )
+                        )}
+                    </text>
+
+                `;
+
+            }
+        ).join("");
 
 
-                                data.transactions.forEach(
-                        (transaction) => {
+    chart.innerHTML = `
 
-                            const item =
-                                document.createElement(
-                                    "div"
-                                );
+        <svg
+            viewBox="
+                0 0
+                ${graphWidth}
+                ${graphHeight}
+            "
+            role="img"
+            aria-label="Grafik perkembangan poin"
+        >
 
+            ${gridLines}
 
-                            item.className =
-                                "point-history-item";
+            ${line}
 
+            ${dots}
 
-                            const isPositive =
-                                transaction.points > 0;
+            ${dateLabels}
 
+        </svg>
 
-                            item.innerHTML = `
-
-                                <div class="point-history-left">
-
-                                    <div
-                                        class="
-                                            point-history-icon
-                                            ${
-                                                isPositive
-                                                    ? "positive"
-                                                    : "negative"
-                                            }
-                                        "
-                                    >
-                                        ${
-                                            isPositive
-                                                ? "+"
-                                                : "−"
-                                        }
-                                    </div>
+    `;
 
 
-                                    <div>
+    footer.textContent =
+        `Saldo sekarang ${formatPointNumber(
+            currentTotalPoints
+        )} · Saldo tertinggi ${formatPointNumber(
+            maximumBalance
+        )} · Saldo terendah ${formatPointNumber(
+            minimumBalance
+        )}`;
 
-                                        <strong>
-                                            ${escapeHtml(
-                                                transaction.reason
-                                            )}
-                                        </strong>
-
-                                        <span>
-${formatDeviceDateTime(
-    transaction.created_at
-)}
-                                        </span>
-
-                                    </div>
-
-                                </div>
+}
 
 
-                                <div
-                                    class="
-                                        point-value
-                                        ${
-                                            isPositive
-                                                ? "positive"
-                                                : "negative"
-                                        }
-                                    "
-                                >
+// =====================================
+// GRAFIK AKTIVITAS BULANAN
+// =====================================
 
-                                    ${
-                                        isPositive
-                                            ? "+"
-                                            : ""
-                                    }${transaction.points}
+function renderMonthlyPointChart() {
 
-                                </div>
-
-                            `;
+    const chart =
+        document.getElementById(
+            "monthlyPointChart"
+        );
 
 
-                            list.appendChild(
-                                item
-                            );
+    const summary =
+        document.getElementById(
+            "monthlyPointSummary"
+        );
 
-                        }
+
+    const monthlyMap =
+        new Map();
+
+
+    allPointTransactions.forEach(
+        transaction => {
+
+            const date =
+                new Date(
+                    transaction.created_at
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const key =
+                `${
+                    date.getFullYear()
+                }-${
+                    String(
+                        date.getMonth() + 1
+                    ).padStart(2, "0")
+                }`;
+
+
+            if (!monthlyMap.has(key)) {
+
+                monthlyMap.set(
+                    key,
+                    {
+                        key,
+                        date:
+                            new Date(
+                                date.getFullYear(),
+                                date.getMonth(),
+                                1
+                            ),
+
+                        positive: 0,
+                        negative: 0
+                    }
+                );
+
+            }
+
+
+            const month =
+                monthlyMap.get(key);
+
+
+            if (
+                transaction.points > 0
+            ) {
+
+                month.positive +=
+                    transaction.points;
+
+            } else {
+
+                month.negative +=
+                    Math.abs(
+                        transaction.points
                     );
-
-
-            } catch (error) {
-
-                console.error(error);
 
             }
 
         }
+    );
+
+
+    const months =
+        [
+            ...monthlyMap.values()
+        ]
+            .sort(
+                (monthA, monthB) =>
+                    monthA.date -
+                    monthB.date
+            )
+            .slice(-6);
+
+
+    if (months.length === 0) {
+
+        chart.innerHTML = `
+
+            <div class="student-point-chart-empty">
+
+                <strong>
+                    Belum ada aktivitas bulanan
+                </strong>
+
+                <span>
+                    Ringkasan akan muncul setelah ada transaksi.
+                </span>
+
+            </div>
+
+        `;
+
+
+        summary.textContent =
+            "Belum ada aktivitas bulanan.";
+
+        return;
+
+    }
+
+
+    const largestMonthlyValue =
+        Math.max(
+            1,
+            ...months.map(
+                month =>
+                    Math.max(
+                        month.positive,
+                        month.negative
+                    )
+            )
+        );
+
+
+    chart.innerHTML = "";
+
+
+    months.forEach(month => {
+
+        const monthName =
+            new Intl.DateTimeFormat(
+                "id-ID",
+                {
+                    month: "short",
+                    year: "numeric"
+                }
+            ).format(month.date);
+
+
+        const positiveWidth =
+            (
+                month.positive /
+                largestMonthlyValue
+            ) * 100;
+
+
+        const negativeWidth =
+            (
+                month.negative /
+                largestMonthlyValue
+            ) * 100;
+
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "student-point-month-item";
+
+
+        item.innerHTML = `
+
+            <strong class="student-point-month-name">
+                ${escapeHtml(
+                    monthName
+                )}
+            </strong>
+
+
+            <div class="student-point-month-row">
+
+                <span>
+                    +
+                </span>
+
+                <div class="student-point-month-track">
+
+                    <div
+                        class="
+                            student-point-month-fill
+                            positive
+                        "
+                        style="
+                            width:
+                            ${positiveWidth}%;
+                        "
+                    ></div>
+
+                </div>
+
+                <strong>
+                    +${formatPointNumber(
+                        month.positive
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="student-point-month-row">
+
+                <span>
+                    −
+                </span>
+
+                <div class="student-point-month-track">
+
+                    <div
+                        class="
+                            student-point-month-fill
+                            negative
+                        "
+                        style="
+                            width:
+                            ${negativeWidth}%;
+                        "
+                    ></div>
+
+                </div>
+
+                <strong>
+                    ${formatPointNumber(
+                        month.negative
+                    )}
+                </strong>
+
+            </div>
+
+        `;
+
+
+        chart.appendChild(item);
+
+    });
+
+
+    const latestMonth =
+        months[
+            months.length - 1
+        ];
+
+
+    const latestMonthNet =
+        latestMonth.positive -
+        latestMonth.negative;
+
+
+    summary.textContent =
+        `Perubahan bulan terbaru: ${formatPointChange(
+            latestMonthNet
+        )}`;
+
+}
+
+
+// =====================================
+// RIWAYAT POIN
+// =====================================
+
+function renderPointHistory() {
+
+    const searchValue =
+        document
+            .getElementById(
+                "pointHistorySearch"
+            )
+            .value
+            .trim()
+            .toLocaleLowerCase(
+                "id-ID"
+            );
+
+
+    const selectedType =
+        document.getElementById(
+            "pointHistoryType"
+        ).value;
+
+
+    const sortMode =
+        document.getElementById(
+            "pointHistorySort"
+        ).value;
+
+
+    const visibleTransactions =
+        allPointTransactions.filter(
+            transaction => {
+
+                const reason =
+                    String(
+                        transaction.reason ||
+                        ""
+                    ).toLocaleLowerCase(
+                        "id-ID"
+                    );
+
+
+                const matchesSearch =
+                    searchValue === "" ||
+                    reason.includes(
+                        searchValue
+                    );
+
+
+                const matchesType =
+                    selectedType === "all" ||
+                    (
+                        selectedType ===
+                            "positive" &&
+                        transaction.points > 0
+                    ) ||
+                    (
+                        selectedType ===
+                            "negative" &&
+                        transaction.points < 0
+                    );
+
+
+                return (
+                    matchesSearch &&
+                    matchesType
+                );
+
+            }
+        );
+
+
+    visibleTransactions.sort(
+        (transactionA, transactionB) => {
+
+            if (sortMode === "oldest") {
+
+                return (
+                    getPointTimestamp(
+                        transactionA
+                    ) -
+                    getPointTimestamp(
+                        transactionB
+                    )
+                );
+
+            }
+
+
+            if (sortMode === "largest") {
+
+                return (
+                    Math.abs(
+                        transactionB.points
+                    ) -
+                    Math.abs(
+                        transactionA.points
+                    )
+                );
+
+            }
+
+
+            if (sortMode === "smallest") {
+
+                return (
+                    Math.abs(
+                        transactionA.points
+                    ) -
+                    Math.abs(
+                        transactionB.points
+                    )
+                );
+
+            }
+
+
+            return (
+                getPointTimestamp(
+                    transactionB
+                ) -
+                getPointTimestamp(
+                    transactionA
+                )
+            );
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "pointHistorySummary"
+        )
+        .textContent =
+            `${visibleTransactions.length} dari ${allPointTransactions.length} aktivitas ditampilkan`;
+
+
+    if (
+        visibleTransactions.length === 0
+    ) {
+
+        transactionList.innerHTML = `
+
+            <div class="empty-state">
+
+                <strong>
+                    Tidak ada aktivitas ditemukan
+                </strong>
+
+                <span>
+                    Coba ubah pencarian atau filter.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    transactionList.innerHTML = "";
+
+
+    visibleTransactions.forEach(
+        transaction => {
+
+            const isPositive =
+                transaction.points > 0;
+
+
+            const item =
+                document.createElement(
+                    "article"
+                );
+
+
+            item.className =
+                "point-history-item";
+
+
+            item.innerHTML = `
+
+                <div class="point-history-left">
+
+                    <div
+                        class="
+                            point-history-icon
+                            ${
+                                isPositive
+                                    ? "positive"
+                                    : "negative"
+                            }
+                        "
+                    >
+                        ${
+                            isPositive
+                                ? "+"
+                                : "−"
+                        }
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            ${escapeHtml(
+                                transaction.reason ||
+                                "Tanpa alasan"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(
+                                formatDeviceDateTime(
+                                    transaction.created_at
+                                )
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="
+                        point-value
+                        ${
+                            isPositive
+                                ? "positive"
+                                : "negative"
+                        }
+                    "
+                >
+                    ${formatPointChange(
+                        transaction.points
+                    )}
+                </div>
+
+            `;
+
+
+            transactionList.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+function resetPointHistoryFilters() {
+
+    document
+        .getElementById(
+            "pointHistorySearch"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "pointHistoryType"
+        )
+        .value = "all";
+
+
+    document
+        .getElementById(
+            "pointHistorySort"
+        )
+        .value = "newest";
+
+
+    renderPointHistory();
+
+}
+
+
+// =====================================
+// ISI LAPORAN CETAK
+// =====================================
+
+function populatePointPrintReport() {
+
+    if (!pointStudentData) {
+
+        return;
+
+    }
+
+
+    const now =
+        new Date();
+
+
+    const generatedDate =
+        new Intl.DateTimeFormat(
+            "id-ID",
+            {
+                dateStyle: "long",
+                timeStyle: "short"
+            }
+        ).format(now);
+
+
+    const reportDateCode =
+        [
+            now.getFullYear(),
+
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0"),
+
+            String(
+                now.getDate()
+            ).padStart(2, "0")
+
+        ].join("");
+
+
+    document
+        .getElementById(
+            "printReportCode"
+        )
+        .textContent =
+            `LMS-POINT-${studentId}-${reportDateCode}`;
+
+
+    document
+        .getElementById(
+            "printStudentName"
+        )
+        .textContent =
+            pointStudentData.name ||
+            "Student";
+
+
+    document
+        .getElementById(
+            "printStudentClass"
+        )
+        .textContent =
+            pointStudentData.className ||
+            "—";
+
+
+    document
+        .getElementById(
+            "printGeneratedDate"
+        )
+        .textContent =
+            generatedDate;
+
+
+    document
+        .getElementById(
+            "printFooterDate"
+        )
+        .textContent =
+            `Dibuat ${generatedDate}`;
+
+
+    document
+        .getElementById(
+            "printTotalPoints"
+        )
+        .textContent =
+            formatPointNumber(
+                currentTotalPoints
+            );
+
+
+    document
+        .getElementById(
+            "printPositivePoints"
+        )
+        .textContent =
+            `+${formatPointNumber(
+                currentPointStats
+                    .positivePoints
+            )}`;
+
+
+    document
+        .getElementById(
+            "printNegativePoints"
+        )
+        .textContent =
+            formatPointNumber(
+                currentPointStats
+                    .negativePoints
+            );
+
+
+    document
+        .getElementById(
+            "printTotalActivities"
+        )
+        .textContent =
+            currentPointStats
+                .totalActivities;
+
+
+    document
+        .getElementById(
+            "printPositiveRate"
+        )
+        .textContent =
+            `${
+                currentPointStats
+                    .positiveRate
+                    .toFixed(0)
+            }%`;
+
+
+    const printRows =
+        document.getElementById(
+            "printTransactionRows"
+        );
+
+
+    if (
+        allPointTransactions.length === 0
+    ) {
+
+        printRows.innerHTML = `
+
+            <tr>
+
+                <td colspan="4">
+                    Belum ada riwayat poin.
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    const newestTransactions =
+        [
+            ...allPointTransactions
+        ].sort(
+            (transactionA, transactionB) =>
+                getPointTimestamp(
+                    transactionB
+                ) -
+                getPointTimestamp(
+                    transactionA
+                )
+        );
+
+
+    printRows.innerHTML = "";
+
+
+    newestTransactions.forEach(
+        (transaction, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        transaction.reason ||
+                        "Tanpa alasan"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        formatDeviceDateTime(
+                            transaction.created_at
+                        )
+                    )}
+                </td>
+
+                <td>
+                    ${formatPointChange(
+                        transaction.points
+                    )}
+                </td>
+
+            `;
+
+
+            printRows.appendChild(row);
+
+        }
+    );
+
+}
+
+
+// =====================================
+// CETAK / SIMPAN PDF
+// =====================================
+
+function printPointReport() {
+
+    if (!pointStudentData) {
+
+        alert(
+            "Data poin belum selesai dimuat."
+        );
+
+        return;
+
+    }
+
+
+    populatePointPrintReport();
+
+
+    window.print();
+
+}
+
+
+// =====================================
+// LOAD DATA POIN
+// =====================================
+
+async function loadPoints() {
+
+    transactionList.innerHTML = `
+
+        <div class="empty-state">
+            Memuat riwayat poin...
+        </div>
+
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/student/${studentId}/points`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            transactionList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <strong>
+                        Gagal memuat poin
+                    </strong>
+
+                    <span>
+                        ${escapeHtml(
+                            data.message ||
+                            "Data poin tidak tersedia."
+                        )}
+                    </span>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        pointStudentData =
+            data.student;
+
+
+        currentTotalPoints =
+            Number(
+                data.totalPoints
+            ) || 0;
+
+
+        allPointTransactions =
+            Array.isArray(
+                data.transactions
+            )
+                ? data.transactions.map(
+                    transaction => ({
+                        ...transaction,
+
+                        points:
+                            Number(
+                                transaction.points
+                            ) || 0
+                    })
+                )
+                : [];
+
+
+        renderPointStudentInfo();
+
+        renderPointMetrics();
+
+        renderPointTrend();
+
+        renderMonthlyPointChart();
+
+        renderPointHistory();
+
+        populatePointPrintReport();
+
+
+    } catch (error) {
+
+        console.error(
+            "Gagal memuat poin:",
+            error
+        );
+
+
+        transactionList.innerHTML = `
+
+            <div class="empty-state">
+
+                <strong>
+                    Tidak dapat terhubung
+                </strong>
+
+                <span>
+                    Periksa server lalu coba kembali.
+                </span>
+
+            </div>
+
+        `;
+
+
+        document
+            .getElementById(
+                "pointTrendChart"
+            )
+            .innerHTML = `
+
+                <div class="student-point-chart-empty">
+                    Gagal memuat grafik.
+                </div>
+
+            `;
+
+
+        document
+            .getElementById(
+                "monthlyPointChart"
+            )
+            .innerHTML = `
+
+                <div class="student-point-chart-empty">
+                    Gagal memuat grafik.
+                </div>
+
+            `;
+
+    }
+
+}
 
         function goToDashboard() {
 

@@ -10,28 +10,10 @@ let studentForceLogoutRunning =
 
 
 /*
-    Logout paksa karena akun siswa
-    sudah tidak ada di database.
+    Hapus data login siswa yang tersimpan
+    pada browser.
 */
-function forceStudentLogout(
-    message = "Kamu telah dilogout."
-) {
-
-    if (
-        studentForceLogoutRunning
-    ) {
-        return;
-    }
-
-
-    studentForceLogoutRunning =
-        true;
-
-
-    console.log(
-        message
-    );
-
+function clearStudentLocalSession() {
 
     localStorage.removeItem(
         "studentId"
@@ -49,6 +31,34 @@ function forceStudentLogout(
         "studentLoginCode"
     );
 
+}
+
+
+/*
+    Logout dengan pesan hanya digunakan jika
+    backend memastikan data siswa benar-benar
+    sudah dihapus atau direset.
+*/
+function forceStudentLogout(
+    message =
+        "Kamu telah dilogout karena data siswa telah direset."
+) {
+
+    if (
+        studentForceLogoutRunning
+    ) {
+
+        return;
+
+    }
+
+
+    studentForceLogoutRunning =
+        true;
+
+
+    clearStudentLocalSession();
+
 
     alert(
         message
@@ -63,24 +73,57 @@ function forceStudentLogout(
 
 
 /*
-    Cek apakah akun yang ada dalam
-    session masih benar-benar ada.
+    Session hilang biasa:
+
+    - deploy baru;
+    - cookie kedaluwarsa;
+    - browser/session baru;
+    - session server dibersihkan.
+
+    Data lokal dibersihkan tanpa alert.
+*/
+function clearMissingStudentSession() {
+
+    clearStudentLocalSession();
+
+
+    /*
+        Kalau sudah berada di halaman login,
+        tidak perlu melakukan redirect ulang.
+    */
+    if (
+        window.location.pathname !==
+        "/student-login.html"
+    ) {
+
+        window.location.replace(
+            "/student-login.html"
+        );
+
+    }
+
+}
+
+
+/*
+    Periksa apakah session siswa masih valid.
 */
 async function checkStudentSession() {
 
-    /*
-        Kalau sedang di halaman login
-        dan memang tidak ada studentId,
-        tidak perlu melakukan apa-apa.
-    */
     const studentId =
         localStorage.getItem(
             "studentId"
         );
 
 
+    /*
+        Browser ini memang belum login.
+        Tidak perlu memanggil backend.
+    */
     if (!studentId) {
+
         return true;
+
     }
 
 
@@ -114,14 +157,38 @@ async function checkStudentSession() {
             await response.json();
 
 
+        /*
+            Session server hilang biasa.
+
+            Jangan tampilkan pesan logout.
+        */
         if (
             response.status === 401 &&
-            data.loggedOut
+            data.reason ===
+                "session-missing"
+        ) {
+
+            clearMissingStudentSession();
+
+            return false;
+
+               }
+
+
+        /*
+            Backend memastikan akun siswa
+            benar-benar sudah dihapus/reset.
+        */
+        if (
+            response.status === 401 &&
+            data.loggedOut === true &&
+            data.reason ===
+                "student-data-reset"
         ) {
 
             forceStudentLogout(
                 data.message ||
-                "Kamu telah dilogout."
+                "Kamu telah dilogout karena data siswa telah direset."
             );
 
 
@@ -136,11 +203,8 @@ async function checkStudentSession() {
     } catch (error) {
 
         /*
-            Server mati / koneksi putus
-            BUKAN berarti akun dihapus.
-
-            Jadi jangan logout hanya
-            karena internet bermasalah.
+            Gangguan jaringan atau server tidak
+            boleh dianggap sebagai logout.
         */
         console.error(
             "Gagal mengecek session siswa:",
@@ -162,8 +226,8 @@ async function checkStudentSession() {
 
 
 // =========================================
-// CEK OTOMATIS
-// ========================================
+// CEK SESSION OTOMATIS
+// =========================================
 
 setInterval(
     () => {
@@ -182,8 +246,7 @@ setInterval(
 );
 
 
-// Begitu tab aktif kembali,
-// langsung cek.
+// Saat tab dibuka kembali.
 document.addEventListener(
     "visibilitychange",
     () => {
@@ -199,6 +262,7 @@ document.addEventListener(
 
     }
 );
+
 
 // Cek langsung saat halaman dibuka.
 checkStudentSession();

@@ -1,47 +1,18 @@
-Fitur DM siswa ke siswa atau siswa ke guru (belum tentu diadd) (CANCELLED)
-
-
-Online quiz
-1. Fitur baru LMS dimana siswa bisa jawab soal quiz MCQ atau fill in the blanks simpel buat quick assesment atau simpel review/quiz
-Cara kerja:
-Sisi admin (pembuatan quiz)
-1. Admin ke tab baru di sidebar namanya quiz
-2. Disana akan ada page quiz dengan beberapa card (jika sudah ada beberapa quiz) yg masing2 card isinya ada info seperti nama quiz, tanggal kapan terakhir di modifikasi, berapa soal, dll.
-3. Kalau kita misal pencet salah satu card, akan ada tampilan edit quiz yg mirip di google form, bisa tambah soal dengan toolbar + di samping, bisa isi soalnya, dll
-4. Di card soal, kita bisa cek mau pilih MCQ atau quiz
-5. Kalau MCQ, berarti kita harus isi 4 pilihan ganda, terus dibawah ada tombol select correct answer dan setelah itu bisa pencet pilihan mana yg correct
-6. Kalau quiz, berarti tinggal pencet select correct answer terus kita bisa isi jawaban kuncinya (Ketentuan: jawaban siswa gak harus sama persis dengan kunci asli, misal ada spasi ekstra atau huruf depan kapital masih ditoleril, yang penting kata/huruf/frasaya sama)
-7. Layout again seperti google form, di topbar utama ada beberapa fitur seperti ganti nama quiz, cek responden, ada tombol Publish, set due date, Mapel, materi, dll.'
-8. Kalau misal mau buat quiz baru akan ada tombol Quiz baru di main page quiz mungkin di topbar pojok kanan, nanti akan dialihkan ke page quiz baru yg dimana kita bisa buat soalnya, setting judul, dll.
-
-Sisi siswa:
-1. Siswa dapat tombol baru di sidebar yaitu Quiz
-2. Disana akan ada dashboard Quiz seperti panel quiz yg ada due datenya (sortir berdasarkan deadline)
-3. Dibawah panel deadline akan ada panel select quiz, akan ada dropdown mau pilih quiz apa dan tombol OK atau semiripnya
-4. Nanti dialihkan ke jawab quiz dimana kita bisa pilih MCQnya, atau jawab esai nya, dll. Dibawah akan ada tombol submit
-5. Kalau sudah submit, nanti akan ada page singkat isinya Score autograde kamu berapa, Rumusnya (Total benar / total soal) x 100, namun dibulatkan kebawah jadi tidak ada desimal. Yg agak besar nilainya karena pagenya lumayan kosong setelah submit
-6. Terus setelah nilainya juga ada tombol view quiz, kita bisa lihat salah dimana, benar dimana, jika salah, maka ada page 'correct answer'
-7. Kalau sudah, dibawah atau ditopbar akan ada tombol return to quiz atau balik ke halaman dashboard quiz utama
-8. Halaman quiz juga ada log quiz kita, bisa kita pencet juga kalau mau liat hasilnya yg dulu
-
-Yah untuk sementara ini base features nya dulu, nanti kalau ada fitur tambahan akan disampaikan langsung
-INGAT, DESIGN LANGUAGE HARUS SAMA DENGAN BEKAS SITE AKU SEBELUMNYA, JANGAN GUI BARU FULL. HARUS SAMA DENGAN YG PAGE PAGE LAIN. BISA CEK DI CSSNYA
-
 Sistem score: Kalau full pilgan, 100% nilai berdasar pilgan'
 Kalau full esai: 100% berdfasarkan esai
 Kalau mix: 60% bobot esai, 40% pilgan
-
-
-Notif system:
-Add -Kamu dapat reply di guru dan siswa
-E.g: Kamu dapat reply dalam Post: "Mr, bisa gak tolongin..."
-
-Di DB sudah lumayan banyak feed_moderation_active / feed_moderation_events, mulai bisa hapus setelah 100 entry, Past 100 data rolling type
-
-Pindah system and reset ke sidebar
-
-Daftar siswa bisa kita sortir berdasarkan kelas
+(settings atur mau gak ada bobot atau ada)
 
 tambahkan custom publish: bisa pilih semua siswa atau sebgagian saja (tick mark)
 
-UBAH SEMUA PROFIl DIMANA HURUFNYA BERDASARKAN INISIAL NAMA
+Visual Bug Quiz: Text spacing nilai kedempetan di mobile, dan bug status pengerjaan (cek ss hape)
+
+Buat write untuk pembuatan quiz lebih efisien soalnya makan banyak sekali row writes di turso
+sekitar 6000-10000an untuk 5 soal mcq dan 5 soal esai dalam 1 quiz
+
+QUIZ: BISA TAMBAH GAMBAR VIA URL
+
+Toggle public quiz: Bisa buat quiz public tanpa kode login siswa, generate link dan saat memasuki link seperti google form harus isi nama dan kelas (Kasih warning diatas bahwa kamu guest)
+DI menu ada 2 checkbox bisa public dan bisa private, kalau centang 2 artinya siswa yg punya akun dan tidak bisa akses
+
+Upload image feature via googleusercontent
