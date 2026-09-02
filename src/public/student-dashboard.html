@@ -240,42 +240,9 @@
 
                 </section>
 
+<!-- QUICK MENU -->
 
-                <!-- STUDENT INFO -->
-
-                <section class="student-info-grid">
-
-                    <article class="info-card">
-
-                        <span class="info-label">
-                            Kelas
-                        </span>
-
-                        <strong id="studentClass">
-                            -
-                        </strong>
-
-                    </article>
-
-
-                    <article class="info-card">
-
-                        <span class="info-label">
-                            Kode Siswa
-                        </span>
-
-                        <strong id="studentCode">
-                            -
-                        </strong>
-
-                    </article>
-
-                </section>
-
-
-                <!-- QUICK MENU -->
-
-                <section>
+<section class="student-quick-access-section">
 
                     <div class="section-heading">
 
@@ -626,18 +593,6 @@ let publicAnnouncementPollingTimer =
             "topStudentName"
         ).textContent =
             studentName;
-
-
-document.getElementById(
-    "studentClass"
-).textContent =
-    studentClass;
-
-
-        document.getElementById(
-            "studentCode"
-        ).textContent =
-            `Kode: ${studentLoginCode}`;
 
 loadPublicAnnouncements();
 

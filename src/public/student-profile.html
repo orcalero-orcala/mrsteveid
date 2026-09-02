@@ -10,13 +10,13 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Profile Siswa</title>
+    <title>Profil Siswa</title>
 
-        <link
-    rel="icon"
-    type="image/png"
-    href="/favicon.png"
->
+    <link
+        rel="icon"
+        type="image/png"
+        href="/favicon.png"
+    >
 
     <link
         rel="stylesheet"
@@ -25,12 +25,1050 @@
 
     <script src="/student-profile-initial.js"></script>
 
+    <style>
+
+        /* =========================================
+           STUDENT PROFILE REVAMP
+           ========================================= */
+
+        .student-profile-page {
+            background: #0b121d;
+        }
+
+        .student-profile-content {
+            width: 100%;
+            max-width: 1500px;
+            padding: 28px 32px 50px;
+        }
+
+
+        /* PROFILE CARD */
+
+        .student-social-profile {
+            overflow: hidden;
+
+            border: 1px solid #293a50;
+            border-radius: 20px;
+
+            background: #111a27;
+
+            box-shadow:
+                0 22px 55px
+                rgba(0, 0, 0, 0.18);
+        }
+
+        .student-profile-cover {
+            position: relative;
+            height: 145px;
+            overflow: hidden;
+
+            background:
+                radial-gradient(
+                    circle at 76% 25%,
+                    rgba(96, 165, 250, 0.24),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 20% 100%,
+                    rgba(37, 99, 235, 0.24),
+                    transparent 32%
+                ),
+                linear-gradient(
+                    120deg,
+                    #173d68,
+                    #122b4a 52%,
+                    #101d30
+                );
+        }
+
+        .student-profile-cover::before,
+        .student-profile-cover::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(96, 165, 250, 0.13);
+        }
+
+        .student-profile-cover::before {
+            width: 290px;
+            height: 290px;
+            right: 70px;
+            top: -180px;
+        }
+
+        .student-profile-cover::after {
+            width: 180px;
+            height: 180px;
+            right: 165px;
+            top: -105px;
+        }
+
+        .student-profile-cover-label {
+            position: absolute;
+            top: 22px;
+            left: 28px;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            color: #bfdbfe;
+
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+        }
+
+        .student-profile-cover-label::before {
+            content: "";
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+            background: #60a5fa;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(96, 165, 250, 0.12);
+        }
+
+
+        /* PROFILE IDENTITY */
+
+        .student-profile-main {
+            position: relative;
+            padding: 0 28px 25px;
+        }
+
+.student-profile-identity-row {
+    min-height: 126px;
+
+            display: flex;
+            align-items: flex-end;
+
+            gap: 18px;
+        }
+
+.student-profile-main-avatar {
+    width: 136px;
+    height: 136px;
+
+    margin-top: -62px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border: 6px solid #111a27;
+            border-radius: 50%;
+
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #3b82f6,
+                    #1d4ed8
+                );
+
+font-size: 47px;
+            font-weight: 800;
+
+            box-shadow:
+                0 14px 32px
+                rgba(0, 0, 0, 0.28);
+        }
+
+        .student-profile-identity {
+            min-width: 0;
+            flex: 1;
+            padding-bottom: 4px;
+        }
+
+        .student-profile-identity h1 {
+            margin: 0 0 6px;
+
+            color: #f8fafc;
+
+            font-size:
+                clamp(
+                    26px,
+                    3vw,
+                    35px
+                );
+
+            line-height: 1.1;
+            letter-spacing: -0.025em;
+        }
+
+        .student-profile-identity p {
+            margin: 0;
+
+            color: #8090a5;
+
+            font-size: 12px;
+        }
+
+
+/* PROFILE CUSTOMIZATION BUTTON */
+
+.student-profile-customize-button {
+    min-height: 40px;
+    margin-bottom: 4px;
+    padding: 0 14px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #34506f;
+    border-radius: 9px;
+
+    color: #b9c9db;
+    background: #111d2c;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.student-profile-customize-button:hover {
+    color: #ffffff;
+    border-color: #47709d;
+    background: #17273a;
+}
+
+.student-profile-customize-button svg {
+    width: 14px;
+    height: 14px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* PROFILE BIO */
+
+.student-profile-bio {
+    max-width: 600px;
+    margin-top: 12px !important;
+
+    color: #708096 !important;
+
+    font-size: 11px !important;
+    line-height: 1.6;
+
+    font-style: italic;
+}
+
+
+        /* PROFILE STATS */
+
+        .student-profile-stats {
+            margin-top: 23px;
+
+            display: grid;
+            grid-template-columns:
+                repeat(
+                    3,
+                    minmax(0, 1fr)
+                );
+
+            gap: 12px;
+        }
+
+        .student-profile-stat {
+            min-height: 82px;
+            padding: 15px 17px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            border: 1px solid #29394e;
+            border-radius: 13px;
+
+            background: #0e1723;
+        }
+
+        .student-profile-stat-icon {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            color: #60a5fa;
+            background: rgba(37, 99, 235, 0.17);
+
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+.student-profile-stat > div > span,
+.student-profile-stat > div > strong {
+    display: block;
+}
+
+.student-profile-stat > div > span {
+    margin-bottom: 4px;
+
+    color: #718198;
+
+    font-size: 9px;
+}
+
+.student-profile-stat > div > strong {
+    overflow: hidden;
+
+    color: #e8eef6;
+
+    font-size: 15px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.student-profile-stat-icon svg {
+    width: 18px;
+    height: 18px;
+
+    display: block;
+
+    fill: none;
+    stroke: currentColor;
+
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+        /* INFORMATION PANEL */
+
+        .student-profile-information {
+            margin-top: 18px;
+            padding: 24px;
+
+            border: 1px solid #29394e;
+            border-radius: 17px;
+
+            background: #111a27;
+        }
+
+        .student-profile-section-header {
+            margin-bottom: 19px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+        .student-profile-section-header h2 {
+            margin: 0 0 4px;
+
+            color: #f1f5f9;
+
+            font-size: 17px;
+        }
+
+        .student-profile-section-header p {
+            margin: 0;
+
+            color: #67778d;
+
+            font-size: 10px;
+        }
+
+        .student-profile-account-badge {
+            padding: 6px 9px;
+
+            flex-shrink: 0;
+
+            border: 1px solid rgba(59, 130, 246, 0.26);
+            border-radius: 999px;
+
+            color: #60a5fa;
+            background: rgba(37, 99, 235, 0.1);
+
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+
+        .student-profile-details {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 11px;
+        }
+
+        .student-profile-detail {
+            min-height: 76px;
+            padding: 14px 16px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 18px;
+
+            border: 1px solid #28384c;
+            border-radius: 12px;
+
+            background: #0d1622;
+        }
+
+        .student-profile-detail > div {
+            min-width: 0;
+        }
+
+.student-profile-detail > div > span,
+.student-profile-detail > div > strong {
+    display: block;
+}
+
+.student-profile-detail > div > span {
+    margin-bottom: 5px;
+
+    color: #718198;
+
+    font-size: 9px;
+}
+
+.student-profile-detail > div > strong {
+    overflow: hidden;
+
+    color: #e8eef6;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.student-profile-detail-marker {
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #5d8fd1;
+    background: transparent;
+}
+
+.student-profile-detail-marker svg {
+    width: 18px;
+    height: 18px;
+
+    display: block;
+
+    fill: none;
+    stroke: currentColor;
+
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+        /* SIDEBAR AND TOPBAR INITIALS */
+
+        #sidebarStudentAvatar,
+        #topStudentAvatar {
+            text-transform: uppercase;
+        }
+
+        /* =========================================
+   PROFILE CUSTOMIZATION MODAL
+   ========================================= */
+
+.student-profile-page.is-profile-modal-open {
+    overflow: hidden;
+}
+
+.profile-customization-modal[hidden] {
+    display: none !important;
+}
+
+.profile-customization-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+
+    padding: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(3, 8, 15, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.profile-customization-panel {
+    width: min(520px, 100%);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+
+    padding: 24px;
+
+    border: 1px solid #304157;
+    border-radius: 18px;
+
+    background: #101925;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0, 0, 0, 0.48);
+}
+
+.profile-customization-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    margin-bottom: 17px;
+}
+
+.profile-customization-header small {
+    display: block;
+    margin-bottom: 5px;
+
+    color: #60a5fa;
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.profile-customization-header h2 {
+    margin: 0 0 5px;
+
+    color: #f8fafc;
+    font-size: 22px;
+}
+
+.profile-customization-header p {
+    margin: 0;
+
+    color: #718096;
+    font-size: 10px;
+}
+
+.profile-customization-close {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border: 1px solid #2d3d52;
+    border-radius: 9px;
+
+    color: #7f8da0;
+    background: #0c1420;
+
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.profile-customization-close:hover {
+    color: #ffffff;
+    background: #162231;
+}
+
+.profile-customization-notice {
+    padding: 12px 13px;
+    margin-bottom: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 11px;
+
+    color: #d5a74f;
+    background: rgba(245, 158, 11, 0.07);
+}
+
+.profile-customization-notice > svg {
+    width: 18px;
+    height: 18px;
+
+    flex-shrink: 0;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-customization-notice strong,
+.profile-customization-notice span {
+    display: block;
+}
+
+.profile-customization-notice strong {
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.profile-customization-notice span {
+    color: #987f54;
+    font-size: 8px;
+    line-height: 1.5;
+}
+
+
+/* PREVIEW */
+
+.profile-customization-preview {
+    position: relative;
+
+    height: 120px;
+    margin-bottom: 18px;
+
+    border: 1px solid #2c3c51;
+    border-radius: 13px;
+
+    background: #0c1420;
+}
+
+.profile-customization-banner-preview {
+    height: 72px;
+
+    border-radius: 12px 12px 0 0;
+
+    background:
+        radial-gradient(
+            circle at 75% 25%,
+            rgba(96, 165, 250, 0.24),
+            transparent 30%
+        ),
+        linear-gradient(
+            120deg,
+            #173d68,
+            #122b4a 52%,
+            #101d30
+        );
+}
+
+.profile-customization-avatar {
+    position: absolute;
+    left: 18px;
+    bottom: 10px;
+
+    width: 65px;
+    height: 65px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 4px solid #0c1420;
+    border-radius: 50%;
+
+    color: #ffffff;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+
+    font-size: 22px;
+    font-weight: 800;
+}
+
+
+/* CUSTOMIZATION FIELDS */
+
+.profile-customization-field {
+    padding: 14px;
+    margin-top: 10px;
+
+    border: 1px solid #29394e;
+    border-radius: 12px;
+
+    background: #0d1622;
+}
+
+.profile-customization-field-heading {
+    margin-bottom: 11px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.profile-customization-field-heading strong,
+.profile-customization-field-heading div > span {
+    display: block;
+}
+
+.profile-customization-field-heading strong {
+    margin-bottom: 3px;
+
+    color: #dce6f1;
+    font-size: 11px;
+}
+
+.profile-customization-field-heading div > span {
+    color: #6d7d92;
+
+    font-size: 8px;
+    line-height: 1.5;
+}
+
+.profile-customization-lock {
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #607086;
+}
+
+.profile-customization-lock svg {
+    width: 14px;
+    height: 14px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-customization-disabled-button,
+.profile-customization-bio-input,
+.profile-customization-save {
+    cursor: not-allowed;
+    opacity: 0.52;
+}
+
+.profile-customization-disabled-button {
+    min-height: 36px;
+    padding: 0 12px;
+
+    border: 1px solid #304157;
+    border-radius: 8px;
+
+    color: #8998aa;
+    background: #111c2a;
+
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.profile-customization-bio-input {
+    width: 100%;
+    min-height: 74px;
+    resize: none;
+
+    padding: 11px;
+
+    border: 1px solid #2b3b50;
+    border-radius: 9px;
+    outline: none;
+
+    color: #8a99ac;
+    background: #0a121d;
+
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.profile-customization-character-count {
+    display: block;
+    margin-top: 6px;
+
+    color: #526174;
+    font-size: 8px;
+    text-align: right;
+}
+
+
+/* BANNER COLORS */
+
+.profile-banner-color-list {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-banner-color {
+    width: 29px;
+    height: 29px;
+
+    padding: 0;
+
+    border: 3px solid #0d1622;
+    border-radius: 50%;
+
+    outline: 1px solid transparent;
+
+    cursor: not-allowed;
+    opacity: 0.52;
+}
+
+.profile-banner-color.selected {
+    outline-color: #60a5fa;
+}
+
+.profile-banner-color.blue {
+    background: #2563eb;
+}
+
+.profile-banner-color.purple {
+    background: #7c3aed;
+}
+
+.profile-banner-color.green {
+    background: #059669;
+}
+
+.profile-banner-color.orange {
+    background: #ea580c;
+}
+
+.profile-banner-color.red {
+    background: #dc2626;
+}
+
+
+/* MODAL FOOTER */
+
+.profile-customization-footer {
+    margin-top: 18px;
+    padding-top: 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 9px;
+
+    border-top: 1px solid #253448;
+}
+
+.profile-customization-cancel,
+.profile-customization-save {
+    min-height: 39px;
+    padding: 0 14px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.profile-customization-cancel {
+    border: 1px solid #304157;
+
+    color: #a6b3c4;
+    background: #111c2a;
+
+    cursor: pointer;
+}
+
+.profile-customization-save {
+    border: 1px solid #2563eb;
+
+    color: #ffffff;
+    background: #2563eb;
+}
+
+@media (max-width: 600px) {
+
+    .profile-customization-modal {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .profile-customization-panel {
+        width: 100%;
+        max-height: calc(100dvh - 24px);
+
+        padding: 19px 16px;
+
+        border-radius: 17px;
+    }
+
+}
+
+
+        /* TABLET */
+
+        @media (max-width: 900px) {
+
+            .student-profile-content {
+                padding: 24px 22px 45px;
+            }
+
+            .student-profile-stats {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        minmax(0, 1fr)
+                    );
+            }
+
+            .student-profile-stat:last-child {
+                grid-column: 1 / -1;
+            }
+
+        }
+
+
+        /* MOBILE */
+
+        @media (max-width: 600px) {
+
+            .student-profile-content {
+                padding: 18px 14px 34px;
+            }
+
+            .student-social-profile {
+                border-radius: 16px;
+            }
+
+            .student-profile-cover {
+                height: 115px;
+            }
+
+            .student-profile-cover-label {
+                top: 17px;
+                left: 19px;
+            }
+
+            .student-profile-main {
+                padding: 0 18px 19px;
+            }
+
+            .student-profile-identity-row {
+                min-height: 0;
+
+                align-items: flex-start;
+                flex-wrap: wrap;
+
+                gap: 12px;
+            }
+
+            .student-profile-main-avatar {
+                width: 88px;
+                height: 88px;
+
+                margin-top: -42px;
+
+                border-width: 5px;
+
+                font-size: 30px;
+            }
+
+            .student-profile-identity {
+                min-width:
+                    calc(100% - 105px);
+
+                padding-top: 10px;
+            }
+
+            .student-profile-identity h1 {
+                font-size: 22px;
+            }
+
+.student-profile-customize-button {
+    width: 100%;
+    margin: 4px 0 0;
+}
+
+            .student-profile-stats {
+                grid-template-columns: 1fr;
+                gap: 9px;
+            }
+
+            .student-profile-stat:last-child {
+                grid-column: auto;
+            }
+
+            .student-profile-stat {
+                min-height: 70px;
+            }
+
+            .student-profile-information {
+                margin-top: 14px;
+                padding: 19px 15px;
+
+                border-radius: 15px;
+            }
+
+            .student-profile-section-header {
+                align-items: flex-start;
+            }
+
+            .student-profile-details {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 
-<body>
+<body class="student-profile-page">
 
     <div class="app-layout">
+
+
+        <!-- SIDEBAR -->
 
         <aside class="sidebar">
 
@@ -107,16 +1145,21 @@
                     Nilai Saya
                 </button>
 
+
                 <button
-    class="nav-item"
-    onclick="
-        window.location.href =
-            '/student-quizzes.html'
-    "
->
-    <span class="nav-icon">?</span>
-    Quiz
-</button>
+                    class="nav-item"
+                    type="button"
+                    onclick="
+                        window.location.href =
+                            '/student-quizzes.html'
+                    "
+                >
+                    <span class="nav-icon">
+                        ?
+                    </span>
+
+                    Quiz
+                </button>
 
 
                 <button
@@ -138,7 +1181,10 @@
 
                 <div class="sidebar-profile">
 
-                    <div class="profile-avatar">
+                    <div
+                        class="profile-avatar"
+                        id="sidebarStudentAvatar"
+                    >
                         S
                     </div>
 
@@ -170,6 +1216,8 @@
         </aside>
 
 
+        <!-- MAIN CONTENT -->
+
         <main class="main-content">
 
             <header class="topbar">
@@ -189,7 +1237,10 @@
 
                 <div class="topbar-user">
 
-                    <div class="top-avatar">
+                    <div
+                        class="top-avatar"
+                        id="topStudentAvatar"
+                    >
                         S
                     </div>
 
@@ -202,112 +1253,315 @@
             </header>
 
 
-            <div class="dashboard-content">
+            <div class="student-profile-content">
 
-                <section class="welcome-card">
 
-                    <div>
+                <!-- SOCIAL PROFILE CARD -->
 
-                        <small class="eyebrow">
+                <section class="student-social-profile">
+
+                    <div class="student-profile-cover">
+
+                        <span class="student-profile-cover-label">
                             STUDENT PROFILE
-                        </small>
-
-                        <h1 id="profileFullName">
-                            Memuat profile...
-                        </h1>
-
-                        <p>
-                            Ringkasan informasi akun siswa.
-                        </p>
+                        </span>
 
                     </div>
 
 
-                    <div class="welcome-decoration">
-                        S
+                    <div class="student-profile-main">
+
+                        <div class="student-profile-identity-row">
+
+                            <div
+                                class="student-profile-main-avatar"
+                                id="profileMainAvatar"
+                            >
+                                S
+                            </div>
+
+
+                            <div class="student-profile-identity">
+
+                                <h1 id="profileFullName">
+                                    Memuat profil...
+                                </h1>
+
+                                <p id="profileIdentityMeta">
+                                    Akun siswa
+                                </p>
+
+                                <p
+    class="student-profile-bio"
+    id="profileBio"
+>
+    Belum ada bio.
+</p>
+
+                            </div>
+
+
+<button
+    type="button"
+    class="student-profile-customize-button"
+    onclick="openProfileCustomization()"
+>
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path d="M4 7h10"></path>
+        <path d="M18 7h2"></path>
+        <circle cx="16" cy="7" r="2"></circle>
+
+        <path d="M4 17h2"></path>
+        <path d="M10 17h10"></path>
+        <circle cx="8" cy="17" r="2"></circle>
+    </svg>
+
+    Sesuaikan Profil
+
+</button>
+
+                        </div>
+
+
+                        <div class="student-profile-stats">
+
+                            <article class="student-profile-stat">
+
+<span class="student-profile-stat-icon">
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"
+        ></path>
+    </svg>
+
+</span>
+
+                                <div>
+
+                                    <span>
+                                        Total Poin
+                                    </span>
+
+                                    <strong id="profilePoints">
+                                        -
+                                    </strong>
+
+                                </div>
+
+                            </article>
+
+
+                            <article class="student-profile-stat">
+
+<span class="student-profile-stat-icon">
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path d="M5 19V11"></path>
+        <path d="M12 19V5"></path>
+        <path d="M19 19V8"></path>
+        <path d="M3 19h18"></path>
+    </svg>
+
+</span>
+
+                                <div>
+
+                                    <span>
+                                        Nilai Rata-rata
+                                    </span>
+
+                                    <strong id="profileAverage">
+                                        -
+                                    </strong>
+
+                                </div>
+
+                            </article>
+
+
+                            <article class="student-profile-stat">
+
+<span class="student-profile-stat-icon">
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path d="m3 9 9-5 9 5-9 5-9-5Z"></path>
+        <path d="M7 12v5c3 2 7 2 10 0v-5"></path>
+    </svg>
+
+</span>
+
+                                <div>
+
+                                    <span>
+                                        Kelas
+                                    </span>
+
+                                    <strong id="profileClassSummary">
+                                        -
+                                    </strong>
+
+                                </div>
+
+                            </article>
+
+                        </div>
+
                     </div>
 
                 </section>
 
 
-                <section class="student-info-grid">
+                <!-- STUDENT INFORMATION -->
 
-                    <article class="info-card">
+                <section class="student-profile-information">
 
-                        <span class="info-label">
-                            Nama Pendek
+                    <div class="student-profile-section-header">
+
+                        <div>
+
+                            <h2>
+                                Informasi Siswa
+                            </h2>
+
+                            <p>
+                                Data identitas yang terhubung dengan akun.
+                            </p>
+
+                        </div>
+
+                        <span class="student-profile-account-badge">
+                            AKUN SISWA
                         </span>
 
-                        <strong id="profileShortName">
-                            -
-                        </strong>
-
-                    </article>
+                    </div>
 
 
-                    <article class="info-card">
-
-                        <span class="info-label">
-                            Kode Siswa
-                        </span>
-
-                        <strong id="profileCode">
-                            -
-                        </strong>
-
-                    </article>
+                    <div class="student-profile-details">
 
 
-                    <article class="info-card">
+                        <article class="student-profile-detail">
 
-                        <span class="info-label">
-                            Tanggal Lahir
-                        </span>
+                            <div>
 
-                        <strong id="profileDob">
-                            -
-                        </strong>
+                                <span>
+                                    Nama Pendek
+                                </span>
 
-                    </article>
+                                <strong id="profileShortName">
+                                    -
+                                </strong>
 
+                            </div>
 
-                    <article class="info-card">
+<span class="student-profile-detail-marker">
 
-                        <span class="info-label">
-                            Kelas
-                        </span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+    </svg>
 
-                        <strong id="profileClass">
-                            -
-                        </strong>
+</span>
 
-                    </article>
-
-
-                    <article class="info-card">
-
-                        <span class="info-label">
-                            Total Poin
-                        </span>
-
-                        <strong id="profilePoints">
-                            -
-                        </strong>
-
-                    </article>
+                        </article>
 
 
-                    <article class="info-card">
+                        <article class="student-profile-detail">
 
-                        <span class="info-label">
-                            Nilai Rata-rata
-                        </span>
+                            <div>
 
-                        <strong id="profileAverage">
-                            -
-                        </strong>
+                                <span>
+                                    Kode Siswa
+                                </span>
 
-                    </article>
+                                <strong id="profileCode">
+                                    -
+                                </strong>
+
+                            </div>
+
+<span class="student-profile-detail-marker">
+
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+        <circle cx="8" cy="11" r="2"></circle>
+        <path d="M13 10h5"></path>
+        <path d="M13 14h4"></path>
+    </svg>
+
+</span>
+
+                        </article>
+
+
+                        <article class="student-profile-detail">
+
+                            <div>
+
+                                <span>
+                                    Tanggal Lahir
+                                </span>
+
+                                <strong id="profileDob">
+                                    -
+                                </strong>
+
+                            </div>
+
+<span class="student-profile-detail-marker">
+
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+        <path d="M8 3v4"></path>
+        <path d="M16 3v4"></path>
+        <path d="M3 10h18"></path>
+    </svg>
+
+</span>
+
+                        </article>
+
+
+                        <article class="student-profile-detail">
+
+                            <div>
+
+                                <span>
+                                    Kelas
+                                </span>
+
+                                <strong id="profileClass">
+                                    -
+                                </strong>
+
+                            </div>
+
+<span class="student-profile-detail-marker">
+
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m3 9 9-5 9 5-9 5-9-5Z"></path>
+        <path d="M7 12v5c3 2 7 2 10 0v-5"></path>
+    </svg>
+
+</span>
+
+                        </article>
+
+
+                    </div>
 
                 </section>
 
@@ -316,10 +1570,393 @@
         </main>
 
     </div>
-<script src="/student-session.js"></script>
-<script src="/time.js"></script>
+
+    <!-- PROFILE CUSTOMIZATION MODAL -->
+
+<div
+    class="profile-customization-modal"
+    id="profileCustomizationModal"
+    hidden
+>
+
+    <section
+        class="profile-customization-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profileCustomizationTitle"
+    >
+
+        <header class="profile-customization-header">
+
+            <div>
+
+                <small>
+                    PROFILE SETTINGS
+                </small>
+
+                <h2 id="profileCustomizationTitle">
+                    Sesuaikan Profil
+                </h2>
+
+                <p>
+                    Atur tampilan profil siswa kamu.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="profile-customization-close"
+                onclick="closeProfileCustomization()"
+                aria-label="Tutup panel"
+            >
+                ×
+            </button>
+
+        </header>
+
+
+        <div class="profile-customization-notice">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2"
+                ></rect>
+
+                <path
+                    d="M8 10V7a4 4 0 0 1 8 0v3"
+                ></path>
+            </svg>
+
+            <div>
+
+                <strong>
+                    Kustomisasi profil segera tersedia
+                </strong>
+
+                <span>
+                    Pengaturan di bawah masih dikunci untuk sementara.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- PREVIEW -->
+
+        <div class="profile-customization-preview">
+
+            <div class="profile-customization-banner-preview"></div>
+
+            <div
+                class="profile-customization-avatar"
+                id="profileCustomizationAvatar"
+            >
+                S
+            </div>
+
+        </div>
+
+
+        <!-- PROFILE PICTURE -->
+
+        <div class="profile-customization-field">
+
+            <div class="profile-customization-field-heading">
+
+                <div>
+
+                    <strong>
+                        Foto Profil
+                    </strong>
+
+                    <span>
+                        Unggah, crop, dan atur posisi foto profil.
+                    </span>
+
+                </div>
+
+                <span class="profile-customization-lock">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                        ></rect>
+
+                        <path
+                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                        ></path>
+                    </svg>
+
+                </span>
+
+            </div>
+
+            <button
+                type="button"
+                class="profile-customization-disabled-button"
+                disabled
+            >
+                Pilih Foto
+            </button>
+
+        </div>
+
+
+        <!-- BIO -->
+
+        <div class="profile-customization-field">
+
+            <div class="profile-customization-field-heading">
+
+                <div>
+
+                    <strong>
+                        Bio
+                    </strong>
+
+                    <span>
+                        Tambahkan deskripsi singkat tentang diri kamu.
+                    </span>
+
+                </div>
+
+                <span class="profile-customization-lock">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                        ></rect>
+
+                        <path
+                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                        ></path>
+                    </svg>
+
+                </span>
+
+            </div>
+
+            <textarea
+                class="profile-customization-bio-input"
+                maxlength="120"
+                placeholder="Tulis bio singkat..."
+                disabled
+            ></textarea>
+
+            <small class="profile-customization-character-count">
+                Maksimal 120 karakter
+            </small>
+
+        </div>
+
+
+        <!-- BANNER COLOR -->
+
+        <div class="profile-customization-field">
+
+            <div class="profile-customization-field-heading">
+
+                <div>
+
+                    <strong>
+                        Warna Banner
+                    </strong>
+
+                    <span>
+                        Pilih warna utama untuk banner profil.
+                    </span>
+
+                </div>
+
+                <span class="profile-customization-lock">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                        ></rect>
+
+                        <path
+                            d="M8 10V7a4 4 0 0 1 8 0v3"
+                        ></path>
+                    </svg>
+
+                </span>
+
+            </div>
+
+            <div class="profile-banner-color-list">
+
+                <button
+                    type="button"
+                    class="profile-banner-color blue selected"
+                    disabled
+                    aria-label="Biru"
+                ></button>
+
+                <button
+                    type="button"
+                    class="profile-banner-color purple"
+                    disabled
+                    aria-label="Ungu"
+                ></button>
+
+                <button
+                    type="button"
+                    class="profile-banner-color green"
+                    disabled
+                    aria-label="Hijau"
+                ></button>
+
+                <button
+                    type="button"
+                    class="profile-banner-color orange"
+                    disabled
+                    aria-label="Oranye"
+                ></button>
+
+                <button
+                    type="button"
+                    class="profile-banner-color red"
+                    disabled
+                    aria-label="Merah"
+                ></button>
+
+            </div>
+
+        </div>
+
+
+        <footer class="profile-customization-footer">
+
+            <button
+                type="button"
+                class="profile-customization-cancel"
+                onclick="closeProfileCustomization()"
+            >
+                Tutup
+            </button>
+
+            <button
+                type="button"
+                class="profile-customization-save"
+                disabled
+            >
+                Simpan Perubahan
+            </button>
+
+        </footer>
+
+    </section>
+
+</div>
+
+
+    <script src="/student-session.js"></script>
+    <script src="/time.js"></script>
 
     <script>
+
+        function openProfileCustomization() {
+
+    const modal =
+        document.getElementById(
+            "profileCustomizationModal"
+        );
+
+
+    modal.hidden =
+        false;
+
+
+    document.body.classList.add(
+        "is-profile-modal-open"
+    );
+
+}
+
+
+function closeProfileCustomization() {
+
+    const modal =
+        document.getElementById(
+            "profileCustomizationModal"
+        );
+
+
+    modal.hidden =
+        true;
+
+
+    document.body.classList.remove(
+        "is-profile-modal-open"
+    );
+
+}
+
+
+document.getElementById(
+    "profileCustomizationModal"
+).addEventListener(
+    "click",
+    (event) => {
+
+        if (
+            event.target ===
+            event.currentTarget
+        ) {
+
+            closeProfileCustomization();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeProfileCustomization();
+
+        }
+
+    }
+);
 
         async function loadProfile() {
 
@@ -337,7 +1974,9 @@
 
                 if (!data.success) {
 
-                    if (response.status === 401) {
+                    if (
+                        response.status === 401
+                    ) {
 
                         window.location.href =
                             "/student-login.html";
@@ -349,7 +1988,7 @@
 
                     alert(
                         data.message ||
-                        "Gagal mengambil profile siswa."
+                        "Gagal mengambil profil siswa."
                     );
 
                     return;
@@ -361,22 +2000,51 @@
                     data.student;
 
 
+                const fullName =
+                    student.fullName ||
+                    student.name ||
+                    "Student";
+
+
+                const shortName =
+                    student.name ||
+                    fullName;
+
+
+                const className =
+                    student.className ||
+                    "-";
+
+
+                const initial =
+                    getStudentInitial(
+                        shortName
+                    );
+
+
                 document.getElementById(
                     "profileFullName"
                 ).textContent =
-                    student.fullName;
+                    fullName;
+
+
+                document.getElementById(
+                    "profileIdentityMeta"
+                ).textContent =
+                    `${className} · Akun siswa`;
 
 
                 document.getElementById(
                     "profileShortName"
                 ).textContent =
-                    student.name;
+                    shortName;
 
 
                 document.getElementById(
                     "profileCode"
                 ).textContent =
-                    student.loginCode;
+                    student.loginCode ||
+                    "-";
 
 
                 document.getElementById(
@@ -390,19 +2058,26 @@
                 document.getElementById(
                     "profileClass"
                 ).textContent =
-                    student.className;
+                    className;
+
+
+                document.getElementById(
+                    "profileClassSummary"
+                ).textContent =
+                    className;
 
 
                 document.getElementById(
                     "profilePoints"
                 ).textContent =
-                    student.totalPoints;
+                    student.totalPoints ?? 0;
 
 
                 document.getElementById(
                     "profileAverage"
                 ).textContent =
-                    student.averageScore === null
+                    student.averageScore === null ||
+                    student.averageScore === undefined
                         ? "Belum ada nilai"
                         : student.averageScore;
 
@@ -410,29 +2085,67 @@
                 document.getElementById(
                     "sidebarStudentName"
                 ).textContent =
-                    student.name;
+                    shortName;
 
 
                 document.getElementById(
                     "sidebarStudentClass"
                 ).textContent =
-                    student.className;
+                    className;
 
 
                 document.getElementById(
                     "topStudentName"
                 ).textContent =
-                    student.name;
+                    shortName;
 
+
+                document.getElementById(
+                    "profileMainAvatar"
+                ).textContent =
+                    initial;
+
+
+                document.getElementById(
+                    "sidebarStudentAvatar"
+                ).textContent =
+                    initial;
+
+
+                document.getElementById(
+                    "topStudentAvatar"
+                ).textContent =
+                    initial;
+
+                document.getElementById(
+    "profileCustomizationAvatar"
+).textContent =
+    initial;
 
             } catch (error) {
 
                 console.error(
-                    "Gagal load profile:",
+                    "Gagal load profil:",
                     error
                 );
 
             }
+
+        }
+
+
+        function getStudentInitial(name) {
+
+            const cleanName =
+                String(
+                    name || "S"
+                ).trim();
+
+
+            return (
+                cleanName.charAt(0) ||
+                "S"
+            ).toUpperCase();
 
         }
 
@@ -450,7 +2163,9 @@
                 dateString.split("-");
 
 
-            if (parts.length !== 3) {
+            if (
+                parts.length !== 3
+            ) {
 
                 return dateString;
 
@@ -480,7 +2195,24 @@
             ];
 
 
-            return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
+            const monthName =
+                months[
+                    Number(month) - 1
+                ];
+
+
+            if (!monthName) {
+
+                return dateString;
+
+            }
+
+
+            return (
+                `${Number(day)} ` +
+                `${monthName} ` +
+                `${year}`
+            );
 
         }
 
@@ -524,7 +2256,8 @@
                 await fetch(
                     "/api/logout",
                     {
-                        method: "POST"
+                        method:
+                            "POST"
                     }
                 );
 
@@ -539,13 +2272,16 @@
                 "studentId"
             );
 
+
             localStorage.removeItem(
                 "studentName"
             );
 
+
             localStorage.removeItem(
                 "studentClass"
             );
+
 
             localStorage.removeItem(
                 "studentLoginCode"

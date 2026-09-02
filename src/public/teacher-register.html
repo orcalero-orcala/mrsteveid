@@ -2,6 +2,7 @@
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,42 +10,893 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Register Guru</title>
+    <title>Daftar Akun Guru</title>
 
-        <link
-    rel="icon"
-    type="image/png"
-    href="/favicon.png"
->
+    <link
+        rel="icon"
+        type="image/png"
+        href="/favicon.png"
+    >
 
     <link
         rel="stylesheet"
         href="/styles.css"
     >
+
+    <style>
+
+        /* =========================================
+           TEACHER REGISTER PAGE
+           ========================================= */
+
+        #teacherRegisterPage {
+            min-height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+
+            color: #f8fafc;
+
+            background:
+                radial-gradient(
+                    circle at 24% 42%,
+                    rgba(37, 99, 235, 0.12),
+                    transparent 34%
+                ),
+                #080e17;
+        }
+
+
+        #teacherRegisterPage *,
+        #teacherRegisterPage *::before,
+        #teacherRegisterPage *::after {
+            box-sizing: border-box;
+        }
+
+
+        #teacherRegisterPage a {
+            text-decoration: none;
+        }
+
+
+        /* =========================================
+           MAIN LAYOUT
+           ========================================= */
+
+        .teacher-register-shell {
+            width:
+                min(
+                    1060px,
+                    calc(100% - 48px)
+                );
+
+            min-height: 100dvh;
+
+            margin: 0 auto;
+
+            padding:
+                40px 0;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 0.92fr)
+                minmax(440px, 1.08fr);
+
+            align-items: stretch;
+
+            gap: 20px;
+        }
+
+
+        /* =========================================
+           LEFT INFORMATION PANEL
+           ========================================= */
+
+        .teacher-register-intro-panel {
+            position: relative;
+
+            min-width: 0;
+            min-height: 620px;
+
+            padding: 42px;
+
+            overflow: hidden;
+
+            display: flex;
+            align-items: center;
+
+            border:
+                1px solid
+                #26374d;
+
+            border-radius: 20px;
+
+            background:
+                radial-gradient(
+                    circle at 15% 15%,
+                    rgba(59, 130, 246, 0.2),
+                    transparent 34%
+                ),
+                linear-gradient(
+                    145deg,
+                    #0e1b2e,
+                    #0c1625 55%,
+                    #0a121e
+                );
+        }
+
+
+        .teacher-register-intro-panel::before {
+            content: "";
+
+            position: absolute;
+
+            width: 380px;
+            height: 380px;
+
+            right: -190px;
+            bottom: -190px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(37, 99, 235, 0.16);
+
+            filter:
+                blur(20px);
+        }
+
+
+        .teacher-register-intro {
+            position: relative;
+            z-index: 2;
+
+            width: 100%;
+        }
+
+
+        .teacher-register-eyebrow {
+            display: block;
+
+            color: #60a5fa;
+
+            font-size: 10px;
+            font-weight: 800;
+
+            letter-spacing:
+                0.17em;
+        }
+
+
+        .teacher-register-intro h1 {
+            max-width: 420px;
+
+            margin:
+                11px 0 16px;
+
+            color: #f8fafc;
+
+            font-size:
+                clamp(
+                    40px,
+                    4vw,
+                    54px
+                );
+
+            line-height: 1.04;
+
+            letter-spacing:
+                -0.04em;
+        }
+
+
+        .teacher-register-intro > p {
+            max-width: 410px;
+
+            margin: 0;
+
+            color: #8795a8;
+
+            font-size: 14px;
+
+            line-height: 1.75;
+        }
+
+
+        /* INFORMATION ITEMS */
+
+        .teacher-register-notes {
+            margin-top: 38px;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+
+        .teacher-register-note {
+            min-height: 72px;
+
+            padding: 14px;
+
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            border:
+                1px solid
+                rgba(51, 75, 105, 0.78);
+
+            border-radius: 12px;
+
+            background:
+                rgba(13, 24, 39, 0.72);
+        }
+
+
+        .teacher-register-note-number {
+            width: 37px;
+            height: 37px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 9px;
+
+            color: #60a5fa;
+
+            background:
+                rgba(37, 99, 235, 0.17);
+
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+
+        .teacher-register-note-content {
+            min-width: 0;
+        }
+
+
+        .teacher-register-note-content strong,
+        .teacher-register-note-content small {
+            display: block;
+        }
+
+
+        .teacher-register-note-content strong {
+            margin-bottom: 4px;
+
+            color: #dbe5f1;
+
+            font-size: 11px;
+        }
+
+
+        .teacher-register-note-content small {
+            color: #64748b;
+
+            font-size: 9px;
+
+            line-height: 1.55;
+        }
+
+
+        /* =========================================
+           FORM PANEL
+           ========================================= */
+
+        .teacher-register-form-panel {
+            min-width: 0;
+            min-height: 620px;
+
+            padding:
+                42px 38px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            position: relative;
+
+            border:
+                1px solid
+                #28374a;
+
+            border-radius: 20px;
+
+            background: #111924;
+
+            box-shadow:
+                0 28px 65px
+                rgba(0, 0, 0, 0.3);
+        }
+
+
+        /* CLOSE BUTTON */
+
+        .teacher-register-close {
+            position: absolute;
+
+            top: 16px;
+            right: 16px;
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border:
+                1px solid
+                #29384b;
+
+            border-radius: 9px;
+
+            color: #7f8da0;
+
+            background: #0c1420;
+
+            font-size: 22px;
+
+            line-height: 1;
+
+            transition:
+                color 0.18s ease,
+                border-color 0.18s ease,
+                background 0.18s ease;
+        }
+
+
+        .teacher-register-close:hover {
+            color: #ffffff;
+
+            border-color: #3b526e;
+
+            background: #162231;
+        }
+
+
+        /* FORM HEADER */
+
+        .teacher-register-form-header {
+            padding-right: 42px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .teacher-register-form-header h2 {
+            margin:
+                6px 0 7px;
+
+            color: #f8fafc;
+
+            font-size: 27px;
+
+            line-height: 1.2;
+        }
+
+
+        .teacher-register-form-header p {
+            max-width: 370px;
+
+            margin: 0;
+
+            color: #718096;
+
+            font-size: 12px;
+
+            line-height: 1.6;
+        }
+
+
+        /* FORM */
+
+        #teacherRegisterForm {
+            width: 100%;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 14px;
+        }
+
+
+        .teacher-register-field {
+            width: 100%;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 6px;
+        }
+
+
+        .teacher-register-field label {
+            color: #9eacbe;
+
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+
+        .teacher-register-field input {
+            width: 100%;
+            height: 46px;
+
+            padding:
+                0 13px;
+
+            outline: none;
+
+            color: #e7edf5;
+
+            border:
+                1px solid
+                #2a394d;
+
+            border-radius: 10px;
+
+            background: #0c1420;
+
+            font-family: inherit;
+            font-size: 14px;
+
+            transition:
+                border-color 0.18s ease,
+                background 0.18s ease,
+                box-shadow 0.18s ease;
+        }
+
+
+        .teacher-register-field input::placeholder {
+            color: #60728d;
+
+            opacity: 1;
+        }
+
+
+        .teacher-register-field input:hover {
+            border-color: #34475f;
+        }
+
+
+        .teacher-register-field input:focus {
+            border-color: #3b82f6;
+
+            background: #0e1826;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(59, 130, 246, 0.13);
+        }
+
+
+        /* PASSWORD FIELD */
+
+        .teacher-register-password {
+            position: relative;
+
+            width: 100%;
+        }
+
+
+        .teacher-register-password input {
+            padding-right: 48px;
+        }
+
+
+        .teacher-register-password-button {
+            position: absolute;
+
+            top: 50%;
+            right: 7px;
+
+            width: 34px;
+            height: 34px;
+
+            padding: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transform:
+                translateY(-50%);
+
+            border: 0;
+
+            border-radius: 8px;
+
+            color: #7187a4;
+
+            background: transparent;
+
+            cursor: pointer;
+
+            touch-action: none;
+
+            transition:
+                color 0.18s ease,
+                background 0.18s ease;
+        }
+
+
+        .teacher-register-password-button:hover,
+        .teacher-register-password-button.is-revealing {
+            color: #dbeafe;
+
+            background:
+                rgba(59, 130, 246, 0.12);
+        }
+
+
+        .teacher-register-password-button svg {
+            width: 17px;
+            height: 17px;
+
+            display: block;
+
+            fill: none;
+
+            stroke: currentColor;
+
+            stroke-width: 1.8;
+
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+
+        /* MESSAGE */
+
+        #registerMessage {
+            width: 100%;
+            min-height: 18px;
+
+            margin: 0;
+
+            color: #93c5fd;
+
+            font-size: 11px;
+
+            line-height: 1.45;
+
+            text-align: center;
+        }
+
+
+        #registerMessage:empty {
+            min-height: 0;
+        }
+
+
+        #registerMessage.auth-error {
+            color: #ff5252 !important;
+        }
+
+
+        /* SUBMIT BUTTON */
+
+        .teacher-register-submit {
+            width: 100%;
+            min-height: 46px;
+
+            margin-top: 3px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #3b82f6,
+                    #2563eb
+                );
+
+            box-shadow:
+                0 12px 26px
+                rgba(37, 99, 235, 0.2);
+
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 750;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.18s ease,
+                background 0.18s ease,
+                box-shadow 0.18s ease;
+        }
+
+
+        .teacher-register-submit:hover {
+            transform:
+                translateY(-1px);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #60a5fa,
+                    #2563eb
+                );
+
+            box-shadow:
+                0 15px 30px
+                rgba(37, 99, 235, 0.26);
+        }
+
+
+        .teacher-register-submit:active {
+            transform: none;
+        }
+
+
+        /* LOGIN LINK */
+
+        .teacher-register-login {
+            margin:
+                14px 0 0;
+
+            color: #8290a3;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+
+            text-align: center;
+        }
+
+
+        .teacher-register-login a {
+            color: #60a5fa;
+
+            font-size: inherit;
+            font-weight: 650;
+        }
+
+
+        .teacher-register-login a:hover {
+            color: #93c5fd;
+        }
+
+
+        /* =========================================
+           SHORT DESKTOP SCREEN
+           ========================================= */
+
+        @media (
+            min-width: 851px
+        ) and (
+            max-height: 740px
+        ) {
+
+            .teacher-register-shell {
+                padding:
+                    24px 0;
+            }
+
+
+            .teacher-register-intro-panel,
+            .teacher-register-form-panel {
+                min-height: 570px;
+            }
+
+
+            .teacher-register-intro-panel {
+                padding: 34px;
+            }
+
+
+            .teacher-register-notes {
+                margin-top: 28px;
+            }
+
+
+            .teacher-register-form-panel {
+                padding:
+                    34px 35px;
+            }
+
+
+            .teacher-register-form-header {
+                margin-bottom: 17px;
+            }
+
+
+            #teacherRegisterForm {
+                gap: 11px;
+            }
+
+
+            .teacher-register-field input {
+                height: 43px;
+            }
+
+        }
+
+
+        /* =========================================
+           TABLET
+           ========================================= */
+
+        @media (
+            max-width: 850px
+        ) {
+
+            #teacherRegisterPage {
+                overflow-y: auto;
+            }
+
+
+            .teacher-register-shell {
+                width:
+                    min(
+                        620px,
+                        calc(100% - 36px)
+                    );
+
+                min-height: auto;
+
+                padding:
+                    30px 0 42px;
+
+                grid-template-columns:
+                    1fr;
+
+                gap: 16px;
+            }
+
+
+            .teacher-register-intro-panel {
+                min-height: auto;
+
+                padding: 30px;
+            }
+
+
+            .teacher-register-intro h1 {
+                max-width: none;
+
+                font-size: 38px;
+            }
+
+
+            .teacher-register-intro > p {
+                max-width: 500px;
+            }
+
+
+            .teacher-register-notes {
+                margin-top: 25px;
+            }
+
+
+            .teacher-register-form-panel {
+                min-height: auto;
+
+                padding:
+                    38px 30px 30px;
+            }
+
+        }
+
+
+        /* =========================================
+           MOBILE
+           ========================================= */
+
+        @media (
+            max-width: 500px
+        ) {
+
+            .teacher-register-shell {
+                width:
+                    calc(
+                        100% - 28px
+                    );
+
+                padding:
+                    14px 0 28px;
+
+                gap: 12px;
+            }
+
+
+            .teacher-register-intro-panel {
+                padding:
+                    24px 21px;
+
+                border-radius: 16px;
+            }
+
+
+            .teacher-register-intro h1 {
+                margin:
+                    8px 0 12px;
+
+                font-size: 32px;
+            }
+
+
+            .teacher-register-intro > p {
+                font-size: 12px;
+
+                line-height: 1.65;
+            }
+
+
+            .teacher-register-notes {
+                display: none;
+            }
+
+
+            .teacher-register-form-panel {
+                padding:
+                    34px 21px 24px;
+
+                border-radius: 16px;
+            }
+
+
+            .teacher-register-form-header {
+                padding-right: 38px;
+
+                margin-bottom: 19px;
+            }
+
+
+            .teacher-register-form-header h2 {
+                font-size: 24px;
+            }
+
+
+            #teacherRegisterForm {
+                gap: 13px;
+            }
+
+
+            .teacher-register-field input {
+                height: 45px;
+
+                font-size: 14px;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 
-<body
-    id="teacherRegisterPage"
-    class="auth-page"
->
+<body id="teacherRegisterPage">
 
-    <main class="auth-shell">
-
-        <a
-            href="/admin-login.html"
-            class="auth-close-button"
-            aria-label="Kembali ke login guru"
-        >
-            ×
-        </a>
+    <main class="teacher-register-shell">
 
 
-        <section class="auth-visual">
+        <!-- LEFT INFORMATION -->
 
-            <div>
+        <section class="teacher-register-intro-panel">
 
-                <small class="eyebrow">
+            <div class="teacher-register-intro">
+
+                <small class="teacher-register-eyebrow">
                     TEACHER REGISTRATION
                 </small>
 
@@ -53,25 +905,82 @@
                 </h1>
 
                 <p>
-                    Gunakan kode registrasi aktif yang diberikan
-                    oleh guru yang sudah terdaftar.
+                    Buat akun untuk mengakses pengelolaan siswa,
+                    quiz, nilai, poin, dan aktivitas kelas.
                 </p>
+
+
+                <div class="teacher-register-notes">
+
+
+                    <div class="teacher-register-note">
+
+                        <span class="teacher-register-note-number">
+                            01
+                        </span>
+
+                        <div class="teacher-register-note-content">
+
+                            <strong>
+                                Siapkan kode registrasi
+                            </strong>
+
+                            <small>
+                                Gunakan kode aktif yang diberikan
+                                oleh guru yang sudah terdaftar.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="teacher-register-note">
+
+                        <span class="teacher-register-note-number">
+                            02
+                        </span>
+
+                        <div class="teacher-register-note-content">
+
+                            <strong>
+                                Buat data akun
+                            </strong>
+
+                            <small>
+                                Masukkan nama, username, dan password
+                                yang akan digunakan untuk login.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
 
             </div>
 
         </section>
 
 
-<div id="teacherRegisterPanel">
+        <!-- REGISTRATION FORM -->
 
-    <section
-        id="teacherRegisterCard"
-        class="auth-card"
-    >
+        <section class="teacher-register-form-panel">
 
-            <div class="auth-card-header">
+            <a
+                href="/admin-login.html"
+                class="teacher-register-close"
+                aria-label="Kembali ke login guru"
+                title="Kembali ke login guru"
+            >
+                ×
+            </a>
 
-                <small class="eyebrow">
+
+            <header class="teacher-register-form-header">
+
+                <small class="teacher-register-eyebrow">
                     REGISTER
                 </small>
 
@@ -80,15 +989,16 @@
                 </h2>
 
                 <p>
-                    Lengkapi data di bawah untuk membuat akun baru.
+                    Lengkapi data berikut untuk membuat akun baru.
                 </p>
 
-            </div>
+            </header>
 
 
             <form id="teacherRegisterForm">
 
-                <div class="admin-form-field">
+
+                <div class="teacher-register-field">
 
                     <label for="name">
                         Nama Guru
@@ -97,7 +1007,8 @@
                     <input
                         type="text"
                         id="name"
-                        placeholder="Contoh: Budi Santoso"
+                        name="name"
+                        placeholder="Contoh: Mr Budi"
                         autocomplete="name"
                         required
                     >
@@ -105,7 +1016,7 @@
                 </div>
 
 
-                <div class="admin-form-field">
+                <div class="teacher-register-field">
 
                     <label for="username">
                         Username
@@ -114,45 +1025,64 @@
                     <input
                         type="text"
                         id="username"
+                        name="username"
                         placeholder="Contoh: budi"
                         autocomplete="username"
+                        autocapitalize="none"
+                        spellcheck="false"
                         required
                     >
 
                 </div>
 
 
-                <div class="admin-form-field">
+                <div class="teacher-register-field">
 
                     <label for="password">
                         Password
                     </label>
 
-<div class="password-hold-field">
+                    <div class="teacher-register-password">
 
-    <input
-    type="password"
-    id="password"
-    name="password"
-    placeholder="Buat password"
-    autocomplete="new-password"
-    required
->
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Buat password"
+                            autocomplete="new-password"
+                            required
+                        >
 
-    <button
-        type="button"
-        class="password-hold-button"
-        aria-label="Tahan untuk melihat password"
-    >
-        👁
-    </button>
+                        <button
+                            type="button"
+                            class="teacher-register-password-button"
+                            aria-label="Tahan untuk melihat password"
+                            title="Tahan untuk melihat password"
+                        >
 
-</div>
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
+                                ></path>
+
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="2.7"
+                                ></circle>
+                            </svg>
+
+                        </button>
+
+                    </div>
 
                 </div>
 
 
-                <div class="admin-form-field">
+                <div class="teacher-register-field">
 
                     <label for="code">
                         Kode Registrasi
@@ -161,8 +1091,11 @@
                     <input
                         type="text"
                         id="code"
+                        name="code"
                         placeholder="TCH-XXXXXXXX"
                         autocomplete="off"
+                        autocapitalize="characters"
+                        spellcheck="false"
                         required
                     >
 
@@ -171,13 +1104,14 @@
 
                 <p
                     id="registerMessage"
-                    class="admin-form-message"
+                    role="status"
+                    aria-live="polite"
                 ></p>
 
 
                 <button
                     type="submit"
-                    class="admin-primary-button"
+                    class="teacher-register-submit"
                 >
                     Daftar sebagai Guru
                 </button>
@@ -185,26 +1119,30 @@
             </form>
 
 
-            <p class="auth-switch-text">
+            <p class="teacher-register-login">
+
                 Sudah punya akun?
+
                 <a href="/admin-login.html">
                     Login Guru
                 </a>
+
             </p>
 
         </section>
 
-        </div>
-
     </main>
 
-<script src="/time.js"></script>
+
+    <script src="/time.js"></script>
+
     <script>
 
         const form =
             document.getElementById(
                 "teacherRegisterForm"
             );
+
 
         const message =
             document.getElementById(
@@ -242,7 +1180,12 @@
                         "code"
                     ).value.trim();
 
-                message.classList.remove("auth-error");
+
+                message.classList.remove(
+                    "auth-error"
+                );
+
+
                 message.textContent =
                     "Membuat akun guru...";
 
@@ -278,11 +1221,15 @@
 
                     if (!data.success) {
 
-message.classList.add("auth-error");
+                        message.classList.add(
+                            "auth-error"
+                        );
 
-message.textContent =
-    data.message ||
-    "Registrasi gagal.";
+
+                        message.textContent =
+                            data.message ||
+                            "Registrasi gagal.";
+
 
                         return;
 
@@ -303,134 +1250,128 @@ message.textContent =
                         900
                     );
 
-
                 } catch (error) {
 
                     console.error(error);
 
-message.classList.add("auth-error");
 
-message.textContent =
-    "Tidak dapat terhubung ke server.";
+                    message.classList.add(
+                        "auth-error"
+                    );
+
+
+                    message.textContent =
+                        "Tidak dapat terhubung ke server.";
 
                 }
 
             }
         );
+
 
         function setupHoldPasswordReveal() {
 
-    document
-        .querySelectorAll(
-            ".password-hold-field"
-        )
-        .forEach(
-            (field) => {
-
-                const input =
-                    field.querySelector(
-                        'input[type="password"], input[data-password-field]'
-                    );
-
-                const button =
-                    field.querySelector(
-                        ".password-hold-button"
-                    );
+            const input =
+                document.getElementById(
+                    "password"
+                );
 
 
-                if (
-                    !input ||
-                    !button
-                ) {
+            const button =
+                document.querySelector(
+                    ".teacher-register-password-button"
+                );
 
-                    return;
+
+            if (
+                !input ||
+                !button
+            ) {
+
+                return;
+
+            }
+
+
+            const showPassword = (
+                event
+            ) => {
+
+                event.preventDefault();
+
+
+                input.type =
+                    "text";
+
+
+                button.classList.add(
+                    "is-revealing"
+                );
+
+            };
+
+
+            const hidePassword = (
+                event
+            ) => {
+
+                if (event) {
+
+                    event.preventDefault();
 
                 }
 
 
-                input.dataset.passwordField =
-                    "true";
+                input.type =
+                    "password";
 
 
-                const showPassword = (
-                    event
-                ) => {
-
-                    event.preventDefault();
-
-                    input.type =
-                        "text";
-
-                    button.classList.add(
-                        "is-revealing"
-                    );
-
-                };
-
-
-                const hidePassword = (
-                    event
-                ) => {
-
-                    if (event) {
-
-                        event.preventDefault();
-
-                    }
-
-
-                    input.type =
-                        "password";
-
-                    button.classList.remove(
-                        "is-revealing"
-                    );
-
-                };
-
-
-                button.addEventListener(
-                    "pointerdown",
-                    showPassword
+                button.classList.remove(
+                    "is-revealing"
                 );
 
-
-                button.addEventListener(
-                    "pointerup",
-                    hidePassword
-                );
+            };
 
 
-                button.addEventListener(
-                    "pointercancel",
-                    hidePassword
-                );
+            button.addEventListener(
+                "pointerdown",
+                showPassword
+            );
 
 
-                button.addEventListener(
-                    "pointerleave",
-                    hidePassword
-                );
+            button.addEventListener(
+                "pointerup",
+                hidePassword
+            );
 
 
-                window.addEventListener(
-                    "pointerup",
-                    hidePassword
-                );
+            button.addEventListener(
+                "pointercancel",
+                hidePassword
+            );
 
 
-                window.addEventListener(
-                    "blur",
-                    hidePassword
-                );
-
-            }
-        );
-
-}
+            button.addEventListener(
+                "pointerleave",
+                hidePassword
+            );
 
 
-setupHoldPasswordReveal();
+            window.addEventListener(
+                "pointerup",
+                hidePassword
+            );
+
+
+            window.addEventListener(
+                "blur",
+                hidePassword
+            );
+
+        }
+
+
+        setupHoldPasswordReveal();
 
     </script>
 

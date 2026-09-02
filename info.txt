@@ -11,3 +11,7 @@ Ganti distribusi nilai
 Teks link disalin jangan di area autosave setting indicator, melainkan pindah ke sebelah tombol salin link, kasih feedback aja berupa non teks seperti glow atau apa gitu
 
 Naikkan autosave settings indicator sedikit, sekitar 10-20px
+
+Notif panel gunakan animasi kek view all infor board
+
+Student profile revamp
