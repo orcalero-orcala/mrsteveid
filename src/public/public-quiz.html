@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Quiz</title>
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="/styles.css">
+
+    <style>
+        .public-quiz-body {
+            min-height: 100vh;
+            background: #08111f;
+            color: #f8fbff;
+        }
+
+        .public-quiz-page-shell {
+            min-height: 100vh;
+            transition: filter 180ms ease, opacity 180ms ease;
+        }
+
+        .public-quiz-page-shell.is-blurred {
+            filter: blur(6px);
+            opacity: 0.62;
+            pointer-events: none;
+            user-select: none;
+        }
+
+.public-quiz-body .student-quiz-attempt-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    grid-template-columns: minmax(0, 1fr) 190px;
+}
+
+        .public-quiz-home-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 15px;
+            border: 1px solid #2a4057;
+            border-radius: 10px;
+            background: #0d1927;
+            color: #a9c8ea;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .public-quiz-mode-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.08);
+            color: #f8d88a;
+        }
+
+        .public-quiz-mode-warning strong,
+        .public-quiz-mode-warning p {
+            display: block;
+            margin: 0;
+        }
+
+        .public-quiz-mode-warning p {
+            margin-top: 3px;
+            color: #aebed1;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .public-quiz-guest-icon {
+            display: grid;
+            flex: 0 0 34px;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            border-radius: 9px;
+            background: rgba(245, 158, 11, 0.14);
+            font-weight: 900;
+        }
+
+        .public-quiz-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(3, 8, 16, 0.72);
+            backdrop-filter: blur(4px);
+        }
+
+        .public-quiz-overlay[hidden] {
+            display: none;
+        }
+
+        .public-quiz-dialog {
+            width: min(100%, 440px);
+            padding: 25px;
+            border: 1px solid #2a4057;
+            border-radius: 17px;
+            background: #101c2a;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+        }
+
+        .public-quiz-dialog .eyebrow {
+            color: #58a6ff;
+        }
+
+        .public-quiz-dialog h2 {
+            margin: 8px 0 7px;
+            color: #ffffff;
+            font-size: 1.35rem;
+        }
+
+        .public-quiz-dialog > p {
+            margin: 0;
+            color: #91a8c2;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .public-quiz-name-field {
+            display: grid;
+            gap: 7px;
+            margin-top: 20px;
+        }
+
+        .public-quiz-name-field label {
+            color: #a9c8ea;
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .public-quiz-name-field input {
+            width: 100%;
+            min-height: 46px;
+            padding: 0 13px;
+            border: 1px solid #2a4057;
+            border-radius: 10px;
+            outline: none;
+            background: #0b1624;
+            color: #ffffff;
+            font: inherit;
+        }
+
+        .public-quiz-name-field input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.13);
+        }
+
+        .public-quiz-field-error {
+            min-height: 18px;
+            margin-top: 6px !important;
+            color: #ff7d8a !important;
+            font-size: 0.76rem !important;
+        }
+
+        .public-quiz-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .public-quiz-dialog-actions .student-quiz-primary-button,
+        .public-quiz-dialog-actions .secondary-button {
+            min-height: 42px;
+        }
+
+        .public-quiz-status-symbol {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 15px;
+            place-items: center;
+            border: 1px solid rgba(255, 90, 103, 0.35);
+            border-radius: 14px;
+            background: rgba(255, 90, 103, 0.1);
+            color: #ff6b78;
+            font-size: 1.45rem;
+            font-weight: 900;
+        }
+
+        .public-quiz-result-card {
+            width: min(100%, 500px);
+            text-align: center;
+        }
+
+        .public-quiz-result-score {
+            margin: 20px auto;
+            color: #ffffff;
+            font-size: clamp(3.4rem, 10vw, 5rem);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .public-quiz-result-score small {
+            color: #7f96b1;
+            font-size: 1rem;
+        }
+
+        .public-quiz-result-meta {
+            margin-bottom: 20px !important;
+        }
+
+        .public-quiz-attempt-error {
+            padding: 40px 24px;
+            border: 1px solid #263b51;
+            border-radius: 15px;
+            background: #101b29;
+            text-align: center;
+        }
+
+        .public-quiz-attempt-error h2 {
+            margin: 0 0 8px;
+        }
+
+        .public-quiz-attempt-error p {
+            margin: 0;
+            color: #8ea6c0;
+        }
+
+.public-quiz-body .student-quiz-text-answer textarea {
+    display: block;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 120px;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: 13px 14px;
+    border: 1px solid #2a4057;
+    border-radius: 10px;
+    outline: none;
+    background: #0b1624;
+    color: #ffffff;
+    font: inherit;
+    line-height: 1.55;
+}
+
+        .public-quiz-body .student-quiz-text-answer textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+@media (max-width: 700px) {
+    .public-quiz-body .student-quiz-attempt-topbar {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "title"
+            "progress";
+    }
+
+    .public-quiz-body .student-quiz-attempt-title {
+        grid-area: title;
+    }
+
+    .public-quiz-body .student-quiz-progress-summary {
+        grid-area: progress;
+        width: 100%;
+    }
+
+            .public-quiz-home-button {
+                width: 40px;
+                min-height: 40px;
+                padding: 0;
+                font-size: 0;
+            }
+
+            .public-quiz-home-button::before {
+                content: "←";
+                font-size: 1.15rem;
+            }
+
+            .public-quiz-dialog {
+                padding: 21px;
+            }
+
+            .public-quiz-dialog-actions {
+                flex-direction: column-reverse;
+            }
+
+            .public-quiz-dialog-actions button {
+                width: 100%;
+            }
+        }
+
+        .public-quiz-review-dialog {
+    width: min(100%, 760px);
+    max-height: min(90vh, 820px);
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.public-quiz-review-header {
+    flex: 0 0 auto;
+}
+
+.public-quiz-review-header h2 {
+    margin: 7px 0;
+}
+
+.public-quiz-review-header p {
+    margin: 0;
+    color: #91a8c2;
+    font-size: 0.86rem;
+}
+
+.public-quiz-review-list {
+    min-height: 0;
+    margin-top: 18px;
+    padding-right: 5px;
+    display: grid;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+.public-quiz-review-card {
+    padding: 16px;
+    border: 1px solid #2a4057;
+    border-radius: 13px;
+    background: #0c1725;
+}
+
+.public-quiz-review-card.is-correct {
+    border-color: rgba(34, 197, 94, 0.32);
+}
+
+.public-quiz-review-card.is-wrong {
+    border-color: rgba(255, 90, 103, 0.32);
+}
+
+.public-quiz-review-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.public-quiz-review-card-header span {
+    color: #72aef7;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.public-quiz-review-card.is-correct
+.public-quiz-review-card-header strong {
+    color: #42dd8b;
+}
+
+.public-quiz-review-card.is-wrong
+.public-quiz-review-card-header strong {
+    color: #ff6b78;
+}
+
+.public-quiz-review-card-header strong {
+    font-size: 0.75rem;
+}
+
+.public-quiz-review-card h3 {
+    margin: 12px 0 14px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.public-quiz-review-options {
+    display: grid;
+    gap: 8px;
+}
+
+.public-quiz-review-option {
+    min-width: 0;
+    padding: 10px 11px;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid #25384d;
+    border-radius: 10px;
+    background: #0a1421;
+}
+
+.public-quiz-review-option.is-correct {
+    border-color: rgba(34, 197, 94, 0.45);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.public-quiz-review-option.is-wrong {
+    border-color: rgba(255, 90, 103, 0.45);
+    background: rgba(255, 90, 103, 0.08);
+}
+
+.public-quiz-review-letter {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 8px;
+    background: #14243a;
+    color: #9fc9fa;
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
+.public-quiz-review-option-text {
+    min-width: 0;
+    color: #dbe7f5;
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+}
+
+.public-quiz-review-option small {
+    color: #8fa7c0;
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+
+.public-quiz-review-answer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.public-quiz-review-answer-box {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid rgba(255, 90, 103, 0.35);
+    border-radius: 10px;
+    background: rgba(255, 90, 103, 0.06);
+}
+
+.public-quiz-review-answer-box.is-correct {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.public-quiz-review-answer-box span {
+    color: #8098b3;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.public-quiz-review-answer-box p {
+    margin: 7px 0 0;
+    color: #e8f1fb;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .public-quiz-review-dialog {
+        max-height: 92vh;
+        padding: 18px;
+    }
+
+    .public-quiz-review-answer-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .public-quiz-review-option {
+        grid-template-columns: 28px minmax(0, 1fr);
+    }
+
+    .public-quiz-review-option small {
+        grid-column: 2;
+    }
+}
+
+.public-quiz-review-answer-grid.is-single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.public-quiz-review-question-image {
+  width: 100%;
+  margin: 0 0 15px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #091625;
+  border: 1px solid #2a4057;
+  border-radius: 11px;
+}
+
+.public-quiz-review-question-image img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.public-quiz-review-question-image img[hidden],
+.public-quiz-review-question-image p[hidden] {
+  display: none !important;
+}
+
+.public-quiz-review-question-image p {
+  margin: 15px;
+  color: #71859c;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .public-quiz-review-question-image img {
+    max-height: 270px;
+  }
+}
+    </style>
+</head>
+
+<body class="student-quiz-attempt-body public-quiz-body">
+    <div id="publicQuizPageShell" class="public-quiz-page-shell">
+        <header class="student-quiz-attempt-topbar">
+
+            <div class="student-quiz-attempt-title">
+                <strong id="publicQuizTopTitle">Memuat Quiz...</strong>
+                <span id="publicQuizGuestStatus">Mode Guest · Tidak ada autosave</span>
+            </div>
+
+            <div class="student-quiz-progress-summary">
+                <span id="publicQuizProgressText">0/0 dijawab</span>
+                <div class="student-quiz-progress-track">
+                    <div id="publicQuizProgressFill" class="student-quiz-progress-fill"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="student-quiz-attempt-main">
+            <div id="publicQuizGuestWarning" class="public-quiz-mode-warning" hidden>
+                <span class="public-quiz-guest-icon">G</span>
+                <div>
+                    <strong>Kamu mengerjakan sebagai Guest</strong>
+                    <p>Jawaban tidak disimpan otomatis. Jangan tutup atau muat ulang halaman sebelum mengirim Quiz.</p>
+                </div>
+            </div>
+
+            <section id="publicQuizHero" class="student-quiz-attempt-hero">
+                <div class="quiz-attempt-information-loading">
+                    <span>Memuat informasi Quiz...</span>
+                </div>
+            </section>
+
+            <section id="publicQuizDescriptionPanel" class="student-quiz-description-panel" hidden>
+                <strong>Instruksi</strong>
+                <p id="publicQuizDescription"></p>
+            </section>
+
+            <div id="publicQuizQuestionList" class="student-quiz-attempt-question-list">
+                <div class="student-quiz-attempt-loading">Memuat soal...</div>
+            </div>
+
+            <section id="publicQuizSubmitPanel" class="student-quiz-submit-panel quiz-attempt-final-submit" hidden>
+                <div>
+                    <strong>Selesai mengerjakan?</strong>
+                    <p id="publicQuizSubmitSummary">Memeriksa jawaban...</p>
+                </div>
+
+                <button id="submitPublicQuizButton" class="student-quiz-primary-button" type="button" onclick="requestPublicQuizSubmission()">
+                    Submit Quiz
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <div id="publicQuizIdentityOverlay" class="public-quiz-overlay" hidden>
+        <section class="public-quiz-dialog" role="dialog" aria-modal="true" aria-labelledby="publicQuizIdentityTitle">
+            <small class="eyebrow">PUBLIC QUIZ</small>
+            <h2 id="publicQuizIdentityTitle">Masukkan nama kamu</h2>
+            <p>Kamu akan tercatat sebagai Guest. Nama ini akan terlihat oleh guru pada daftar responden.</p>
+
+            <div class="public-quiz-name-field">
+                <label for="publicQuizGuestName">Nama lengkap</label>
+                <input id="publicQuizGuestName" type="text" maxlength="80" autocomplete="name" placeholder="Contoh: Budi Santoso">
+            </div>
+
+            <p id="publicQuizNameError" class="public-quiz-field-error" aria-live="polite"></p>
+
+            <div class="public-quiz-dialog-actions">
+                <button class="student-quiz-primary-button" type="button" onclick="startPublicQuizAsGuest()">
+                    Mulai Quiz
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div id="publicQuizAvailabilityOverlay" class="public-quiz-overlay" hidden>
+        <section class="public-quiz-dialog" role="alertdialog" aria-modal="true" aria-labelledby="publicQuizAvailabilityTitle">
+            <span class="public-quiz-status-symbol">!</span>
+            <small class="eyebrow">QUIZ TIDAK TERSEDIA</small>
+            <h2 id="publicQuizAvailabilityTitle">Quiz tidak dapat dibuka</h2>
+            <p id="publicQuizAvailabilityMessage">Tautan Quiz tidak tersedia.</p>
+
+            <div class="public-quiz-dialog-actions">
+                <button class="secondary-button" type="button" onclick="returnToPublicQuizHome()">Home</button>
+                <button class="student-quiz-primary-button" type="button" onclick="window.location.reload()">Coba Lagi</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="publicQuizSubmitOverlay" class="public-quiz-overlay" hidden>
+        <section class="public-quiz-dialog" role="dialog" aria-modal="true" aria-labelledby="publicQuizSubmitTitle">
+            <small class="eyebrow">PUBLIC QUIZ</small>
+            <h2 id="publicQuizSubmitTitle">Submit Quiz?</h2>
+            <p id="publicQuizSubmitMessage">Jawaban tidak dapat diubah setelah dikirim.</p>
+
+            <div class="public-quiz-dialog-actions">
+                <button id="cancelPublicQuizSubmit" class="secondary-button" type="button">Periksa Lagi</button>
+                <button id="confirmPublicQuizSubmit" class="student-quiz-primary-button" type="button">Submit Quiz</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="publicQuizResultOverlay" class="public-quiz-overlay" hidden>
+        <section class="public-quiz-dialog public-quiz-result-card" role="dialog" aria-modal="true" aria-labelledby="publicQuizResultTitle">
+            <small class="eyebrow">QUIZ SELESAI</small>
+            <h2 id="publicQuizResultTitle">Jawaban berhasil dikirim</h2>
+            <p id="publicQuizResultGuestName"></p>
+
+            <div class="public-quiz-result-score">
+                <span id="publicQuizResultScore">0</span><small> / 100</small>
+            </div>
+
+            <p id="publicQuizResultMeta" class="public-quiz-result-meta"></p>
+
+<div class="public-quiz-dialog-actions">
+    <button
+        id="publicQuizReviewButton"
+        class="secondary-button"
+        type="button"
+        onclick="openPublicQuizReview()"
+        hidden
+    >
+        Lihat Jawaban
+    </button>
+
+    <button
+        class="student-quiz-primary-button"
+        type="button"
+        onclick="returnToPublicQuizHome()"
+    >
+        Home
+    </button>
+</div>
+        </section>
+    </div>
+
+    <div
+    id="publicQuizReviewOverlay"
+    class="public-quiz-overlay"
+    hidden
+>
+    <section
+        class="public-quiz-dialog public-quiz-review-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="publicQuizReviewTitle"
+    >
+        <div class="public-quiz-review-header">
+            <small class="eyebrow">
+                HASIL PENGERJAAN
+            </small>
+
+            <h2 id="publicQuizReviewTitle">
+                Review Jawaban
+            </h2>
+
+            <p>
+                Periksa jawaban kamu dan jawaban yang benar.
+            </p>
+        </div>
+
+        <div
+            id="publicQuizReviewList"
+            class="public-quiz-review-list"
+        ></div>
+
+        <div class="public-quiz-dialog-actions">
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="closePublicQuizReview()"
+            >
+                Kembali ke Nilai
+            </button>
+
+            <button
+                class="student-quiz-primary-button"
+                type="button"
+                onclick="returnToPublicQuizHome()"
+            >
+                Home
+            </button>
+        </div>
+    </section>
+</div>
+
+    <script>
+        const publicQuizParams = new URLSearchParams(window.location.search);
+        const publicQuizToken = String(publicQuizParams.get("token") || "").trim();
+
+        let currentPublicQuiz = null;
+        let publicQuizAnswers = {};
+        let publicQuizGuestName = "";
+        let publicQuizSubmitRunning = false;
+        let publicQuizDeadlineTimer = null;
+        let publicQuizServerOffset = 0;
+        let publicQuizStarted = false;
+        let publicQuizReview = [];
+
+        const publicQuizPageShell = document.getElementById("publicQuizPageShell");
+        const publicQuizTopTitle = document.getElementById("publicQuizTopTitle");
+        const publicQuizQuestionList = document.getElementById("publicQuizQuestionList");
+        const publicQuizProgressText = document.getElementById("publicQuizProgressText");
+        const publicQuizProgressFill = document.getElementById("publicQuizProgressFill");
+        const publicQuizSubmitSummary = document.getElementById("publicQuizSubmitSummary");
+        const submitPublicQuizButton = document.getElementById("submitPublicQuizButton");
+
+        function escapePublicQuizHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[character]);
+        }
+
+        function parsePublicQuizDate(value) {
+            if (!value) return null;
+            const rawValue = String(value).trim();
+
+            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(rawValue)) {
+                return new Date(rawValue.replace(" ", "T") + "Z");
+            }
+
+            return new Date(rawValue);
+        }
+
+        function formatPublicQuizDate(value) {
+            const date = parsePublicQuizDate(value);
+            if (!date || Number.isNaN(date.getTime())) return "Tanpa deadline";
+
+            return new Intl.DateTimeFormat("id-ID", {
+                dateStyle: "long",
+                timeStyle: "short"
+            }).format(date);
+        }
+
+        function returnToPublicQuizHome() {
+            window.location.href = "/";
+        }
+
+        function setPublicQuizPageBlur(active) {
+            publicQuizPageShell.classList.toggle("is-blurred", Boolean(active));
+        }
+
+        function getPublicQuizAvailabilityCopy(code, fallbackMessage) {
+            const copy = {
+                QUIZ_NOT_FOUND: ["Tautan tidak valid", "Quiz dari tautan ini tidak ditemukan."],
+                QUIZ_NOT_PUBLISHED: ["Quiz belum dipublikasikan", "Guru belum membuka Quiz ini untuk responden."],
+                QUIZ_PRIVATE_ONLY: ["Quiz hanya untuk siswa LMS", "Quiz ini tidak menerima responden Guest."],
+                QUIZ_CLOSED: ["Quiz telah ditutup", "Guru sudah menutup akses untuk Quiz ini."],
+                QUIZ_DEADLINE_EXPIRED: ["Deadline telah berakhir", "Batas waktu pengerjaan Quiz ini sudah lewat."],
+                PUBLIC_QUIZ_DISABLED: ["Akses Guest dimatikan", "Quiz ini tidak lagi tersedia melalui tautan publik."],
+                INVALID_PUBLIC_TOKEN: ["Tautan tidak valid", "Periksa kembali tautan Public Quiz dari guru."]
+            };
+
+            return copy[code] || ["Quiz tidak dapat dibuka", fallbackMessage || "Tautan Quiz tidak tersedia."];
+        }
+
+        function showPublicQuizAvailabilityError(code, message) {
+            clearInterval(publicQuizDeadlineTimer);
+            publicQuizStarted = false;
+            publicQuizSubmitRunning = true;
+
+            if (submitPublicQuizButton) {
+                submitPublicQuizButton.disabled = true;
+            }
+
+            const [title, description] = getPublicQuizAvailabilityCopy(code, message);
+            document.getElementById("publicQuizAvailabilityTitle").textContent = title;
+            document.getElementById("publicQuizAvailabilityMessage").textContent = description;
+            document.getElementById("publicQuizIdentityOverlay").hidden = true;
+            document.getElementById("publicQuizSubmitOverlay").hidden = true;
+            document.getElementById("publicQuizAvailabilityOverlay").hidden = false;
+            setPublicQuizPageBlur(true);
+        }
+
+        function isPublicQuizQuestionAnswered(question) {
+            const answer = publicQuizAnswers[question.id];
+            if (!answer) return false;
+
+            if (question.type === "mcq") {
+                return Number.isInteger(Number(answer.optionId));
+            }
+
+            return Boolean(String(answer.textAnswer || "").trim());
+        }
+
+        function updatePublicQuizProgress() {
+            if (!currentPublicQuiz) return;
+
+            const total = currentPublicQuiz.questions.length;
+            const answered = currentPublicQuiz.questions.filter(isPublicQuizQuestionAnswered).length;
+            const percentage = total > 0 ? (answered / total) * 100 : 0;
+            const empty = total - answered;
+
+            publicQuizProgressText.textContent = `${answered}/${total} dijawab`;
+            publicQuizProgressFill.style.width = `${percentage}%`;
+            publicQuizSubmitSummary.textContent = empty === 0
+                ? "Semua soal sudah dijawab."
+                : `${empty} soal masih kosong dan akan dihitung salah.`;
+        }
+
+        function selectPublicQuizOption(questionId, optionId) {
+            if (!publicQuizStarted || publicQuizSubmitRunning) return;
+
+            publicQuizAnswers[questionId] = {
+                questionId: Number(questionId),
+                optionId: Number(optionId)
+            };
+
+            const questionCard = document.querySelector(`[data-public-question-id="${questionId}"]`);
+            if (questionCard) {
+                questionCard.querySelectorAll(".student-quiz-answer-option").forEach((optionElement) => {
+                    optionElement.classList.toggle(
+                        "selected",
+                        Number(optionElement.dataset.optionId) === Number(optionId)
+                    );
+                });
+            }
+
+            updatePublicQuizProgress();
+        }
+
+        function updatePublicQuizTextAnswer(questionId, value) {
+            if (!publicQuizStarted || publicQuizSubmitRunning) return;
+
+            publicQuizAnswers[questionId] = {
+                questionId: Number(questionId),
+                textAnswer: value
+            };
+
+            updatePublicQuizProgress();
+        }
+
+        function renderPublicQuiz() {
+            const quiz = currentPublicQuiz;
+            if (!quiz) return;
+
+            const questions = Array.isArray(quiz.questions) ? quiz.questions : [];
+            quiz.questions = questions;
+
+            publicQuizTopTitle.textContent = quiz.title || "Public Quiz";
+            document.title = `${quiz.title || "Public Quiz"} · Guest`;
+
+            document.getElementById("publicQuizHero").innerHTML = `
+                <div>
+                    <small class="eyebrow">PUBLIC ASSESSMENT</small>
+                    <h1>${escapePublicQuizHtml(quiz.title || "Quiz Tanpa Judul")}</h1>
+                    <p>
+                        ${escapePublicQuizHtml(quiz.subject || "Tanpa mapel")}
+                        <span>•</span>
+                        ${escapePublicQuizHtml(quiz.material || "Tanpa materi")}
+                        <span>•</span>
+                        ${questions.length} soal
+                    </p>
+                </div>
+
+                <div class="student-quiz-deadline-box">
+                    <span>Deadline</span>
+                    <strong>${escapePublicQuizHtml(formatPublicQuizDate(quiz.dueAt))}</strong>
+                    <small id="publicQuizCountdown"></small>
+                </div>
+            `;
+
+            const descriptionPanel = document.getElementById("publicQuizDescriptionPanel");
+            if (quiz.description) {
+                document.getElementById("publicQuizDescription").textContent = quiz.description;
+                descriptionPanel.hidden = false;
+            } else {
+                descriptionPanel.hidden = true;
+            }
+
+            publicQuizQuestionList.innerHTML = questions.map((question, questionIndex) => {
+                const type = question.type === "mcq" ? "mcq" : "essay";
+
+                return `
+                    <article class="student-quiz-question-card" data-public-question-id="${Number(question.id)}">
+                        <div class="student-quiz-question-header">
+                            <span class="student-quiz-question-number">No. ${questionIndex + 1}</span>
+                            <span class="student-quiz-question-point">1 poin</span>
+                        </div>
+
+${
+    String(
+        question.text || ""
+    ).trim()
+
+        ? `
+            <h2>
+                ${escapePublicQuizHtml(
+                    question.text
+                )}
+            </h2>
+        `
+
+        : ""
+}
+
+${
+    question.imageUrl
+
+        ? `
+            <div class="student-quiz-question-image">
+                <img
+                    src="${escapePublicQuizHtml(
+                        question.imageUrl
+                    )}"
+                    alt="Gambar soal nomor ${
+                        questionIndex + 1
+                    }"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    onerror="
+                        this.hidden = true;
+                        this.nextElementSibling.hidden = false;
+                    "
+                >
+
+                <p hidden>
+                    Gambar tidak dapat dimuat.
+                </p>
+            </div>
+        `
+
+        : ""
+}
+
+                        ${type === "mcq"
+                            ? `
+                                <div class="student-quiz-answer-options">
+                                    ${(Array.isArray(question.options) ? question.options : []).map((option, optionIndex) => `
+                                        <label class="student-quiz-answer-option" data-option-id="${Number(option.id)}">
+                                            <input
+                                                type="radio"
+                                                name="public-question-${Number(question.id)}"
+                                                onchange="selectPublicQuizOption(${Number(question.id)}, ${Number(option.id)})"
+                                            >
+                                            <span class="student-quiz-answer-letter">${String.fromCharCode(65 + optionIndex)}</span>
+                                            <span class="student-quiz-answer-text">${escapePublicQuizHtml(option.text || "")}</span>
+                                        </label>
+                                    `).join("")}
+                                </div>
+                            `
+                            : `
+                                <div class="student-quiz-text-answer">
+                                    <label for="public-answer-${Number(question.id)}">Jawaban kamu</label>
+                                    <textarea
+                                        id="public-answer-${Number(question.id)}"
+                                        maxlength="3000"
+                                        placeholder="Ketik jawaban kamu..."
+                                        oninput="updatePublicQuizTextAnswer(${Number(question.id)}, this.value)"
+                                    ></textarea>
+                                </div>
+                            `
+                        }
+                    </article>
+                `;
+            }).join("");
+
+            document.getElementById("publicQuizSubmitPanel").hidden = false;
+            updatePublicQuizProgress();
+            startPublicQuizDeadlineTimer();
+        }
+
+        function startPublicQuizDeadlineTimer() {
+            clearInterval(publicQuizDeadlineTimer);
+            updatePublicQuizCountdown();
+            publicQuizDeadlineTimer = setInterval(updatePublicQuizCountdown, 1000);
+        }
+
+        function updatePublicQuizCountdown() {
+            if (!currentPublicQuiz || !currentPublicQuiz.dueAt) return;
+
+            const countdownElement = document.getElementById("publicQuizCountdown");
+            if (!countdownElement) return;
+
+            const dueDate = parsePublicQuizDate(currentPublicQuiz.dueAt);
+            if (!dueDate || Number.isNaN(dueDate.getTime())) return;
+
+            const remainingMilliseconds = dueDate.getTime() - (Date.now() + publicQuizServerOffset);
+
+            if (remainingMilliseconds <= 0) {
+                countdownElement.textContent = "Deadline berakhir";
+                countdownElement.classList.add("expired");
+                showPublicQuizAvailabilityError("QUIZ_DEADLINE_EXPIRED");
+                return;
+            }
+
+            const totalSeconds = Math.floor(remainingMilliseconds / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            countdownElement.textContent = days > 0
+                ? `${days} hari, ${hours} jam, ${minutes} menit lagi`
+                : hours > 0
+                    ? `${hours} jam, ${minutes} menit lagi`
+                    : minutes >= 10
+                        ? `${minutes} menit lagi`
+                        : `${minutes} menit, ${seconds} detik lagi`;
+        }
+
+        function startPublicQuizAsGuest() {
+            const nameInput = document.getElementById("publicQuizGuestName");
+            const errorElement = document.getElementById("publicQuizNameError");
+            const cleanName = String(nameInput.value || "").replace(/\s+/g, " ").trim();
+
+            if (cleanName.length < 2) {
+                errorElement.textContent = "Masukkan nama minimal 2 karakter.";
+                nameInput.focus();
+                return;
+            }
+
+            publicQuizGuestName = cleanName.slice(0, 80);
+            publicQuizStarted = true;
+            errorElement.textContent = "";
+            document.getElementById("publicQuizIdentityOverlay").hidden = true;
+            document.getElementById("publicQuizGuestWarning").hidden = false;
+            document.getElementById("publicQuizGuestStatus").textContent = `${publicQuizGuestName} · Guest · Tidak ada autosave`;
+            setPublicQuizPageBlur(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        async function loadPublicQuiz() {
+            if (!publicQuizToken || !/^[A-Za-z0-9_-]{8,200}$/.test(publicQuizToken)) {
+                showPublicQuizAvailabilityError("INVALID_PUBLIC_TOKEN");
+                return;
+            }
+
+            try {
+                const requestStartedAt = Date.now();
+                const response = await fetch(`/api/public/quizzes/${encodeURIComponent(publicQuizToken)}`, {
+                    cache: "no-store"
+                });
+                const data = await response.json().catch(() => ({}));
+                const responseReceivedAt = Date.now();
+
+                const serverDate = parsePublicQuizDate(data.serverNow);
+                if (serverDate && !Number.isNaN(serverDate.getTime())) {
+                    const approximateResponseTime = requestStartedAt + ((responseReceivedAt - requestStartedAt) / 2);
+                    publicQuizServerOffset = serverDate.getTime() - approximateResponseTime;
+                }
+
+                if (data.quiz) {
+                    currentPublicQuiz = data.quiz;
+                    renderPublicQuiz();
+                }
+
+                if (!response.ok || !data.success) {
+                    showPublicQuizAvailabilityError(data.code, data.message);
+                    return;
+                }
+
+                if (!currentPublicQuiz) {
+                    throw new Error("Data Quiz tidak ditemukan pada respons server.");
+                }
+
+                setPublicQuizPageBlur(true);
+                document.getElementById("publicQuizIdentityOverlay").hidden = false;
+                setTimeout(() => document.getElementById("publicQuizGuestName").focus(), 60);
+            } catch (error) {
+                console.error("Gagal membuka Public Quiz:", error);
+
+                if (!currentPublicQuiz) {
+                    publicQuizQuestionList.innerHTML = `
+                        <div class="public-quiz-attempt-error">
+                            <h2>Quiz tidak dapat dimuat</h2>
+                            <p>${escapePublicQuizHtml(error.message || "Terjadi masalah saat memuat Quiz.")}</p>
+                        </div>
+                    `;
+                }
+
+                showPublicQuizAvailabilityError("NETWORK_ERROR", error.message);
+            }
+        }
+
+        function showPublicQuizSubmitConfirmation(emptyQuestionCount) {
+            const overlay = document.getElementById("publicQuizSubmitOverlay");
+            const message = document.getElementById("publicQuizSubmitMessage");
+            const cancelButton = document.getElementById("cancelPublicQuizSubmit");
+            const confirmButton = document.getElementById("confirmPublicQuizSubmit");
+
+            message.textContent = emptyQuestionCount > 0
+                ? `${emptyQuestionCount} soal masih kosong dan akan dihitung salah. Jawaban tidak dapat diubah setelah dikirim.`
+                : "Jawaban tidak dapat diubah setelah dikirim.";
+
+            overlay.hidden = false;
+
+            return new Promise((resolve) => {
+                function finish(result) {
+                    overlay.hidden = true;
+                    cancelButton.onclick = null;
+                    confirmButton.onclick = null;
+                    overlay.onclick = null;
+                    resolve(result);
+                }
+
+                cancelButton.onclick = () => finish(false);
+                confirmButton.onclick = () => finish(true);
+                overlay.onclick = (event) => {
+                    if (event.target === overlay) finish(false);
+                };
+            });
+        }
+
+        async function requestPublicQuizSubmission() {
+            if (!currentPublicQuiz || !publicQuizStarted || publicQuizSubmitRunning) return;
+
+            const answeredCount = currentPublicQuiz.questions.filter(isPublicQuizQuestionAnswered).length;
+            const emptyQuestionCount = currentPublicQuiz.questions.length - answeredCount;
+            const confirmed = await showPublicQuizSubmitConfirmation(emptyQuestionCount);
+
+            if (confirmed) submitPublicQuiz();
+        }
+
+        async function submitPublicQuiz() {
+            if (publicQuizSubmitRunning) return;
+
+            publicQuizSubmitRunning = true;
+            submitPublicQuizButton.disabled = true;
+            submitPublicQuizButton.textContent = "Mengirim...";
+            publicQuizSubmitSummary.classList.remove("error");
+
+            try {
+                const response = await fetch(`/api/public/quizzes/${encodeURIComponent(publicQuizToken)}/submit`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: publicQuizGuestName,
+                        answers: Object.values(publicQuizAnswers)
+                    })
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || !data.success) {
+                    if (["QUIZ_CLOSED", "QUIZ_DEADLINE_EXPIRED", "QUIZ_NOT_PUBLISHED", "PUBLIC_QUIZ_DISABLED"].includes(data.code)) {
+                        showPublicQuizAvailabilityError(data.code, data.message);
+                        return;
+                    }
+
+                    throw new Error(data.message || "Gagal mengirim jawaban Quiz.");
+                }
+
+                showPublicQuizResult(data.result || data);
+            } catch (error) {
+                console.error("Submit Public Quiz gagal:", error);
+                publicQuizSubmitRunning = false;
+                submitPublicQuizButton.disabled = false;
+                submitPublicQuizButton.textContent = "Submit Quiz";
+                publicQuizSubmitSummary.textContent = error.message || "Gagal mengirim jawaban Quiz.";
+                publicQuizSubmitSummary.classList.add("error");
+            }
+        }
+
+        function showPublicQuizResult(result) {
+            clearInterval(publicQuizDeadlineTimer);
+
+            const score = Number(result.score ?? result.finalScore ?? 0);
+            const correct = Number(result.correctCount ?? result.correct ?? 0);
+            const total = Number(result.totalQuestions ?? currentPublicQuiz.questions.length ?? 0);
+
+            publicQuizReview =
+    Array.isArray(result.review)
+        ? result.review
+        : [];
+
+
+document.getElementById(
+    "publicQuizReviewButton"
+).hidden =
+    publicQuizReview.length === 0;
+
+            document.getElementById("publicQuizResultGuestName").textContent = `${publicQuizGuestName} · GUEST`;
+            document.getElementById("publicQuizResultScore").textContent = Number.isFinite(score)
+                ? String(Math.round(score * 100) / 100)
+                : "0";
+            document.getElementById("publicQuizResultMeta").textContent = `${correct} dari ${total} soal benar`;
+            document.getElementById("publicQuizResultOverlay").hidden = false;
+            setPublicQuizPageBlur(true);
+        }
+
+        function renderPublicQuizReview() {
+
+    const reviewList =
+        document.getElementById(
+            "publicQuizReviewList"
+        );
+
+
+    reviewList.innerHTML =
+        publicQuizReview.map(
+            review => {
+
+                const isCorrect =
+                    Boolean(review.isCorrect);
+
+
+                let answerContent;
+
+
+                if (
+                    review.questionType ===
+                    "mcq"
+                ) {
+
+                    const selectedOptionId =
+                        review.selectedOptionId === null
+                            ? null
+                            : Number(
+                                review.selectedOptionId
+                            );
+
+
+                    const correctOptionId =
+                        review.correctOptionId === null
+                            ? null
+                            : Number(
+                                review.correctOptionId
+                            );
+
+
+                    answerContent = `
+                        <div class="public-quiz-review-options">
+
+                            ${(Array.isArray(review.options)
+                                ? review.options
+                                : []
+                            ).map(
+                                (
+                                    option,
+                                    optionIndex
+                                ) => {
+
+                                    const optionId =
+                                        Number(option.id);
+
+
+                                    const selected =
+                                        optionId ===
+                                        selectedOptionId;
+
+
+                                    const correct =
+                                        optionId ===
+                                        correctOptionId;
+
+
+                                    const classNames = [
+                                        "public-quiz-review-option",
+
+                                        correct
+                                            ? "is-correct"
+                                            : "",
+
+                                        selected &&
+                                        !correct
+                                            ? "is-wrong"
+                                            : ""
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ");
+
+
+                                    let optionLabel =
+                                        "";
+
+
+                                    if (
+                                        selected &&
+                                        correct
+                                    ) {
+
+                                        optionLabel =
+                                            "Jawaban kamu";
+
+                                    } else if (correct) {
+
+                                        optionLabel =
+                                            "Jawaban benar";
+
+                                    } else if (selected) {
+
+                                        optionLabel =
+                                            "Jawaban kamu";
+
+                                    }
+
+
+                                    return `
+                                        <div class="${classNames}">
+
+                                            <span class="public-quiz-review-letter">
+                                                ${String.fromCharCode(
+                                                    65 +
+                                                    optionIndex
+                                                )}
+                                            </span>
+
+                                            <span class="public-quiz-review-option-text">
+                                                ${escapePublicQuizHtml(
+                                                    option.text || ""
+                                                )}
+                                            </span>
+
+                                            ${
+                                                optionLabel
+                                                    ? `
+                                                        <small>
+                                                            ${optionLabel}
+                                                        </small>
+                                                    `
+                                                    : ""
+                                            }
+
+                                        </div>
+                                    `;
+
+                                }
+                            ).join("")}
+
+                        </div>
+                    `;
+
+} else {
+
+    answerContent =
+        isCorrect
+
+            ? `
+                <div class="
+                    public-quiz-review-answer-grid
+                    is-single
+                ">
+
+                    <div class="
+                        public-quiz-review-answer-box
+                        is-correct
+                    ">
+
+                        <span>
+                            Jawaban kamu
+                        </span>
+
+                        <p>
+                            ${escapePublicQuizHtml(
+                                review.textAnswer ||
+                                "Tidak dijawab"
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+            `
+
+            : `
+                <div class="public-quiz-review-answer-grid">
+
+                    <div class="public-quiz-review-answer-box">
+
+                        <span>
+                            Jawaban kamu
+                        </span>
+
+                        <p>
+                            ${escapePublicQuizHtml(
+                                review.textAnswer ||
+                                "Tidak dijawab"
+                            )}
+                        </p>
+
+                    </div>
+
+
+                    <div class="
+                        public-quiz-review-answer-box
+                        is-correct
+                    ">
+
+                        <span>
+                            Jawaban benar
+                        </span>
+
+                        <p>
+                            ${escapePublicQuizHtml(
+                                review.correctText ||
+                                "-"
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+            `;
+
+}
+
+
+                return `
+                    <article class="
+                        public-quiz-review-card
+
+                        ${
+                            isCorrect
+                                ? "is-correct"
+                                : "is-wrong"
+                        }
+                    ">
+
+                        <div class="public-quiz-review-card-header">
+
+                            <span>
+                                Soal ${Number(
+                                    review.questionNumber
+                                )}
+                            </span>
+
+                            <strong>
+                                ${
+                                    isCorrect
+                                        ? "✓ Benar"
+                                        : "✕ Salah"
+                                }
+                            </strong>
+
+                        </div>
+
+
+${
+    String(
+        review.questionText || ""
+    ).trim()
+
+        ? `
+            <h3>
+                ${escapePublicQuizHtml(
+                    review.questionText
+                )}
+            </h3>
+        `
+
+        : ""
+}
+
+${
+    review.imageUrl
+
+        ? `
+            <div class="public-quiz-review-question-image">
+                <img
+                    src="${escapePublicQuizHtml(
+                        review.imageUrl
+                    )}"
+                    alt="Gambar soal nomor ${Number(
+                        review.questionNumber
+                    )}"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    onerror="
+                        this.hidden = true;
+                        this.nextElementSibling.hidden = false;
+                    "
+                >
+
+                <p hidden>
+                    Gambar tidak dapat dimuat.
+                </p>
+            </div>
+        `
+
+        : ""
+}
+
+
+                        ${answerContent}
+
+                    </article>
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+function openPublicQuizReview() {
+
+    if (
+        publicQuizReview.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    renderPublicQuizReview();
+
+
+    document.getElementById(
+        "publicQuizResultOverlay"
+    ).hidden =
+        true;
+
+
+    document.getElementById(
+        "publicQuizReviewOverlay"
+    ).hidden =
+        false;
+
+}
+
+
+function closePublicQuizReview() {
+
+    document.getElementById(
+        "publicQuizReviewOverlay"
+    ).hidden =
+        true;
+
+
+    document.getElementById(
+        "publicQuizResultOverlay"
+    ).hidden =
+        false;
+
+}
+
+        document.getElementById("publicQuizGuestName").addEventListener("keydown", (event) => {
+            if (event.key === "Enter") startPublicQuizAsGuest();
+        });
+
+        document.addEventListener("DOMContentLoaded", loadPublicQuiz);
+
+        window.addEventListener("beforeunload", () => {
+            clearInterval(publicQuizDeadlineTimer);
+        });
+    </script>
+</body>
+
+</html>

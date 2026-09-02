@@ -629,56 +629,16 @@
     </p>
 
 
-    <!-- TABEL -->
+ <!-- RIWAYAT NILAI CARD -->
 
-    <div class="student-score-table-wrapper">
-
-        <table class="student-score-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Mapel
-                    </th>
-
-                    <th>
-                        Materi
-                    </th>
-
-                    <th>
-                        Nilai
-                    </th>
-
-                    <th>
-                        Dibanding Rata-rata
-                    </th>
-
-                    <th>
-                        Tanggal
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody id="examScoreContainer">
-
-                <tr>
-
-                    <td colspan="5">
-                        Memuat nilai...
-                    </td>
-
-                </tr>
-
-            </tbody>
-
-        </table>
-
+<div
+    id="examScoreContainer"
+    class="student-score-history-list"
+>
+    <div class="student-score-history-empty">
+        Memuat nilai...
     </div>
+</div>
 
 </section>
 
@@ -1445,6 +1405,244 @@ function renderSubjectPerformance() {
 
 }
 
+function enableStudentTrendTooltips(
+    chart,
+    dotSelector
+) {
+
+    const tooltip =
+        chart.querySelector(
+            ".student-chart-tooltip"
+        );
+
+
+    if (!tooltip) {
+
+        return;
+
+    }
+
+
+    if (
+        chart.studentTooltipController
+    ) {
+
+        chart.studentTooltipController.abort();
+
+    }
+
+
+    const controller =
+        new AbortController();
+
+
+    const options = {
+        signal:
+            controller.signal
+    };
+
+
+    chart.studentTooltipController =
+        controller;
+
+
+    const desktopHover =
+        window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
+
+
+    function showTooltip(
+        dot
+    ) {
+
+        const tooltipText =
+            dot.getAttribute(
+                "data-chart-tooltip"
+            );
+
+
+        if (!tooltipText) {
+
+            return;
+
+        }
+
+
+        tooltip.textContent =
+            tooltipText;
+
+
+        tooltip.hidden =
+            false;
+
+
+        const chartRect =
+            chart.getBoundingClientRect();
+
+
+        const dotRect =
+            dot.getBoundingClientRect();
+
+
+        const tooltipWidth =
+            tooltip.offsetWidth;
+
+
+        const tooltipHeight =
+            tooltip.offsetHeight;
+
+
+        let left =
+            dotRect.left -
+            chartRect.left +
+            dotRect.width / 2;
+
+
+        const top =
+            dotRect.top -
+            chartRect.top +
+            dotRect.height / 2;
+
+
+        /*
+            Geser tooltip ke kiri jika titik
+            berada dekat ujung kanan.
+        */
+        left =
+            Math.max(
+                tooltipWidth / 2 + 8,
+
+                Math.min(
+                    chartRect.width -
+                    tooltipWidth / 2 -
+                    8,
+
+                    left
+                )
+            );
+
+
+        tooltip.style.left =
+            `${left}px`;
+
+
+        tooltip.style.top =
+            `${top}px`;
+
+
+        /*
+            Kalau ruang atas tidak cukup,
+            tampilkan di bawah titik.
+        */
+        tooltip.classList.toggle(
+            "show-below",
+
+            top <
+            tooltipHeight +
+            16
+        );
+
+    }
+
+
+    function hideTooltip() {
+
+        tooltip.hidden =
+            true;
+
+
+        tooltip.classList.remove(
+            "show-below"
+        );
+
+    }
+
+
+    chart
+        .querySelectorAll(
+            dotSelector
+        )
+        .forEach(
+            dot => {
+
+                /*
+                    Desktop hanya menggunakan hover.
+                */
+                if (desktopHover) {
+
+                    dot.addEventListener(
+                        "mouseenter",
+
+                        () =>
+                            showTooltip(dot),
+
+                        options
+                    );
+
+
+                    dot.addEventListener(
+                        "mouseleave",
+                        hideTooltip,
+                        options
+                    );
+
+                } else {
+
+                    /*
+                        Mobile menggunakan click/tap.
+                    */
+                    dot.addEventListener(
+                        "click",
+
+                        event => {
+
+                            event.preventDefault();
+
+                            event.stopPropagation();
+
+                            showTooltip(dot);
+
+                        },
+
+                        options
+                    );
+
+                }
+
+
+                dot.addEventListener(
+                    "focus",
+
+                    () =>
+                        showTooltip(dot),
+
+                    options
+                );
+
+
+                dot.addEventListener(
+                    "blur",
+                    hideTooltip,
+                    options
+                );
+
+            }
+        );
+
+
+    if (!desktopHover) {
+
+        document.addEventListener(
+            "click",
+            hideTooltip,
+            options
+        );
+
+    }
+
+}
+
 
 // =====================================
 // GRAFIK PERKEMBANGAN
@@ -1525,13 +1723,56 @@ function renderScoreTrend() {
     }
 
 
-    const graphWidth = 640;
-    const graphHeight = 230;
+const measuredChartWidth =
+    Math.floor(
+        chart.getBoundingClientRect().width
+    );
 
-    const plotLeft = 44;
-    const plotRight = 620;
-    const plotTop = 18;
-    const plotBottom = 184;
+
+const graphWidth =
+    measuredChartWidth > 0
+
+        ? Math.min(
+            640,
+            measuredChartWidth
+        )
+
+        : 640;
+
+
+const compactGraph =
+    graphWidth < 480;
+
+
+const graphHeight =
+    compactGraph
+        ? 220
+        : 230;
+
+
+const plotLeft =
+    compactGraph
+        ? 38
+        : 44;
+
+
+const plotRight =
+    graphWidth -
+    (
+        compactGraph
+            ? 12
+            : 20
+    );
+
+
+const plotTop =
+    18;
+
+
+const plotBottom =
+    compactGraph
+        ? 174
+        : 184;
 
     const plotWidth =
         plotRight - plotLeft;
@@ -1662,24 +1903,24 @@ function renderScoreTrend() {
     const dots =
         points.map(point => `
 
-            <circle
-                cx="${point.x}"
-                cy="${point.y}"
-                r="5"
-                class="student-score-trend-dot"
-            >
+<circle
+    cx="${point.x}"
+    cy="${point.y}"
+    r="6"
+    tabindex="0"
+    class="student-score-trend-dot"
 
-                <title>
-                    ${escapeHtml(
-                        point.examScore.subject
-                    )} —
-                    ${escapeHtml(
-                        point.examScore.material
-                    )}:
-                    ${formatScoreNumber(
-                        point.score
-                    )}
-                </title>
+data-chart-tooltip="Nilai: ${formatScoreNumber(
+    point.score
+)}"
+>
+
+<title>
+    Nilai:
+    ${formatScoreNumber(
+        point.score
+    )}
+</title>
 
             </circle>
 
@@ -1782,11 +2023,25 @@ function renderScoreTrend() {
 
         </svg>
 
+<div
+    class="student-chart-tooltip"
+    hidden
+></div>
+
     `;
 
+/*
+    Harus berada setelah penutup backtick
+    dan setelah titik dimasukkan ke HTML.
+*/
+enableStudentTrendTooltips(
+    chart,
+    ".student-score-trend-dot"
+);
 
-    const numericScores =
-        filteredScores.map(
+
+const numericScores =
+    filteredScores.map(
             examScore =>
                 Number(examScore.score) || 0
         );
@@ -1969,181 +2224,112 @@ function renderScoreHistory() {
             `${visibleScores.length} dari ${allExamScores.length} nilai ditampilkan`;
 
 
-    if (
-        visibleScores.length === 0
-    ) {
+if (
+    visibleScores.length === 0
+) {
 
-        examScoreContainer.innerHTML = `
+    examScoreContainer.innerHTML = `
 
-            <tr>
+        <div class="student-score-history-empty">
 
-                <td
-                    colspan="5"
-                    class="student-score-table-empty"
-                >
+            <strong>
+                Tidak ada nilai ditemukan
+            </strong>
 
-                    <strong>
-                        Tidak ada nilai ditemukan
-                    </strong>
+            <span>
+                Coba ubah pencarian atau filter.
+            </span>
 
-                    <span>
-                        Coba ubah pencarian atau filter.
-                    </span>
+        </div>
 
-                </td>
+    `;
 
-            </tr>
 
-        `;
+    return;
 
-        return;
-
-    }
+}
 
 
     examScoreContainer.innerHTML = "";
 
 
-    visibleScores.forEach(
-        examScore => {
+visibleScores.forEach(
+    examScore => {
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+        const numericScore =
+            Number(
+                examScore.score
+            ) || 0;
 
-
-            const numericScore =
-                Number(
-                    examScore.score
-                ) || 0;
-
-
-            const scoreDifference =
-                numericScore -
-                overallScoreAverage;
+        const scoreLevel =
+            getScoreLevel(
+                numericScore
+            );
 
 
-            let comparisonClass =
-                "equal";
+        const item =
+            document.createElement(
+                "article"
+            );
 
 
-            let comparisonText =
-                "Sama dengan rata-rata";
+        item.className =
+            "student-score-history-card";
 
 
-            if (
-                scoreDifference > 0.05
-            ) {
+        item.innerHTML = `
 
-                comparisonClass =
-                    "above";
+            <div class="student-score-history-left">
 
-                comparisonText =
-                    `+${formatScoreNumber(
-                        scoreDifference
-                    )} di atas rata-rata`;
-
-            } else if (
-                scoreDifference < -0.05
-            ) {
-
-                comparisonClass =
-                    "below";
-
-                comparisonText =
-                    `${formatScoreNumber(
-                        scoreDifference
-                    )} di bawah rata-rata`;
-
-            }
+<div
+    class="
+        student-score-history-icon
+        ${scoreLevel}
+    "
+>
+    ${formatScoreNumber(
+        numericScore
+    )}
+</div>
 
 
-            const scoreLevel =
-                getScoreLevel(
-                    numericScore
-                );
+                <div class="student-score-history-info">
 
-
-            row.innerHTML = `
-
-                <td>
-
-                    <strong class="student-score-table-subject">
-                        ${escapeHtml(
-                            examScore.subject ||
-                            "Tanpa mapel"
-                        )}
-                    </strong>
-
-                </td>
-
-
-                <td>
-
-                    <span class="student-score-table-material">
+                    <strong>
                         ${escapeHtml(
                             examScore.material ||
                             "Tanpa materi"
                         )}
-                    </span>
+                    </strong>
 
-                </td>
-
-
-                <td>
-
-                    <span
-                        class="
-                            score-badge
-                            ${scoreLevel}
-                        "
-                    >
-                        ${formatScoreNumber(
-                            numericScore
-                        )}
-                    </span>
-
-                </td>
-
-
-                <td>
-
-                    <span
-                        class="
-                            student-score-comparison
-                            ${comparisonClass}
-                        "
-                    >
+                    <span>
                         ${escapeHtml(
-                            comparisonText
+                            examScore.subject ||
+                            "Tanpa mapel"
                         )}
                     </span>
 
-                </td>
-
-
-                <td>
-
-                    <span class="student-score-table-date">
+                    <small>
                         ${escapeHtml(
                             formatDeviceDateTime(
                                 examScore.created_at
                             )
                         )}
-                    </span>
+                    </small>
 
-                </td>
+                </div>
 
-            `;
+            </div>
+
+        `;
 
 
-            examScoreContainer.appendChild(
-                row
-            );
+        examScoreContainer.appendChild(
+            item
+        );
 
-        }
-    );
+    }
+);
 
 }
 

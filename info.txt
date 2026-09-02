@@ -1,18 +1,9 @@
-Sistem score: Kalau full pilgan, 100% nilai berdasar pilgan'
-Kalau full esai: 100% berdfasarkan esai
-Kalau mix: 60% bobot esai, 40% pilgan
-(settings atur mau gak ada bobot atau ada)
-
-tambahkan custom publish: bisa pilih semua siswa atau sebgagian saja (tick mark)
-
-Visual Bug Quiz: Text spacing nilai kedempetan di mobile, dan bug status pengerjaan (cek ss hape)
-
-Buat write untuk pembuatan quiz lebih efisien soalnya makan banyak sekali row writes di turso
-sekitar 6000-10000an untuk 5 soal mcq dan 5 soal esai dalam 1 quiz
-
 QUIZ: BISA TAMBAH GAMBAR VIA URL
 
-Toggle public quiz: Bisa buat quiz public tanpa kode login siswa, generate link dan saat memasuki link seperti google form harus isi nama dan kelas (Kasih warning diatas bahwa kamu guest)
-DI menu ada 2 checkbox bisa public dan bisa private, kalau centang 2 artinya siswa yg punya akun dan tidak bisa akses
-
 Upload image feature via googleusercontent
+
+Student profile rework dengan bisa change profile picture
+
+Admin students lama tetap ada, Baru ada tab baru yaitu students search, search individual bisa lihat semua biodata dan kode, Berapa poin, rata2 nilai, PFP, dll.
+
+Ganti distribusi nilai

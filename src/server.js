@@ -2,6 +2,11 @@ const express = require("express");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const path = require("path");
+const crypto = require("crypto");
+
+const {
+    v2: cloudinary
+} = require("cloudinary");
 
 const tursoDb =
     require("./database-turso");
@@ -14,6 +19,73 @@ const isProduction =
     process.env.NODE_ENV ===
         "production";
 
+const CLOUDINARY_UPLOAD_PRESET =
+    String(
+        process.env
+            .CLOUDINARY_UPLOAD_PRESET ||
+        "lms_signed_images"
+    ).trim();
+
+
+const QUIZ_IMAGE_MAX_BYTES =
+    2 * 1024 * 1024;
+
+const QUIZ_IMAGE_UPLOAD_TRANSFORMATION =
+    "c_limit,w_1600,h_1600/q_auto:good/f_webp";
+
+
+const QUIZ_IMAGE_ALLOWED_FORMATS =
+    "jpg,jpeg,png,webp";
+
+const CLOUDINARY_CLOUD_NAME =
+    String(
+        process.env
+            .CLOUDINARY_CLOUD_NAME ||
+        ""
+    ).trim();
+
+
+cloudinary.config({
+    cloud_name:
+        CLOUDINARY_CLOUD_NAME,
+
+    api_key:
+        process.env
+            .CLOUDINARY_API_KEY,
+
+    api_secret:
+        process.env
+            .CLOUDINARY_API_SECRET,
+
+    secure:
+        true
+});
+
+
+function isCloudinaryConfigured() {
+
+    return Boolean(
+        process.env
+            .CLOUDINARY_CLOUD_NAME &&
+
+        process.env
+            .CLOUDINARY_API_KEY &&
+
+        process.env
+            .CLOUDINARY_API_SECRET
+    );
+
+}
+
+
+function getQuizImageAssetFolder(
+    quizId
+) {
+
+    return `lms/quiz/${quizId}/questions`;
+
+}
+
 
 if (
     isProduction &&
@@ -24,6 +96,88 @@ if (
         "SESSION_SECRET wajib diatur di production."
     );
 
+}
+
+async function deleteStoredQuizImages(
+    publicIds
+) {
+    const uniquePublicIds =
+        [
+            ...new Set(
+                (
+                    Array.isArray(publicIds)
+                        ? publicIds
+                        : []
+                )
+                    .map(
+                        publicId =>
+                            String(
+                                publicId || ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+    if (
+        uniquePublicIds.length === 0
+    ) {
+        return [];
+    }
+
+    if (
+        !isCloudinaryConfigured()
+    ) {
+        console.error(
+            "Cleanup gambar dilewati karena layanan gambar belum dikonfigurasi."
+        );
+
+        return uniquePublicIds;
+    }
+
+    const results =
+        await Promise.allSettled(
+            uniquePublicIds.map(
+                publicId =>
+                    cloudinary.uploader.destroy(
+                        publicId,
+                        {
+                            resource_type:
+                                "image",
+
+                            invalidate:
+                                true
+                        }
+                    )
+            )
+        );
+
+    const failedPublicIds =
+        results
+            .map(
+                (
+                    result,
+                    resultIndex
+                ) =>
+                    result.status ===
+                    "rejected"
+                        ? uniquePublicIds[
+                            resultIndex
+                        ]
+                        : null
+            )
+            .filter(Boolean);
+
+    if (
+        failedPublicIds.length > 0
+    ) {
+        console.error(
+            "Sebagian gambar lama gagal dibersihkan:",
+            failedPublicIds
+        );
+    }
+
+    return failedPublicIds;
 }
 
 const app = express();
@@ -456,6 +610,287 @@ app.use(
 );
 
 // ========================================
+// MEDIA GAMBAR - QUIZ
+// ========================================
+
+app.post(
+    "/api/admin/media/image-upload-signature",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            if (
+                !isCloudinaryConfigured()
+            ) {
+
+                return res
+                    .status(503)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Layanan gambar belum dikonfigurasi."
+                    });
+
+            }
+
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.body &&
+                        req.body.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (
+                validationError
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const existingQuiz =
+                await tursoDb.get(
+                    `
+                        SELECT id
+
+                        FROM quizzes
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!existingQuiz) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            const timestamp =
+                Math.floor(
+                    Date.now() /
+                    1000
+                );
+
+
+            const parametersToUpload = {
+                timestamp,
+
+                asset_folder:
+                    getQuizImageAssetFolder(
+                        quizId
+                    ),
+
+                upload_preset:
+                    CLOUDINARY_UPLOAD_PRESET,
+
+                allowed_formats:
+                    QUIZ_IMAGE_ALLOWED_FORMATS,
+
+                transformation:
+                    QUIZ_IMAGE_UPLOAD_TRANSFORMATION
+            };
+
+
+            const signature =
+                cloudinary.utils
+                    .api_sign_request(
+                        parametersToUpload,
+
+                        process.env
+                            .CLOUDINARY_API_SECRET
+                    );
+
+
+            return res.json({
+                success:
+                    true,
+
+                uploadUrl:
+                    `https://api.cloudinary.com/v1_1/${
+                        encodeURIComponent(
+                            process.env
+                                .CLOUDINARY_CLOUD_NAME
+                        )
+                    }/image/upload`,
+
+                apiKey:
+                    process.env
+                        .CLOUDINARY_API_KEY,
+
+                signature,
+
+                parameters:
+                    parametersToUpload,
+
+                maxBytes:
+                    QUIZ_IMAGE_MAX_BYTES,
+
+                acceptedTypes: [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ]
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menyiapkan upload gambar:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal menyiapkan upload gambar."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// MEDIA GAMBAR - HAPUS
+// ========================================
+
+app.delete(
+    "/api/admin/media/image",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            if (
+                !isCloudinaryConfigured()
+            ) {
+
+                return res
+                    .status(503)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Layanan gambar belum dikonfigurasi."
+                    });
+
+            }
+
+
+            const publicId =
+                String(
+                    req.body &&
+                    req.body.publicId ||
+                    ""
+                ).trim();
+
+
+            if (
+                !publicId ||
+                publicId.length > 255
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Identitas gambar tidak valid."
+                    });
+
+            }
+
+
+            await cloudinary.uploader
+                .destroy(
+                    publicId,
+                    {
+                        resource_type:
+                            "image",
+
+                        invalidate:
+                            true
+                    }
+                );
+
+
+            return res.json({
+                success:
+                    true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menghapus gambar:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gambar tidak dapat dihapus."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
 // ONLINE QUIZ - ADMIN DASHBOARD
 // ========================================
 
@@ -500,16 +935,30 @@ app.get(
                             )
                                 AS question_count,
 
-                            (
-                                SELECT COUNT(*)
+(
+    (
+        SELECT COUNT(*)
 
-                                FROM quiz_attempts
+        FROM quiz_attempts
 
-                                WHERE
-                                    quiz_attempts.quiz_id =
-                                        quizzes.id
-                            )
-                                AS response_count
+        WHERE
+            quiz_attempts.quiz_id =
+                quizzes.id
+    )
+
+    +
+
+    (
+        SELECT COUNT(*)
+
+        FROM quiz_guest_attempts
+
+        WHERE
+            quiz_guest_attempts.quiz_id =
+                quizzes.id
+    )
+)
+    AS response_count
 
                         FROM quizzes
 
@@ -908,16 +1357,30 @@ app.put(
                             id,
                             status,
 
-                            (
-                                SELECT COUNT(*)
+(
+    (
+        SELECT COUNT(*)
 
-                                FROM quiz_attempts
+        FROM quiz_attempts
 
-                                WHERE
-                                    quiz_attempts.quiz_id =
-                                        quizzes.id
-                            )
-                                AS response_count
+        WHERE
+            quiz_attempts.quiz_id =
+                quizzes.id
+    )
+
+    +
+
+    (
+        SELECT COUNT(*)
+
+        FROM quiz_guest_attempts
+
+        WHERE
+            quiz_guest_attempts.quiz_id =
+                quizzes.id
+    )
+)
+    AS response_count
 
                         FROM quizzes
 
@@ -1102,203 +1565,507 @@ app.put(
             }
 
 
-            /*
-                Satu batch transaction:
+ /*
+    Ambil susunan soal yang sekarang untuk
+    mendeteksi tambah, hapus, dan perpindahan.
+*/
+const existingQuestionRows =
+    await tursoDb.all(
+        `
+SELECT
+    id,
+    client_key,
+    position,
+    image_public_id
 
-                1. Update metadata.
-                2. Hapus pilihan lama.
-                3. Hapus soal lama.
-                4. Masukkan susunan soal terbaru.
-                5. Masukkan pilihan MCQ terbaru.
+FROM quiz_questions
 
-                Jika satu statement gagal, seluruh
-                perubahan dibatalkan oleh Turso.
-            */
-            const statements = [
+            WHERE quiz_id = ?
 
-                {
-                    sql: `
-                        UPDATE quizzes
-
-                        SET
-                            title = ?,
-                            description = ?,
-                            subject = ?,
-                            material = ?,
-                            due_at = ?,
-                            updated_at =
-                                CURRENT_TIMESTAMP
-
-                        WHERE
-                            id = ?
-                    `,
-
-                    args: [
-                        metadata.title,
-                        metadata.description,
-                        metadata.subject,
-                        metadata.material,
-                        metadata.dueAt,
-                        quizId
-                    ]
-                },
+            ORDER BY position ASC
+        `,
+        [
+            quizId
+        ]
+    );
 
 
-                /*
-                    Hapus pilihan lebih dahulu supaya
-                    tidak bergantung pada konfigurasi
-                    foreign_keys koneksi.
-                */
-                {
-                    sql: `
-                        DELETE FROM quiz_options
+const incomingClientKeys =
+    questions.map(
+        question =>
+            question.clientKey
+    );
 
-                        WHERE
-                            question_id IN (
-                                SELECT
-                                    id
+const incomingImagePublicIds =
+    new Set(
+        questions
+            .map(
+                question =>
+                    String(
+                        question.imagePublicId ||
+                        ""
+                    ).trim()
+            )
+            .filter(Boolean)
+    );
 
-                                FROM quiz_questions
 
-                                WHERE
-                                    quiz_id = ?
+const obsoleteImagePublicIds =
+    [
+        ...new Set(
+            existingQuestionRows
+                .map(
+                    row =>
+                        String(
+                            row.image_public_id ||
+                            ""
+                        ).trim()
+                )
+                .filter(
+                    publicId =>
+                        publicId &&
+                        !incomingImagePublicIds
+                            .has(
+                                publicId
                             )
-                    `,
-
-                    args: [
-                        quizId
-                    ]
-                },
+                )
+        )
+    ];
 
 
-                {
-                    sql: `
-                        DELETE FROM quiz_questions
+const existingPositionMap =
+    new Map(
+        existingQuestionRows.map(
+            row => [
+                String(
+                    row.client_key
+                ),
+                Number(
+                    row.position
+                )
+            ]
+        )
+    );
+
+
+const structureChanged =
+    existingQuestionRows.length !==
+        questions.length ||
+
+    questions.some(
+        (
+            question,
+            questionIndex
+        ) =>
+            existingPositionMap.get(
+                question.clientKey
+            ) !==
+                questionIndex + 1
+    );
+
+
+const statements = [
+
+    /*
+        Metadata hanya satu row.
+    */
+    {
+        sql: `
+            UPDATE quizzes
+
+            SET
+                title = ?,
+                description = ?,
+                subject = ?,
+                material = ?,
+                due_at = ?,
+                updated_at =
+                    CURRENT_TIMESTAMP
+
+            WHERE id = ?
+        `,
+
+        args: [
+            metadata.title,
+            metadata.description,
+            metadata.subject,
+            metadata.material,
+            metadata.dueAt,
+            quizId
+        ]
+    }
+
+];
+
+
+/*
+    Hapus hanya soal yang sudah tidak ada
+    pada payload editor.
+*/
+if (incomingClientKeys.length === 0) {
+
+    statements.push(
+        {
+            sql: `
+                DELETE FROM quiz_options
+
+                WHERE question_id IN (
+                    SELECT id
+                    FROM quiz_questions
+                    WHERE quiz_id = ?
+                )
+            `,
+
+            args: [
+                quizId
+            ]
+        },
+
+        {
+            sql: `
+                DELETE FROM quiz_questions
+                WHERE quiz_id = ?
+            `,
+
+            args: [
+                quizId
+            ]
+        }
+    );
+
+} else {
+
+    const clientKeyPlaceholders =
+        incomingClientKeys
+            .map(() => "?")
+            .join(", ");
+
+
+    statements.push(
+        {
+            sql: `
+                DELETE FROM quiz_options
+
+                WHERE question_id IN (
+
+                    SELECT id
+                    FROM quiz_questions
+
+                    WHERE
+                        quiz_id = ?
+
+                    AND client_key
+                        NOT IN (
+                            ${clientKeyPlaceholders}
+                        )
+                )
+            `,
+
+            args: [
+                quizId,
+                ...incomingClientKeys
+            ]
+        },
+
+        {
+            sql: `
+                DELETE FROM quiz_questions
+
+                WHERE
+                    quiz_id = ?
+
+                AND client_key
+                    NOT IN (
+                        ${clientKeyPlaceholders}
+                    )
+            `,
+
+            args: [
+                quizId,
+                ...incomingClientKeys
+            ]
+        }
+    );
+
+}
+
+
+/*
+    Posisi dipindahkan sementara ke angka
+    negatif hanya saat urutannya berubah.
+
+    Ini mencegah konflik UNIQUE(quiz_id, position)
+    ketika dua soal bertukar posisi.
+*/
+if (
+    structureChanged &&
+    existingQuestionRows.length > 0
+) {
+
+    statements.push({
+        sql: `
+            UPDATE quiz_questions
+
+            SET position = -id
+
+            WHERE quiz_id = ?
+        `,
+
+        args: [
+            quizId
+        ]
+    });
+
+}
+
+
+questions.forEach(
+    (
+        question,
+        questionIndex
+    ) => {
+
+        const position =
+            questionIndex + 1;
+
+
+        /*
+            INSERT jika soal baru.
+
+            Jika client_key sudah ada, UPDATE hanya
+            dilakukan saat isi atau posisinya memang
+            berbeda. Soal yang sama menghasilkan
+            nol row write.
+        */
+statements.push({
+    sql: `
+        INSERT INTO quiz_questions (
+            quiz_id,
+            client_key,
+            question_type,
+            question_text,
+            correct_text_answer,
+            image_url,
+            image_public_id,
+            image_width,
+            image_height,
+            image_bytes,
+            position
+        )
+
+        VALUES (
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?
+        )
+
+        ON CONFLICT (
+            quiz_id,
+            client_key
+        )
+
+        DO UPDATE SET
+            question_type =
+                excluded.question_type,
+
+            question_text =
+                excluded.question_text,
+
+            correct_text_answer =
+                excluded.correct_text_answer,
+
+            image_url =
+                excluded.image_url,
+
+            image_public_id =
+                excluded.image_public_id,
+
+            image_width =
+                excluded.image_width,
+
+            image_height =
+                excluded.image_height,
+
+            image_bytes =
+                excluded.image_bytes,
+
+            position =
+                excluded.position,
+
+            updated_at =
+                CURRENT_TIMESTAMP
+
+        WHERE
+            quiz_questions.question_type
+                IS NOT excluded.question_type
+
+            OR quiz_questions.question_text
+                IS NOT excluded.question_text
+
+            OR quiz_questions.correct_text_answer
+                IS NOT excluded.correct_text_answer
+
+            OR quiz_questions.image_url
+                IS NOT excluded.image_url
+
+            OR quiz_questions.image_public_id
+                IS NOT excluded.image_public_id
+
+            OR quiz_questions.image_width
+                IS NOT excluded.image_width
+
+            OR quiz_questions.image_height
+                IS NOT excluded.image_height
+
+            OR quiz_questions.image_bytes
+                IS NOT excluded.image_bytes
+
+            OR quiz_questions.position
+                IS NOT excluded.position
+    `,
+
+    args: [
+        quizId,
+        question.clientKey,
+        question.type,
+        question.text,
+        question.correctText,
+        question.imageUrl,
+        question.imagePublicId,
+        question.imageWidth,
+        question.imageHeight,
+        question.imageBytes,
+        position
+    ]
+});
+
+
+        if (
+            question.type ===
+                "short_answer"
+        ) {
+
+            /*
+                Bila MCQ diubah menjadi Esai,
+                hapus pilihan lamanya saja.
+            */
+            statements.push({
+                sql: `
+                    DELETE FROM quiz_options
+
+                    WHERE question_id = (
+
+                        SELECT id
+                        FROM quiz_questions
 
                         WHERE
                             quiz_id = ?
+                            AND client_key = ?
+                    )
+                `,
+
+                args: [
+                    quizId,
+                    question.clientKey
+                ]
+            });
+
+
+            return;
+
+        }
+
+
+        question.options.forEach(
+            (
+                option,
+                optionIndex
+            ) => {
+
+                /*
+                    Pilihan juga memakai UPSERT
+                    bersyarat. Pilihan yang tidak
+                    berubah menghasilkan nol write.
+                */
+                statements.push({
+                    sql: `
+                        INSERT INTO quiz_options (
+                            question_id,
+                            option_text,
+                            position,
+                            is_correct
+                        )
+
+                        SELECT
+                            id,
+                            ?,
+                            ?,
+                            ?
+
+                        FROM quiz_questions
+
+                        WHERE
+                            quiz_id = ?
+                            AND client_key = ?
+
+                        ON CONFLICT (
+                            question_id,
+                            position
+                        )
+
+                        DO UPDATE SET
+                            option_text =
+                                excluded.option_text,
+
+                            is_correct =
+                                excluded.is_correct
+
+                        WHERE
+                            quiz_options.option_text
+                                IS NOT excluded.option_text
+
+                            OR quiz_options.is_correct
+                                IS NOT excluded.is_correct
                     `,
 
                     args: [
-                        quizId
+                        option.text,
+                        optionIndex + 1,
+
+                        option.isCorrect
+                            ? 1
+                            : 0,
+
+                        quizId,
+                        question.clientKey
                     ]
-                }
+                });
 
-            ];
+            }
+        );
 
-
-            questions.forEach(
-                (
-                    question,
-                    questionIndex
-                ) => {
-
-                    const position =
-                        questionIndex + 1;
+    }
+);
 
 
-                    /*
-                        Masukkan soal lebih dahulu.
-                    */
-                    statements.push({
-                        sql: `
-                            INSERT INTO
-                                quiz_questions (
-                                    quiz_id,
-                                    client_key,
-                                    question_type,
-                                    question_text,
-                                    correct_text_answer,
-                                    position
-                                )
+await tursoDb.batch(
+    statements,
+    "immediate"
+);
 
-                            VALUES (
-                                ?,
-                                ?,
-                                ?,
-                                ?,
-                                ?,
-                                ?
-                            )
-                        `,
-
-                        args: [
-                            quizId,
-                            question.clientKey,
-                            question.type,
-                            question.text,
-                            question.correctText,
-                            position
-                        ]
-                    });
-
-
-                    /*
-                        Isian Singkat mempunyai
-                        options kosong sehingga
-                        bagian ini otomatis dilewati.
-                    */
-                    question.options.forEach(
-                        (
-                            option,
-                            optionIndex
-                        ) => {
-
-                            /*
-                                Cari ID soal menggunakan
-                                quiz_id + client_key.
-
-                                Jadi kita tidak perlu
-                                menebak lastInsertRowid
-                                di dalam batch.
-                            */
-                            statements.push({
-                                sql: `
-                                    INSERT INTO
-                                        quiz_options (
-                                            question_id,
-                                            option_text,
-                                            position,
-                                            is_correct
-                                        )
-
-                                    SELECT
-                                        id,
-                                        ?,
-                                        ?,
-                                        ?
-
-                                    FROM quiz_questions
-
-                                    WHERE
-                                        quiz_id = ?
-                                        AND client_key = ?
-                                `,
-
-                                args: [
-                                    option.text,
-                                    optionIndex + 1,
-
-                                    option.isCorrect
-                                        ? 1
-                                        : 0,
-
-                                    quizId,
-                                    question.clientKey
-                                ]
-                            });
-
-                        }
-                    );
-
-                }
-            );
-
-
-            await tursoDb.batch(
-                statements,
-                "immediate"
-            );
+/*
+    Database sudah berhasil disimpan.
+    Cleanup tidak boleh menggagalkan autosave.
+*/
+try {
+    await deleteStoredQuizImages(
+        obsoleteImagePublicIds
+    );
+} catch (cleanupError) {
+    console.error(
+        "Gagal membersihkan gambar lama:",
+        cleanupError
+    );
+}
 
 
             return res.json({
@@ -1368,6 +2135,420 @@ app.put(
                     message:
                         "Gagal menyimpan perubahan Quiz."
                 });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - SAVE SETTINGS
+// ========================================
+
+app.patch(
+    "/api/admin/quizzes/:quizId/settings",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+
+        }
+
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let quizId;
+
+
+            try {
+
+                quizId =
+                    parsePositiveQuizId(
+                        req.params.quizId,
+                        "ID Quiz"
+                    );
+
+            } catch (validationError) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validationError.message
+                });
+
+            }
+
+
+            const existingQuiz =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            quizzes.id,
+                            quizzes.public_token,
+
+(
+    (
+        SELECT COUNT(*)
+
+        FROM quiz_attempts
+
+        WHERE
+            quiz_attempts.quiz_id =
+                quizzes.id
+    )
+
+    +
+
+    (
+        SELECT COUNT(*)
+
+        FROM quiz_guest_attempts
+
+        WHERE
+            quiz_guest_attempts.quiz_id =
+                quizzes.id
+    )
+)
+    AS response_count
+
+                        FROM quizzes
+
+                        WHERE quizzes.id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            if (!existingQuiz) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Quiz tidak ditemukan."
+                });
+
+            }
+
+
+            /*
+                Bobot dan target tidak boleh berubah
+                setelah nilai responden tersimpan.
+            */
+            if (
+                Number(
+                    existingQuiz.response_count ||
+                    0
+                ) > 0
+            ) {
+
+                return res.status(409).json({
+                    success: false,
+                    code:
+                        "QUIZ_SETTINGS_LOCKED",
+
+                    message:
+                        "Settings dikunci karena Quiz sudah memiliki responden."
+                });
+
+            }
+
+
+            let settings;
+
+
+            try {
+
+                settings =
+                    cleanQuizSettings(
+                        req.body
+                    );
+
+            } catch (validationError) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        validationError.message
+                });
+
+            }
+
+
+            /*
+                Pastikan seluruh ID siswa benar-benar
+                tersedia di database.
+            */
+            if (
+                settings.selectedStudentIds
+                    .length > 0
+            ) {
+
+                const placeholders =
+                    settings.selectedStudentIds
+                        .map(() => "?")
+                        .join(", ");
+
+
+                const validStudentRows =
+                    await tursoDb.all(
+                        `
+                            SELECT id
+
+                            FROM students
+
+                            WHERE id IN (
+                                ${placeholders}
+                            )
+                        `,
+                        settings.selectedStudentIds
+                    );
+
+
+                if (
+                    validStudentRows.length !==
+                    settings.selectedStudentIds
+                        .length
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Salah satu siswa yang dipilih tidak valid."
+                    });
+
+                }
+
+            }
+
+
+            let publicToken =
+                existingQuiz.public_token;
+
+
+            /*
+                Token dibuat sekali lalu dipertahankan
+                jika Public dimatikan dan diaktifkan lagi.
+            */
+            if (
+                settings.allowPublic &&
+                !publicToken
+            ) {
+
+                publicToken =
+                    generatePublicQuizToken();
+
+            }
+
+
+            const currentTargetRows =
+                await tursoDb.all(
+                    `
+                        SELECT student_id
+
+                        FROM quiz_allowed_students
+
+                        WHERE quiz_id = ?
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            const currentTargetIds =
+                new Set(
+                    currentTargetRows.map(
+                        row =>
+                            Number(
+                                row.student_id
+                            )
+                    )
+                );
+
+
+            const desiredTargetIds =
+                new Set(
+                    settings.privateAudience ===
+                        "selected"
+                        ? settings.selectedStudentIds
+                        : []
+                );
+
+
+            const statements = [
+
+                {
+                    sql: `
+                        UPDATE quizzes
+
+                        SET
+                            use_type_weights = ?,
+                            essay_weight = ?,
+                            allow_private = ?,
+                            allow_public = ?,
+                            private_audience = ?,
+                            public_token = ?,
+                            updated_at =
+                                CURRENT_TIMESTAMP
+
+                        WHERE id = ?
+                    `,
+
+                    args: [
+                        settings.useTypeWeights
+                            ? 1
+                            : 0,
+
+                        settings.essayWeight,
+
+                        settings.allowPrivate
+                            ? 1
+                            : 0,
+
+                        settings.allowPublic
+                            ? 1
+                            : 0,
+
+                        settings.privateAudience,
+                        publicToken,
+                        quizId
+                    ]
+                }
+
+            ];
+
+
+            /*
+                Hapus hanya target yang dilepas.
+            */
+            currentTargetIds.forEach(
+                studentId => {
+
+                    if (
+                        desiredTargetIds.has(
+                            studentId
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    statements.push({
+                        sql: `
+                            DELETE FROM
+                                quiz_allowed_students
+
+                            WHERE
+                                quiz_id = ?
+                                AND student_id = ?
+                        `,
+
+                        args: [
+                            quizId,
+                            studentId
+                        ]
+                    });
+
+                }
+            );
+
+
+            /*
+                Tambahkan hanya target yang baru.
+            */
+            desiredTargetIds.forEach(
+                studentId => {
+
+                    if (
+                        currentTargetIds.has(
+                            studentId
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    statements.push({
+                        sql: `
+                            INSERT INTO
+                                quiz_allowed_students
+                            (
+                                quiz_id,
+                                student_id
+                            )
+
+                            VALUES (?, ?)
+                        `,
+
+                        args: [
+                            quizId,
+                            studentId
+                        ]
+                    });
+
+                }
+            );
+
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                message:
+                    "Settings Quiz berhasil disimpan.",
+
+                settings: {
+
+                    ...settings,
+
+                    publicToken,
+
+                    publicUrl:
+                        settings.allowPublic
+                            ? `/public-quiz.html?token=${publicToken}`
+                            : null
+
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menyimpan Settings Quiz:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menyimpan Settings Quiz."
+            });
 
         }
 
@@ -1876,6 +3057,43 @@ app.delete(
 
             }
 
+/*
+    Simpan seluruh identitas gambar sebelum
+    pertanyaan Quiz dihapus dari database.
+*/
+const quizImageRows =
+    await tursoDb.all(
+        `
+            SELECT DISTINCT
+                image_public_id
+
+            FROM quiz_questions
+
+            WHERE
+                quiz_id = ?
+
+                AND image_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    image_public_id
+                ) <> ''
+        `,
+        [
+            quizId
+        ]
+    );
+
+
+const quizImagePublicIds =
+    quizImageRows.map(
+        row =>
+            String(
+                row.image_public_id ||
+                ""
+            ).trim()
+    ).filter(Boolean);
+
 
             /*
                 Semua data dihapus dalam satu
@@ -2007,6 +3225,22 @@ app.delete(
                 "immediate"
             );
 
+            /*
+    Quiz sudah terhapus dari database.
+    Kegagalan cleanup gambar tidak boleh
+    mengubah hasil penghapusan Quiz.
+*/
+try {
+    await deleteStoredQuizImages(
+        quizImagePublicIds
+    );
+} catch (cleanupError) {
+    console.error(
+        "Gagal membersihkan gambar Quiz:",
+        cleanupError
+    );
+}
+
 
             return res.json({
                 success:
@@ -2038,6 +3272,576 @@ app.delete(
 
                     message:
                         "Gagal menghapus Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - PUBLIC GUEST OPEN
+// ========================================
+
+app.get(
+    "/api/public/quizzes/:token",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let publicToken;
+
+
+            try {
+
+                publicToken =
+                    parsePublicQuizToken(
+                        req.params.token
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "INVALID_PUBLIC_QUIZ_TOKEN",
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            /*
+                Cari ID melalui token dahulu.
+
+                allow_public wajib aktif sehingga
+                token lama tidak dapat digunakan jika
+                Guru mematikan akses Public.
+            */
+            const publicQuizRow =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id
+
+                        FROM quizzes
+
+                        WHERE
+                            public_token = ?
+
+                            AND
+                            COALESCE(
+                                allow_public,
+                                0
+                            ) = 1
+
+                        LIMIT 1
+                    `,
+                    [
+                        publicToken
+                    ]
+                );
+
+
+            if (!publicQuizRow) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "PUBLIC_QUIZ_NOT_FOUND",
+
+                        message:
+                            "Public Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                false memastikan Guest tidak pernah
+                menerima kunci jawaban.
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    Number(
+                        publicQuizRow.id
+                    ),
+                    false
+                );
+
+
+            const availabilityError =
+                getPublicQuizAvailabilityError(
+                    quiz
+                );
+
+
+            if (availabilityError) {
+
+                /*
+                    Metadata dan pertanyaan tanpa kunci
+                    tetap dikirim agar frontend dapat
+                    menampilkan halaman di belakang
+                    panel warning yang diblur.
+                */
+                return res
+                    .status(
+                        availabilityError.status
+                    )
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            availabilityError.code,
+
+                        message:
+                            availabilityError.message,
+
+                        serverNow:
+                            new Date()
+                                .toISOString(),
+
+                        quiz
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                guest:
+                    true,
+
+                warning:
+                    "Kamu mengerjakan Quiz sebagai Guest. Jawaban tidak mempunyai fitur autosave.",
+
+                serverNow:
+                    new Date()
+                        .toISOString(),
+
+                quiz
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuka Public Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    code:
+                        "PUBLIC_QUIZ_OPEN_FAILED",
+
+                    message:
+                        "Gagal membuka Public Quiz."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// ONLINE QUIZ - PUBLIC GUEST SUBMIT
+// ========================================
+
+app.post(
+    "/api/public/quizzes/:token/submit",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let publicToken;
+            let guestName;
+
+
+            try {
+
+                publicToken =
+                    parsePublicQuizToken(
+                        req.params.token
+                    );
+
+
+                guestName =
+                    cleanGuestQuizName(
+                        req.body &&
+                        req.body.name
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "INVALID_PUBLIC_SUBMISSION",
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const publicQuizRow =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id
+
+                        FROM quizzes
+
+                        WHERE
+                            public_token = ?
+
+                            AND
+                            COALESCE(
+                                allow_public,
+                                0
+                            ) = 1
+
+                        LIMIT 1
+                    `,
+                    [
+                        publicToken
+                    ]
+                );
+
+
+            if (!publicQuizRow) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            "PUBLIC_QUIZ_NOT_FOUND",
+
+                        message:
+                            "Public Quiz tidak ditemukan."
+                    });
+
+            }
+
+
+            /*
+                true diperlukan karena backend
+                membutuhkan kunci untuk penilaian.
+
+                Data quiz dengan kunci tidak pernah
+                dikirim kembali ke Guest.
+            */
+            const quiz =
+                await getQuizWithQuestions(
+                    Number(
+                        publicQuizRow.id
+                    ),
+                    true
+                );
+
+
+            const availabilityError =
+                getPublicQuizAvailabilityError(
+                    quiz
+                );
+
+
+            if (availabilityError) {
+
+                return res
+                    .status(
+                        availabilityError.status
+                    )
+                    .json({
+                        success:
+                            false,
+
+                        code:
+                            availabilityError.code,
+
+                        message:
+                            availabilityError.message
+                    });
+
+            }
+
+
+            const grading =
+                gradePublicQuizAnswers(
+                    quiz,
+
+                    req.body &&
+                    Array.isArray(
+                        req.body.answers
+                    )
+                        ? req.body.answers
+                        : []
+                );
+
+
+            /*
+                Key dibuat server dan digunakan untuk
+                menemukan attempt yang baru dibuat
+                di dalam transaction batch.
+            */
+            const submissionKey =
+                crypto
+                    .randomBytes(24)
+                    .toString(
+                        "base64url"
+                    );
+
+
+            const statements = [
+
+                {
+                    sql: `
+                        INSERT INTO
+                            quiz_guest_attempts (
+                                quiz_id,
+                                submission_key,
+                                guest_name,
+                                correct_count,
+                                total_questions,
+                                score,
+                                submitted_at
+                            )
+
+                        VALUES (
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            CURRENT_TIMESTAMP
+                        )
+                    `,
+
+                    args: [
+                        Number(
+                            quiz.id
+                        ),
+
+                        submissionKey,
+
+                        guestName,
+
+                        grading.correctCount,
+
+                        grading.totalQuestions,
+
+                        grading.score
+                    ]
+                }
+
+            ];
+
+
+            grading.gradedAnswers.forEach(
+                answer => {
+
+                    statements.push({
+                        sql: `
+                            INSERT INTO
+                                quiz_guest_answers (
+                                    guest_attempt_id,
+                                    question_id,
+                                    selected_option_id,
+                                    text_answer,
+                                    is_correct
+                                )
+
+                            SELECT
+                                quiz_guest_attempts.id,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+
+                            FROM quiz_guest_attempts
+
+                            WHERE
+                                quiz_guest_attempts.submission_key =
+                                    ?
+                        `,
+
+                        args: [
+                            answer.questionId,
+
+                            answer.selectedOptionId,
+
+                            answer.textAnswer,
+
+                            answer.isCorrect
+                                ? 1
+                                : 0,
+
+                            submissionKey
+                        ]
+                    });
+
+                }
+            );
+
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            const savedAttempt =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            guest_name,
+                            correct_count,
+                            total_questions,
+                            score,
+                            submitted_at
+
+                        FROM quiz_guest_attempts
+
+                        WHERE
+                            submission_key = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        submissionKey
+                    ]
+                );
+
+
+            if (!savedAttempt) {
+
+                throw new Error(
+                    "Submission Guest tersimpan tetapi tidak dapat dibaca kembali."
+                );
+
+            }
+
+
+            return res
+                .status(201)
+                .json({
+                    success:
+                        true,
+
+                    guest:
+                        true,
+
+                    message:
+                        "Jawaban Guest berhasil dikirim.",
+
+                    result: {
+                        attemptId:
+                            Number(
+                                savedAttempt.id
+                            ),
+
+                        name:
+                            savedAttempt.guest_name,
+
+                        role:
+                            "GUEST",
+
+                        quizId:
+                            Number(
+                                quiz.id
+                            ),
+
+                        quizTitle:
+                            quiz.title,
+
+                        correctCount:
+                            Number(
+                                savedAttempt.correct_count
+                            ),
+
+                        totalQuestions:
+                            Number(
+                                savedAttempt.total_questions
+                            ),
+
+                        score:
+                            Number(
+                                savedAttempt.score
+                            ),
+
+                        submittedAt:
+                            savedAttempt.submitted_at,
+
+weighted:
+    grading.breakdown.weighted,
+
+review:
+    buildPublicQuizReview(
+        quiz,
+        grading.gradedAnswers
+    )
+                    }
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal Submit Public Quiz:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    code:
+                        "PUBLIC_QUIZ_SUBMIT_FAILED",
+
+                    message:
+                        "Gagal mengirim jawaban Public Quiz."
                 });
 
         }
@@ -2202,13 +4006,55 @@ const studentQuizRows =
 
             FROM quizzes
 
-            WHERE
-                quizzes.status IN (
-                    'published',
-                    'closed'
-                )
+WHERE
+    quizzes.status IN (
+        'published',
+        'closed'
+    )
 
-                AND NOT EXISTS (
+    /*
+        Quiz harus mengizinkan akses siswa
+        yang mempunyai akun LMS.
+    */
+    AND
+        COALESCE(
+            quizzes.allow_private,
+            1
+        ) = 1
+
+    /*
+        Tampilkan jika targetnya semua siswa,
+        atau siswa ini termasuk target pilihan.
+    */
+    AND (
+        COALESCE(
+            quizzes.private_audience,
+            'all'
+        ) = 'all'
+
+        OR (
+
+            quizzes.private_audience =
+                'selected'
+
+            AND EXISTS (
+                SELECT
+                    1
+
+                FROM quiz_allowed_students
+
+                WHERE
+                    quiz_allowed_students.quiz_id =
+                        quizzes.id
+
+                    AND
+                    quiz_allowed_students.student_id =
+                        ?
+            )
+        )
+    )
+
+    AND NOT EXISTS (
                     SELECT
                         1
 
@@ -2283,9 +4129,10 @@ const studentQuizRows =
                 quizzes.published_at DESC,
                 quizzes.id DESC
         `,
-        [
-            studentId
-        ]
+[
+    studentId,
+    studentId
+]
     );
 
 
@@ -2602,10 +4449,11 @@ app.get(
                 );
 
 
-            const availabilityError =
-                getStudentQuizAvailabilityError(
-                    quiz
-                );
+const availabilityError =
+    await getStudentQuizAvailabilityError(
+        quiz,
+        studentId
+    );
 
 
             if (availabilityError) {
@@ -2789,10 +4637,11 @@ app.post(
                 );
 
 
-            const availabilityError =
-                getStudentQuizAvailabilityError(
-                    quiz
-                );
+const availabilityError =
+    await getStudentQuizAvailabilityError(
+        quiz,
+        studentId
+    );
 
 
             if (availabilityError) {
@@ -3077,30 +4926,215 @@ app.post(
                 );
 
 
-            const correctCount =
-                gradedAnswers.filter(
-                    (
-                        answer
-                    ) =>
-                        answer.isCorrect
-                ).length;
+ /*
+    Jumlah jawaban benar keseluruhan tetap
+    disimpan untuk ringkasan hasil.
+*/
+const correctCount =
+    gradedAnswers.filter(
+        answer =>
+            answer.isCorrect
+    ).length;
 
 
-            const totalQuestions =
-                quiz.questions.length;
+const totalQuestions =
+    quiz.questions.length;
 
 
-            /*
-                Pembulatan selalu ke bawah.
-            */
-            const score =
-                Math.floor(
-                    (
-                        correctCount /
-                        totalQuestions
-                    ) *
-                    100
-                );
+/*
+    Pisahkan ID soal berdasarkan jenisnya.
+
+    short_answer digunakan backend sebagai
+    jenis soal Esai/Isian Singkat.
+*/
+const mcqQuestionIds =
+    new Set(
+        quiz.questions
+            .filter(
+                question =>
+                    question.type ===
+                    "mcq"
+            )
+            .map(
+                question =>
+                    Number(
+                        question.id
+                    )
+            )
+    );
+
+
+const essayQuestionIds =
+    new Set(
+        quiz.questions
+            .filter(
+                question =>
+                    question.type ===
+                    "short_answer"
+            )
+            .map(
+                question =>
+                    Number(
+                        question.id
+                    )
+            )
+    );
+
+
+const mcqQuestionCount =
+    mcqQuestionIds.size;
+
+
+const essayQuestionCount =
+    essayQuestionIds.size;
+
+
+const mcqCorrectCount =
+    gradedAnswers.filter(
+        answer =>
+            answer.isCorrect &&
+            mcqQuestionIds.has(
+                Number(
+                    answer.questionId
+                )
+            )
+    ).length;
+
+
+const essayCorrectCount =
+    gradedAnswers.filter(
+        answer =>
+            answer.isCorrect &&
+            essayQuestionIds.has(
+                Number(
+                    answer.questionId
+                )
+            )
+    ).length;
+
+
+/*
+    Bobot hanya digunakan jika:
+
+    1. Toggle bobot diaktifkan.
+    2. Quiz mempunyai soal MCQ.
+    3. Quiz juga mempunyai soal Esai.
+
+    Jika Quiz hanya mempunyai satu jenis soal,
+    jenis tersebut otomatis bernilai 100%.
+
+    Jika toggle bobot dimatikan, semua soal
+    dihitung rata seperti sistem sebelumnya.
+*/
+const useWeightedScore =
+    Boolean(
+        quiz.settings &&
+        quiz.settings.useTypeWeights
+    ) &&
+    mcqQuestionCount > 0 &&
+    essayQuestionCount > 0;
+
+
+let score;
+
+
+if (useWeightedScore) {
+
+    /*
+        essayWeight sudah divalidasi saat
+        Settings disimpan.
+
+        Validasi ulang dilakukan agar grading
+        tetap aman jika data database lama
+        mengalami masalah.
+    */
+    const essayWeight =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Math.round(
+                    Number(
+                        quiz.settings.essayWeight
+                    ) || 0
+                )
+            )
+        );
+
+
+    const mcqWeight =
+        100 -
+        essayWeight;
+
+
+    /*
+        Contoh:
+
+        MCQ:
+        4 benar dari 5, bobot 40
+        = 4 / 5 × 40
+        = 32 poin
+
+        Esai:
+        3 benar dari 5, bobot 60
+        = 3 / 5 × 60
+        = 36 poin
+
+        Nilai akhir:
+        32 + 36 = 68
+    */
+    const mcqScoreContribution =
+        (
+            mcqCorrectCount /
+            mcqQuestionCount
+        ) *
+        mcqWeight;
+
+
+    const essayScoreContribution =
+        (
+            essayCorrectCount /
+            essayQuestionCount
+        ) *
+        essayWeight;
+
+
+    score =
+        Math.floor(
+            mcqScoreContribution +
+            essayScoreContribution
+        );
+
+} else {
+
+    /*
+        Mode tanpa bobot atau Quiz hanya
+        memiliki satu jenis soal.
+    */
+    score =
+        Math.floor(
+            (
+                correctCount /
+                totalQuestions
+            ) *
+            100
+        );
+
+}
+
+
+/*
+    Perlindungan tambahan agar nilai yang
+    tersimpan selalu berada pada 0–100.
+*/
+score =
+    Math.max(
+        0,
+        Math.min(
+            100,
+            score
+        )
+    );
 
 
             /*
@@ -3457,9 +5491,10 @@ async function getQuizAttemptDetail(
                         AS question_id,
 
                     quiz_questions.position,
-                    quiz_questions.question_type,
-                    quiz_questions.question_text,
-                    quiz_questions.correct_text_answer,
+quiz_questions.question_type,
+quiz_questions.question_text,
+quiz_questions.image_url,
+quiz_questions.correct_text_answer,
 
                     quiz_answers.text_answer,
                     quiz_answers.is_correct,
@@ -3587,10 +5622,13 @@ async function getQuizAttemptDetail(
 
                     type,
 
-                    text:
-                        answerRow.question_text,
+text:
+    answerRow.question_text,
 
-                    studentAnswer,
+imageUrl:
+    answerRow.image_url || null,
+
+studentAnswer,
 
                     correctAnswer,
 
@@ -3660,6 +5698,329 @@ async function getQuizAttemptDetail(
 
         className:
             attempt.class_name,
+
+        title:
+            attempt.title,
+
+        description:
+            attempt.description,
+
+        subject:
+            attempt.subject,
+
+        material:
+            attempt.material,
+
+        correctCount:
+            Number(
+                attempt.correct_count
+            ),
+
+        totalQuestions:
+            Number(
+                attempt.total_questions
+            ),
+
+        score:
+            Number(
+                attempt.score
+            ),
+
+        submittedAt:
+            attempt.submitted_at,
+
+        answers
+    };
+
+}
+
+// ========================================
+// ONLINE QUIZ - GUEST ATTEMPT DETAIL
+// ========================================
+
+async function getGuestQuizAttemptDetail(
+    attemptId
+) {
+
+    await ensureQuizTables();
+
+
+    const attempt =
+        await tursoDb.get(
+            `
+                SELECT
+                    quiz_guest_attempts.id,
+                    quiz_guest_attempts.quiz_id,
+                    quiz_guest_attempts.guest_name,
+                    quiz_guest_attempts.correct_count,
+                    quiz_guest_attempts.total_questions,
+                    quiz_guest_attempts.score,
+                    quiz_guest_attempts.submitted_at,
+
+                    quizzes.title,
+                    quizzes.description,
+                    quizzes.subject,
+                    quizzes.material
+
+                FROM quiz_guest_attempts
+
+                INNER JOIN quizzes
+                    ON quizzes.id =
+                        quiz_guest_attempts.quiz_id
+
+                WHERE
+                    quiz_guest_attempts.id = ?
+
+                LIMIT 1
+            `,
+            [
+                attemptId
+            ]
+        );
+
+
+    if (!attempt) {
+
+        return null;
+
+    }
+
+
+    /*
+        Ambil semua jawaban Guest dalam urutan
+        soal yang sama dengan detail siswa.
+    */
+    const answerRows =
+        await tursoDb.all(
+            `
+                SELECT
+                    quiz_questions.id
+                        AS question_id,
+
+                    quiz_questions.position,
+quiz_questions.question_type,
+quiz_questions.question_text,
+quiz_questions.image_url,
+quiz_questions.correct_text_answer,
+
+                    quiz_guest_answers.text_answer,
+                    quiz_guest_answers.is_correct,
+
+                    selected_option.id
+                        AS selected_option_id,
+
+                    selected_option.option_text
+                        AS selected_option_text,
+
+                    selected_option.position
+                        AS selected_option_position,
+
+                    correct_option.id
+                        AS correct_option_id,
+
+                    correct_option.option_text
+                        AS correct_option_text,
+
+                    correct_option.position
+                        AS correct_option_position
+
+                FROM quiz_questions
+
+                LEFT JOIN quiz_guest_answers
+                    ON quiz_guest_answers.question_id =
+                        quiz_questions.id
+
+                    AND
+                    quiz_guest_answers.guest_attempt_id =
+                        ?
+
+                LEFT JOIN quiz_options
+                    AS selected_option
+
+                    ON selected_option.id =
+                        quiz_guest_answers.selected_option_id
+
+                LEFT JOIN quiz_options
+                    AS correct_option
+
+                    ON correct_option.question_id =
+                        quiz_questions.id
+
+                    AND
+                    correct_option.is_correct = 1
+
+                WHERE
+                    quiz_questions.quiz_id = ?
+
+                ORDER BY
+                    quiz_questions.position ASC,
+                    quiz_questions.id ASC
+            `,
+            [
+                attemptId,
+
+                Number(
+                    attempt.quiz_id
+                )
+            ]
+        );
+
+
+    const answers =
+        answerRows.map(
+            answerRow => {
+
+                const type =
+                    answerRow.question_type;
+
+
+                let guestAnswer;
+                let correctAnswer;
+
+
+                if (
+                    type ===
+                        "mcq"
+                ) {
+
+                    guestAnswer =
+                        answerRow
+                            .selected_option_text ||
+                        "Tidak menjawab";
+
+
+                    correctAnswer =
+                        answerRow
+                            .correct_option_text ||
+                        "Kunci jawaban tidak ditemukan";
+
+                } else {
+
+                    guestAnswer =
+                        answerRow.text_answer &&
+                        answerRow.text_answer.trim()
+
+                            ? answerRow.text_answer
+                            : "Tidak menjawab";
+
+
+                    correctAnswer =
+                        answerRow
+                            .correct_text_answer ||
+                        "Kunci jawaban tidak ditemukan";
+
+                }
+
+
+                return {
+                    questionId:
+                        Number(
+                            answerRow.question_id
+                        ),
+
+                    position:
+                        Number(
+                            answerRow.position
+                        ),
+
+type,
+
+text:
+    answerRow.question_text,
+
+imageUrl:
+    answerRow.image_url || null,
+
+/*
+    Nama property tetap studentAnswer
+                        agar renderer Individual lama dapat
+                        digunakan tanpa dibuat ulang.
+                    */
+                    studentAnswer:
+                        guestAnswer,
+
+                    correctAnswer,
+
+                    selectedOptionId:
+                        answerRow.selected_option_id
+                            ? Number(
+                                answerRow
+                                    .selected_option_id
+                            )
+                            : null,
+
+                    selectedOptionPosition:
+                        answerRow
+                            .selected_option_position
+                            ? Number(
+                                answerRow
+                                    .selected_option_position
+                            )
+                            : null,
+
+                    correctOptionId:
+                        answerRow.correct_option_id
+                            ? Number(
+                                answerRow
+                                    .correct_option_id
+                            )
+                            : null,
+
+                    correctOptionPosition:
+                        answerRow
+                            .correct_option_position
+                            ? Number(
+                                answerRow
+                                    .correct_option_position
+                            )
+                            : null,
+
+                    isCorrect:
+                        Number(
+                            answerRow.is_correct ||
+                            0
+                        ) === 1
+                };
+
+            }
+        );
+
+
+    return {
+        id:
+            Number(
+                attempt.id
+            ),
+
+        responseKey:
+            `guest:${
+                Number(
+                    attempt.id
+                )
+            }`,
+
+        attemptType:
+            "guest",
+
+        isGuest:
+            true,
+
+        role:
+            "GUEST",
+
+        quizId:
+            Number(
+                attempt.quiz_id
+            ),
+
+        studentId:
+            null,
+
+        studentName:
+            attempt.guest_name,
+
+        className:
+            "GUEST",
 
         title:
             attempt.title,
@@ -3898,88 +6259,178 @@ app.get(
             /*
                 DAFTAR RESPONDEN
             */
-            const respondentRows =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            quiz_attempts.id
-                                AS attempt_id,
+ const respondentRows =
+    await tursoDb.all(
+        `
+            SELECT
+                combined.respondent_type,
+                combined.attempt_id,
+                combined.student_id,
+                combined.respondent_name,
+                combined.class_name,
+                combined.correct_count,
+                combined.total_questions,
+                combined.score,
+                combined.submitted_at
 
-                            quiz_attempts.student_id,
-                            quiz_attempts.correct_count,
-                            quiz_attempts.total_questions,
-                            quiz_attempts.score,
-                            quiz_attempts.submitted_at,
+            FROM (
 
-                            students.name
-                                AS student_name,
+                /*
+                    RESPONDEN SISWA TERDAFTAR
+                */
+                SELECT
+                    'student'
+                        AS respondent_type,
 
-                            students.class_name
+                    quiz_attempts.id
+                        AS attempt_id,
 
-                        FROM quiz_attempts
+                    quiz_attempts.student_id,
 
-                        INNER JOIN students
-                            ON students.id =
-                                quiz_attempts.student_id
+                    students.name
+                        AS respondent_name,
 
-                        WHERE
-                            quiz_attempts.quiz_id = ?
+                    students.class_name,
 
-                        ORDER BY
-                            quiz_attempts.submitted_at
-                                DESC,
+                    quiz_attempts.correct_count,
+                    quiz_attempts.total_questions,
+                    quiz_attempts.score,
+                    quiz_attempts.submitted_at
 
-                            quiz_attempts.id
-                                DESC
-                    `,
-                    [
-                        quizId
-                    ]
+                FROM quiz_attempts
+
+                INNER JOIN students
+                    ON students.id =
+                        quiz_attempts.student_id
+
+                WHERE
+                    quiz_attempts.quiz_id = ?
+
+
+                UNION ALL
+
+
+                /*
+                    RESPONDEN GUEST
+                */
+                SELECT
+                    'guest'
+                        AS respondent_type,
+
+                    quiz_guest_attempts.id
+                        AS attempt_id,
+
+                    NULL
+                        AS student_id,
+
+                    quiz_guest_attempts.guest_name
+                        AS respondent_name,
+
+                    'GUEST'
+                        AS class_name,
+
+                    quiz_guest_attempts.correct_count,
+                    quiz_guest_attempts.total_questions,
+                    quiz_guest_attempts.score,
+                    quiz_guest_attempts.submitted_at
+
+                FROM quiz_guest_attempts
+
+                WHERE
+                    quiz_guest_attempts.quiz_id = ?
+
+            )
+                AS combined
+
+            ORDER BY
+                combined.submitted_at DESC,
+                combined.attempt_id DESC
+        `,
+        [
+            quizId,
+            quizId
+        ]
+    );
+
+
+const respondents =
+    respondentRows.map(
+        respondentRow => {
+
+            const attemptType =
+                respondentRow.respondent_type ===
+                    "guest"
+                    ? "guest"
+                    : "student";
+
+
+            const attemptId =
+                Number(
+                    respondentRow.attempt_id
                 );
 
 
-            const respondents =
-                respondentRows.map(
-                    (
-                        respondentRow
-                    ) => ({
+            const isGuest =
+                attemptType ===
+                    "guest";
 
-                        attemptId:
-                            Number(
-                                respondentRow.attempt_id
-                            ),
 
-                        studentId:
-                            Number(
-                                respondentRow.student_id
-                            ),
+            return {
+                /*
+                    attemptId bisa sama antara tabel
+                    siswa dan Guest. Gunakan responseKey
+                    sebagai identitas unik frontend.
+                */
+                responseKey:
+                    `${attemptType}:${attemptId}`,
 
-                        studentName:
-                            respondentRow.student_name,
+                attemptType,
 
-                        className:
-                            respondentRow.class_name,
+                attemptId,
 
-                        correctCount:
-                            Number(
-                                respondentRow.correct_count
-                            ),
+                studentId:
+                    isGuest
+                        ? null
+                        : Number(
+                            respondentRow.student_id
+                        ),
 
-                        totalQuestions:
-                            Number(
-                                respondentRow.total_questions
-                            ),
+                studentName:
+                    respondentRow.respondent_name,
 
-                        score:
-                            Number(
-                                respondentRow.score
-                            ),
+                className:
+                    isGuest
+                        ? "GUEST"
+                        : respondentRow.class_name,
 
-                        submittedAt:
-                            respondentRow.submitted_at
+                role:
+                    isGuest
+                        ? "GUEST"
+                        : "STUDENT",
 
-                    })
-                );
+                isGuest,
+
+                correctCount:
+                    Number(
+                        respondentRow.correct_count
+                    ),
+
+                totalQuestions:
+                    Number(
+                        respondentRow.total_questions
+                    ),
+
+                score:
+                    Number(
+                        respondentRow.score
+                    ),
+
+                submittedAt:
+                    respondentRow.submitted_at
+            };
+
+        }
+    );
 
 
             /*
@@ -4174,55 +6625,97 @@ app.get(
                 row untuk setiap soal, termasuk jika
                 siswa tidak menjawab.
             */
-            const accuracyRows =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            quiz_questions.id
-                                AS question_id,
+ const accuracyRows =
+    await tursoDb.all(
+        `
+            SELECT
+                quiz_questions.id
+                    AS question_id,
 
-                            quiz_questions.position,
-                            quiz_questions.question_text,
+                quiz_questions.position,
+                quiz_questions.question_text,
 
-                            SUM(
-                                CASE
-                                    WHEN
-                                        quiz_answers.is_correct =
-                                            1
-                                        THEN 1
+                SUM(
+                    CASE
+                        WHEN
+                            combined_answers.is_correct =
+                                1
+                            THEN 1
 
-                                    ELSE 0
-                                END
-                            )
-                                AS correct_count,
+                        ELSE 0
+                    END
+                )
+                    AS correct_count,
 
-                            COUNT(
-                                quiz_answers.id
-                            )
-                                AS answer_count
+                COUNT(
+                    combined_answers.question_id
+                )
+                    AS answer_count
 
-                        FROM quiz_questions
+            FROM quiz_questions
 
-                        LEFT JOIN quiz_answers
-                            ON quiz_answers.question_id =
-                                quiz_questions.id
+            LEFT JOIN (
 
-                        WHERE
-                            quiz_questions.quiz_id = ?
+                /*
+                    Jawaban siswa terdaftar.
+                */
+                SELECT
+                    quiz_answers.question_id,
+                    quiz_answers.is_correct
 
-                        GROUP BY
-                            quiz_questions.id,
-                            quiz_questions.position,
-                            quiz_questions.question_text
+                FROM quiz_answers
 
-                        ORDER BY
-                            quiz_questions.position ASC,
-                            quiz_questions.id ASC
-                    `,
-                    [
-                        quizId
-                    ]
-                );
+                INNER JOIN quiz_attempts
+                    ON quiz_attempts.id =
+                        quiz_answers.attempt_id
+
+                WHERE
+                    quiz_attempts.quiz_id = ?
+
+
+                UNION ALL
+
+
+                /*
+                    Jawaban Guest.
+                */
+                SELECT
+                    quiz_guest_answers.question_id,
+                    quiz_guest_answers.is_correct
+
+                FROM quiz_guest_answers
+
+                INNER JOIN quiz_guest_attempts
+                    ON quiz_guest_attempts.id =
+                        quiz_guest_answers.guest_attempt_id
+
+                WHERE
+                    quiz_guest_attempts.quiz_id = ?
+
+            )
+                AS combined_answers
+
+                ON combined_answers.question_id =
+                    quiz_questions.id
+
+            WHERE
+                quiz_questions.quiz_id = ?
+
+            GROUP BY
+                quiz_questions.id,
+                quiz_questions.position,
+                quiz_questions.question_text
+
+            ORDER BY
+                quiz_questions.position ASC,
+                quiz_questions.id ASC
+        `,
+        [
+            quizId,
+            quizId,
+            quizId
+        ]
+    );
 
 
             const questionAccuracy =
@@ -4347,6 +6840,61 @@ app.get(
     }
 );
 
+function createAdminQuizResponseIdentity(
+    responseRow
+) {
+
+    const attemptType =
+        responseRow.respondent_type ===
+            "guest"
+            ? "guest"
+            : "student";
+
+
+    const attemptId =
+        Number(
+            responseRow.attempt_id
+        );
+
+
+    const isGuest =
+        attemptType ===
+            "guest";
+
+
+    return {
+        responseKey:
+            `${attemptType}:${attemptId}`,
+
+        attemptType,
+
+        attemptId,
+
+        studentId:
+            isGuest
+                ? null
+                : Number(
+                    responseRow.student_id
+                ),
+
+        studentName:
+            responseRow.student_name,
+
+        className:
+            isGuest
+                ? "GUEST"
+                : responseRow.class_name,
+
+        role:
+            isGuest
+                ? "GUEST"
+                : "STUDENT",
+
+        isGuest
+    };
+
+}
+
 // ========================================
 // ONLINE QUIZ - QUESTION RESPONSE SUMMARY
 // ========================================
@@ -4447,65 +6995,144 @@ app.get(
                 LEFT JOIN memastikan siswa yang
                 tidak menjawab tetap muncul.
             */
-            const responseRows =
-                await tursoDb.all(
-                    `
-                        SELECT
-                            quiz_attempts.id
-                                AS attempt_id,
+ const responseRows =
+    await tursoDb.all(
+        `
+            SELECT
+                combined.respondent_type,
+                combined.attempt_id,
+                combined.student_id,
+                combined.student_name,
+                combined.class_name,
+                combined.text_answer,
+                combined.is_correct,
+                combined.option_id,
+                combined.option_text,
+                combined.option_position
 
-                            students.id
-                                AS student_id,
+            FROM (
 
-                            students.name
-                                AS student_name,
+                /*
+                    JAWABAN SISWA TERDAFTAR
+                */
+                SELECT
+                    'student'
+                        AS respondent_type,
 
-                            students.class_name,
+                    quiz_attempts.id
+                        AS attempt_id,
 
-                            quiz_answers.text_answer,
-                            quiz_answers.is_correct,
+                    students.id
+                        AS student_id,
 
-                            selected_option.id
-                                AS option_id,
+                    students.name
+                        AS student_name,
 
-                            selected_option.option_text,
+                    students.class_name,
 
-                            selected_option.position
-                                AS option_position
+                    quiz_answers.text_answer,
+                    quiz_answers.is_correct,
 
-                        FROM quiz_attempts
+                    selected_option.id
+                        AS option_id,
 
-                        INNER JOIN students
-                            ON students.id =
-                                quiz_attempts.student_id
+                    selected_option.option_text,
 
-                        LEFT JOIN quiz_answers
-                            ON quiz_answers.attempt_id =
-                                quiz_attempts.id
+                    selected_option.position
+                        AS option_position
 
-                            AND
-                            quiz_answers.question_id = ?
+                FROM quiz_attempts
 
-                        LEFT JOIN quiz_options
-                            AS selected_option
+                INNER JOIN students
+                    ON students.id =
+                        quiz_attempts.student_id
 
-                            ON selected_option.id =
-                                quiz_answers.selected_option_id
+                LEFT JOIN quiz_answers
+                    ON quiz_answers.attempt_id =
+                        quiz_attempts.id
 
-                        WHERE
-                            quiz_attempts.quiz_id = ?
+                    AND
+                    quiz_answers.question_id = ?
 
-                        ORDER BY
-                            students.name
-                                COLLATE NOCASE ASC,
+                LEFT JOIN quiz_options
+                    AS selected_option
 
-                            students.id ASC
-                    `,
-                    [
-                        questionId,
-                        quizId
-                    ]
-                );
+                    ON selected_option.id =
+                        quiz_answers.selected_option_id
+
+                WHERE
+                    quiz_attempts.quiz_id = ?
+
+
+                UNION ALL
+
+
+                /*
+                    JAWABAN GUEST
+                */
+                SELECT
+                    'guest'
+                        AS respondent_type,
+
+                    quiz_guest_attempts.id
+                        AS attempt_id,
+
+                    NULL
+                        AS student_id,
+
+                    quiz_guest_attempts.guest_name
+                        AS student_name,
+
+                    'GUEST'
+                        AS class_name,
+
+                    quiz_guest_answers.text_answer,
+                    quiz_guest_answers.is_correct,
+
+                    guest_selected_option.id
+                        AS option_id,
+
+                    guest_selected_option.option_text,
+
+                    guest_selected_option.position
+                        AS option_position
+
+                FROM quiz_guest_attempts
+
+                LEFT JOIN quiz_guest_answers
+                    ON quiz_guest_answers.guest_attempt_id =
+                        quiz_guest_attempts.id
+
+                    AND
+                    quiz_guest_answers.question_id = ?
+
+                LEFT JOIN quiz_options
+                    AS guest_selected_option
+
+                    ON guest_selected_option.id =
+                        quiz_guest_answers.selected_option_id
+
+                WHERE
+                    quiz_guest_attempts.quiz_id = ?
+
+            )
+                AS combined
+
+            ORDER BY
+                combined.student_name
+                    COLLATE NOCASE ASC,
+
+                combined.respondent_type ASC,
+                combined.attempt_id ASC
+        `,
+        [
+            questionId,
+            quizId,
+
+            questionId,
+            quizId
+        ]
+    );
 
 
             const totalRespondents =
@@ -4611,34 +7238,13 @@ app.get(
 
                                         : 0,
 
-                                students:
-                                    matchingRows.map(
-                                        (
-                                            responseRow
-                                        ) => ({
-
-                                            attemptId:
-                                                Number(
-                                                    responseRow
-                                                        .attempt_id
-                                                ),
-
-                                            studentId:
-                                                Number(
-                                                    responseRow
-                                                        .student_id
-                                                ),
-
-                                            studentName:
-                                                responseRow
-                                                    .student_name,
-
-                                            className:
-                                                responseRow
-                                                    .class_name
-
-                                        })
-                                    )
+students:
+    matchingRows.map(
+        responseRow =>
+            createAdminQuizResponseIdentity(
+                responseRow
+            )
+    )
                             };
 
                         }
@@ -4696,34 +7302,13 @@ app.get(
 
                                 : 0,
 
-                        students:
-                            unansweredRows.map(
-                                (
-                                    responseRow
-                                ) => ({
-
-                                    attemptId:
-                                        Number(
-                                            responseRow
-                                                .attempt_id
-                                        ),
-
-                                    studentId:
-                                        Number(
-                                            responseRow
-                                                .student_id
-                                        ),
-
-                                    studentName:
-                                        responseRow
-                                            .student_name,
-
-                                    className:
-                                        responseRow
-                                            .class_name
-
-                                })
-                            )
+students:
+    unansweredRows.map(
+        responseRow =>
+            createAdminQuizResponseIdentity(
+                responseRow
+            )
+    )
                     });
 
                 }
@@ -4820,37 +7405,27 @@ app.get(
                             1;
 
 
-                        group.students.push({
-                            attemptId:
-                                Number(
-                                    responseRow.attempt_id
-                                ),
+group.students.push({
 
-                            studentId:
-                                Number(
-                                    responseRow.student_id
-                                ),
+    ...createAdminQuizResponseIdentity(
+        responseRow
+    ),
 
-                            studentName:
-                                responseRow.student_name,
+    /*
+        Pertahankan input asli,
+        termasuk kapitalisasi.
+    */
+    rawAnswer:
+        rawAnswer ||
+        "Tidak menjawab",
 
-                            className:
-                                responseRow.class_name,
+    isCorrect:
+        Number(
+            responseRow.is_correct ||
+            0
+        ) === 1
 
-                            /*
-                                Pertahankan input asli,
-                                termasuk kapitalisasi.
-                            */
-                            rawAnswer:
-                                rawAnswer ||
-                                "Tidak menjawab",
-
-                            isCorrect:
-                                Number(
-                                    responseRow.is_correct ||
-                                    0
-                                ) === 1
-                        });
+});
 
                     }
                 );
@@ -4953,48 +7528,37 @@ app.get(
                         }
 
 
-                        return {
-                            attemptId:
-                                Number(
-                                    responseRow.attempt_id
-                                ),
+return {
 
-                            studentId:
-                                Number(
-                                    responseRow.student_id
-                                ),
+    ...createAdminQuizResponseIdentity(
+        responseRow
+    ),
 
-                            studentName:
-                                responseRow.student_name,
+    optionId:
+        responseRow.option_id
 
-                            className:
-                                responseRow.class_name,
+            ? Number(
+                responseRow.option_id
+            )
+            : null,
 
-                            optionId:
-                                responseRow.option_id
+    optionPosition:
+        responseRow.option_position
 
-                                    ? Number(
-                                        responseRow.option_id
-                                    )
-                                    : null,
+            ? Number(
+                responseRow.option_position
+            )
+            : null,
 
-                            optionPosition:
-                                responseRow.option_position
+    answer,
 
-                                    ? Number(
-                                        responseRow
-                                            .option_position
-                                    )
-                                    : null,
+    isCorrect:
+        Number(
+            responseRow.is_correct ||
+            0
+        ) === 1
 
-                            answer,
-
-                            isCorrect:
-                                Number(
-                                    responseRow.is_correct ||
-                                    0
-                                ) === 1
-                        };
+};
 
                     }
                 );
@@ -5190,6 +7754,99 @@ app.get(
 );
 
 // ========================================
+// ONLINE QUIZ - ADMIN GUEST ATTEMPT DETAIL
+// ========================================
+
+app.get(
+    "/api/admin/quiz-guest-attempts/:attemptId",
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            await ensureQuizTables();
+
+
+            let attemptId;
+
+
+            try {
+
+                attemptId =
+                    parsePositiveQuizId(
+                        req.params.attemptId,
+                        "ID respons Guest"
+                    );
+
+            } catch (validationError) {
+
+                return res
+                    .status(400)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            validationError.message
+                    });
+
+            }
+
+
+            const attempt =
+                await getGuestQuizAttemptDetail(
+                    attemptId
+                );
+
+
+            if (!attempt) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Respons Guest tidak ditemukan."
+                    });
+
+            }
+
+
+            return res.json({
+                success:
+                    true,
+
+                attempt
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengambil detail respons Guest:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Gagal mengambil detail respons Guest."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
 // GENERATE KODE SISWA
 // ========================================
 
@@ -5340,6 +7997,176 @@ async function initializeQuizTables() {
         )
     `);
 
+/*
+    Migrasi Settings Quiz untuk database lama.
+*/
+const quizColumnRows =
+    await tursoDb.all(`
+        PRAGMA table_info(quizzes)
+    `);
+
+
+const quizColumnNames =
+    new Set(
+        quizColumnRows.map(
+            row =>
+                String(
+                    row.name
+                )
+        )
+    );
+
+
+const quizColumnMigrations = [
+
+    {
+        name:
+            "use_type_weights",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN use_type_weights
+                INTEGER NOT NULL DEFAULT 0
+        `
+    },
+
+    {
+        name:
+            "essay_weight",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN essay_weight
+                INTEGER NOT NULL DEFAULT 60
+        `
+    },
+
+    {
+        name:
+            "allow_private",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN allow_private
+                INTEGER NOT NULL DEFAULT 1
+        `
+    },
+
+    {
+        name:
+            "allow_public",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN allow_public
+                INTEGER NOT NULL DEFAULT 0
+        `
+    },
+
+    {
+        name:
+            "private_audience",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN private_audience
+                TEXT NOT NULL DEFAULT 'all'
+        `
+    },
+
+    {
+        name:
+            "public_token",
+
+        sql: `
+            ALTER TABLE quizzes
+            ADD COLUMN public_token TEXT
+        `
+    }
+
+];
+
+
+for (
+    const migration
+    of quizColumnMigrations
+) {
+
+    if (
+        quizColumnNames.has(
+            migration.name
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    await tursoDb.run(
+        migration.sql
+    );
+
+}
+
+/*
+    Target siswa khusus untuk Private Quiz.
+
+    Jika private_audience = 'all',
+    tabel ini sengaja dibiarkan kosong.
+*/
+await tursoDb.run(`
+    CREATE TABLE IF NOT EXISTS
+        quiz_allowed_students
+    (
+        quiz_id INTEGER NOT NULL,
+        student_id INTEGER NOT NULL,
+
+        created_at DATETIME NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        PRIMARY KEY (
+            quiz_id,
+            student_id
+        ),
+
+        FOREIGN KEY (quiz_id)
+            REFERENCES quizzes(id)
+            ON DELETE CASCADE,
+
+        FOREIGN KEY (student_id)
+            REFERENCES students(id)
+            ON DELETE CASCADE
+    )
+`);
+
+
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+        idx_quiz_allowed_students_student
+
+    ON quiz_allowed_students (
+        student_id,
+        quiz_id
+    )
+`);
+
+
+/*
+    Token harus unik agar satu link hanya
+    mengarah ke satu Public Quiz.
+*/
+await tursoDb.run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS
+        idx_quizzes_public_token
+
+    ON quizzes (
+        public_token
+    )
+
+    WHERE public_token IS NOT NULL
+`);
+
 
     /*
         Semua soal milik Quiz.
@@ -5366,9 +8193,19 @@ async function initializeQuizTables() {
             question_text TEXT NOT NULL
                 DEFAULT '',
 
-            correct_text_answer TEXT,
+correct_text_answer TEXT,
 
-            position INTEGER NOT NULL,
+image_url TEXT,
+
+image_public_id TEXT,
+
+image_width INTEGER,
+
+image_height INTEGER,
+
+image_bytes INTEGER,
+
+position INTEGER NOT NULL,
 
             created_at DATETIME NOT NULL
                 DEFAULT CURRENT_TIMESTAMP,
@@ -5392,6 +8229,105 @@ async function initializeQuizTables() {
         )
     `);
 
+/*
+    Migrasi kolom gambar soal untuk
+    database yang sudah digunakan.
+*/
+const quizQuestionColumnRows =
+    await tursoDb.all(`
+        PRAGMA table_info(
+            quiz_questions
+        )
+    `);
+
+
+const quizQuestionColumnNames =
+    new Set(
+        quizQuestionColumnRows.map(
+            row =>
+                String(
+                    row.name
+                )
+        )
+    );
+
+
+const quizQuestionColumnMigrations = [
+
+    {
+        name:
+            "image_url",
+
+        sql: `
+            ALTER TABLE quiz_questions
+            ADD COLUMN image_url TEXT
+        `
+    },
+
+    {
+        name:
+            "image_public_id",
+
+        sql: `
+            ALTER TABLE quiz_questions
+            ADD COLUMN image_public_id TEXT
+        `
+    },
+
+    {
+        name:
+            "image_width",
+
+        sql: `
+            ALTER TABLE quiz_questions
+            ADD COLUMN image_width INTEGER
+        `
+    },
+
+    {
+        name:
+            "image_height",
+
+        sql: `
+            ALTER TABLE quiz_questions
+            ADD COLUMN image_height INTEGER
+        `
+    },
+
+    {
+        name:
+            "image_bytes",
+
+        sql: `
+            ALTER TABLE quiz_questions
+            ADD COLUMN image_bytes INTEGER
+        `
+    }
+
+];
+
+
+for (
+    const migration
+    of quizQuestionColumnMigrations
+) {
+
+    if (
+        quizQuestionColumnNames.has(
+            migration.name
+        )
+    ) {
+
+        continue;
+
+    }
+
+
+    await tursoDb.run(
+        migration.sql
+    );
+
+}
 
     /*
         Pilihan untuk soal MCQ.
@@ -5507,6 +8443,111 @@ async function initializeQuizTables() {
                 ON DELETE SET NULL
         )
     `);
+
+    /*
+    Submission Guest untuk Public Quiz.
+
+    submission_key digunakan sebagai pengenal
+    internal selama batch insert. Guest tidak
+    memerlukan akun siswa dan tidak mempunyai
+    fitur autosave.
+*/
+await tursoDb.run(`
+    CREATE TABLE IF NOT EXISTS
+        quiz_guest_attempts
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        quiz_id INTEGER NOT NULL,
+
+        submission_key TEXT NOT NULL UNIQUE,
+
+        guest_name TEXT NOT NULL,
+
+        correct_count INTEGER NOT NULL,
+
+        total_questions INTEGER NOT NULL,
+
+        score INTEGER NOT NULL,
+
+        submitted_at DATETIME NOT NULL
+            DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (quiz_id)
+            REFERENCES quizzes(id)
+            ON DELETE CASCADE
+    )
+`);
+
+
+/*
+    Jawaban setiap soal milik submission Guest.
+*/
+await tursoDb.run(`
+    CREATE TABLE IF NOT EXISTS
+        quiz_guest_answers
+    (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        guest_attempt_id INTEGER NOT NULL,
+
+        question_id INTEGER NOT NULL,
+
+        selected_option_id INTEGER,
+
+        text_answer TEXT,
+
+        is_correct INTEGER NOT NULL
+            DEFAULT 0,
+
+        UNIQUE (
+            guest_attempt_id,
+            question_id
+        ),
+
+        FOREIGN KEY (guest_attempt_id)
+            REFERENCES quiz_guest_attempts(id)
+            ON DELETE CASCADE,
+
+        FOREIGN KEY (question_id)
+            REFERENCES quiz_questions(id)
+            ON DELETE CASCADE,
+
+        FOREIGN KEY (selected_option_id)
+            REFERENCES quiz_options(id)
+            ON DELETE SET NULL
+    )
+`);
+
+
+/*
+    Mempercepat halaman Responden Admin ketika
+    menggabungkan siswa terdaftar dan Guest.
+*/
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+        idx_quiz_guest_attempts_quiz
+
+    ON quiz_guest_attempts (
+        quiz_id,
+        submitted_at DESC
+    )
+`);
+
+
+/*
+    Mempercepat pengambilan seluruh jawaban
+    dari satu submission Guest.
+*/
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+        idx_quiz_guest_answers_attempt
+
+    ON quiz_guest_answers (
+        guest_attempt_id,
+        question_id
+    )
+`);
 
 
     /*
@@ -5767,6 +8808,132 @@ function cleanQuizMetadata(
 
 }
 
+function cleanQuizQuestionImage(
+    rawQuestion,
+    questionNumber
+) {
+    const imageUrl = String(
+        rawQuestion &&
+        rawQuestion.imageUrl ||
+        ""
+    ).trim();
+
+    const imagePublicId = String(
+        rawQuestion &&
+        rawQuestion.imagePublicId ||
+        ""
+    ).trim();
+
+    if (!imageUrl) {
+        return {
+            imageUrl: null,
+            imagePublicId: null,
+            imageWidth: null,
+            imageHeight: null,
+            imageBytes: null
+        };
+    }
+
+    if (imageUrl.length > 3000) {
+        throw new Error(
+            `URL gambar soal nomor ${questionNumber} terlalu panjang.`
+        );
+    }
+
+    let parsedImageUrl;
+
+    try {
+        parsedImageUrl =
+            new URL(imageUrl);
+    } catch {
+        throw new Error(
+            `URL gambar soal nomor ${questionNumber} tidak valid.`
+        );
+    }
+
+    if (
+        parsedImageUrl.protocol !==
+        "https:"
+    ) {
+        throw new Error(
+            `URL gambar soal nomor ${questionNumber} harus menggunakan HTTPS.`
+        );
+    }
+
+    /*
+        Jika mempunyai public ID, gambarnya berasal
+        dari fitur upload dan harus memakai alamat
+        penyimpanan gambar yang telah dikonfigurasi.
+
+        Jika public ID kosong, gambar merupakan URL
+        eksternal dan URL disimpan langsung.
+    */
+    if (imagePublicId) {
+        const expectedPathPrefix =
+            `/${CLOUDINARY_CLOUD_NAME}/image/upload/`;
+
+        if (
+            parsedImageUrl.hostname !==
+                "res.cloudinary.com" ||
+            !parsedImageUrl.pathname.startsWith(
+                expectedPathPrefix
+            )
+        ) {
+            throw new Error(
+                `Alamat gambar soal nomor ${questionNumber} tidak valid.`
+            );
+        }
+    }
+
+    const rawWidth =
+        Number(rawQuestion?.imageWidth);
+
+    const rawHeight =
+        Number(rawQuestion?.imageHeight);
+
+    const rawBytes =
+        Number(rawQuestion?.imageBytes);
+
+    const imageWidth =
+        Number.isFinite(rawWidth) &&
+        rawWidth > 0
+            ? Math.round(rawWidth)
+            : null;
+
+    const imageHeight =
+        Number.isFinite(rawHeight) &&
+        rawHeight > 0
+            ? Math.round(rawHeight)
+            : null;
+
+    const imageBytes =
+        imagePublicId &&
+        Number.isFinite(rawBytes) &&
+        rawBytes > 0
+            ? Math.round(rawBytes)
+            : null;
+
+    if (
+        imagePublicId &&
+        imageBytes !== null &&
+        imageBytes >
+            QUIZ_IMAGE_MAX_BYTES
+    ) {
+        throw new Error(
+            `Gambar soal nomor ${questionNumber} melebihi batas 2 MB.`
+        );
+    }
+
+    return {
+        imageUrl,
+        imagePublicId:
+            imagePublicId || null,
+        imageWidth,
+        imageHeight,
+        imageBytes
+    };
+}
+
 function validateQuizQuestions(
     rawQuestions,
     strict = true
@@ -5836,6 +9003,12 @@ function validateQuizQuestions(
                         3000
                     );
 
+                    const questionImage =
+    cleanQuizQuestionImage(
+        rawQuestion,
+        questionNumber
+    );
+
 
             /*
                 clientKey harus stabil dan unik
@@ -5888,16 +9061,15 @@ function validateQuizQuestions(
                 Saat Publish, strict bernilai true
                 sehingga semua bagian wajib lengkap.
             */
-            if (
-                strict &&
-                !questionText
-            ) {
-
-                throw new Error(
-                    `Pertanyaan nomor ${questionNumber} masih kosong.`
-                );
-
-            }
+if (
+    strict &&
+    !questionText &&
+    !questionImage.imageUrl
+) {
+    throw new Error(
+        `Soal nomor ${questionNumber} harus mempunyai teks atau gambar.`
+    );
+}
 
 
             /*
@@ -5933,19 +9105,36 @@ function validateQuizQuestions(
                 }
 
 
-                return {
-                    clientKey,
-                    type,
-                    text:
-                        questionText,
+return {
+    clientKey,
 
-                    correctText:
-                        correctText ||
-                        null,
+    type,
 
-                    options:
-                        []
-                };
+    text:
+        questionText,
+
+    correctText:
+        correctText ||
+        null,
+
+    imageUrl:
+        questionImage.imageUrl,
+
+    imagePublicId:
+        questionImage.imagePublicId,
+
+    imageWidth:
+        questionImage.imageWidth,
+
+    imageHeight:
+        questionImage.imageHeight,
+
+    imageBytes:
+        questionImage.imageBytes,
+
+    options:
+        []
+};
 
             }
 
@@ -6096,17 +9285,34 @@ function validateQuizQuestions(
             }
 
 
-            return {
-                clientKey,
-                type,
-                text:
-                    questionText,
+return {
+    clientKey,
 
-                correctText:
-                    null,
+    type,
 
-                options
-            };
+    text:
+        questionText,
+
+    correctText:
+        null,
+
+    imageUrl:
+        questionImage.imageUrl,
+
+    imagePublicId:
+        questionImage.imagePublicId,
+
+    imageWidth:
+        questionImage.imageWidth,
+
+    imageHeight:
+        questionImage.imageHeight,
+
+    imageBytes:
+        questionImage.imageBytes,
+
+    options
+};
 
         }
     );
@@ -6142,6 +9348,139 @@ function parsePositiveQuizId(
 
 }
 
+function generatePublicQuizToken() {
+
+    return crypto
+        .randomBytes(24)
+        .toString("base64url");
+
+}
+
+
+function cleanQuizSettings(
+    rawSettings = {}
+) {
+
+    const useTypeWeights =
+        Boolean(
+            rawSettings.useTypeWeights
+        );
+
+
+    const essayWeight =
+        Math.round(
+            Number(
+                rawSettings.essayWeight
+            )
+        );
+
+
+    if (
+        !Number.isFinite(
+            essayWeight
+        ) ||
+        essayWeight < 0 ||
+        essayWeight > 100
+    ) {
+
+        throw new Error(
+            "Bobot Esai harus berada antara 0 sampai 100."
+        );
+
+    }
+
+
+    const allowPrivate =
+        Boolean(
+            rawSettings.allowPrivate
+        );
+
+
+    const allowPublic =
+        Boolean(
+            rawSettings.allowPublic
+        );
+
+
+    if (
+        !allowPrivate &&
+        !allowPublic
+    ) {
+
+        throw new Error(
+            "Aktifkan minimal Private atau Public."
+        );
+
+    }
+
+
+    const privateAudience =
+        rawSettings.privateAudience ===
+            "selected"
+            ? "selected"
+            : "all";
+
+
+    const selectedStudentIds =
+        [
+            ...new Set(
+                (
+                    Array.isArray(
+                        rawSettings.selectedStudentIds
+                    )
+                        ? rawSettings.selectedStudentIds
+                        : []
+                )
+                    .map(
+                        studentId =>
+                            Number(
+                                studentId
+                            )
+                    )
+                    .filter(
+                        studentId =>
+                            Number.isInteger(
+                                studentId
+                            ) &&
+                            studentId > 0
+                    )
+            )
+        ];
+
+
+    if (
+        allowPrivate &&
+        privateAudience ===
+            "selected" &&
+        selectedStudentIds.length === 0
+    ) {
+
+        throw new Error(
+            "Pilih minimal satu siswa untuk Private Quiz."
+        );
+
+    }
+
+
+    return {
+        useTypeWeights,
+
+        essayWeight,
+
+        mcqWeight:
+            100 - essayWeight,
+
+        allowPrivate,
+
+        allowPublic,
+
+        privateAudience,
+
+        selectedStudentIds
+    };
+
+}
+
 // ========================================
 // ONLINE QUIZ - DATA HELPERS
 // ========================================
@@ -6172,21 +9511,41 @@ async function getQuizWithQuestions(
                     quizzes.created_by,
                     quizzes.created_at,
                     quizzes.updated_at,
-                    quizzes.published_at,
+quizzes.published_at,
+quizzes.use_type_weights,
+quizzes.essay_weight,
+quizzes.allow_private,
+quizzes.allow_public,
+quizzes.private_audience,
+quizzes.public_token,
 
-                    admins.name
+admins.name
                         AS creator_name,
 
-                    (
-                        SELECT COUNT(*)
+(
+    (
+        SELECT COUNT(*)
 
-                        FROM quiz_attempts
+        FROM quiz_attempts
 
-                        WHERE
-                            quiz_attempts.quiz_id =
-                                quizzes.id
-                    )
-                        AS response_count
+        WHERE
+            quiz_attempts.quiz_id =
+                quizzes.id
+    )
+
+    +
+
+    (
+        SELECT COUNT(*)
+
+        FROM quiz_guest_attempts
+
+        WHERE
+            quiz_guest_attempts.quiz_id =
+                quizzes.id
+    )
+)
+    AS response_count
 
                 FROM quizzes
 
@@ -6209,6 +9568,42 @@ async function getQuizWithQuestions(
 
     }
 
+let selectedStudentIds = [];
+
+
+if (
+    includeAnswerKeys &&
+    quiz.private_audience ===
+        "selected"
+) {
+
+    const selectedStudentRows =
+        await tursoDb.all(
+            `
+                SELECT student_id
+
+                FROM quiz_allowed_students
+
+                WHERE quiz_id = ?
+
+                ORDER BY student_id ASC
+            `,
+            [
+                quizId
+            ]
+        );
+
+
+    selectedStudentIds =
+        selectedStudentRows.map(
+            row =>
+                Number(
+                    row.student_id
+                )
+        );
+
+}
+
 
     /*
         Ambil semua soal dalam urutan editor.
@@ -6216,13 +9611,18 @@ async function getQuizWithQuestions(
     const questionRows =
         await tursoDb.all(
             `
-                SELECT
-                    id,
-                    client_key,
-                    question_type,
-                    question_text,
-                    correct_text_answer,
-                    position,
+SELECT
+    id,
+    client_key,
+    question_type,
+    question_text,
+    correct_text_answer,
+    image_url,
+    image_public_id,
+    image_width,
+    image_height,
+    image_bytes,
+    position,
                     created_at,
                     updated_at
 
@@ -6374,6 +9774,45 @@ async function getQuizWithQuestions(
                     text:
                         questionRow.question_text,
 
+                    imageUrl:
+    questionRow.image_url ||
+    null,
+
+imagePublicId:
+    questionRow.image_public_id ||
+    null,
+
+imageWidth:
+    questionRow.image_width ===
+        null
+
+        ? null
+
+        : Number(
+            questionRow.image_width
+        ),
+
+imageHeight:
+    questionRow.image_height ===
+        null
+
+        ? null
+
+        : Number(
+            questionRow.image_height
+        ),
+
+imageBytes:
+    questionRow.image_bytes ===
+        null
+
+        ? null
+
+        : Number(
+            questionRow.image_bytes
+        ),
+
+
                     position:
                         Number(
                             questionRow.position
@@ -6449,9 +9888,64 @@ async function getQuizWithQuestions(
             quiz.updated_at,
 
         publishedAt:
-            quiz.published_at,
+quiz.published_at,
+publishedAt:
+    quiz.published_at,
 
-        responseCount:
+
+settings: {
+
+    useTypeWeights:
+        Number(
+            quiz.use_type_weights ||
+            0
+        ) === 1,
+
+    essayWeight:
+        Number(
+            quiz.essay_weight ??
+            60
+        ),
+
+    mcqWeight:
+        100 -
+        Number(
+            quiz.essay_weight ??
+            60
+        ),
+
+    allowPrivate:
+        Number(
+            quiz.allow_private ??
+            1
+        ) === 1,
+
+    allowPublic:
+        Number(
+            quiz.allow_public ||
+            0
+        ) === 1,
+
+    privateAudience:
+        quiz.private_audience ===
+            "selected"
+            ? "selected"
+            : "all",
+
+    selectedStudentIds:
+        includeAnswerKeys
+            ? selectedStudentIds
+            : [],
+
+    publicToken:
+        includeAnswerKeys
+            ? quiz.public_token
+            : null
+
+},
+
+
+responseCount:
             Number(
                 quiz.response_count ||
                 0
@@ -6475,20 +9969,38 @@ async function quizHasResponses(
     const result =
         await tursoDb.get(
             `
-                SELECT EXISTS (
-                    SELECT
-                        1
+                SELECT
+                    (
+                        EXISTS (
+                            SELECT
+                                1
 
-                    FROM quiz_attempts
+                            FROM quiz_attempts
 
-                    WHERE
-                        quiz_id = ?
+                            WHERE
+                                quiz_id = ?
 
-                    LIMIT 1
-                )
-                    AS has_responses
+                            LIMIT 1
+                        )
+
+                        OR
+
+                        EXISTS (
+                            SELECT
+                                1
+
+                            FROM quiz_guest_attempts
+
+                            WHERE
+                                quiz_id = ?
+
+                            LIMIT 1
+                        )
+                    )
+                        AS has_responses
             `,
             [
+                quizId,
                 quizId
             ]
         );
@@ -6504,8 +10016,665 @@ async function quizHasResponses(
 
 }
 
-function getStudentQuizAvailabilityError(
+function cleanGuestQuizName(
+    value
+) {
+
+    const guestName =
+        String(
+            value || ""
+        )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim()
+            .slice(
+                0,
+                100
+            );
+
+
+    if (!guestName) {
+
+        throw new Error(
+            "Nama Guest wajib diisi."
+        );
+
+    }
+
+
+    return guestName;
+
+}
+
+
+function gradePublicQuizAnswers(
+    quiz,
+    submittedAnswers
+) {
+
+    const submittedByQuestionId =
+        new Map();
+
+
+    (
+        Array.isArray(
+            submittedAnswers
+        )
+            ? submittedAnswers
+            : []
+    ).forEach(
+        submittedAnswer => {
+
+            const questionId =
+                Number(
+                    submittedAnswer &&
+                    submittedAnswer.questionId
+                );
+
+
+            if (
+                Number.isInteger(
+                    questionId
+                ) &&
+                questionId > 0
+            ) {
+
+                submittedByQuestionId.set(
+                    questionId,
+                    submittedAnswer
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+        Penilaian selalu berdasarkan daftar soal
+        dari database, bukan daftar dari browser.
+    */
+    const gradedAnswers =
+        quiz.questions.map(
+            question => {
+
+                const submittedAnswer =
+                    submittedByQuestionId.get(
+                        Number(
+                            question.id
+                        )
+                    ) ||
+                    {};
+
+
+                /*
+                    PILIHAN GANDA
+                */
+                if (
+                    question.type ===
+                        "mcq"
+                ) {
+
+                    const selectedOptionId =
+                        Number(
+                            submittedAnswer.optionId
+                        );
+
+
+                    const selectedOption =
+                        question.options.find(
+                            option =>
+                                Number(
+                                    option.id
+                                ) ===
+                                selectedOptionId
+                        );
+
+
+                    const isCorrect =
+                        Boolean(
+                            selectedOption &&
+                            selectedOption.isCorrect
+                        );
+
+
+                    return {
+                        questionId:
+                            Number(
+                                question.id
+                            ),
+
+                        questionType:
+                            "mcq",
+
+                        selectedOptionId:
+                            selectedOption
+                                ? Number(
+                                    selectedOption.id
+                                )
+                                : null,
+
+                        textAnswer:
+                            null,
+
+                        isCorrect
+                    };
+
+                }
+
+
+                /*
+                    ESAI / ISIAN SINGKAT
+                */
+                const textAnswer =
+                    String(
+                        submittedAnswer.textAnswer ||
+                        ""
+                    ).slice(
+                        0,
+                        3000
+                    );
+
+
+                const normalizedStudentAnswer =
+                    normalizeQuizAnswer(
+                        textAnswer
+                    );
+
+
+                const normalizedCorrectAnswer =
+                    normalizeQuizAnswer(
+                        question.correctText
+                    );
+
+
+                const isCorrect =
+                    Boolean(
+                        normalizedStudentAnswer &&
+                        normalizedCorrectAnswer &&
+                        normalizedStudentAnswer ===
+                            normalizedCorrectAnswer
+                    );
+
+
+                return {
+                    questionId:
+                        Number(
+                            question.id
+                        ),
+
+                    questionType:
+                        "short_answer",
+
+                    selectedOptionId:
+                        null,
+
+                    textAnswer,
+
+                    isCorrect
+                };
+
+            }
+        );
+
+
+    const correctCount =
+        gradedAnswers.filter(
+            answer =>
+                answer.isCorrect
+        ).length;
+
+
+    const totalQuestions =
+        quiz.questions.length;
+
+
+    const mcqAnswers =
+        gradedAnswers.filter(
+            answer =>
+                answer.questionType ===
+                    "mcq"
+        );
+
+
+    const essayAnswers =
+        gradedAnswers.filter(
+            answer =>
+                answer.questionType ===
+                    "short_answer"
+        );
+
+
+    const mcqQuestionCount =
+        mcqAnswers.length;
+
+
+    const essayQuestionCount =
+        essayAnswers.length;
+
+
+    const mcqCorrectCount =
+        mcqAnswers.filter(
+            answer =>
+                answer.isCorrect
+        ).length;
+
+
+    const essayCorrectCount =
+        essayAnswers.filter(
+            answer =>
+                answer.isCorrect
+        ).length;
+
+
+    const useWeightedScore =
+        Boolean(
+            quiz.settings &&
+            quiz.settings.useTypeWeights
+        ) &&
+        mcqQuestionCount > 0 &&
+        essayQuestionCount > 0;
+
+
+    let score;
+
+
+    if (useWeightedScore) {
+
+        const rawEssayWeight =
+            Number(
+                quiz.settings.essayWeight
+            );
+
+
+        const essayWeight =
+            Number.isFinite(
+                rawEssayWeight
+            )
+                ? Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        Math.round(
+                            rawEssayWeight
+                        )
+                    )
+                )
+                : 60;
+
+
+        const mcqWeight =
+            100 -
+            essayWeight;
+
+
+        const mcqContribution =
+            (
+                mcqCorrectCount /
+                mcqQuestionCount
+            ) *
+            mcqWeight;
+
+
+        const essayContribution =
+            (
+                essayCorrectCount /
+                essayQuestionCount
+            ) *
+            essayWeight;
+
+
+        score =
+            Math.floor(
+                mcqContribution +
+                essayContribution
+            );
+
+    } else {
+
+        /*
+            Full MCQ, full Esai, atau bobot mati:
+            seluruh soal dihitung rata.
+        */
+        score =
+            Math.floor(
+                (
+                    correctCount /
+                    totalQuestions
+                ) *
+                100
+            );
+
+    }
+
+
+    score =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                score
+            )
+        );
+
+
+    return {
+        gradedAnswers,
+
+        correctCount,
+
+        totalQuestions,
+
+        score,
+
+        breakdown: {
+            weighted:
+                useWeightedScore,
+
+            mcqQuestionCount,
+
+            mcqCorrectCount,
+
+            essayQuestionCount,
+
+            essayCorrectCount
+        }
+    };
+
+}
+
+function buildPublicQuizReview(
+    quiz,
+    gradedAnswers
+) {
+
+    const gradedByQuestionId =
+        new Map(
+            gradedAnswers.map(
+                answer => [
+                    Number(answer.questionId),
+                    answer
+                ]
+            )
+        );
+
+
+    return quiz.questions.map(
+        (
+            question,
+            questionIndex
+        ) => {
+
+            const gradedAnswer =
+                gradedByQuestionId.get(
+                    Number(question.id)
+                ) || {};
+
+
+            if (
+                question.type ===
+                "mcq"
+            ) {
+
+                const options =
+                    Array.isArray(question.options)
+                        ? question.options
+                        : [];
+
+
+                const correctOption =
+                    options.find(
+                        option =>
+                            Boolean(option.isCorrect)
+                    );
+
+
+                return {
+                    questionNumber:
+                        questionIndex + 1,
+
+                    questionId:
+                        Number(question.id),
+
+                    questionType:
+                        "mcq",
+
+                    questionText:
+                        question.text,
+
+                    imageUrl:
+    question.imageUrl || null,
+
+                    isCorrect:
+                        Boolean(
+                            gradedAnswer.isCorrect
+                        ),
+
+                    selectedOptionId:
+                        gradedAnswer.selectedOptionId
+                            ? Number(
+                                gradedAnswer.selectedOptionId
+                            )
+                            : null,
+
+                    correctOptionId:
+                        correctOption
+                            ? Number(correctOption.id)
+                            : null,
+
+                    options:
+                        options.map(
+                            option => ({
+                                id:
+                                    Number(option.id),
+
+                                text:
+                                    option.text
+                            })
+                        )
+                };
+
+            }
+
+
+            return {
+                questionNumber:
+                    questionIndex + 1,
+
+                questionId:
+                    Number(question.id),
+
+                questionType:
+                    "short_answer",
+
+                questionText:
+                    question.text,
+
+                imageUrl:
+    question.imageUrl || null,
+
+                isCorrect:
+                    Boolean(
+                        gradedAnswer.isCorrect
+                    ),
+
+                textAnswer:
+                    gradedAnswer.textAnswer || "",
+
+                correctText:
+                    question.correctText || ""
+            };
+
+        }
+    );
+
+}
+
+function parsePublicQuizToken(
+    value
+) {
+
+    const token =
+        String(
+            value || ""
+        ).trim();
+
+
+    /*
+        Token dibuat menggunakan base64url:
+        huruf, angka, underscore, dan tanda minus.
+    */
+    if (
+        token.length < 20 ||
+        token.length > 100 ||
+        !/^[A-Za-z0-9_-]+$/.test(
+            token
+        )
+    ) {
+
+        throw new Error(
+            "Link Public Quiz tidak valid."
+        );
+
+    }
+
+
+    return token;
+
+}
+
+
+function getPublicQuizAvailabilityError(
     quiz
+) {
+
+    if (!quiz) {
+
+        return {
+            status:
+                404,
+
+            code:
+                "PUBLIC_QUIZ_NOT_FOUND",
+
+            message:
+                "Public Quiz tidak ditemukan."
+        };
+
+    }
+
+
+    if (
+        !quiz.settings ||
+        quiz.settings.allowPublic !==
+            true
+    ) {
+
+        return {
+            status:
+                404,
+
+            code:
+                "PUBLIC_QUIZ_DISABLED",
+
+            message:
+                "Akses Public untuk Quiz ini tidak aktif."
+        };
+
+    }
+
+
+    if (
+        quiz.status ===
+            "closed"
+    ) {
+
+        return {
+            status:
+                410,
+
+            code:
+                "PUBLIC_QUIZ_CLOSED",
+
+            message:
+                "Quiz ini telah ditutup oleh Guru."
+        };
+
+    }
+
+
+    if (
+        quiz.status !==
+            "published"
+    ) {
+
+        return {
+            status:
+                409,
+
+            code:
+                "PUBLIC_QUIZ_NOT_PUBLISHED",
+
+            message:
+                "Quiz ini belum dipublikasikan."
+        };
+
+    }
+
+
+    if (
+        quiz.dueAt &&
+        new Date(
+            quiz.dueAt
+        ).getTime() <=
+            Date.now()
+    ) {
+
+        return {
+            status:
+                410,
+
+            code:
+                "PUBLIC_QUIZ_DEADLINE_PASSED",
+
+            message:
+                "Deadline Quiz ini telah berakhir."
+        };
+
+    }
+
+
+    if (
+        !Array.isArray(
+            quiz.questions
+        ) ||
+        quiz.questions.length ===
+            0
+    ) {
+
+        return {
+            status:
+                409,
+
+            code:
+                "PUBLIC_QUIZ_HAS_NO_QUESTIONS",
+
+            message:
+                "Quiz ini belum mempunyai soal."
+        };
+
+    }
+
+
+    return null;
+
+}
+
+async function getStudentQuizAvailabilityError(
+    quiz,
+    studentId
 ) {
 
     if (!quiz) {
@@ -6533,6 +10702,78 @@ function getStudentQuizAvailabilityError(
             message:
                 "Quiz tidak tersedia."
         };
+
+    }
+
+
+    /*
+        Quiz Public-only tidak boleh dibuka
+        melalui halaman siswa terdaftar.
+    */
+    if (
+        !quiz.settings ||
+        quiz.settings.allowPrivate !==
+            true
+    ) {
+
+        return {
+            status:
+                403,
+
+            message:
+                "Quiz ini tidak tersedia untuk akun siswa."
+        };
+
+    }
+
+
+    /*
+        Jika Guru memilih siswa tertentu,
+        pastikan siswa yang sedang login
+        memang berada di daftar tersebut.
+    */
+    if (
+        quiz.settings.privateAudience ===
+            "selected"
+    ) {
+
+        const allowedStudent =
+            await tursoDb.get(
+                `
+                    SELECT
+                        1 AS allowed
+
+                    FROM quiz_allowed_students
+
+                    WHERE
+                        quiz_id = ?
+                        AND student_id = ?
+
+                    LIMIT 1
+                `,
+                [
+                    Number(
+                        quiz.id
+                    ),
+
+                    Number(
+                        studentId
+                    )
+                ]
+            );
+
+
+        if (!allowedStudent) {
+
+            return {
+                status:
+                    403,
+
+                message:
+                    "Quiz ini tidak ditujukan untuk akunmu."
+            };
+
+        }
 
     }
 

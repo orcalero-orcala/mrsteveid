@@ -840,11 +840,51 @@
                             </div>
 
 
-                            <h2>
-                                ${escapeStudentQuizAttemptHtml(
-                                    question.text
-                                )}
-                            </h2>
+${
+    String(
+        question.text || ""
+    ).trim()
+
+        ? `
+            <h2>
+                ${escapeStudentQuizAttemptHtml(
+                    question.text
+                )}
+            </h2>
+        `
+
+        : ""
+}
+
+${
+    question.imageUrl
+
+        ? `
+            <div class="student-quiz-question-image">
+                <img
+                    src="${escapeStudentQuizAttemptHtml(
+                        question.imageUrl
+                    )}"
+                    alt="Gambar soal nomor ${
+                        questionIndex + 1
+                    }"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    onerror="
+                        this.hidden = true;
+                        this.nextElementSibling.hidden = false;
+                    "
+                >
+
+                <p hidden>
+                    Gambar tidak dapat dimuat.
+                </p>
+            </div>
+        `
+
+        : ""
+}
 
 
                             ${

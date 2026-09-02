@@ -464,11 +464,51 @@
                     </div>
 
 
-                    <h3>
-                        ${escapeHtml(
-                            answer.text
-                        )}
-                    </h3>
+${
+    String(
+        answer.text || ""
+    ).trim()
+
+        ? `
+            <h3>
+                ${escapeHtml(
+                    answer.text
+                )}
+            </h3>
+        `
+
+        : ""
+}
+
+${
+    answer.imageUrl
+
+        ? `
+            <div class="student-review-question-image">
+                <img
+                    src="${escapeHtml(
+                        answer.imageUrl
+                    )}"
+                    alt="Gambar soal nomor ${
+                        answerIndex + 1
+                    }"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    onerror="
+                        this.hidden = true;
+                        this.nextElementSibling.hidden = false;
+                    "
+                >
+
+                <p hidden>
+                    Gambar tidak dapat dimuat.
+                </p>
+            </div>
+        `
+
+        : ""
+}
 
 
                     <div class="student-review-answer">
