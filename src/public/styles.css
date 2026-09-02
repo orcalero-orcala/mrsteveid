@@ -29659,3 +29659,40 @@ row-gap: 12px;
     max-height: 280px;
   }
 }
+
+.student-quiz-question-image {
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: 0 !important;
+  box-shadow: none;
+}
+
+.student-quiz-question-image img {
+  display: block;
+
+  width: min(78%, 680px);
+  height: auto;
+  max-height: none;
+
+  object-fit: contain;
+
+  border: 0 !important;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.student-quiz-question-image > img {
+  border: 0 !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+
+  -webkit-clip-path: inset(0 round 10px);
+  clip-path: inset(0 round 10px);
+}

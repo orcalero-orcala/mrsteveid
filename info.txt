@@ -7,3 +7,7 @@ Student profile rework dengan bisa change profile picture
 Admin students lama tetap ada, Baru ada tab baru yaitu students search, search individual bisa lihat semua biodata dan kode, Berapa poin, rata2 nilai, PFP, dll.
 
 Ganti distribusi nilai
+
+Teks link disalin jangan di area autosave setting indicator, melainkan pindah ke sebelah tombol salin link, kasih feedback aja berupa non teks seperti glow atau apa gitu
+
+Naikkan autosave settings indicator sedikit, sekitar 10-20px
