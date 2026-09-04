@@ -23,6 +23,11 @@
         href="/styles.css"
     >
 
+    <link
+    rel="stylesheet"
+    href="/student-directory.css"
+>
+
     <script src="/student-profile-initial.js"></script>
 
     <style>
@@ -274,6 +279,18 @@ font-size: 47px;
     font-size: 11px !important;
     line-height: 1.6;
 
+    font-style: italic;
+}
+
+.student-profile-bio:not(.is-empty) {
+    color: #9aabc0 !important;
+    font-style: normal;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.student-profile-bio.is-empty {
+    color: #718198 !important;
     font-style: italic;
 }
 
@@ -784,10 +801,14 @@ font-size: 47px;
 }
 
 .profile-customization-disabled-button,
-.profile-customization-bio-input,
-.profile-customization-save {
+.profile-customization-save:disabled {
     cursor: not-allowed;
     opacity: 0.52;
+}
+
+.profile-customization-bio-input {
+    cursor: text;
+    opacity: 1;
 }
 
 .profile-customization-disabled-button {
@@ -853,12 +874,26 @@ font-size: 47px;
 
     outline: 1px solid transparent;
 
+    cursor: pointer;
+    opacity: 1;
+
+    transition:
+        transform 0.16s ease,
+        outline-color 0.16s ease;
+}
+
+.profile-banner-color:hover {
+    transform: scale(1.08);
+}
+
+.profile-banner-color:disabled {
     cursor: not-allowed;
     opacity: 0.52;
 }
 
 .profile-banner-color.selected {
-    outline-color: #60a5fa;
+    outline: 2px solid #dbeafe;
+    outline-offset: 2px;
 }
 
 .profile-banner-color.blue {
@@ -879,6 +914,42 @@ font-size: 47px;
 
 .profile-banner-color.red {
     background: #dc2626;
+}
+
+.profile-customization-message {
+    min-height: 18px;
+    margin: 12px 2px 0;
+
+    color: #7f8da1;
+
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.profile-customization-message.success {
+    color: #4ade80;
+}
+
+.profile-customization-message.error {
+    color: #f87171;
+}
+
+.profile-customization-message {
+    min-height: 18px;
+    margin: 12px 2px 0;
+
+    color: #7f8da1;
+
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.profile-customization-message.success {
+    color: #4ade80;
+}
+
+.profile-customization-message.error {
+    color: #f87171;
 }
 
 
@@ -1058,6 +1129,1138 @@ font-size: 47px;
 
         }
 
+/* =========================================
+   DISCORD-STYLE PROFILE LAYOUT
+   ========================================= */
+
+.student-profile-main {
+    position: relative;
+
+    /*
+        Ruang 82px disediakan untuk bagian avatar
+        yang menimpa banner.
+    */
+    padding:
+        82px 28px 25px;
+}
+
+
+/* Container tidak lagi menjadi baris avatar + nama */
+
+.student-profile-identity-row {
+    min-height: 0;
+    margin: 0;
+
+    display: block;
+}
+
+
+/* Avatar menimpa banner secara independen */
+
+.student-profile-main-avatar {
+    position: absolute;
+
+    top: -68px;
+    left: 28px;
+
+    width: 136px;
+    height: 136px;
+
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        6px solid
+        #111a27;
+
+    border-radius: 50%;
+
+    font-size: 47px;
+}
+
+
+/* Nama sekarang berada di bawah avatar */
+
+.student-profile-identity {
+    width: 100%;
+    min-width: 0;
+
+    margin: 0;
+    padding: 0;
+
+    transform: none;
+}
+
+.student-profile-identity h1 {
+    max-width: 100%;
+
+    margin:
+        0 0 6px;
+
+    color: #f8fafc;
+
+    font-size:
+        clamp(
+            27px,
+            3vw,
+            35px
+        );
+
+    line-height: 1.12;
+
+    overflow-wrap: anywhere;
+}
+
+.student-profile-identity #profileIdentityMeta {
+    margin: 0;
+
+    color: #8ba0ba;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.student-profile-bio {
+    max-width: 680px;
+
+    margin:
+        12px 0 0 !important;
+
+    color: #718198 !important;
+
+    font-size: 10px !important;
+    font-style: italic;
+
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* Tombol berada di kanan avatar */
+
+.student-profile-customize-button {
+    position: absolute;
+
+    top: 20px;
+    right: 28px;
+
+    width: auto;
+    margin: 0;
+
+    z-index: 2;
+}
+
+
+/* Statistik setelah bagian identitas */
+
+.student-profile-stats {
+    margin-top: 23px;
+}
+
+
+/* =========================================
+   MOBILE DISCORD-STYLE PROFILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .student-profile-cover {
+        height: 115px;
+    }
+
+    .student-profile-main {
+        padding:
+            67px 18px 19px;
+    }
+
+    .student-profile-identity-row {
+        min-height: 0;
+        margin: 0;
+
+        display: block;
+    }
+
+    .student-profile-main-avatar {
+        position: absolute;
+
+        top: -48px;
+        left: 18px;
+
+        width: 96px;
+        height: 96px;
+
+        margin: 0;
+
+        border-width: 5px;
+
+        font-size: 33px;
+    }
+
+    .student-profile-identity {
+        width: 100%;
+
+        margin: 0;
+        padding: 0;
+
+        transform: none;
+    }
+
+    .student-profile-identity h1 {
+        margin:
+            0 0 5px;
+
+        font-size: 23px;
+        line-height: 1.15;
+    }
+
+    .student-profile-identity #profileIdentityMeta {
+        font-size: 10px;
+    }
+
+    .student-profile-bio {
+        margin:
+            10px 0 0 !important;
+
+        font-size: 9px !important;
+    }
+
+    .student-profile-customize-button {
+        position: absolute;
+
+        top: 15px;
+        right: 18px;
+
+        width: auto !important;
+        min-height: 36px;
+
+        margin: 0;
+
+        padding:
+            0 11px;
+
+        font-size: 9px;
+    }
+
+    .student-profile-stats {
+        margin-top: 20px;
+    }
+
+}
+
+/* =========================================
+   PROFILE CONTENT THEMES
+   Hanya memengaruhi area halaman profil
+   ========================================= */
+
+.student-profile-page {
+    --profile-page-background: #091421;
+    --profile-page-glow: rgba(37, 99, 235, 0.13);
+
+    --profile-panel-background: #101c2b;
+    --profile-inner-background: #0c1724;
+
+    --profile-panel-border: #29425f;
+
+    --profile-avatar-start: #3b82f6;
+    --profile-avatar-end: #1d4ed8;
+}
+
+
+/* PURPLE */
+
+.student-profile-page[data-profile-theme="purple"] {
+    --profile-page-background: #130f20;
+    --profile-page-glow: rgba(124, 58, 237, 0.15);
+
+    --profile-panel-background: #191426;
+    --profile-inner-background: #14101f;
+
+    --profile-panel-border: #45375d;
+
+    --profile-avatar-start: #a78bfa;
+    --profile-avatar-end: #6d28d9;
+}
+
+
+/* GREEN */
+
+.student-profile-page[data-profile-theme="green"] {
+    --profile-page-background: #091914;
+    --profile-page-glow: rgba(5, 150, 105, 0.14);
+
+    --profile-panel-background: #10221c;
+    --profile-inner-background: #0c1a16;
+
+    --profile-panel-border: #2b5144;
+
+    --profile-avatar-start: #34d399;
+    --profile-avatar-end: #047857;
+}
+
+
+/* ORANGE */
+
+.student-profile-page[data-profile-theme="orange"] {
+    --profile-page-background: #1a110b;
+    --profile-page-glow: rgba(234, 88, 12, 0.14);
+
+    --profile-panel-background: #241810;
+    --profile-inner-background: #1c130d;
+
+    --profile-panel-border: #59402d;
+
+    --profile-avatar-start: #fb923c;
+    --profile-avatar-end: #c2410c;
+}
+
+
+/* RED */
+
+.student-profile-page[data-profile-theme="red"] {
+    --profile-page-background: #190d12;
+    --profile-page-glow: rgba(220, 38, 38, 0.14);
+
+    --profile-panel-background: #211117;
+    --profile-inner-background: #190e13;
+
+    --profile-panel-border: #57303a;
+
+    --profile-avatar-start: #f87171;
+    --profile-avatar-end: #dc2626;
+}
+
+
+/* BACKGROUND AREA PROFILE */
+
+.student-profile-page .main-content {
+    background:
+        radial-gradient(
+            circle at 80% 12%,
+            var(--profile-page-glow),
+            transparent 38%
+        ),
+        var(--profile-page-background);
+
+    transition: background 0.25s ease;
+}
+
+
+/* TOPBAR TETAP NETRAL */
+
+.student-profile-page .topbar {
+    background: #0b1320;
+}
+
+
+/* PANEL UTAMA */
+
+.student-profile-page .student-social-profile,
+.student-profile-page .student-profile-information {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        var(--profile-panel-background);
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease;
+}
+
+
+/* CARD DI DALAM PANEL */
+
+.student-profile-page .student-profile-stat,
+.student-profile-page .student-profile-detail {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        var(--profile-inner-background);
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease;
+}
+
+
+/* AVATAR UTAMA SAJA */
+
+.student-profile-page .student-profile-main-avatar,
+.student-profile-page .profile-customization-avatar {
+    background:
+        linear-gradient(
+            135deg,
+            var(--profile-avatar-start),
+            var(--profile-avatar-end)
+        ) !important;
+
+    transition: background 0.25s ease;
+}
+
+
+/* LABEL BANNER TETAP PUTIH */
+
+.student-profile-page .student-profile-cover-label {
+    color: #ffffff;
+}
+
+.student-profile-page .student-profile-cover-label::before {
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(255, 255, 255, 0.13);
+}
+
+
+/* MODAL TETAP GELAP, HANYA BORDER SEDIKIT MENYESUAIKAN */
+
+.student-profile-page .profile-customization-panel {
+    border-color:
+        var(--profile-panel-border);
+
+    background: #101925;
+}
+
+
+/* WARNA YANG DIPILIH */
+
+.student-profile-page .profile-banner-color.selected {
+    outline-color: #ffffff;
+}
+
+/* =========================================
+   PROFILE THEME ACCENTS
+   ========================================= */
+
+/* TOPBAR PROFILE IKUT TEMA */
+
+.student-profile-page .topbar {
+    border-bottom-color:
+        var(--profile-panel-border);
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--profile-panel-background),
+            var(--profile-page-background)
+        );
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.student-profile-page .topbar > div > p {
+    color:
+        var(--profile-avatar-start);
+}
+
+
+/* AVATAR B BUDI TETAP BIRU */
+
+.student-profile-page #topStudentAvatar,
+.student-profile-page #sidebarStudentAvatar {
+    color: #ffffff !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #1d4ed8
+        ) !important;
+}
+
+.student-profile-page .student-profile-customize-button {
+    background: #111d2c;
+}
+
+.student-profile-page .student-profile-stat-icon {
+    background: #13233a;
+}
+
+.student-profile-page .student-profile-account-badge {
+    background: #111d2c;
+}
+
+/* TOMBOL SESUAIKAN PROFIL */
+
+.student-profile-page .student-profile-customize-button {
+    border-color:
+        var(--profile-panel-border);
+
+    color:
+        var(--profile-avatar-start);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 15%,
+            #101a28
+        );
+
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.student-profile-page .student-profile-customize-button:hover {
+    border-color:
+        var(--profile-avatar-start);
+
+    color: #ffffff;
+
+    background:
+        var(--profile-avatar-end);
+}
+
+
+/* IKON STATISTIK */
+
+.student-profile-page .student-profile-stat-icon {
+    color:
+        var(--profile-avatar-start);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 22%,
+            #102039
+        );
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+
+/* IKON INFORMASI SISWA */
+
+.student-profile-page .student-profile-detail-marker {
+    color:
+        var(--profile-avatar-start);
+
+    transition: color 0.2s ease;
+}
+
+
+/* BADGE AKUN SISWA */
+
+.student-profile-page .student-profile-account-badge {
+    border-color:
+        var(--profile-panel-border);
+
+    color:
+        var(--profile-avatar-start);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 16%,
+            transparent
+        );
+
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+
+/* TOMBOL SIMPAN DALAM MODAL */
+
+.student-profile-page .profile-customization-save {
+    border-color:
+        var(--profile-avatar-end);
+
+    background:
+        var(--profile-avatar-end);
+}
+
+.student-profile-page .profile-customization-save:hover:not(:disabled) {
+    border-color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-avatar-start);
+}
+
+
+/* BORDER INPUT BIO SAAT FOCUS */
+
+.student-profile-page .profile-customization-bio-input:focus {
+    border-color:
+        var(--profile-avatar-start);
+
+    box-shadow:
+        0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 18%,
+            transparent
+        );
+}
+
+
+/* WARNA TERPILIH */
+
+.student-profile-page .profile-banner-color.selected {
+    outline-color:
+        var(--profile-avatar-start);
+}
+
+/* =========================================
+   THEMED PROFILE CUSTOMIZATION MODAL
+   ========================================= */
+
+.student-profile-page .profile-customization-modal {
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-page-background) 78%,
+            rgba(3, 8, 15, 0.82)
+        );
+}
+
+
+/* PANEL UTAMA MODAL */
+
+.student-profile-page .profile-customization-panel {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--profile-panel-background),
+            #0e1723 72%
+        );
+
+    transition:
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+
+/* LABEL PROFILE SETTINGS */
+
+.student-profile-page
+.profile-customization-header small {
+    color:
+        var(--profile-avatar-start);
+}
+
+
+/* TOMBOL TUTUP */
+
+.student-profile-page
+.profile-customization-close {
+    border-color:
+        var(--profile-panel-border);
+
+    color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-inner-background);
+}
+
+.student-profile-page
+.profile-customization-close:hover {
+    color: #ffffff;
+
+    border-color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-avatar-end);
+}
+
+
+/* NOTICE */
+
+.student-profile-page
+.profile-customization-notice {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 10%,
+            var(--profile-inner-background)
+        );
+}
+
+.student-profile-page
+.profile-customization-notice svg {
+    color:
+        var(--profile-avatar-start);
+}
+
+.student-profile-page
+.profile-customization-notice strong {
+    color: #f8fafc;
+}
+
+.student-profile-page
+.profile-customization-notice span {
+    color: #8fa1b8;
+}
+
+
+/* PREVIEW */
+
+.student-profile-page
+.profile-customization-preview {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        var(--profile-inner-background);
+}
+
+
+/* FIELD FOTO, BIO, DAN WARNA */
+
+.student-profile-page
+.profile-customization-field {
+    border-color:
+        var(--profile-panel-border);
+
+    background:
+        var(--profile-inner-background);
+
+    transition:
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+
+/* JUDUL FIELD */
+
+.student-profile-page
+.profile-customization-field-heading strong {
+    color: #f1f5f9;
+}
+
+.student-profile-page
+.profile-customization-field-heading div > span {
+    color: #8293a8;
+}
+
+
+/* TEXTAREA BIO */
+
+.student-profile-page
+.profile-customization-bio-input {
+    border-color:
+        var(--profile-panel-border);
+
+    color: #e7edf5;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--profile-page-background) 55%,
+            #08111c
+        );
+}
+
+.student-profile-page
+.profile-customization-bio-input:focus {
+    border-color:
+        var(--profile-avatar-start);
+
+    box-shadow:
+        0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--profile-avatar-end) 18%,
+            transparent
+        );
+}
+
+
+/* CHARACTER COUNT */
+
+.student-profile-page
+.profile-customization-character-count {
+    color:
+        var(--profile-avatar-start);
+}
+
+
+/* GARIS FOOTER */
+
+.student-profile-page
+.profile-customization-footer {
+    border-top-color:
+        var(--profile-panel-border);
+}
+
+
+/* TOMBOL TUTUP / BATAL */
+
+.student-profile-page
+.profile-customization-cancel {
+    border-color:
+        var(--profile-panel-border);
+
+    color: #aebdce;
+
+    background:
+        var(--profile-inner-background);
+}
+
+.student-profile-page
+.profile-customization-cancel:hover {
+    color: #ffffff;
+
+    border-color:
+        var(--profile-avatar-start);
+}
+
+
+/* TOMBOL SIMPAN */
+
+.student-profile-page
+.profile-customization-save {
+    border-color:
+        var(--profile-avatar-end);
+
+    color: #ffffff;
+
+    background:
+        var(--profile-avatar-end);
+}
+
+.student-profile-page
+.profile-customization-save:hover:not(:disabled) {
+    border-color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-avatar-start);
+}
+
+/* =========================================
+   PROFILE PICTURE
+   ========================================= */
+
+#profileMainAvatar,
+#sidebarStudentAvatar,
+#topStudentAvatar,
+#profileCustomizationAvatar {
+    overflow: hidden;
+}
+
+.student-profile-avatar-image {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    border-radius: inherit;
+    object-fit: cover;
+    object-position: center;
+}
+
+
+/* UPLOAD */
+
+.profile-picture-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.profile-picture-upload-row > span {
+    color: #74869c;
+
+    font-size: 8px;
+    line-height: 1.45;
+}
+
+.profile-picture-select-button {
+    min-height: 37px;
+    padding: 0 13px;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid
+        var(--profile-panel-border);
+
+    border-radius: 9px;
+
+    color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-panel-background);
+
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.profile-picture-select-button:hover {
+    color: #ffffff;
+
+    border-color:
+        var(--profile-avatar-start);
+
+    background:
+        var(--profile-avatar-end);
+}
+
+
+/* CROP EDITOR */
+
+.profile-picture-crop-editor[hidden] {
+    display: none !important;
+}
+
+.profile-picture-crop-editor {
+    margin-top: 15px;
+    padding-top: 15px;
+
+    border-top:
+        1px solid
+        var(--profile-panel-border);
+}
+
+.profile-picture-crop-stage {
+    width: min(280px, 100%);
+    aspect-ratio: 1 / 1;
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    border:
+        4px solid
+        var(--profile-panel-border);
+
+    border-radius: 50%;
+
+    background: #08111c;
+
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.28);
+}
+
+.profile-picture-crop-stage canvas {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    border-radius: 50%;
+
+    cursor: grab;
+    touch-action: none;
+}
+
+.profile-picture-crop-stage canvas.is-dragging {
+    cursor: grabbing;
+}
+
+.profile-picture-zoom-row {
+    margin-top: 15px;
+
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+
+    align-items: center;
+    gap: 11px;
+}
+
+.profile-picture-zoom-row > span {
+    color: #92a3b7;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.profile-picture-zoom-row input {
+    width: 100%;
+
+    accent-color:
+        var(--profile-avatar-end);
+}
+
+.profile-picture-reset-button {
+    min-height: 31px;
+    padding: 0 10px;
+
+    border:
+        1px solid
+        var(--profile-panel-border);
+
+    border-radius: 8px;
+
+    color: #a8b6c7;
+    background: #101a27;
+
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.profile-picture-crop-hint {
+    display: block;
+    margin-top: 10px;
+
+    color: #718198;
+
+    font-size: 8px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+
+    .profile-picture-upload-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profile-picture-crop-stage {
+        width: min(245px, 100%);
+    }
+
+}
+
+.student-profile-bio:not(.is-empty) {
+    display: -webkit-box;
+
+    overflow: hidden;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+
+    line-clamp: 3;
+}
+
+.profile-customization-bio-input.has-error {
+    border-color: #f87171 !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(248, 113, 113, 0.12) !important;
+}
+
+.student-profile-bio.is-loading {
+    display: none !important;
+}
+
+/* =========================================
+   PROFILE CUSTOMIZATION MOBILE FIX
+   ========================================= */
+
+/* Hilangkan hamburger hanya ketika modal terbuka */
+
+.student-profile-page.is-profile-modal-open
+.mobile-menu-button {
+    display: none !important;
+}
+
+
+/*
+    Elemen pesan tidak mengambil ruang
+    kalau belum ada pesan.
+*/
+
+.profile-customization-message:empty {
+    display: none !important;
+
+    min-height: 0 !important;
+    height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* Padatkan jarak privacy ke footer */
+
+.profile-privacy-field {
+    margin-bottom: 0 !important;
+}
+
+.profile-customization-footer {
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+}
+
+@media (max-width: 600px) {
+
+    .student-profile-page.is-profile-modal-open
+    .mobile-menu-button {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .profile-customization-footer {
+        margin-top: 9px !important;
+        padding-top: 10px !important;
+    }
+
+}
+
+/* HAPUS CARD KUSTOMISASI PROFIL */
+
+.profile-customization-notice {
+    display: none !important;
+}
+
+
+/* HAPUS SPACE DI DALAM CARD PRIVASI */
+
+.profile-privacy-field
+.profile-customization-field-heading {
+    margin-bottom: 0 !important;
+}
+
+
+/* RAPATKAN PRIVASI DENGAN FOOTER */
+
+.profile-privacy-field {
+    margin-bottom: 0 !important;
+}
+
+.profile-customization-message:empty {
+    display: none !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+}
+
+.profile-customization-footer {
+    margin-top: 10px !important;
+}
+
+.profile-customization-footer {
+    border-top: none !important;
+}
+
     </style>
 
 </head>
@@ -1224,36 +2427,94 @@ font-size: 47px;
 
                 <div>
 
-                    <h2>
-                        Profile
-                    </h2>
+<h2 id="studentProfileTopbarTitle">
+    Profile
+</h2>
 
-                    <p>
-                        Informasi akun dan ringkasan akademik
-                    </p>
-
-                </div>
-
-
-                <div class="topbar-user">
-
-                    <div
-                        class="top-avatar"
-                        id="topStudentAvatar"
-                    >
-                        S
-                    </div>
-
-                    <span id="topStudentName">
-                        Student
-                    </span>
+<p id="studentProfileTopbarDescription">
+    Informasi akun dan ringkasan akademik
+</p>
 
                 </div>
+
+
+<div class="profile-topbar-actions">
+
+    <button
+        type="button"
+        class="student-search-topbar-button"
+        id="studentSearchTopbarButton"
+        onclick="toggleStudentDirectoryView()"
+    >
+
+        <!-- ICON SEARCH -->
+
+        <svg
+            id="studentSearchOpenIcon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <circle
+                cx="11"
+                cy="11"
+                r="7"
+            ></circle>
+
+            <path
+                d="m20 20-3.7-3.7"
+            ></path>
+        </svg>
+
+
+        <!-- ICON KEMBALI -->
+
+        <svg
+            id="studentSearchBackIcon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            hidden
+        >
+            <path
+                d="M19 12H5"
+            ></path>
+
+            <path
+                d="m12 19-7-7 7-7"
+            ></path>
+        </svg>
+
+
+        <span id="studentSearchTopbarLabel">
+            Student Search
+        </span>
+
+    </button>
+
+
+    <div class="topbar-user">
+
+        <div
+            class="top-avatar"
+            id="topStudentAvatar"
+        >
+            S
+        </div>
+
+        <span id="topStudentName">
+            Student
+        </span>
+
+    </div>
+
+</div>
 
             </header>
 
 
-            <div class="student-profile-content">
+<div
+    class="student-profile-content"
+    id="studentOwnProfileView"
+>
 
 
                 <!-- SOCIAL PROFILE CARD -->
@@ -1271,60 +2532,58 @@ font-size: 47px;
 
                     <div class="student-profile-main">
 
-                        <div class="student-profile-identity-row">
+<div class="student-profile-identity-row">
 
-                            <div
-                                class="student-profile-main-avatar"
-                                id="profileMainAvatar"
-                            >
-                                S
-                            </div>
-
-
-                            <div class="student-profile-identity">
-
-                                <h1 id="profileFullName">
-                                    Memuat profil...
-                                </h1>
-
-                                <p id="profileIdentityMeta">
-                                    Akun siswa
-                                </p>
-
-                                <p
-    class="student-profile-bio"
-    id="profileBio"
->
-    Belum ada bio.
-</p>
-
-                            </div>
-
-
-<button
-    type="button"
-    class="student-profile-customize-button"
-    onclick="openProfileCustomization()"
->
-
-    <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
+    <div
+        class="student-profile-main-avatar"
+        id="profileMainAvatar"
     >
-        <path d="M4 7h10"></path>
-        <path d="M18 7h2"></path>
-        <circle cx="16" cy="7" r="2"></circle>
+        S
+    </div>
 
-        <path d="M4 17h2"></path>
-        <path d="M10 17h10"></path>
-        <circle cx="8" cy="17" r="2"></circle>
-    </svg>
 
-    Sesuaikan Profil
+    <div class="student-profile-identity">
 
-</button>
+        <h1 id="profileFullName">
+            Memuat profil...
+        </h1>
 
-                        </div>
+        <p id="profileIdentityMeta">
+            Akun siswa
+        </p>
+
+<p
+    class="student-profile-bio is-loading"
+    id="profileBio"
+></p>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="student-profile-customize-button"
+        onclick="openProfileCustomization()"
+    >
+
+        <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <path d="M4 7h10"></path>
+            <path d="M18 7h2"></path>
+            <circle cx="16" cy="7" r="2"></circle>
+
+            <path d="M4 17h2"></path>
+            <path d="M10 17h10"></path>
+            <circle cx="8" cy="17" r="2"></circle>
+        </svg>
+
+        Sesuaikan Profil
+
+    </button>
+
+</div>
 
 
                         <div class="student-profile-stats">
@@ -1567,6 +2826,149 @@ font-size: 47px;
 
             </div>
 
+            <section
+    class="student-directory-view"
+    id="studentDirectoryView"
+    data-student-directory
+    data-directory-mode="student"
+    hidden
+>
+
+    <div class="student-directory-shell">
+
+        <div class="student-directory-search-area">
+
+            <span class="student-directory-label">
+                STUDENT DIRECTORY
+            </span>
+
+            <h1 class="student-directory-heading">
+                Cari teman sekolahmu
+            </h1>
+
+            <p class="student-directory-description">
+                Cari siswa berdasarkan nama atau kelas.
+            </p>
+
+
+            <form
+                class="student-directory-form"
+                data-directory-form
+            >
+
+                <div class="student-directory-input-wrap">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="7"
+                        ></circle>
+
+                        <path
+                            d="m20 20-3.7-3.7"
+                        ></path>
+                    </svg>
+
+                    <input
+                        type="search"
+                        class="student-directory-input"
+                        data-directory-input
+                        maxlength="80"
+                        autocomplete="off"
+                        placeholder="Cari nama atau kelas..."
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="student-directory-submit"
+                    data-directory-submit
+                >
+                    Cari
+                </button>
+
+            </form>
+
+
+            <p
+                class="student-directory-status"
+                data-directory-status
+            >
+                Ketik minimal 2 karakter untuk mulai mencari.
+            </p>
+
+        </div>
+
+
+        <div
+            class="student-directory-results"
+            data-directory-results
+        ></div>
+
+
+        <section
+            class="student-directory-profile"
+            data-directory-profile
+            hidden
+        >
+
+            <div
+                class="student-directory-profile-cover"
+                data-directory-profile-cover
+                data-banner-color="blue"
+            ></div>
+
+            <div class="student-directory-profile-body">
+
+                <div
+                    class="student-directory-profile-avatar"
+                    data-directory-profile-avatar
+                >
+                    S
+                </div>
+
+                <h2
+                    class="student-directory-profile-name"
+                    data-directory-profile-name
+                >
+                    Student
+                </h2>
+
+                <div
+                    class="student-directory-profile-meta"
+                    data-directory-profile-meta
+                ></div>
+
+                <div
+                    class="student-directory-profile-bio"
+                    data-directory-profile-bio
+                ></div>
+
+                <div
+                    class="student-directory-profile-grid"
+                    data-directory-profile-grid
+                ></div>
+
+                <div
+                    class="student-directory-privacy-note"
+                    data-directory-privacy-note
+                >
+                    Pemilik profil menyembunyikan statistik akademiknya.
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</section>
+
         </main>
 
     </div>
@@ -1637,13 +3039,13 @@ font-size: 47px;
 
             <div>
 
-                <strong>
-                    Kustomisasi profil segera tersedia
-                </strong>
+<strong>
+    Kustomisasi profil
+</strong>
 
-                <span>
-                    Pengaturan di bawah masih dikunci untuk sementara.
-                </span>
+<span>
+    Atur foto profil, bio, dan warna tampilan akun kamu.
+</span>
 
             </div>
 
@@ -1666,111 +3068,137 @@ font-size: 47px;
         </div>
 
 
-        <!-- PROFILE PICTURE -->
+ <!-- PROFILE PICTURE -->
 
-        <div class="profile-customization-field">
+<div class="profile-customization-field">
 
-            <div class="profile-customization-field-heading">
+    <div class="profile-customization-field-heading">
 
-                <div>
+        <div>
 
-                    <strong>
-                        Foto Profil
-                    </strong>
+            <strong>
+                Foto Profil
+            </strong>
 
-                    <span>
-                        Unggah, crop, dan atur posisi foto profil.
-                    </span>
+            <span>
+                Pilih bagian foto yang ingin digunakan.
+            </span>
 
-                </div>
+        </div>
 
-                <span class="profile-customization-lock">
+    </div>
 
-                    <svg
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <rect
-                            x="5"
-                            y="10"
-                            width="14"
-                            height="10"
-                            rx="2"
-                        ></rect>
 
-                        <path
-                            d="M8 10V7a4 4 0 0 1 8 0v3"
-                        ></path>
-                    </svg>
+    <input
+        type="file"
+        id="profilePictureInput"
+        accept="image/jpeg,image/png,image/webp"
+        hidden
+    >
 
-                </span>
 
-            </div>
+    <div class="profile-picture-upload-row">
+
+        <button
+            type="button"
+            class="profile-picture-select-button"
+            onclick="openProfilePicturePicker()"
+        >
+            Pilih Foto
+        </button>
+
+        <span>
+            JPG, PNG, atau WebP · Maksimal 2 MB
+        </span>
+
+    </div>
+
+
+    <div
+        class="profile-picture-crop-editor"
+        id="profilePictureCropEditor"
+        hidden
+    >
+
+        <div class="profile-picture-crop-stage">
+
+            <canvas
+                id="profilePictureCropCanvas"
+                width="320"
+                height="320"
+                aria-label="Area crop foto profil"
+            ></canvas>
+
+        </div>
+
+
+        <div class="profile-picture-zoom-row">
+
+            <span>
+                Zoom
+            </span>
+
+            <input
+                type="range"
+                id="profilePictureZoom"
+                min="1"
+                max="3"
+                step="0.01"
+                value="1"
+                aria-label="Zoom foto profil"
+            >
 
             <button
                 type="button"
-                class="profile-customization-disabled-button"
-                disabled
+                class="profile-picture-reset-button"
+                onclick="resetProfilePictureCrop()"
             >
-                Pilih Foto
+                Reset
             </button>
 
         </div>
 
 
-        <!-- BIO -->
+        <small class="profile-picture-crop-hint">
+            Geser foto untuk mengatur bagian yang ditampilkan.
+        </small>
 
-        <div class="profile-customization-field">
+    </div>
 
-            <div class="profile-customization-field-heading">
+</div>
 
-                <div>
 
-                    <strong>
-                        Bio
-                    </strong>
+ <!-- BIO -->
 
-                    <span>
-                        Tambahkan deskripsi singkat tentang diri kamu.
-                    </span>
+<div class="profile-customization-field">
 
-                </div>
+    <div class="profile-customization-field-heading">
 
-                <span class="profile-customization-lock">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <rect
-                            x="5"
-                            y="10"
-                            width="14"
-                            height="10"
-                            rx="2"
-                        ></rect>
-
-                        <path
-                            d="M8 10V7a4 4 0 0 1 8 0v3"
-                        ></path>
-                    </svg>
-
-                </span>
-
-            </div>
-
-            <textarea
-                class="profile-customization-bio-input"
-                maxlength="120"
-                placeholder="Tulis bio singkat..."
-                disabled
-            ></textarea>
-
-            <small class="profile-customization-character-count">
-                Maksimal 120 karakter
-            </small>
-
+        <div>
+            <strong>Bio</strong>
+            <span>
+                Tambahkan deskripsi singkat tentang diri kamu.
+            </span>
         </div>
+
+    </div>
+
+<textarea
+    id="profileCustomizationBio"
+    class="profile-customization-bio-input"
+    maxlength="120"
+    rows="3"
+    placeholder="Tulis bio singkat..."
+></textarea>
+
+    <small
+        class="profile-customization-character-count"
+        id="profileCustomizationBioCount"
+    >
+        0 / 120
+    </small>
+
+</div>
 
 
         <!-- BANNER COLOR -->
@@ -1791,69 +3219,102 @@ font-size: 47px;
 
                 </div>
 
-                <span class="profile-customization-lock">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <rect
-                            x="5"
-                            y="10"
-                            width="14"
-                            height="10"
-                            rx="2"
-                        ></rect>
-
-                        <path
-                            d="M8 10V7a4 4 0 0 1 8 0v3"
-                        ></path>
-                    </svg>
-
-                </span>
-
             </div>
 
-            <div class="profile-banner-color-list">
+<div class="profile-banner-color-list">
 
-                <button
-                    type="button"
-                    class="profile-banner-color blue selected"
-                    disabled
-                    aria-label="Biru"
-                ></button>
+    <button
+        type="button"
+        class="profile-banner-color blue"
+        data-banner-color="blue"
+        onclick="selectProfileBannerColor('blue')"
+        aria-label="Biru"
+    ></button>
 
-                <button
-                    type="button"
-                    class="profile-banner-color purple"
-                    disabled
-                    aria-label="Ungu"
-                ></button>
+    <button
+        type="button"
+        class="profile-banner-color purple"
+        data-banner-color="purple"
+        onclick="selectProfileBannerColor('purple')"
+        aria-label="Ungu"
+    ></button>
 
-                <button
-                    type="button"
-                    class="profile-banner-color green"
-                    disabled
-                    aria-label="Hijau"
-                ></button>
+    <button
+        type="button"
+        class="profile-banner-color green"
+        data-banner-color="green"
+        onclick="selectProfileBannerColor('green')"
+        aria-label="Hijau"
+    ></button>
 
-                <button
-                    type="button"
-                    class="profile-banner-color orange"
-                    disabled
-                    aria-label="Oranye"
-                ></button>
+    <button
+        type="button"
+        class="profile-banner-color orange"
+        data-banner-color="orange"
+        onclick="selectProfileBannerColor('orange')"
+        aria-label="Oranye"
+    ></button>
 
-                <button
-                    type="button"
-                    class="profile-banner-color red"
-                    disabled
-                    aria-label="Merah"
-                ></button>
+    <button
+        type="button"
+        class="profile-banner-color red"
+        data-banner-color="red"
+        onclick="selectProfileBannerColor('red')"
+        aria-label="Merah"
+    ></button>
 
             </div>
 
         </div>
+
+<!-- PROFILE PRIVACY -->
+
+<div
+    class="
+        profile-customization-field
+        profile-privacy-field
+    "
+>
+
+    <div class="profile-customization-field-heading">
+
+        <div>
+
+            <strong>
+                Privasi Profil
+            </strong>
+
+            <span>
+                Izinkan siswa lain melihat total poin
+                dan nilai rata-rata kamu.
+            </span>
+
+        </div>
+
+
+        <label class="profile-privacy-switch">
+
+            <input
+                type="checkbox"
+                id="profileShowAcademicStats"
+            >
+
+            <span
+                class="profile-privacy-slider"
+            ></span>
+
+        </label>
+
+    </div>
+
+</div>
+
+
+        <p
+            class="profile-customization-message"
+            id="profileCustomizationMessage"
+            aria-live="polite"
+        ></p>
 
 
         <footer class="profile-customization-footer">
@@ -1866,13 +3327,14 @@ font-size: 47px;
                 Tutup
             </button>
 
-            <button
-                type="button"
-                class="profile-customization-save"
-                disabled
-            >
-                Simpan Perubahan
-            </button>
+<button
+    type="button"
+    class="profile-customization-save"
+    id="profileCustomizationSaveButton"
+    onclick="saveProfileCustomization()"
+>
+    Simpan Perubahan
+</button>
 
         </footer>
 
@@ -1882,16 +3344,1025 @@ font-size: 47px;
 
 
     <script src="/student-session.js"></script>
+    <script src="/student-directory.js"></script>
     <script src="/time.js"></script>
 
     <script>
 
-        function openProfileCustomization() {
+        const PROFILE_BANNER_COLORS =
+    new Set([
+        "blue",
+        "purple",
+        "green",
+        "orange",
+        "red"
+    ]);
+
+const PROFILE_BANNER_BACKGROUNDS = {
+
+    blue:
+        "radial-gradient(circle at 76% 25%, rgba(96, 165, 250, 0.24), transparent 28%), linear-gradient(120deg, #173d68, #122b4a 52%, #101d30)",
+
+    purple:
+        "radial-gradient(circle at 76% 25%, rgba(196, 181, 253, 0.25), transparent 28%), linear-gradient(120deg, #4c1d95, #312e81 55%, #17152d)",
+
+    green:
+        "radial-gradient(circle at 76% 25%, rgba(110, 231, 183, 0.23), transparent 28%), linear-gradient(120deg, #065f46, #064e3b 55%, #10251f)",
+
+    orange:
+        "radial-gradient(circle at 76% 25%, rgba(253, 186, 116, 0.24), transparent 28%), linear-gradient(120deg, #9a3412, #7c2d12 55%, #2b1912)",
+
+    red:
+        "radial-gradient(circle at 76% 25%, rgba(252, 165, 165, 0.24), transparent 28%), linear-gradient(120deg, #991b1b, #7f1d1d 55%, #2c1519)"
+
+};
+
+
+let currentProfileBio = "";
+let currentProfileBannerColor = "blue";
+let selectedProfileBannerColor = "blue";
+let currentProfileShowAcademicStats = false;
+
+const PROFILE_PICTURE_INPUT_MAX_BYTES =
+    2 * 1024 * 1024;
+
+const PROFILE_PICTURE_OUTPUT_SIZE =
+    256;
+
+const PROFILE_PICTURE_CROP_SIZE =
+    320;
+
+const PROFILE_PICTURE_ALLOWED_TYPES =
+    new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ]);
+
+
+let currentStudentInitial =
+    "S";
+
+let currentProfilePictureUrl =
+    "";
+
+let profilePictureSourceImage =
+    null;
+
+let profilePictureSourceUrl =
+    "";
+
+let profilePictureMinimumScale =
+    1;
+
+let profilePictureZoomValue =
+    1;
+
+let profilePictureOffsetX =
+    0;
+
+let profilePictureOffsetY =
+    0;
+
+let profilePictureDragging =
+    false;
+
+let profilePictureLastPointerX =
+    0;
+
+let profilePictureLastPointerY =
+    0;
+
+
+function normalizeProfileBannerColor(color) {
+
+    return PROFILE_BANNER_COLORS.has(color)
+        ? color
+        : "blue";
+
+}
+
+
+function setProfileBanner(element, color) {
+
+    if (!element) {
+        return;
+    }
+
+
+    const normalizedColor =
+        normalizeProfileBannerColor(color);
+
+
+    element.dataset.bannerColor =
+        normalizedColor;
+
+
+    element.style.background =
+        PROFILE_BANNER_BACKGROUNDS[
+            normalizedColor
+        ];
+
+}
+
+function applyProfileTheme(color) {
+
+    const normalizedColor =
+        normalizeProfileBannerColor(color);
+
+
+    document.body.dataset.profileTheme =
+        normalizedColor;
+
+
+    setProfileBanner(
+        document.querySelector(
+            ".student-profile-cover"
+        ),
+        normalizedColor
+    );
+
+
+    setProfileBanner(
+        document.querySelector(
+            ".profile-customization-banner-preview"
+        ),
+        normalizedColor
+    );
+
+}
+
+
+function renderProfileBio(bio) {
+
+    const element =
+        document.getElementById(
+            "profileBio"
+        );
+
+
+    const cleanBio =
+        String(bio || "").trim();
+
+    element.classList.remove(
+    "is-loading"
+);
+
+
+    element.textContent =
+        cleanBio ||
+        "Belum ada bio.";
+
+
+    element.classList.toggle(
+        "is-empty",
+        !cleanBio
+    );
+
+}
+
+
+function selectProfileBannerColor(color) {
+
+    selectedProfileBannerColor =
+        normalizeProfileBannerColor(color);
+
+
+    document
+        .querySelectorAll(
+            ".profile-banner-color"
+        )
+        .forEach((button) => {
+
+            const selected =
+                button.dataset.bannerColor ===
+                selectedProfileBannerColor;
+
+
+            button.classList.toggle(
+                "selected",
+                selected
+            );
+
+
+            button.setAttribute(
+                "aria-pressed",
+                String(selected)
+            );
+
+        });
+
+
+    applyProfileTheme(
+        selectedProfileBannerColor
+    );
+
+}
+
+
+function updateProfileBioCount() {
+
+    const input =
+        document.getElementById(
+            "profileCustomizationBio"
+        );
+
+
+    const normalizedValue =
+        input.value.replace(
+            /\r\n?/g,
+            "\n"
+        );
+
+
+    const characterCount =
+        Array.from(
+            normalizedValue
+        ).length;
+
+
+    const lineCount =
+        normalizedValue
+            ? normalizedValue
+                .split("\n")
+                .length
+            : 0;
+
+
+    document.getElementById(
+        "profileCustomizationBioCount"
+    ).textContent =
+        `${characterCount} / 120 · ` +
+        `${lineCount} / 3 baris`;
+
+
+    input.classList.toggle(
+        "has-error",
+        lineCount > 3
+    );
+
+}
+
+
+function showProfileCustomizationMessage(
+    message,
+    type = ""
+) {
+
+    const element =
+        document.getElementById(
+            "profileCustomizationMessage"
+        );
+
+
+    element.textContent =
+        message || "";
+
+
+    element.className =
+        "profile-customization-message";
+
+
+    if (type) {
+
+        element.classList.add(
+            type
+        );
+
+    }
+
+}
+
+function renderProfileAvatar(
+    element,
+    pictureUrl,
+    initial
+) {
+
+    if (!element) {
+        return;
+    }
+
+
+    const cleanUrl =
+        String(
+            pictureUrl || ""
+        ).trim();
+
+
+    element.replaceChildren();
+
+
+    if (!cleanUrl) {
+
+        element.textContent =
+            initial || "S";
+
+        return;
+
+    }
+
+
+    const image =
+        document.createElement(
+            "img"
+        );
+
+
+    image.className =
+        "student-profile-avatar-image";
+
+
+    image.alt =
+        "Foto profil siswa";
+
+
+    image.src =
+        cleanUrl;
+
+
+    image.addEventListener(
+        "error",
+        () => {
+
+            element.replaceChildren();
+
+            element.textContent =
+                initial || "S";
+
+        },
+        {
+            once:
+                true
+        }
+    );
+
+
+    element.appendChild(
+        image
+    );
+
+}
+
+
+function renderAllProfileAvatars() {
+
+    const avatarIds = [
+        "profileMainAvatar",
+        "sidebarStudentAvatar",
+        "topStudentAvatar",
+        "profileCustomizationAvatar"
+    ];
+
+
+    avatarIds.forEach(
+        avatarId => {
+
+            renderProfileAvatar(
+                document.getElementById(
+                    avatarId
+                ),
+                currentProfilePictureUrl,
+                currentStudentInitial
+            );
+
+        }
+    );
+
+}
+
+
+function openProfilePicturePicker() {
+
+    document.getElementById(
+        "profilePictureInput"
+    ).click();
+
+}
+
+
+function clampProfilePictureOffsets() {
+
+    if (!profilePictureSourceImage) {
+        return;
+    }
+
+
+    const drawnWidth =
+        profilePictureSourceImage.width *
+        profilePictureMinimumScale *
+        profilePictureZoomValue;
+
+
+    const drawnHeight =
+        profilePictureSourceImage.height *
+        profilePictureMinimumScale *
+        profilePictureZoomValue;
+
+
+    const maximumOffsetX =
+        Math.max(
+            0,
+            (
+                drawnWidth -
+                PROFILE_PICTURE_CROP_SIZE
+            ) / 2
+        );
+
+
+    const maximumOffsetY =
+        Math.max(
+            0,
+            (
+                drawnHeight -
+                PROFILE_PICTURE_CROP_SIZE
+            ) / 2
+        );
+
+
+    profilePictureOffsetX =
+        Math.max(
+            -maximumOffsetX,
+            Math.min(
+                maximumOffsetX,
+                profilePictureOffsetX
+            )
+        );
+
+
+    profilePictureOffsetY =
+        Math.max(
+            -maximumOffsetY,
+            Math.min(
+                maximumOffsetY,
+                profilePictureOffsetY
+            )
+        );
+
+}
+
+
+function drawProfilePictureCrop(
+    updatePreview = false
+) {
+
+    if (!profilePictureSourceImage) {
+        return;
+    }
+
+
+    const canvas =
+        document.getElementById(
+            "profilePictureCropCanvas"
+        );
+
+
+    const context =
+        canvas.getContext(
+            "2d"
+        );
+
+
+    clampProfilePictureOffsets();
+
+
+    const drawnWidth =
+        profilePictureSourceImage.width *
+        profilePictureMinimumScale *
+        profilePictureZoomValue;
+
+
+    const drawnHeight =
+        profilePictureSourceImage.height *
+        profilePictureMinimumScale *
+        profilePictureZoomValue;
+
+
+    const drawX =
+        (
+            PROFILE_PICTURE_CROP_SIZE -
+            drawnWidth
+        ) / 2 +
+        profilePictureOffsetX;
+
+
+    const drawY =
+        (
+            PROFILE_PICTURE_CROP_SIZE -
+            drawnHeight
+        ) / 2 +
+        profilePictureOffsetY;
+
+
+    context.clearRect(
+        0,
+        0,
+        PROFILE_PICTURE_CROP_SIZE,
+        PROFILE_PICTURE_CROP_SIZE
+    );
+
+
+    /*
+        Beri background untuk PNG transparan.
+    */
+    context.fillStyle =
+        "#0c1420";
+
+
+    context.fillRect(
+        0,
+        0,
+        PROFILE_PICTURE_CROP_SIZE,
+        PROFILE_PICTURE_CROP_SIZE
+    );
+
+
+    context.imageSmoothingEnabled =
+        true;
+
+
+    context.imageSmoothingQuality =
+        "high";
+
+
+    context.drawImage(
+        profilePictureSourceImage,
+        drawX,
+        drawY,
+        drawnWidth,
+        drawnHeight
+    );
+
+
+    if (updatePreview) {
+
+        const previewUrl =
+            canvas.toDataURL(
+                "image/webp",
+                0.82
+            );
+
+
+        renderProfileAvatar(
+            document.getElementById(
+                "profileCustomizationAvatar"
+            ),
+            previewUrl,
+            currentStudentInitial
+        );
+
+    }
+
+}
+
+
+function resetProfilePictureCrop() {
+
+    if (!profilePictureSourceImage) {
+        return;
+    }
+
+
+    profilePictureZoomValue =
+        1;
+
+
+    profilePictureOffsetX =
+        0;
+
+
+    profilePictureOffsetY =
+        0;
+
+
+    document.getElementById(
+        "profilePictureZoom"
+    ).value =
+        "1";
+
+
+    drawProfilePictureCrop(
+        true
+    );
+
+}
+
+
+function resetProfilePictureSelection() {
+
+    if (profilePictureSourceUrl) {
+
+        URL.revokeObjectURL(
+            profilePictureSourceUrl
+        );
+
+    }
+
+
+    profilePictureSourceUrl =
+        "";
+
+
+    profilePictureSourceImage =
+        null;
+
+
+    profilePictureZoomValue =
+        1;
+
+
+    profilePictureOffsetX =
+        0;
+
+
+    profilePictureOffsetY =
+        0;
+
+
+    document.getElementById(
+        "profilePictureInput"
+    ).value =
+        "";
+
+
+    document.getElementById(
+        "profilePictureCropEditor"
+    ).hidden =
+        true;
+
+
+    renderProfileAvatar(
+        document.getElementById(
+            "profileCustomizationAvatar"
+        ),
+        currentProfilePictureUrl,
+        currentStudentInitial
+    );
+
+}
+
+
+async function handleProfilePictureSelection(
+    event
+) {
+
+    const file =
+        event.target.files &&
+        event.target.files[0];
+
+
+    if (!file) {
+        return;
+    }
+
+
+    if (
+        !PROFILE_PICTURE_ALLOWED_TYPES
+            .has(
+                file.type
+            )
+    ) {
+
+        event.target.value =
+            "";
+
+
+        showProfileCustomizationMessage(
+            "Gunakan gambar JPG, PNG, atau WebP.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        file.size >
+        PROFILE_PICTURE_INPUT_MAX_BYTES
+    ) {
+
+        event.target.value =
+            "";
+
+
+        showProfileCustomizationMessage(
+            "Ukuran gambar maksimal 2 MB.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    if (profilePictureSourceUrl) {
+
+        URL.revokeObjectURL(
+            profilePictureSourceUrl
+        );
+
+    }
+
+
+    profilePictureSourceUrl =
+        URL.createObjectURL(
+            file
+        );
+
+
+    const sourceImage =
+        new Image();
+
+
+    sourceImage.addEventListener(
+        "load",
+        () => {
+
+            profilePictureSourceImage =
+                sourceImage;
+
+
+            profilePictureMinimumScale =
+                Math.max(
+                    PROFILE_PICTURE_CROP_SIZE /
+                        sourceImage.width,
+
+                    PROFILE_PICTURE_CROP_SIZE /
+                        sourceImage.height
+                );
+
+
+            profilePictureZoomValue =
+                1;
+
+
+            profilePictureOffsetX =
+                0;
+
+
+            profilePictureOffsetY =
+                0;
+
+
+            document.getElementById(
+                "profilePictureZoom"
+            ).value =
+                "1";
+
+
+            document.getElementById(
+                "profilePictureCropEditor"
+            ).hidden =
+                false;
+
+
+            drawProfilePictureCrop(
+                true
+            );
+
+
+            showProfileCustomizationMessage(
+                "Atur posisi foto, lalu tekan Simpan Perubahan."
+            );
+
+        },
+        {
+            once:
+                true
+        }
+    );
+
+
+    sourceImage.addEventListener(
+        "error",
+        () => {
+
+            resetProfilePictureSelection();
+
+
+            showProfileCustomizationMessage(
+                "Gambar tidak dapat dibuka.",
+                "error"
+            );
+
+        },
+        {
+            once:
+                true
+        }
+    );
+
+
+    sourceImage.src =
+        profilePictureSourceUrl;
+
+}
+
+
+function createCroppedProfilePictureBlob() {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            if (
+                !profilePictureSourceImage
+            ) {
+
+                resolve(null);
+                return;
+
+            }
+
+
+            drawProfilePictureCrop();
+
+
+            const cropCanvas =
+                document.getElementById(
+                    "profilePictureCropCanvas"
+                );
+
+
+            const outputCanvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            outputCanvas.width =
+                PROFILE_PICTURE_OUTPUT_SIZE;
+
+
+            outputCanvas.height =
+                PROFILE_PICTURE_OUTPUT_SIZE;
+
+
+            const outputContext =
+                outputCanvas.getContext(
+                    "2d"
+                );
+
+
+            outputContext.imageSmoothingEnabled =
+                true;
+
+
+            outputContext.imageSmoothingQuality =
+                "high";
+
+
+            outputContext.drawImage(
+                cropCanvas,
+                0,
+                0,
+                PROFILE_PICTURE_OUTPUT_SIZE,
+                PROFILE_PICTURE_OUTPUT_SIZE
+            );
+
+
+            outputCanvas.toBlob(
+                blob => {
+
+                    if (!blob) {
+
+                        reject(
+                            new Error(
+                                "Foto profil tidak dapat diproses."
+                            )
+                        );
+
+                        return;
+
+                    }
+
+
+                    resolve(blob);
+
+                },
+
+                "image/webp",
+
+                0.82
+            );
+
+        }
+    );
+
+}
+
+
+async function uploadProfilePictureBlob(
+    imageBlob
+) {
+
+    const response =
+        await fetch(
+            "/api/student/profile/picture",
+            {
+                method:
+                    "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "image/webp"
+                },
+
+                body:
+                    imageBlob
+            }
+        );
+
+
+    const data =
+        await response
+            .json()
+            .catch(() => ({}));
+
+
+    if (
+        response.status === 401
+    ) {
+
+        window.location.href =
+            "/student-login.html";
+
+        throw new Error(
+            "Sesi siswa telah berakhir."
+        );
+
+    }
+
+
+    if (
+        !response.ok ||
+        !data.success ||
+        !data.picture ||
+        !data.picture.url
+    ) {
+
+        throw new Error(
+            data.message ||
+            "Foto profil tidak dapat diunggah."
+        );
+
+    }
+
+
+    return data.picture;
+
+}
+
+function openProfileCustomization() {
 
     const modal =
         document.getElementById(
             "profileCustomizationModal"
         );
+
+
+    const bioInput =
+        document.getElementById(
+            "profileCustomizationBio"
+        );
+
+
+    bioInput.value =
+        currentProfileBio;
+
+
+selectedProfileBannerColor =
+    currentProfileBannerColor;
+
+
+document.getElementById(
+    "profileShowAcademicStats"
+).checked =
+    currentProfileShowAcademicStats;
+
+
+selectProfileBannerColor(
+    currentProfileBannerColor
+);
+
+
+    updateProfileBioCount();
+
+
+    showProfileCustomizationMessage(
+        ""
+    );
+
+renderProfileAvatar(
+    document.getElementById(
+        "profileCustomizationAvatar"
+    ),
+    currentProfilePictureUrl,
+    currentStudentInitial
+);
 
 
     modal.hidden =
@@ -1913,6 +4384,13 @@ function closeProfileCustomization() {
         );
 
 
+    if (!modal || modal.hidden) {
+        return;
+    }
+
+resetProfilePictureSelection();
+
+
     modal.hidden =
         true;
 
@@ -1920,6 +4398,281 @@ function closeProfileCustomization() {
     document.body.classList.remove(
         "is-profile-modal-open"
     );
+
+
+    showProfileCustomizationMessage(
+        ""
+    );
+
+}
+
+showProfileCustomizationMessage(
+    ""
+);
+
+async function saveProfileCustomization() {
+
+    const bioInput =
+        document.getElementById(
+            "profileCustomizationBio"
+        );
+
+
+    const saveButton =
+        document.getElementById(
+            "profileCustomizationSaveButton"
+        );
+
+    const showAcademicStats =
+    document.getElementById(
+        "profileShowAcademicStats"
+    ).checked;
+
+
+    const bio =
+        bioInput.value
+            .replace(/\r\n?/g, "\n")
+            .trim();
+
+
+    if (
+        Array.from(bio).length > 120
+    ) {
+
+        showProfileCustomizationMessage(
+            "Bio maksimal 120 karakter.",
+            "error"
+        );
+
+        return;
+
+    }
+
+const bioLineCount =
+    bio
+        ? bio.split("\n").length
+        : 0;
+
+
+if (
+    bioLineCount > 3
+) {
+
+    showProfileCustomizationMessage(
+        "",
+        "error"
+    );
+
+    return;
+
+}
+
+
+    saveButton.disabled =
+        true;
+
+
+    saveButton.textContent =
+        "Menyimpan...";
+
+
+    showProfileCustomizationMessage(
+        ""
+    );
+
+
+    try {
+
+        /*
+            Simpan bio dan banner.
+        */
+        const customizationResponse =
+            await fetch(
+                "/api/student/profile/customization",
+                {
+                    method:
+                        "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+body:
+    JSON.stringify({
+        bio,
+
+        bannerColor:
+            selectedProfileBannerColor,
+
+        showAcademicStats
+    })
+                }
+            );
+
+
+        const customizationData =
+            await customizationResponse
+                .json()
+                .catch(() => ({}));
+
+
+        if (
+            customizationResponse.status === 401
+        ) {
+
+            window.location.href =
+                "/student-login.html";
+
+            return;
+
+        }
+
+
+        if (
+            !customizationResponse.ok ||
+            !customizationData.success
+        ) {
+
+            throw new Error(
+                customizationData.message ||
+                "Profil tidak dapat disimpan."
+            );
+
+        }
+
+
+        currentProfileBio =
+            customizationData
+                .customization
+                .bio;
+
+
+        currentProfileBannerColor =
+            normalizeProfileBannerColor(
+                customizationData
+                    .customization
+                    .bannerColor
+            );
+
+
+        selectedProfileBannerColor =
+            currentProfileBannerColor;
+
+        currentProfileShowAcademicStats =
+    Boolean(
+        customizationData
+            .customization
+            .showAcademicStats
+    );
+
+
+        renderProfileBio(
+            currentProfileBio
+        );
+
+
+        applyProfileTheme(
+            currentProfileBannerColor
+        );
+
+
+        /*
+            Upload hanya jika siswa memilih foto baru.
+        */
+        if (
+            profilePictureSourceImage
+        ) {
+
+            saveButton.textContent =
+                "Mengunggah foto...";
+
+
+            const imageBlob =
+                await createCroppedProfilePictureBlob();
+
+
+            const uploadedPicture =
+                await uploadProfilePictureBlob(
+                    imageBlob
+                );
+
+
+            currentProfilePictureUrl =
+                uploadedPicture.url;
+
+
+            renderAllProfileAvatars();
+
+        }
+
+window.dispatchEvent(
+    new CustomEvent(
+        "student-profile-updated",
+        {
+            detail: {
+
+                studentId:
+                    localStorage.getItem(
+                        "studentId"
+                    ),
+
+                name:
+                    localStorage.getItem(
+                        "studentName"
+                    ),
+
+                profilePictureUrl:
+                    currentProfilePictureUrl,
+
+                bannerColor:
+                    currentProfileBannerColor
+
+            }
+        }
+    )
+);
+
+
+        showProfileCustomizationMessage(
+            "Perubahan berhasil disimpan.",
+            "success"
+        );
+
+
+        setTimeout(
+            () => {
+
+                closeProfileCustomization();
+
+            },
+            600
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menyimpan profil:",
+            error
+        );
+
+
+        showProfileCustomizationMessage(
+            error.message ||
+            "Profil tidak dapat disimpan.",
+            "error"
+        );
+
+    } finally {
+
+        saveButton.disabled =
+            false;
+
+
+        saveButton.textContent =
+            "Simpan Perubahan";
+
+    }
 
 }
 
@@ -1957,6 +4710,126 @@ document.addEventListener(
 
     }
 );
+
+let isStudentDirectoryOpen =
+    false;
+
+
+function toggleStudentDirectoryView() {
+
+    const profileView =
+        document.getElementById(
+            "studentOwnProfileView"
+        );
+
+    const directoryView =
+        document.getElementById(
+            "studentDirectoryView"
+        );
+
+    const topbarTitle =
+        document.getElementById(
+            "studentProfileTopbarTitle"
+        );
+
+    const topbarDescription =
+        document.getElementById(
+            "studentProfileTopbarDescription"
+        );
+
+    const buttonLabel =
+        document.getElementById(
+            "studentSearchTopbarLabel"
+        );
+
+    const searchIcon =
+    document.getElementById(
+        "studentSearchOpenIcon"
+    );
+
+
+const backIcon =
+    document.getElementById(
+        "studentSearchBackIcon"
+    );
+
+
+    isStudentDirectoryOpen =
+        !isStudentDirectoryOpen;
+
+
+    profileView.hidden =
+        isStudentDirectoryOpen;
+
+    directoryView.hidden =
+        !isStudentDirectoryOpen;
+
+
+    topbarTitle.textContent =
+        isStudentDirectoryOpen
+            ? "Student Search"
+            : "Profile";
+
+
+    topbarDescription.textContent =
+        isStudentDirectoryOpen
+            ? "Cari dan lihat profil siswa"
+            : "Informasi akun dan ringkasan akademik";
+
+/*
+    Student Search selalu menggunakan
+    tema biru default.
+
+    Saat kembali, warna profil siswa
+    dikembalikan lagi.
+*/
+if (isStudentDirectoryOpen) {
+
+    applyProfileTheme(
+        "blue"
+    );
+
+} else {
+
+    applyProfileTheme(
+        currentProfileBannerColor
+    );
+
+}
+
+buttonLabel.textContent =
+    isStudentDirectoryOpen
+        ? "Kembali ke Profile"
+        : "Student Search";
+
+
+searchIcon.hidden =
+    isStudentDirectoryOpen;
+
+
+backIcon.hidden =
+    !isStudentDirectoryOpen;
+
+
+    if (
+        isStudentDirectoryOpen &&
+        typeof directoryView
+            .studentDirectoryFocus ===
+            "function"
+    ) {
+
+        directoryView
+            .studentDirectoryFocus();
+
+    }
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
 
         async function loadProfile() {
 
@@ -2015,11 +4888,72 @@ document.addEventListener(
                     student.className ||
                     "-";
 
+                const profileBio =
+    typeof student.bio === "string"
+        ? student.bio
+        : "";
+
+
+const profileBannerColor =
+    normalizeProfileBannerColor(
+        student.bannerColor
+    );
+
+
+currentProfileBio =
+    profileBio;
+
+currentProfileShowAcademicStats =
+    Boolean(
+        student.showAcademicStats
+    );
+
+
+currentProfileBannerColor =
+    normalizeProfileBannerColor(
+        profileBannerColor
+    );
+
+
+selectedProfileBannerColor =
+    currentProfileBannerColor;
+
+
+/*
+ * Terapkan theme langsung ketika halaman dimuat.
+ * Tidak perlu membuka panel terlebih dahulu.
+ */
+applyProfileTheme(
+    currentProfileBannerColor
+);
+
+
+selectProfileBannerColor(
+    currentProfileBannerColor
+);
+
+    renderProfileBio(
+    profileBio
+);
+
 
                 const initial =
                     getStudentInitial(
                         shortName
                     );
+
+currentStudentInitial =
+    initial;
+
+
+currentProfilePictureUrl =
+    String(
+        student.profilePictureUrl ||
+        ""
+    ).trim();
+
+
+renderAllProfileAvatars();
 
 
                 document.getElementById(
@@ -2098,29 +5032,6 @@ document.addEventListener(
                     "topStudentName"
                 ).textContent =
                     shortName;
-
-
-                document.getElementById(
-                    "profileMainAvatar"
-                ).textContent =
-                    initial;
-
-
-                document.getElementById(
-                    "sidebarStudentAvatar"
-                ).textContent =
-                    initial;
-
-
-                document.getElementById(
-                    "topStudentAvatar"
-                ).textContent =
-                    initial;
-
-                document.getElementById(
-    "profileCustomizationAvatar"
-).textContent =
-    initial;
 
             } catch (error) {
 
@@ -2292,6 +5203,366 @@ document.addEventListener(
                 "/student-login.html";
 
         }
+
+        const profileCustomizationBioInput =
+    document.getElementById(
+        "profileCustomizationBio"
+    );
+
+
+if (profileCustomizationBioInput) {
+
+profileCustomizationBioInput.addEventListener(
+    "beforeinput",
+    event => {
+
+        const isNewLine =
+            event.inputType ===
+                "insertLineBreak" ||
+            event.inputType ===
+                "insertParagraph";
+
+
+        if (!isNewLine) {
+            return;
+        }
+
+
+        const input =
+            event.currentTarget;
+
+
+        const prospectiveValue =
+            input.value.slice(
+                0,
+                input.selectionStart
+            ) +
+            "\n" +
+            input.value.slice(
+                input.selectionEnd
+            );
+
+
+        const prospectiveLineCount =
+            prospectiveValue
+                .replace(/\r\n?/g, "\n")
+                .split("\n")
+                .length;
+
+
+        if (
+            prospectiveLineCount > 3
+        ) {
+
+            event.preventDefault();
+
+
+            showProfileCustomizationMessage(
+                "",
+                "error"
+            );
+
+        }
+
+    }
+);
+
+
+profileCustomizationBioInput.addEventListener(
+    "paste",
+    event => {
+
+        const input =
+            event.currentTarget;
+
+
+        const pastedText =
+            event.clipboardData
+                .getData("text")
+                .replace(/\r\n?/g, "\n");
+
+
+        const prospectiveValue =
+            input.value.slice(
+                0,
+                input.selectionStart
+            ) +
+            pastedText +
+            input.value.slice(
+                input.selectionEnd
+            );
+
+
+        if (
+            prospectiveValue
+                .split("\n")
+                .length > 3
+        ) {
+
+            event.preventDefault();
+
+
+            showProfileCustomizationMessage(
+                "Teks yang ditempel melebihi batas 3 baris.",
+                "error"
+            );
+
+        }
+
+    }
+);
+
+
+profileCustomizationBioInput.addEventListener(
+    "input",
+    event => {
+
+        const input =
+            event.currentTarget;
+
+
+        const normalizedValue =
+            input.value.replace(
+                /\r\n?/g,
+                "\n"
+            );
+
+
+        const lines =
+            normalizedValue.split("\n");
+
+
+        /*
+            Perlindungan tambahan untuk browser mobile
+            atau metode input yang melewati beforeinput.
+        */
+        if (
+            lines.length > 3
+        ) {
+
+            input.value =
+                lines
+                    .slice(0, 3)
+                    .join("\n");
+
+
+            showProfileCustomizationMessage(
+                "",
+                "error"
+            );
+
+        }
+
+
+        updateProfileBioCount();
+
+    }
+);
+
+}
+
+document
+    .querySelectorAll(
+        ".profile-banner-color"
+    )
+    .forEach((button) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                selectProfileBannerColor(
+                    button.dataset.bannerColor
+                );
+
+            }
+        );
+
+    });
+
+const profilePictureInput =
+    document.getElementById(
+        "profilePictureInput"
+    );
+
+
+const profilePictureCropCanvas =
+    document.getElementById(
+        "profilePictureCropCanvas"
+    );
+
+
+const profilePictureZoomInput =
+    document.getElementById(
+        "profilePictureZoom"
+    );
+
+
+profilePictureInput.addEventListener(
+    "change",
+    handleProfilePictureSelection
+);
+
+
+profilePictureZoomInput.addEventListener(
+    "input",
+    event => {
+
+        profilePictureZoomValue =
+            Number(
+                event.target.value
+            );
+
+
+        drawProfilePictureCrop(
+            true
+        );
+
+    }
+);
+
+
+profilePictureCropCanvas.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (!profilePictureSourceImage) {
+            return;
+        }
+
+
+        profilePictureDragging =
+            true;
+
+
+        profilePictureLastPointerX =
+            event.clientX;
+
+
+        profilePictureLastPointerY =
+            event.clientY;
+
+
+        profilePictureCropCanvas
+            .classList.add(
+                "is-dragging"
+            );
+
+
+        profilePictureCropCanvas
+            .setPointerCapture(
+                event.pointerId
+            );
+
+    }
+);
+
+
+profilePictureCropCanvas.addEventListener(
+    "pointermove",
+    event => {
+
+        if (
+            !profilePictureDragging ||
+            !profilePictureSourceImage
+        ) {
+
+            return;
+
+        }
+
+
+        const canvasRect =
+            profilePictureCropCanvas
+                .getBoundingClientRect();
+
+
+        const coordinateScale =
+            PROFILE_PICTURE_CROP_SIZE /
+            canvasRect.width;
+
+
+        profilePictureOffsetX +=
+            (
+                event.clientX -
+                profilePictureLastPointerX
+            ) *
+            coordinateScale;
+
+
+        profilePictureOffsetY +=
+            (
+                event.clientY -
+                profilePictureLastPointerY
+            ) *
+            coordinateScale;
+
+
+        profilePictureLastPointerX =
+            event.clientX;
+
+
+        profilePictureLastPointerY =
+            event.clientY;
+
+
+        drawProfilePictureCrop();
+
+    }
+);
+
+
+function finishProfilePictureDrag(
+    event
+) {
+
+    if (!profilePictureDragging) {
+        return;
+    }
+
+
+    profilePictureDragging =
+        false;
+
+
+    profilePictureCropCanvas
+        .classList.remove(
+            "is-dragging"
+        );
+
+
+    if (
+        profilePictureCropCanvas
+            .hasPointerCapture(
+                event.pointerId
+            )
+    ) {
+
+        profilePictureCropCanvas
+            .releasePointerCapture(
+                event.pointerId
+            );
+
+    }
+
+
+    drawProfilePictureCrop(
+        true
+    );
+
+}
+
+
+profilePictureCropCanvas.addEventListener(
+    "pointerup",
+    finishProfilePictureDrag
+);
+
+
+profilePictureCropCanvas.addEventListener(
+    "pointercancel",
+    finishProfilePictureDrag
+);
 
 
         loadProfile();

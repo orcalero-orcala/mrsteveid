@@ -1,0 +1,982 @@
+/* =========================================
+   SHARED STUDENT DIRECTORY
+   Dipakai Student Profile dan Admin Search
+   ========================================= */
+
+.student-directory-view[hidden],
+.student-directory-profile[hidden] {
+    display: none !important;
+}
+
+.student-directory-view {
+    box-sizing: border-box;
+
+    width: 100%;
+    max-width: 1500px;
+    padding: 28px 32px 55px;
+}
+
+.student-directory-shell {
+    overflow: hidden;
+
+    border: 1px solid #293b51;
+    border-radius: 20px;
+
+    background:
+        radial-gradient(
+            circle at 88% 0,
+            rgba(59, 130, 246, 0.14),
+            transparent 32%
+        ),
+        #111b28;
+
+    box-shadow:
+        0 22px 55px
+        rgba(0, 0, 0, 0.16);
+}
+
+.student-directory-search-area {
+    padding: 34px 28px 30px;
+    text-align: center;
+}
+
+.student-directory-label {
+    color: #60a5fa;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.student-directory-heading {
+    margin: 11px 0 8px;
+
+    color: #ffffff;
+
+    font-size:
+        clamp(
+            29px,
+            4vw,
+            42px
+        );
+
+    line-height: 1.12;
+}
+
+.student-directory-description {
+    margin: 0;
+
+    color: #86a1c2;
+
+    font-size: 14px;
+}
+
+
+/* SEARCH FORM */
+
+.student-directory-form {
+    box-sizing: border-box !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        92px !important;
+
+    align-items: stretch !important;
+    justify-content: stretch !important;
+
+    column-gap: 10px !important;
+    row-gap: 10px !important;
+
+    width: min(700px, 100%);
+    margin: 26px auto 0;
+}
+
+.student-directory-input-wrap {
+    width: 100% !important;
+}
+
+.student-directory-submit {
+    justify-self: stretch !important;
+
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+.student-directory-input-wrap {
+    position: relative;
+
+    min-width: 0;
+}
+
+.student-directory-input-wrap svg {
+    position: absolute;
+    z-index: 2;
+
+    top: 50%;
+    left: 17px;
+
+    width: 19px;
+    height: 19px;
+    margin: 0;
+
+    fill: none;
+    stroke: #7896b9;
+    stroke-width: 2;
+    stroke-linecap: round;
+
+    transform: translateY(-50%);
+
+    pointer-events: none;
+}
+
+.student-directory-input {
+    box-sizing: border-box;
+
+    display: block;
+
+    width: 100%;
+    height: 52px;
+    margin: 0;
+    padding: 0 16px 0 49px;
+
+    border: 1px solid #31455e;
+    border-radius: 13px;
+
+    color: #ffffff;
+    background: #0a1421;
+
+    font: inherit;
+    font-size: 15px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.student-directory-input::placeholder {
+    color: #6983a1;
+}
+
+.student-directory-input:focus {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(59, 130, 246, 0.13);
+}
+
+.student-directory-submit {
+    box-sizing: border-box;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 92px;
+    height: 52px;
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    border-radius: 13px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+        );
+
+    font: inherit;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        filter 0.18s ease;
+}
+
+.student-directory-submit:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+.student-directory-submit:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    transform: none;
+}
+
+.student-directory-status {
+    min-height: 20px;
+    margin: 15px 0 0;
+
+    color: #86a1c2;
+
+    font-size: 13px;
+}
+
+
+/* SEARCH RESULTS */
+
+.student-directory-results {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(250px, 1fr)
+        );
+
+    gap: 13px;
+    padding: 0 28px 30px;
+}
+
+.student-directory-results:empty {
+    display: none;
+}
+
+.student-directory-result {
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-width: 0;
+    width: 100%;
+    padding: 14px;
+
+    border: 1px solid #293c52;
+    border-radius: 15px;
+
+    color: inherit;
+    text-align: left;
+
+    background: #0d1724;
+
+    cursor: pointer;
+
+    animation:
+        studentDirectoryResultIn
+        0.26s ease both;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.student-directory-result:hover {
+    transform: translateY(-2px);
+
+    border-color: #4776a8;
+    background: #132133;
+}
+
+.student-directory-result-avatar,
+.student-directory-profile-avatar {
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 auto;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #1d4ed8
+        );
+
+    font-weight: 800;
+}
+
+.student-directory-result-avatar {
+    width: 48px;
+    height: 48px;
+
+    font-size: 18px;
+}
+
+.student-directory-result-avatar img,
+.student-directory-profile-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.student-directory-result-copy {
+    min-width: 0;
+}
+
+.student-directory-result-copy strong {
+    display: block;
+    overflow: hidden;
+
+    color: #ffffff;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-directory-result-copy span {
+    display: block;
+    overflow: hidden;
+
+    margin-top: 4px;
+
+    color: #86a1c2;
+
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* PROFILE RESULT */
+
+.student-directory-profile {
+    overflow: hidden;
+
+    margin: 0 28px 30px;
+
+    border: 1px solid #2b4058;
+    border-radius: 18px;
+
+    background: #101a27;
+
+    animation:
+        studentDirectoryProfileIn
+        0.3s ease both;
+}
+
+.student-directory-profile-cover {
+    position: relative;
+
+    height: 140px;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            120deg,
+            #173d68,
+            #122b4a 52%,
+            #101d30
+        );
+}
+
+.student-directory-profile-cover::after {
+    content: "";
+
+    position: absolute;
+    top: -95px;
+    right: 6%;
+
+    width: 245px;
+    height: 245px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    border-radius: 50%;
+}
+
+.student-directory-profile-cover[
+    data-banner-color="purple"
+] {
+    background:
+        linear-gradient(
+            120deg,
+            #4c1d95,
+            #312e81 55%,
+            #17152d
+        );
+}
+
+.student-directory-profile-cover[
+    data-banner-color="green"
+] {
+    background:
+        linear-gradient(
+            120deg,
+            #065f46,
+            #064e3b 55%,
+            #10251f
+        );
+}
+
+.student-directory-profile-cover[
+    data-banner-color="orange"
+] {
+    background:
+        linear-gradient(
+            120deg,
+            #9a3412,
+            #7c2d12 55%,
+            #2b1912
+        );
+}
+
+.student-directory-profile-cover[
+    data-banner-color="red"
+] {
+    background:
+        linear-gradient(
+            120deg,
+            #991b1b,
+            #7f1d1d 55%,
+            #2c1519
+        );
+}
+
+.student-directory-profile-body {
+    position: relative;
+
+    padding: 76px 24px 24px;
+}
+
+.student-directory-profile-avatar {
+    position: absolute;
+
+    top: -64px;
+    left: 24px;
+
+    width: 120px;
+    height: 120px;
+
+    border: 6px solid #101a27;
+
+    font-size: 42px;
+}
+
+.student-directory-profile-name {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size:
+        clamp(
+            24px,
+            4vw,
+            31px
+        );
+
+    overflow-wrap: anywhere;
+}
+
+.student-directory-profile-meta {
+    margin-top: 6px;
+
+    color: #8aa5c7;
+
+    font-size: 13px;
+}
+
+.student-directory-profile-bio {
+    min-height: 20px;
+    margin-top: 16px;
+
+    color: #a8bad0;
+
+    font-size: 14px;
+    line-height: 1.65;
+
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.student-directory-profile-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 12px;
+    margin-top: 23px;
+}
+
+.student-directory-profile-item {
+    box-sizing: border-box;
+
+    min-width: 0;
+    padding: 15px;
+
+    border: 1px solid #293c52;
+    border-radius: 13px;
+
+    background: #0c1623;
+}
+
+.student-directory-profile-item small {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #7693b5;
+
+    font-size: 11px;
+}
+
+.student-directory-profile-item strong {
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    overflow-wrap: anywhere;
+}
+
+.student-directory-profile-item.is-private strong {
+    color: #7488a1;
+    letter-spacing: 0.12em;
+}
+
+.student-directory-privacy-note {
+    display: none;
+
+    margin-top: 13px;
+    padding: 11px 13px;
+
+    border:
+        1px solid
+        rgba(245, 158, 11, 0.25);
+
+    border-radius: 11px;
+
+    color: #d5af67;
+    background:
+        rgba(245, 158, 11, 0.06);
+
+    font-size: 12px;
+}
+
+.student-directory-privacy-note.is-visible {
+    display: block;
+}
+
+
+@keyframes studentDirectoryResultIn {
+    from {
+        opacity: 0;
+        transform: translateY(7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes studentDirectoryProfileIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+@media (max-width: 760px) {
+    .student-directory-view {
+        padding: 18px 14px 45px;
+    }
+
+    .student-directory-search-area {
+        padding: 27px 17px 24px;
+    }
+
+    .student-directory-results {
+        padding:
+            0 17px
+            24px;
+    }
+
+    .student-directory-profile {
+        margin:
+            0 17px
+            22px;
+    }
+
+    .student-directory-profile-grid {
+        grid-template-columns:
+            1fr 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .student-directory-form {
+        grid-template-columns: 1fr;
+    }
+
+    .student-directory-submit {
+        width: 100%;
+        height: 48px;
+    }
+
+    .student-directory-profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-directory-profile-body {
+        padding:
+            68px 17px
+            19px;
+    }
+
+    .student-directory-profile-avatar {
+        left: 17px;
+
+        width: 108px;
+        height: 108px;
+
+        font-size: 36px;
+    }
+}
+
+/* ADMIN DIRECTORY MENGISI LEBAR MAIN CONTENT */
+
+.admin-student-search-page
+.student-directory-view {
+    width: 100%;
+    max-width: none;
+
+    padding:
+        20px 24px
+        55px;
+}
+
+.admin-student-search-page
+.student-directory-shell {
+    width: 100%;
+}
+
+/* =========================================
+   PROFILE CARD THEME
+   ========================================= */
+
+.student-directory-profile {
+    --directory-theme-panel:
+        #101a27;
+
+    --directory-theme-inner:
+        #0c1623;
+
+    --directory-theme-border:
+        #2b4058;
+
+    --directory-theme-icon:
+        #132a49;
+}
+
+
+/* PURPLE */
+
+.student-directory-profile[
+    data-banner-color="purple"
+] {
+    --directory-theme-panel:
+        #181328;
+
+    --directory-theme-inner:
+        #130f21;
+
+    --directory-theme-border:
+        #49366c;
+
+    --directory-theme-icon:
+        #2f2052;
+}
+
+
+/* GREEN */
+
+.student-directory-profile[
+    data-banner-color="green"
+] {
+    --directory-theme-panel:
+        #0e201c;
+
+    --directory-theme-inner:
+        #0a1916;
+
+    --directory-theme-border:
+        #235848;
+
+    --directory-theme-icon:
+        #123d32;
+}
+
+
+/* ORANGE */
+
+.student-directory-profile[
+    data-banner-color="orange"
+] {
+    --directory-theme-panel:
+        #251812;
+
+    --directory-theme-inner:
+        #1c120e;
+
+    --directory-theme-border:
+        #70402c;
+
+    --directory-theme-icon:
+        #4b291b;
+}
+
+
+/* RED */
+
+.student-directory-profile[
+    data-banner-color="red"
+] {
+    --directory-theme-panel:
+        #251318;
+
+    --directory-theme-inner:
+        #1c0e13;
+
+    --directory-theme-border:
+        #71323f;
+
+    --directory-theme-icon:
+        #4b1b25;
+}
+
+
+/* APPLY THEME */
+
+.student-directory-profile {
+    border-color:
+        var(
+            --directory-theme-border
+        );
+
+    background:
+        var(
+            --directory-theme-panel
+        );
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.student-directory-profile-avatar {
+    border-color:
+        var(
+            --directory-theme-panel
+        );
+}
+
+.student-directory-profile-item {
+    border-color:
+        var(
+            --directory-theme-border
+        );
+
+    background:
+        var(
+            --directory-theme-inner
+        );
+}
+
+/* =========================================
+   ADMIN SEARCH BAR GAP FIX
+   ========================================= */
+
+.admin-student-search-page
+.student-directory-form {
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+
+    gap: 10px !important;
+
+    width: min(700px, 100%) !important;
+    max-width: none !important;
+
+    margin:
+        26px auto
+        0 !important;
+}
+
+.admin-student-search-page
+.student-directory-input-wrap {
+    flex:
+        1 1 auto !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+.admin-student-search-page
+.student-directory-input {
+    box-sizing: border-box !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+.admin-student-search-page
+.student-directory-submit {
+    flex:
+        0 0 92px !important;
+
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+
+    margin: 0 !important;
+}
+
+/* =========================================
+   STUDENT PROFILE DIRECTORY SEARCH BAR
+   ========================================= */
+
+.student-profile-page
+#studentDirectoryView
+.student-directory-form {
+    box-sizing: border-box !important;
+
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+
+    gap: 10px !important;
+
+    width:
+        min(
+            700px,
+            100%
+        ) !important;
+
+    max-width: none !important;
+
+    margin:
+        26px auto
+        0 !important;
+}
+
+.student-profile-page
+#studentDirectoryView
+.student-directory-input-wrap {
+    flex:
+        1 1 auto !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+.student-profile-page
+#studentDirectoryView
+.student-directory-input {
+    box-sizing: border-box !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+.student-profile-page
+#studentDirectoryView
+.student-directory-submit {
+    flex:
+        0 0 92px !important;
+
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+
+    margin: 0 !important;
+}
+
+
+/* ICON YANG HIDDEN HARUS BENAR-BENAR HILANG */
+
+.student-search-topbar-button
+svg[hidden] {
+    display: none !important;
+}
+
+/* STUDENT DIRECTORY FILL MAIN CONTENT */
+
+.student-profile-page
+#studentDirectoryView {
+    box-sizing: border-box !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+
+    padding:
+        28px 32px
+        55px !important;
+}
+
+.student-profile-page
+#studentDirectoryView
+.student-directory-shell {
+    box-sizing: border-box !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+@media (max-width: 760px) {
+
+    .student-profile-page
+    #studentDirectoryView {
+        padding:
+            18px 14px
+            45px !important;
+    }
+
+}
+
+/* HAPUS PESAN PRIVASI DARI TAMPILAN */
+
+.student-directory-privacy-note,
+.student-directory-privacy-note.is-visible {
+    display: none !important;
+}

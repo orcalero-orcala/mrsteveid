@@ -78,6 +78,24 @@
         border-radius: 18px;
     }
 }
+
+.feed-avatar,
+.reply-avatar,
+.composer-avatar {
+    overflow: hidden;
+}
+
+.feed-profile-picture {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    border-radius: inherit;
+
+    object-fit: cover;
+    object-position: center;
+}
 </style>
 
 </head>
@@ -4269,6 +4287,216 @@ form.selectedMentions.push({
 
         }
 
+function renderFeedParticipantAvatar(
+    element,
+    participantType,
+    participantName,
+    pictureUrl
+) {
+
+    if (!element) {
+        return;
+    }
+
+
+    const isStudent =
+        participantType ===
+        "student";
+
+
+    const fallbackInitial =
+        isStudent
+            ? getProfileInitial(
+                participantName ||
+                "Siswa"
+            )
+            : getTeacherInitial(
+                participantName ||
+                "Admin"
+            );
+
+
+    /*
+        Tampilkan inisial terlebih dahulu.
+        Feed tidak menunggu PFP.
+    */
+    element.replaceChildren();
+
+    element.textContent =
+        fallbackInitial;
+
+
+    if (
+        !isStudent ||
+        !pictureUrl
+    ) {
+
+        return;
+
+    }
+
+
+    const cleanPictureUrl =
+        String(
+            pictureUrl
+        ).trim();
+
+
+    if (!cleanPictureUrl) {
+        return;
+    }
+
+
+    /*
+        Token mencegah gambar lama terpasang
+        jika elemen digunakan ulang.
+    */
+    const renderToken =
+        `${Date.now()}-${
+            Math.random()
+        }`;
+
+
+    element.dataset
+        .feedAvatarToken =
+        renderToken;
+
+
+    const loadPicture =
+        () => {
+
+            if (
+                !element.isConnected ||
+                element.dataset
+                    .feedAvatarToken !==
+                    renderToken
+            ) {
+
+                return;
+
+            }
+
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+
+            image.className =
+                "feed-profile-picture";
+
+
+            image.alt =
+                "Foto profil siswa";
+
+
+
+            image.decoding =
+                "async";
+
+
+            image.setAttribute(
+                "fetchpriority",
+                "low"
+            );
+
+
+            image.addEventListener(
+                "load",
+                () => {
+
+                    if (
+                        !element.isConnected ||
+                        element.dataset
+                            .feedAvatarToken !==
+                            renderToken
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    element.replaceChildren(
+                        image
+                    );
+
+                },
+                {
+                    once:
+                        true
+                }
+            );
+
+
+            /*
+                Jika gagal, inisial yang sudah
+                tampil tidak dihapus.
+            */
+            image.addEventListener(
+                "error",
+                () => {
+
+                    image.remove();
+
+                },
+                {
+                    once:
+                        true
+                }
+            );
+
+
+            image.src =
+                cleanPictureUrl;
+
+        };
+
+
+    /*
+        Tunggu sampai Feed mendapat kesempatan
+        melakukan paint pertama.
+    */
+    requestAnimationFrame(
+        () => {
+
+            requestAnimationFrame(
+                loadPicture
+            );
+
+        }
+    );
+
+}
+
+function getTeacherVerifiedBadge() {
+
+    return `
+        <span
+            class="teacher-verified-badge"
+            title="Admin / Guru terverifikasi"
+            aria-label="Admin atau guru terverifikasi"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                ></circle>
+
+<path
+    d="M7.4 12.1L10.4 15L16.7 8.7"
+></path>
+            </svg>
+        </span>
+    `;
+
+}
+
 
         // =====================================
         // RENDER ANNOUNCEMENT
@@ -4321,6 +4549,18 @@ form.selectedMentions.push({
                         "Admin / Guru"
                     );
 
+const creatorPictureUrl =
+    isStudentPost
+        ? (
+            announcement
+                .student_creator_profile_picture_url ||
+
+            announcement
+                .studentProfilePictureUrl ||
+
+            ""
+        )
+        : "";
 
 const creatorDetail =
     isStudentPost
@@ -4379,11 +4619,17 @@ const createdAt =
 
                         <div>
 
-                            <strong>
-                                ${escapeHtml(
-                                    creatorName
-                                )}
-                            </strong>
+<strong>
+    ${escapeHtml(
+        creatorName
+    )}
+
+    ${
+        isStudentPost
+            ? ""
+            : getTeacherVerifiedBadge()
+    }
+</strong>
 
                             <span>
                                 ${escapeHtml(
@@ -4512,6 +4758,20 @@ const createdAt =
 
             `;
 
+            renderFeedParticipantAvatar(
+    card.querySelector(
+        ".feed-avatar"
+    ),
+
+    isStudentPost
+        ? "student"
+        : "admin",
+
+    creatorName,
+
+    creatorPictureUrl
+);
+
 
             const replyForm =
                 card.querySelector(
@@ -4584,6 +4844,22 @@ const createdAt =
                         : "Siswa"
                 );
 
+const senderPictureUrl =
+    senderType ===
+        "student"
+        ? (
+            reply.profile_picture_url ||
+
+            reply.student_profile_picture_url ||
+
+            reply.profilePictureUrl ||
+
+            reply.studentProfilePictureUrl ||
+
+            ""
+        )
+        : "";
+
 
 const senderDetail =
     senderType ===
@@ -4640,11 +4916,17 @@ const createdAt =
 
                     <div class="reply-author-info">
 
-                        <strong>
-                            ${escapeHtml(
-                                senderName
-                            )}
-                        </strong>
+<strong>
+    ${escapeHtml(
+        senderName
+    )}
+
+    ${
+        senderType === "admin"
+            ? getTeacherVerifiedBadge()
+            : ""
+    }
+</strong>
 
                         <span>
                             ${escapeHtml(
@@ -4699,6 +4981,18 @@ const createdAt =
                 </div>
 
             `;
+
+            renderFeedParticipantAvatar(
+    item.querySelector(
+        ".reply-avatar"
+    ),
+
+    senderType,
+
+    senderName,
+
+    senderPictureUrl
+);
 
 
             return item;

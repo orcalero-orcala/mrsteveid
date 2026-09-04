@@ -80,6 +80,21 @@
                     Kelola Siswa
                 </button>
 
+                                <button
+    class="nav-item"
+    type="button"
+    onclick="
+        window.location.href =
+            '/admin-student-search.html'
+    "
+>
+    <span class="nav-icon">
+        ⌕
+    </span>
+
+    Student Search
+</button>
+
 
                 <button
                     class="nav-item"
@@ -6445,6 +6460,153 @@ setupAdminMentionAutocomplete(
             }
         );
 
+function renderAdminFeedParticipantAvatar(
+    element,
+    participantType,
+    participantName,
+    pictureUrl
+) {
+
+    if (!element) {
+        return;
+    }
+
+    const isStudent =
+        participantType === "student";
+
+    const fallbackInitial =
+        isStudent
+            ? getProfileInitial(
+                participantName || "Siswa"
+            )
+            : getTeacherInitial(
+                participantName || "Admin"
+            );
+
+    // Inisial langsung tampil.
+    element.replaceChildren();
+    element.textContent =
+        fallbackInitial;
+
+    if (
+        !isStudent ||
+        !pictureUrl
+    ) {
+        return;
+    }
+
+    const cleanPictureUrl =
+        String(pictureUrl).trim();
+
+    if (!cleanPictureUrl) {
+        return;
+    }
+
+    const renderToken =
+        `${Date.now()}-${Math.random()}`;
+
+    element.dataset.adminAvatarToken =
+        renderToken;
+
+    const loadPicture = () => {
+
+        if (
+            !element.isConnected ||
+            element.dataset.adminAvatarToken !==
+                renderToken
+        ) {
+            return;
+        }
+
+        const image =
+            document.createElement("img");
+
+        image.className =
+            "feed-profile-picture";
+
+        image.alt =
+            "Foto profil siswa";
+
+        image.decoding =
+            "async";
+
+        image.setAttribute(
+            "fetchpriority",
+            "low"
+        );
+
+        image.addEventListener(
+            "load",
+            () => {
+
+                if (
+                    !element.isConnected ||
+                    element.dataset.adminAvatarToken !==
+                        renderToken
+                ) {
+                    return;
+                }
+
+                element.replaceChildren(image);
+
+            },
+            {
+                once: true
+            }
+        );
+
+        image.addEventListener(
+            "error",
+            () => {
+                image.remove();
+            },
+            {
+                once: true
+            }
+        );
+
+        image.src =
+            cleanPictureUrl;
+
+    };
+
+    requestAnimationFrame(
+        () => {
+            requestAnimationFrame(
+                loadPicture
+            );
+        }
+    );
+
+}
+
+function getTeacherVerifiedBadge() {
+
+    return `
+        <span
+            class="teacher-verified-badge"
+            title="Admin / Guru terverifikasi"
+            aria-label="Admin atau guru terverifikasi"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                ></circle>
+
+<path
+    d="M7.4 12.1L10.4 15L16.7 8.7"
+></path>
+            </svg>
+        </span>
+    `;
+
+}
+
         function createAdminAnnouncementCard(
     announcement
 ) {
@@ -6487,19 +6649,25 @@ setupAdminMentionAutocomplete(
 
                 <div>
 
-                    <strong>
-                        ${
-                            announcement.student_id
-                                ? escapeHtml(
-                                    announcement.student_creator_name ||
-                                    "Siswa"
-                                )
-                                : escapeHtml(
-                                    announcement.admin_creator_name ||
-                                    "Admin / Guru"
-                                )
-                        }
-                    </strong>
+<strong>
+    ${
+        announcement.student_id
+            ? escapeHtml(
+                announcement.student_creator_name ||
+                "Siswa"
+            )
+            : escapeHtml(
+                announcement.admin_creator_name ||
+                "Admin / Guru"
+            )
+    }
+
+    ${
+        announcement.student_id
+            ? ""
+            : getTeacherVerifiedBadge()
+    }
+</strong>
 
                     <span>
                         ${
@@ -6614,6 +6782,52 @@ ${formatDeviceDateTime(
 
         </div>
     `;
+
+const isStudentPost =
+    Number(
+        announcement.student_id ??
+        announcement.studentId ??
+        0
+    ) > 0;
+
+const creatorName =
+    isStudentPost
+        ? (
+            announcement.student_creator_name ||
+            announcement.studentName ||
+            "Siswa"
+        )
+        : (
+            announcement.admin_creator_name ||
+            "Admin / Guru"
+        );
+
+const creatorPictureUrl =
+    isStudentPost
+        ? (
+            announcement
+                .student_creator_profile_picture_url ||
+
+            announcement
+                .student_profile_picture_url ||
+
+            announcement
+                .studentProfilePictureUrl ||
+
+            ""
+        )
+        : "";
+
+renderAdminFeedParticipantAvatar(
+    card.querySelector(
+        ".feed-avatar"
+    ),
+    isStudentPost
+        ? "student"
+        : "admin",
+    creatorName,
+    creatorPictureUrl
+);
 
 
     const replyForm =
@@ -6976,16 +7190,22 @@ function createAdminReplyItem(
 
     <div class="reply-author-info">
 
-        <strong>
-            ${escapeHtml(
-                reply.sender_name ||
-                (
-                    reply.sender_type === "admin"
-                        ? "Admin / Guru"
-                        : "Siswa"
-                )
-            )}
-        </strong>
+<strong>
+    ${escapeHtml(
+        reply.sender_name ||
+        (
+            reply.sender_type === "admin"
+                ? "Admin / Guru"
+                : "Siswa"
+        )
+    )}
+
+    ${
+        reply.sender_type === "admin"
+            ? getTeacherVerifiedBadge()
+            : ""
+    }
+</strong>
 
 
         <span>
@@ -7035,6 +7255,42 @@ ${formatDeviceDateTime(
         </div>
 
     `;
+
+const senderType =
+    reply.sender_type ||
+    (
+        reply.admin_id
+            ? "admin"
+            : "student"
+    );
+
+const senderName =
+    reply.sender_name ||
+    reply.student_name ||
+    (
+        senderType === "admin"
+            ? "Admin / Guru"
+            : "Siswa"
+    );
+
+const senderPictureUrl =
+    senderType === "student"
+        ? (
+            reply.profile_picture_url ||
+            reply.student_profile_picture_url ||
+            reply.profilePictureUrl ||
+            ""
+        )
+        : "";
+
+renderAdminFeedParticipantAvatar(
+    item.querySelector(
+        ".reply-avatar"
+    ),
+    senderType,
+    senderName,
+    senderPictureUrl
+);
 
 
     return item;
@@ -7300,99 +7556,24 @@ if (
         Number(reply.id)
     );
 
-                const item =
-                    document.createElement(
-                        "div"
-                    );
+              data.replies.forEach(
+    (reply) => {
 
-                    item.id =
-                    `reply-${reply.id}`;
+        latestReplyId =
+            Math.max(
+                latestReplyId,
+                Number(reply.id)
+            );
 
-                    item.className =
-                    "reply-item";
+        container.appendChild(
+            createAdminReplyItem(
+                announcementId,
+                reply
+            )
+        );
 
-
- item.innerHTML = `
-
-<div class="reply-author-row">
-
-    <div class="reply-avatar">
-        ${
-            reply.sender_type === "admin"
-                ? getTeacherInitial(
-                    reply.sender_name ||
-                    "Admin"
-                )
-                : getProfileInitial(
-                    reply.sender_name ||
-                    "Siswa"
-                )
-        }
-    </div>
-
-
-    <div class="reply-author-info">
-
-        <strong>
-            ${escapeHtml(
-                reply.sender_name ||
-                (
-                    reply.sender_type === "admin"
-                        ? "Admin / Guru"
-                        : "Siswa"
-                )
-            )}
-        </strong>
-
-
-        <span>
-            ${
-                reply.sender_type === "admin"
-                    ? "Admin / Guru"
-                    : escapeHtml(
-                        reply.class_name ||
-                        "Siswa"
-                    )
-            }
-        </span>
-
-    </div>
-
-</div>
-
-
-    <div class="reply-message">${formatMessage(
-        reply.message,
-        reply.mentions
-    )}</div>
-
-
-    <div class="reply-footer">
-
-        <span>
-${formatDeviceDateTime(
-    reply.created_at
-)}
-        </span>
-
-
-        <button
-            type="button"
-            class="feed-delete-button"
-onclick="
-    deleteAdminReply(
-        ${announcementId},
-        ${reply.id},
-        this
-    )
-"
-        >
-            Hapus
-        </button>
-
-    </div>
-
-`;
+    }
+);
 
                 container.appendChild(
                     item

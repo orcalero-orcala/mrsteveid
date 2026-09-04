@@ -37,6 +37,28 @@ const QUIZ_IMAGE_UPLOAD_TRANSFORMATION =
 const QUIZ_IMAGE_ALLOWED_FORMATS =
     "jpg,jpeg,png,webp";
 
+const STUDENT_PROFILE_BIO_MAX_LENGTH =
+    120;
+
+const STUDENT_PROFILE_BIO_MAX_LINES =
+    3;
+
+
+const STUDENT_PROFILE_BANNER_COLORS =
+    new Set([
+        "blue",
+        "purple",
+        "green",
+        "orange",
+        "red"
+    ]);
+
+const STUDENT_PROFILE_PICTURE_SIZE =
+    256;
+
+const STUDENT_PROFILE_PICTURE_MAX_BYTES =
+    400 * 1024;
+
 const CLOUDINARY_CLOUD_NAME =
     String(
         process.env
@@ -83,6 +105,443 @@ function getQuizImageAssetFolder(
 ) {
 
     return `lms/quiz/${quizId}/questions`;
+
+}
+
+function getStudentProfilePictureAssetFolder(
+    studentId
+) {
+
+    return (
+        `lms/students/` +
+        `${studentId}/profile`
+    );
+
+}
+
+
+function isValidWebpBuffer(buffer) {
+
+    return (
+        Buffer.isBuffer(buffer) &&
+        buffer.length >= 12 &&
+        buffer
+            .subarray(0, 4)
+            .toString("ascii") ===
+            "RIFF" &&
+        buffer
+            .subarray(8, 12)
+            .toString("ascii") ===
+            "WEBP"
+    );
+
+}
+
+
+function parseStudentProfilePictureBody(
+    req,
+    res,
+    next
+) {
+
+    express.raw({
+        type:
+            "image/webp",
+
+        limit:
+            STUDENT_PROFILE_PICTURE_MAX_BYTES
+    })(
+        req,
+        res,
+        error => {
+
+            if (!error) {
+
+                next();
+                return;
+
+            }
+
+
+            if (
+                error.type ===
+                "entity.too.large"
+            ) {
+
+                res.status(413).json({
+                    success:
+                        false,
+
+                    message:
+                        "Ukuran foto profil terlalu besar."
+                });
+
+                return;
+
+            }
+
+
+            next(error);
+
+        }
+    );
+
+}
+
+
+function uploadStudentProfilePicture(
+    imageBuffer,
+    studentId
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            const uniquePublicId =
+                `student-${
+                    studentId
+                }-${
+                    Date.now()
+                }-${
+                    crypto
+                        .randomBytes(6)
+                        .toString("hex")
+                }`;
+
+
+            const uploadStream =
+                cloudinary.uploader
+                    .upload_stream(
+                        {
+                            resource_type:
+                                "image",
+
+                            asset_folder:
+                                getStudentProfilePictureAssetFolder(
+                                    studentId
+                                ),
+
+                            public_id:
+                                uniquePublicId,
+
+                            overwrite:
+                                false,
+
+                            format:
+                                "webp",
+
+                            transformation: [
+                                {
+                                    width:
+                                        STUDENT_PROFILE_PICTURE_SIZE,
+
+                                    height:
+                                        STUDENT_PROFILE_PICTURE_SIZE,
+
+                                    crop:
+                                        "fill",
+
+                                    gravity:
+                                        "center"
+                                },
+
+                                {
+                                    quality:
+                                        "auto:good"
+                                }
+                            ]
+                        },
+
+                        (
+                            error,
+                            result
+                        ) => {
+
+                            if (error) {
+
+                                reject(error);
+                                return;
+
+                            }
+
+
+                            resolve(result);
+
+                        }
+                    );
+
+
+            uploadStream.end(
+                imageBuffer
+            );
+
+        }
+    );
+
+}
+
+
+async function deleteStudentProfilePicture(
+    publicId
+) {
+
+    const cleanPublicId =
+        String(
+            publicId || ""
+        ).trim();
+
+
+    if (
+        !cleanPublicId ||
+        !isCloudinaryConfigured()
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await cloudinary.uploader
+            .destroy(
+                cleanPublicId,
+                {
+                    resource_type:
+                        "image",
+
+                    invalidate:
+                        true
+                }
+            );
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membersihkan foto profil lama:",
+            error
+        );
+
+    }
+
+}
+
+// ========================================
+// STUDENT PROFILE - DATABASE MIGRATION
+// ========================================
+
+let studentProfileColumnsPromise =
+    null;
+
+
+async function initializeStudentProfileColumns() {
+
+    const columnRows =
+        await tursoDb.all(`
+            PRAGMA table_info(students)
+        `);
+
+
+    if (
+        !Array.isArray(columnRows) ||
+        columnRows.length === 0
+    ) {
+
+        throw new Error(
+            "Tabel students tidak ditemukan."
+        );
+
+    }
+
+
+    const columnNames =
+        new Set(
+            columnRows.map(
+                row =>
+                    String(
+                        row.name
+                    )
+            )
+        );
+
+
+    const migrations = [
+
+        {
+            name:
+                "profile_bio",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_bio
+                    TEXT NOT NULL DEFAULT ''
+            `
+        },
+
+        {
+            name:
+                "profile_banner_color",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_banner_color
+                    TEXT NOT NULL DEFAULT 'blue'
+            `
+        },
+
+        {
+            name:
+                "profile_picture_url",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_picture_url TEXT
+            `
+        },
+
+        {
+            name:
+                "profile_picture_public_id",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_picture_public_id TEXT
+            `
+        },
+
+        {
+            name:
+                "profile_picture_width",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_picture_width INTEGER
+            `
+        },
+
+        {
+            name:
+                "profile_picture_height",
+
+            sql: `
+                ALTER TABLE students
+                ADD COLUMN profile_picture_height INTEGER
+            `
+        },
+
+{
+    name:
+        "profile_picture_bytes",
+
+    sql: `
+        ALTER TABLE students
+        ADD COLUMN profile_picture_bytes INTEGER
+    `
+},
+
+{
+    name:
+        "profile_show_academic_stats",
+
+    sql: `
+        ALTER TABLE students
+        ADD COLUMN profile_show_academic_stats
+            INTEGER NOT NULL DEFAULT 0
+    `
+}
+
+    ];
+
+
+    for (
+        const migration
+        of migrations
+    ) {
+
+        if (
+            columnNames.has(
+                migration.name
+            )
+        ) {
+
+            continue;
+
+        }
+
+
+        try {
+
+            await tursoDb.run(
+                migration.sql
+            );
+
+
+            columnNames.add(
+                migration.name
+            );
+
+        } catch (error) {
+
+            /*
+                Dua instance server bisa menjalankan
+                migrasi bersamaan ketika deploy.
+                Duplicate column aman diabaikan.
+            */
+            if (
+                /duplicate column name/i.test(
+                    String(
+                        error &&
+                        error.message ||
+                        error
+                    )
+                )
+            ) {
+
+                columnNames.add(
+                    migration.name
+                );
+
+                continue;
+
+            }
+
+
+            throw error;
+
+        }
+
+    }
+
+}
+
+
+async function ensureStudentProfileColumns() {
+
+    if (
+        !studentProfileColumnsPromise
+    ) {
+
+        studentProfileColumnsPromise =
+            initializeStudentProfileColumns()
+                .catch(
+                    error => {
+
+                        studentProfileColumnsPromise =
+                            null;
+
+
+                        throw error;
+
+                    }
+                );
+
+    }
+
+
+    return studentProfileColumnsPromise;
 
 }
 
@@ -400,6 +859,7 @@ app.use(
     [
         "/admin-dashboard.html",
         "/admin-students.html",
+        "/admin-student-search.html",
         "/admin-points.html",
         "/admin-exam-scores.html",
         "/admin-announcements.html",
@@ -605,6 +1065,98 @@ app.use(
 
 
         next();
+
+    }
+);
+
+// ========================================
+// IDENTITAS ADMIN / GURU AKTIF
+// ========================================
+
+app.get(
+    "/api/admin/me",
+    async (req, res) => {
+
+        try {
+
+            const adminId =
+                Number(
+                    req.session.adminId
+                );
+
+
+            const admin =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            username,
+                            name,
+                            role
+
+                        FROM admins
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            if (!admin) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Akun Admin / Guru tidak ditemukan."
+                });
+
+            }
+
+
+            return res.json({
+
+                success: true,
+
+                admin: {
+
+                    id:
+                        Number(admin.id),
+
+                    username:
+                        admin.username,
+
+                    name:
+                        admin.name ||
+                        admin.username ||
+                        "Admin",
+
+                    role:
+                        admin.role ||
+                        "admin"
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal memuat identitas Admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Identitas Admin tidak dapat dimuat."
+            });
+
+        }
 
     }
 );
@@ -12383,6 +12935,824 @@ app.get(
 );
 
 // ========================================
+// STUDENT SEARCH
+// ========================================
+
+function mapStudentSearchResult(student) {
+
+    return {
+        id:
+            Number(student.id),
+
+        name:
+            student.name,
+
+        fullName:
+            student.full_name ||
+            student.name,
+
+        className:
+            student.class_name,
+
+        bio:
+            String(
+                student.profile_bio ||
+                ""
+            ),
+
+        bannerColor:
+            String(
+                student.profile_banner_color ||
+                "blue"
+            ),
+
+        profilePictureUrl:
+            student.profile_picture_url ||
+            null
+    };
+
+}
+
+
+async function getStudentAcademicStats(
+    studentId
+) {
+
+    const [
+        pointResult,
+        scoreResult
+    ] = await Promise.all([
+
+        tursoDb.get(
+            `
+                SELECT
+                    COALESCE(
+                        SUM(points),
+                        0
+                    ) AS total_points
+
+                FROM point_transactions
+
+                WHERE student_id = ?
+            `,
+            [
+                studentId
+            ]
+        ),
+
+        tursoDb.get(
+            `
+                SELECT
+                    AVG(score)
+                        AS average_score
+
+                FROM exam_scores
+
+                WHERE student_id = ?
+            `,
+            [
+                studentId
+            ]
+        )
+
+    ]);
+
+
+    const averageScore =
+        scoreResult?.average_score === null ||
+        scoreResult?.average_score === undefined
+            ? null
+            : Number(
+                Number(
+                    scoreResult.average_score
+                ).toFixed(2)
+            );
+
+
+    return {
+        totalPoints:
+            Number(
+                pointResult?.total_points ||
+                0
+            ),
+
+        averageScore
+    };
+
+}
+
+
+// ========================================
+// ADMIN - CARI SISWA
+// ========================================
+
+app.get(
+    "/api/admin/student-search",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+
+        }
+
+
+        const query =
+            String(
+                req.query.q ||
+                ""
+            ).trim();
+
+
+        if (
+            query.length < 2 ||
+            query.length > 80
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Pencarian harus berisi 2 sampai 80 karakter."
+            });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            const students =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            full_name,
+                            class_name,
+                            profile_bio,
+                            profile_banner_color,
+                            profile_picture_url
+
+                        FROM students
+
+                        WHERE
+                            instr(
+                                lower(
+                                    COALESCE(
+                                        full_name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                            OR instr(
+                                lower(
+                                    COALESCE(
+                                        name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                            OR instr(
+                                lower(
+                                    COALESCE(
+                                        class_name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                            OR instr(
+                                lower(
+                                    COALESCE(
+                                        login_code,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                        ORDER BY
+                            CASE
+                                WHEN lower(
+                                    COALESCE(
+                                        full_name,
+                                        name
+                                    )
+                                ) = lower(?)
+                                    THEN 0
+
+                                WHEN lower(
+                                    COALESCE(
+                                        name,
+                                        ''
+                                    )
+                                ) = lower(?)
+                                    THEN 1
+
+                                ELSE 2
+                            END,
+
+                            full_name
+                                COLLATE NOCASE ASC,
+
+                            id ASC
+
+                        LIMIT 12
+                    `,
+                    [
+                        query,
+                        query,
+                        query,
+                        query,
+                        query,
+                        query
+                    ]
+                );
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+                success: true,
+
+                students:
+                    students.map(
+                        mapStudentSearchResult
+                    )
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mencari siswa untuk admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Pencarian siswa tidak dapat dimuat."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// ADMIN - DETAIL PROFILE SISWA
+// ========================================
+
+app.get(
+    "/api/admin/students/:studentId/profile",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            login_code,
+                            name,
+                            full_name,
+                            date_of_birth,
+                            class_name,
+                            profile_bio,
+                            profile_banner_color,
+                            profile_picture_url,
+                            profile_show_academic_stats
+
+                        FROM students
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const academicStats =
+                await getStudentAcademicStats(
+                    studentId
+                );
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                student: {
+
+                    id:
+                        Number(student.id),
+
+                    loginCode:
+                        student.login_code,
+
+                    name:
+                        student.name,
+
+                    fullName:
+                        student.full_name ||
+                        student.name,
+
+                    dateOfBirth:
+                        student.date_of_birth,
+
+                    className:
+                        student.class_name,
+
+                    bio:
+                        String(
+                            student.profile_bio ||
+                            ""
+                        ),
+
+                    bannerColor:
+                        String(
+                            student.profile_banner_color ||
+                            "blue"
+                        ),
+
+                    profilePictureUrl:
+                        student.profile_picture_url ||
+                        null,
+
+                    showAcademicStats:
+                        Number(
+                            student.profile_show_academic_stats ||
+                            0
+                        ) === 1,
+
+                    totalPoints:
+                        academicStats.totalPoints,
+
+                    averageScore:
+                        academicStats.averageScore
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal memuat profil siswa untuk admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Profil siswa tidak dapat dimuat."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// SISWA - CARI SISWA
+// ========================================
+
+app.get(
+    "/api/student/search",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const query =
+            String(
+                req.query.q ||
+                ""
+            ).trim();
+
+
+        if (
+            query.length < 2 ||
+            query.length > 80
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Pencarian harus berisi 2 sampai 80 karakter."
+            });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            const students =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            full_name,
+                            class_name,
+                            profile_bio,
+                            profile_banner_color,
+                            profile_picture_url
+
+                        FROM students
+
+                        WHERE
+                            instr(
+                                lower(
+                                    COALESCE(
+                                        full_name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                            OR instr(
+                                lower(
+                                    COALESCE(
+                                        name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                            OR instr(
+                                lower(
+                                    COALESCE(
+                                        class_name,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+
+                        ORDER BY
+                            CASE
+                                WHEN lower(
+                                    COALESCE(
+                                        full_name,
+                                        name
+                                    )
+                                ) = lower(?)
+                                    THEN 0
+
+                                WHEN lower(
+                                    COALESCE(
+                                        name,
+                                        ''
+                                    )
+                                ) = lower(?)
+                                    THEN 1
+
+                                ELSE 2
+                            END,
+
+                            full_name
+                                COLLATE NOCASE ASC,
+
+                            id ASC
+
+                        LIMIT 12
+                    `,
+                    [
+                        query,
+                        query,
+                        query,
+                        query,
+                        query
+                    ]
+                );
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+                success: true,
+
+                students:
+                    students.map(
+                        mapStudentSearchResult
+                    )
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mencari siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Pencarian siswa tidak dapat dimuat."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// SISWA - PROFILE PUBLIK SISWA
+// ========================================
+
+app.get(
+    "/api/student/profiles/:studentId",
+    async (req, res) => {
+
+        if (!req.session.studentId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai siswa."
+            });
+
+        }
+
+
+        const viewerId =
+            Number(
+                req.session.studentId
+            );
+
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            /*
+                Data privat seperti login_code dan
+                date_of_birth sengaja tidak dipilih.
+                Jadi tidak mungkin bocor ke browser.
+            */
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+id,
+name,
+full_name,
+date_of_birth,
+class_name,
+profile_bio,
+                            profile_banner_color,
+                            profile_picture_url,
+                            profile_show_academic_stats
+
+                        FROM students
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const showAcademicStats =
+                viewerId === studentId ||
+
+                Number(
+                    student.profile_show_academic_stats ||
+                    0
+                ) === 1;
+
+
+            let totalPoints =
+                null;
+
+            let averageScore =
+                null;
+
+
+            /*
+                Query poin dan nilai hanya dijalankan
+                jika memang boleh dilihat.
+            */
+            if (showAcademicStats) {
+
+                const academicStats =
+                    await getStudentAcademicStats(
+                        studentId
+                    );
+
+
+                totalPoints =
+                    academicStats.totalPoints;
+
+                averageScore =
+                    academicStats.averageScore;
+
+            }
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                student: {
+
+                    id:
+                        Number(student.id),
+
+                    name:
+                        student.name,
+
+fullName:
+    student.full_name ||
+    student.name,
+
+dateOfBirth:
+    student.date_of_birth,
+
+className:
+    student.class_name,
+
+                    bio:
+                        String(
+                            student.profile_bio ||
+                            ""
+                        ),
+
+                    bannerColor:
+                        String(
+                            student.profile_banner_color ||
+                            "blue"
+                        ),
+
+                    profilePictureUrl:
+                        student.profile_picture_url ||
+                        null,
+
+                    showAcademicStats,
+
+                    totalPoints,
+
+                    averageScore
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal memuat profil publik siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Profil siswa tidak dapat dimuat."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
 // DAFTAR SISWA - FEED MODERATION
 // ========================================
 
@@ -14278,17 +15648,26 @@ app.get(
 
         try {
 
+            await ensureStudentProfileColumns();
+
             const student =
                 await tursoDb.get(
                     `
-                        SELECT
-                            id,
-                            login_code,
-                            name,
-                            full_name,
-                            date_of_birth,
-                            class_name
-                        FROM students
+SELECT
+    id,
+    login_code,
+    name,
+    full_name,
+    date_of_birth,
+    class_name,
+    profile_bio,
+    profile_banner_color,
+    profile_picture_url,
+    profile_picture_width,
+profile_picture_height,
+profile_picture_bytes,
+profile_show_academic_stats
+FROM students
                         WHERE id = ?
                     `,
                     [
@@ -14371,10 +15750,55 @@ app.get(
                     dateOfBirth:
                         student.date_of_birth,
 
-                    className:
-                        student.class_name,
+className:
+    student.class_name,
 
-                    totalPoints:
+bio:
+    String(
+        student.profile_bio ||
+        ""
+    ),
+
+bannerColor:
+    String(
+        student.profile_banner_color ||
+        "blue"
+    ),
+
+profilePictureUrl:
+    student.profile_picture_url ||
+    null,
+
+profilePictureWidth:
+    student.profile_picture_width === null ||
+    student.profile_picture_width === undefined
+        ? null
+        : Number(
+            student.profile_picture_width
+        ),
+
+profilePictureHeight:
+    student.profile_picture_height === null ||
+    student.profile_picture_height === undefined
+        ? null
+        : Number(
+            student.profile_picture_height
+        ),
+
+profilePictureBytes:
+    student.profile_picture_bytes === null ||
+    student.profile_picture_bytes === undefined
+        ? null
+        : Number(
+            student.profile_picture_bytes
+        ),
+
+showAcademicStats:
+    Number(
+        student.profile_show_academic_stats || 0
+    ) === 1,
+
+totalPoints:
                         Number(
                             pointResult?.total_points || 0
                         ),
@@ -14398,6 +15822,612 @@ app.get(
                 message:
                     "Gagal mengambil profile siswa."
             });
+
+        }
+
+    }
+);
+
+// ========================================
+// UPDATE KUSTOMISASI PROFILE SISWA
+// ========================================
+
+app.patch(
+    "/api/student/profile/customization",
+    async (
+        req,
+        res
+    ) => {
+
+        if (
+            !req.session.studentId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        const rawBio =
+            req.body &&
+            req.body.bio;
+
+
+        const rawBannerColor =
+            req.body &&
+            req.body.bannerColor;
+
+        const rawShowAcademicStats =
+    req.body &&
+    req.body.showAcademicStats;
+
+
+if (
+    typeof rawBio !==
+        "string" ||
+
+    typeof rawBannerColor !==
+        "string" ||
+
+    typeof rawShowAcademicStats !==
+        "boolean"
+) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Data kustomisasi profil tidak valid."
+                });
+
+        }
+
+
+const cleanBio =
+    rawBio
+        .replace(
+            /\r\n?/g,
+            "\n"
+        )
+        .trim();
+
+const bioLineCount =
+    cleanBio
+        ? cleanBio.split("\n").length
+        : 0;
+
+
+if (
+    bioLineCount >
+    STUDENT_PROFILE_BIO_MAX_LINES
+) {
+
+    return res
+        .status(400)
+        .json({
+            success:
+                false,
+
+            message:
+                `Bio maksimal ${
+                    STUDENT_PROFILE_BIO_MAX_LINES
+                } baris.`
+        });
+
+}
+
+
+        const cleanBannerColor =
+            rawBannerColor
+                .trim()
+                .toLowerCase();
+
+
+        /*
+            Array.from menghitung karakter Unicode
+            lebih tepat daripada .length biasa.
+        */
+        const bioLength =
+            Array.from(
+                cleanBio
+            ).length;
+
+
+        if (
+            bioLength >
+            STUDENT_PROFILE_BIO_MAX_LENGTH
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        `Bio maksimal ${
+                            STUDENT_PROFILE_BIO_MAX_LENGTH
+                        } karakter.`
+                });
+
+        }
+
+
+        /*
+            Tolak control character tersembunyi.
+            Baris baru dan tab tetap diperbolehkan.
+        */
+        if (
+            /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u
+                .test(
+                    cleanBio
+                )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Bio mengandung karakter yang tidak didukung."
+                });
+
+        }
+
+
+        if (
+            !STUDENT_PROFILE_BANNER_COLORS
+                .has(
+                    cleanBannerColor
+                )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Warna banner tidak valid."
+                });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            const existingStudent =
+                await tursoDb.get(
+                    `
+                        SELECT id
+
+                        FROM students
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!existingStudent) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Siswa tidak ditemukan."
+                    });
+
+            }
+
+
+            await tursoDb.run(
+                `
+UPDATE students
+
+SET
+    profile_bio = ?,
+    profile_banner_color = ?,
+    profile_show_academic_stats = ?
+
+WHERE id = ?
+                `,
+[
+    cleanBio,
+    cleanBannerColor,
+    rawShowAcademicStats ? 1 : 0,
+    studentId
+]
+            );
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                message:
+                    "Profil berhasil diperbarui.",
+
+customization: {
+
+    bio:
+        cleanBio,
+
+    bannerColor:
+        cleanBannerColor,
+
+    showAcademicStats:
+        rawShowAcademicStats
+
+}
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal memperbarui kustomisasi profil siswa:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Profil tidak dapat diperbarui."
+                });
+
+        }
+
+    }
+);
+
+// ========================================
+// UPDATE FOTO PROFIL SISWA
+// ========================================
+
+app.put(
+    "/api/student/profile/picture",
+
+    parseStudentProfilePictureBody,
+
+    async (
+        req,
+        res
+    ) => {
+
+        if (
+            !req.session.studentId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Harus login sebagai siswa."
+                });
+
+        }
+
+
+        if (
+            !isCloudinaryConfigured()
+        ) {
+
+            return res
+                .status(503)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Layanan foto belum tersedia."
+                });
+
+        }
+
+
+        const studentId =
+            Number(
+                req.session.studentId
+            );
+
+
+        const imageBuffer =
+            req.body;
+
+
+        if (
+            !isValidWebpBuffer(
+                imageBuffer
+            )
+        ) {
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Format foto profil tidak valid."
+                });
+
+        }
+
+
+        if (
+            imageBuffer.length >
+            STUDENT_PROFILE_PICTURE_MAX_BYTES
+        ) {
+
+            return res
+                .status(413)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Ukuran foto profil terlalu besar."
+                });
+
+        }
+
+
+        let uploadedPicture =
+            null;
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            profile_picture_public_id
+
+                        FROM students
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res
+                    .status(404)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Siswa tidak ditemukan."
+                    });
+
+            }
+
+
+            uploadedPicture =
+                await uploadStudentProfilePicture(
+                    imageBuffer,
+                    studentId
+                );
+
+
+            const pictureUrl =
+                String(
+                    uploadedPicture &&
+                    uploadedPicture.secure_url ||
+                    ""
+                ).trim();
+
+
+            const publicId =
+                String(
+                    uploadedPicture &&
+                    uploadedPicture.public_id ||
+                    ""
+                ).trim();
+
+
+            const width =
+                Number(
+                    uploadedPicture &&
+                    uploadedPicture.width
+                );
+
+
+            const height =
+                Number(
+                    uploadedPicture &&
+                    uploadedPicture.height
+                );
+
+
+            const bytes =
+                Number(
+                    uploadedPicture &&
+                    uploadedPicture.bytes ||
+                    imageBuffer.length
+                );
+
+
+            if (
+                !pictureUrl ||
+                !publicId ||
+                width !==
+                    STUDENT_PROFILE_PICTURE_SIZE ||
+                height !==
+                    STUDENT_PROFILE_PICTURE_SIZE ||
+                !Number.isFinite(bytes) ||
+                bytes <= 0 ||
+                bytes >
+                    STUDENT_PROFILE_PICTURE_MAX_BYTES
+            ) {
+
+                await deleteStudentProfilePicture(
+                    publicId
+                );
+
+
+                uploadedPicture =
+                    null;
+
+
+                return res
+                    .status(422)
+                    .json({
+                        success:
+                            false,
+
+                        message:
+                            "Foto profil tidak dapat diproses."
+                    });
+
+            }
+
+
+            await tursoDb.run(
+                `
+                    UPDATE students
+
+                    SET
+                        profile_picture_url = ?,
+                        profile_picture_public_id = ?,
+                        profile_picture_width = ?,
+                        profile_picture_height = ?,
+                        profile_picture_bytes = ?
+
+                    WHERE id = ?
+                `,
+                [
+                    pictureUrl,
+                    publicId,
+                    width,
+                    height,
+                    bytes,
+                    studentId
+                ]
+            );
+
+
+            const oldPublicId =
+                student
+                    .profile_picture_public_id;
+
+
+            if (
+                oldPublicId &&
+                oldPublicId !== publicId
+            ) {
+
+                await deleteStudentProfilePicture(
+                    oldPublicId
+                );
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                message:
+                    "Foto profil berhasil diperbarui.",
+
+                picture: {
+
+                    url:
+                        pictureUrl,
+
+                    width,
+
+                    height,
+
+                    bytes
+
+                }
+
+            });
+
+        } catch (error) {
+
+            if (
+                uploadedPicture &&
+                uploadedPicture.public_id
+            ) {
+
+                await deleteStudentProfilePicture(
+                    uploadedPicture.public_id
+                );
+
+            }
+
+
+            console.error(
+                "Gagal memperbarui foto profil:",
+                error
+            );
+
+
+            return res
+                .status(500)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Foto profil tidak dapat diunggah."
+                });
 
         }
 
@@ -15843,11 +17873,12 @@ app.post(
             const student =
                 await tursoDb.get(
                     `
-                        SELECT
-                            id,
-                            name,
-                            class_name
-                        FROM students
+SELECT
+    id,
+    name,
+    class_name,
+    profile_picture_url
+FROM students
                         WHERE id = ?
                     `,
                     [
@@ -16178,6 +18209,10 @@ return res.json({
 
         student_creator_class:
             student.class_name,
+
+        student_creator_profile_picture_url:
+    student.profile_picture_url ||
+    null,
 
         admin_creator_name:
             null,
@@ -16538,6 +18573,9 @@ app.get(
                                 students.class_name
                                     AS student_creator_class,
 
+                                students.profile_picture_url
+    AS student_creator_profile_picture_url,
+
                                 admins.name
                                     AS admin_creator_name,
 
@@ -16589,10 +18627,13 @@ app.get(
                                 students.name
                                     AS student_name,
 
-                                students.class_name
-                                    AS student_class_name,
+students.class_name
+    AS student_class_name,
 
-                                admins.name
+students.profile_picture_url
+    AS student_profile_picture_url,
+
+admins.name
                                     AS admin_name,
 
                                 admins.role
@@ -16819,9 +18860,13 @@ app.get(
                                 sender_role:
                                     "student",
 
-                                class_name:
-                                    reply.student_class_name ||
-                                    null
+class_name:
+    reply.student_class_name ||
+    null,
+
+profile_picture_url:
+    reply.student_profile_picture_url ||
+    null
                             }
                             : {
                                 id:
@@ -16851,12 +18896,15 @@ app.get(
                                 sender_type:
                                     "admin",
 
-                                sender_role:
-                                    reply.admin_role ||
-                                    "admin",
+sender_role:
+    reply.admin_role ||
+    "admin",
 
-                                class_name:
-                                    null
+class_name:
+    null,
+
+profile_picture_url:
+    null
                             };
 
 
@@ -17237,6 +19285,9 @@ app.get(
                             students.class_name
                                 AS student_creator_class,
 
+students.profile_picture_url
+    AS student_creator_profile_picture_url,
+
                             admins.name
                                 AS admin_creator_name,
 
@@ -17334,10 +19385,13 @@ app.get(
                         announcements.message,
                         announcements.created_at,
 
-                        students.name AS student_creator_name,
-                        students.class_name AS student_creator_class,
+students.name AS student_creator_name,
+students.class_name AS student_creator_class,
 
-                        admins.name AS admin_creator_name,
+students.profile_picture_url
+    AS student_creator_profile_picture_url,
+
+admins.name AS admin_creator_name,
                         admins.role AS admin_creator_role
 
                     FROM announcements
@@ -17367,10 +19421,13 @@ app.get(
                 students.name
                     AS student_name,
 
-                students.class_name
-                    AS student_class_name,
+students.class_name
+    AS student_class_name,
 
-                admins.name
+students.profile_picture_url
+    AS student_profile_picture_url,
+
+admins.name
                     AS admin_name,
 
                 admins.role
@@ -17434,9 +19491,13 @@ const formattedReplies =
                         sender_role:
                             "student",
 
-                        class_name:
-                            reply.student_class_name ||
-                            null
+class_name:
+    reply.student_class_name ||
+    null,
+
+profile_picture_url:
+    reply.student_profile_picture_url ||
+    null
 
                     };
 
@@ -17812,8 +19873,10 @@ app.get(
                             announcement_replies.student_id,
                             announcement_replies.admin_id,
 
-                            students.name AS student_name,
-                            students.class_name,
+students.name AS student_name,
+students.class_name,
+students.profile_picture_url
+    AS student_profile_picture_url,
 
                             admins.name AS admin_name,
                             admins.role AS admin_role
@@ -17875,8 +19938,16 @@ app.get(
                                     sender_type:
                                         "student",
 
-                                    sender_role:
-                                        "student"
+sender_role:
+    "student",
+
+class_name:
+    reply.class_name ||
+    null,
+
+profile_picture_url:
+    reply.student_profile_picture_url ||
+    null
                                 };
 
                             }
@@ -17904,9 +19975,12 @@ app.get(
                                 sender_type:
                                     "admin",
 
-                                sender_role:
-                                    reply.admin_role ||
-                                    "admin"
+sender_role:
+    reply.admin_role ||
+    "admin",
+
+profile_picture_url:
+    null
                             };
 
                         }
@@ -18050,11 +20124,12 @@ WHERE id = ?
 
         tursoDb.get(
             `
-                SELECT
-                    id,
-                    name,
-                    class_name
-                FROM students
+SELECT
+    id,
+    name,
+    class_name,
+    profile_picture_url
+FROM students
                 WHERE id = ?
             `,
             [
@@ -18543,11 +20618,15 @@ reply: {
     sender_role:
         "student",
 
-    class_name:
-        student.class_name,
+class_name:
+    student.class_name,
 
-    message:
-        createdReply.message,
+profile_picture_url:
+    student.profile_picture_url ||
+    null,
+
+message:
+    createdReply.message,
 
     created_at:
         createdReply.created_at,
@@ -18754,6 +20833,9 @@ app.get(
                             students.class_name
                                 AS class_name,
 
+                            students.profile_picture_url
+    AS student_profile_picture_url,
+
                             admins.name
                                 AS admin_name,
 
@@ -18828,8 +20910,12 @@ ORDER BY
                                     sender_role:
                                         "student",
 
-                                    class_name:
-                                        reply.class_name
+class_name:
+    reply.class_name,
+
+profile_picture_url:
+    reply.student_profile_picture_url ||
+    null
                                 };
 
                             }
@@ -18938,10 +21024,13 @@ app.get(
                             announcement_replies.student_id,
                             announcement_replies.admin_id,
 
-                            students.name AS student_name,
-                            students.class_name,
+students.name AS student_name,
+students.class_name,
 
-                            admins.name AS admin_name,
+students.profile_picture_url
+    AS student_profile_picture_url,
+
+admins.name AS admin_name,
                             admins.role AS admin_role
 
                         FROM announcement_replies
@@ -19001,8 +21090,12 @@ app.get(
                                     sender_role:
                                         "student",
 
-                                    class_name:
-                                        reply.class_name
+class_name:
+    reply.class_name,
+
+profile_picture_url:
+    reply.student_profile_picture_url ||
+    null
                                 };
 
                             }
@@ -24214,12 +26307,15 @@ AND (
                                 sender_type:
                                     "admin",
 
-                                sender_role:
-                                    reply.admin_role ||
-                                    "Admin / Guru",
+sender_role:
+    reply.admin_role ||
+    "Admin / Guru",
 
-                                class_name:
-                                    null
+class_name:
+    null,
+
+profile_picture_url:
+    null
                             };
 
                         }
