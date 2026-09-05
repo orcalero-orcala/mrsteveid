@@ -25,43 +25,307 @@
         href="/styles.css"
     >
 
+    <script src="/admin-profile-initial.js"></script>
+
 </head>
 
 
-<body class="admin-reset-page">
+<body>
 
-    <main class="admin-reset-page-shell">
+    <div class="app-layout admin-layout">
 
-        <section class="admin-reset-page-panel">
+        <!-- SIDEBAR -->
 
-            <button
-                type="button"
-                class="notification-close-button"
-                onclick="goBack()"
-                aria-label="Kembali ke dashboard"
-            >
-                ×
-            </button>
+        <aside class="sidebar admin-sidebar">
 
+            <div class="brand">
 
-            <div class="admin-reset-page-header">
+                <div class="brand-logo">
+                    LMS
+                </div>
 
-                <small class="eyebrow">
-                    SYSTEM MANAGEMENT
-                </small>
+                <div>
 
-                <h1>
-                    System & Reset
-                </h1>
+                    <strong>
+                        mrsteve.my.id
+                    </strong>
 
-                <p>
-                    Kelola reset data LMS dari satu halaman.
-                    Gunakan fitur ini dengan hati-hati.
-                </p>
+                    <small>
+                        Admin Portal
+                    </small>
+
+                </div>
 
             </div>
 
-                <div class="admin-reset-options">
+
+            <nav class="sidebar-nav">
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-dashboard.html'
+                    "
+                >
+                    <span class="nav-icon">◫</span>
+                    Dashboard
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-students.html'
+                    "
+                >
+                    <span class="nav-icon">S</span>
+                    Kelola Siswa
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-student-search.html'
+                    "
+                >
+                    <span class="nav-icon">⌕</span>
+                    Student Search
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-points.html'
+                    "
+                >
+                    <span class="nav-icon">★</span>
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-exam-scores.html'
+                    "
+                >
+                    <span class="nav-icon">▤</span>
+                    Kelola Nilai
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-quizzes.html'
+                    "
+                >
+                    <span class="nav-icon">?</span>
+                    Quiz
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-announcements.html'
+                    "
+                >
+                    <span class="nav-icon">◉</span>
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-announcement.html'
+                    "
+                >
+                    <span class="nav-icon">!</span>
+                    Information Board
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item"
+                    onclick="
+                        window.location.href =
+                            '/admin-users.html'
+                    "
+                >
+                    <span class="nav-icon">T</span>
+                    Kelola Guru
+                </button>
+
+
+                <button
+                    type="button"
+                    class="nav-item active"
+                >
+                    <span class="nav-icon">⚙</span>
+                    System & Reset
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div class="
+                        profile-avatar
+                        admin-profile-avatar
+                    ">
+                        T
+                    </div>
+
+                    <div>
+
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="logout-button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+            <header class="topbar admin-topbar">
+
+                <div>
+
+                    <small class="admin-top-label">
+                        SYSTEM MANAGEMENT
+                    </small>
+
+                    <h2>
+                        System & Reset
+                    </h2>
+
+                    <p>
+                        Kelola dan reset data LMS
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <div class="
+                        top-avatar
+                        admin-top-avatar
+                    ">
+                        T
+                    </div>
+
+                    <div class="admin-top-user-text">
+
+                        <strong id="topAdminName">
+                            Admin
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Administrator
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-page-content">
+
+                <!-- PAGE HERO -->
+
+                <section class="admin-page-hero">
+
+                    <div>
+
+                        <small class="eyebrow">
+                            SYSTEM MANAGEMENT
+                        </small>
+
+                        <h1>
+                            System & Reset
+                        </h1>
+
+                        <p>
+                            Kelola penghapusan data LMS.
+                            Gunakan setiap tindakan dengan hati-hati.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- RESET PANEL -->
+
+                <section class="admin-reset-page-panel">
+
+                    <div class="admin-reset-page-header">
+
+                        <small class="eyebrow">
+                            DATA CONTROL
+                        </small>
+
+                        <h2>
+                            Pengelolaan Data
+                        </h2>
+
+                        <p>
+                            Pilih data tertentu yang ingin direset
+                            atau lakukan Factory Reset.
+                        </p>
+
+                    </div>
+
+
+                    <div class="admin-reset-options">
 
     <!-- =========================
          FACTORY RESET
@@ -191,11 +455,11 @@
             <div>
 
                 <strong>
-                    Reset Announcement
+                    Reset Information Board
                 </strong>
 
                 <p>
-                    Hapus seluruh Announcement resmi sekolah.
+                    Hapus seluruh informasi resmi sekolah.
                 </p>
 
             </div>
@@ -285,9 +549,15 @@
         class="admin-form-message"
     ></p>
 
-</div>
+                    </div>
 
-    </main>
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
 
 
     <div
@@ -402,6 +672,24 @@
                 "adminUsername"
             );
 
+        const adminName =
+    localStorage.getItem(
+        "adminName"
+    );
+
+
+const adminRole =
+    localStorage.getItem(
+        "adminRole"
+    );
+
+
+const displayRole =
+    adminRole === "teacher"
+        ? "Teacher"
+        : adminRole ||
+            "Administrator";
+
 
         if (
             !adminId ||
@@ -412,6 +700,82 @@
                 "/admin-login.html";
 
         }
+
+        document
+    .getElementById(
+        "sidebarAdminName"
+    )
+    .textContent =
+        adminName ||
+        "Admin";
+
+
+document
+    .getElementById(
+        "sidebarAdminRole"
+    )
+    .textContent =
+        displayRole;
+
+
+document
+    .getElementById(
+        "topAdminName"
+    )
+    .textContent =
+        adminName ||
+        "Admin";
+
+
+document
+    .getElementById(
+        "topAdminRole"
+    )
+    .textContent =
+        displayRole;
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/logout",
+            {
+                method:
+                    "POST"
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminRole"
+    );
+
+    localStorage.removeItem(
+        "adminUsername"
+    );
+
+
+    window.location.href =
+        "/admin-login.html";
+
+}
 
 
         function goBack() {
@@ -641,7 +1005,9 @@
 
 }
 
-    </script>
+</script>
+
+<script src="/mobile-nav.js"></script>
 
 </body>
 

@@ -26,6 +26,7 @@
     >
 
     <script src="/admin-profile-initial.js"></script>
+    <script src="/mobile-nav.js"></script>
 
 </head>
 
@@ -52,7 +53,7 @@
                 <div>
 
                     <strong>
-                        mrsteveid
+                        mrsteve.my.id
                     </strong>
 
                     <small>
@@ -337,75 +338,135 @@
 
                 <div class="quiz-dashboard-toolbar">
 
-                    <div
-                        class="quiz-filter-group"
-                        role="group"
-                        aria-label="Filter Quiz"
-                    >
+<div
+    class="quiz-filter-group"
+    role="group"
+    aria-label="Filter Quiz"
+>
 
-                        <button
-                            class="
-                                quiz-filter-button
-                                active
-                            "
-                            type="button"
-                            data-filter="all"
-                            onclick="
-                                setQuizFilter(
-                                    'all',
-                                    this
+    <button
+        class="quiz-filter-button active"
+        type="button"
+        data-filter="all"
+        onclick="setQuizFilter('all')"
+    >
+        Semua
+    </button>
+
+    <button
+        class="quiz-filter-button"
+        type="button"
+        data-filter="draft"
+        onclick="setQuizFilter('draft')"
+    >
+        Draft
+    </button>
+
+    <button
+        class="quiz-filter-button"
+        type="button"
+        data-filter="published"
+        onclick="setQuizFilter('published')"
+    >
+        Published
+    </button>
+
+    <button
+        class="quiz-filter-button"
+        type="button"
+        data-filter="expired"
+        onclick="setQuizFilter('expired')"
+    >
+        Deadline Berakhir
+    </button>
+
+    <button
+        class="quiz-filter-button"
+        type="button"
+        data-filter="closed"
+        onclick="setQuizFilter('closed')"
+    >
+        Ditutup
+    </button>
+
+</div>
+
+<div class="quiz-status-select-wrap">
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="M4 6h16M7 12h10M10 18h4"
+        ></path>
+    </svg>
+
+    <select
+        id="quizStatusFilter"
+        aria-label="Filter status Quiz"
+        onchange="
+            setQuizFilter(
+                this.value
+            )
+        "
+    >
+        <option value="all">
+            Semua status
+        </option>
+
+        <option value="draft">
+            Draft
+        </option>
+
+        <option value="published">
+            Published
+        </option>
+
+        <option value="expired">
+            Deadline Berakhir
+        </option>
+
+        <option value="closed">
+            Ditutup
+        </option>
+    </select>
+
+</div>
+
+
+                    <label class="quiz-dashboard-search">
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <circle
+                                cx="11"
+                                cy="11"
+                                r="7"
+                            ></circle>
+
+                            <path
+                                d="m16.5 16.5 4 4"
+                            ></path>
+                        </svg>
+
+
+                        <input
+                            id="quizDashboardSearch"
+                            type="search"
+                            placeholder="Cari Quiz..."
+                            autocomplete="off"
+                            oninput="
+                                setQuizSearch(
+                                    this.value
                                 )
                             "
+                            aria-label="Cari Quiz"
                         >
-                            Semua
-                        </button>
 
-
-                        <button
-                            class="quiz-filter-button"
-                            type="button"
-                            data-filter="draft"
-                            onclick="
-                                setQuizFilter(
-                                    'draft',
-                                    this
-                                )
-                            "
-                        >
-                            Draft
-                        </button>
-
-
-                        <button
-                            class="quiz-filter-button"
-                            type="button"
-                            data-filter="published"
-                            onclick="
-                                setQuizFilter(
-                                    'published',
-                                    this
-                                )
-                            "
-                        >
-                            Published
-                        </button>
-
-
-                        <button
-                            class="quiz-filter-button"
-                            type="button"
-                            data-filter="closed"
-                            onclick="
-                                setQuizFilter(
-                                    'closed',
-                                    this
-                                )
-                            "
-                        >
-                            Ditutup
-                        </button>
-
-                    </div>
+                    </label>
 
 
                     <button
@@ -530,6 +591,9 @@
 
         let activeQuizFilter =
             "all";
+
+        let activeQuizSearch =
+    "";
 
 
         let createQuizRunning =
@@ -843,29 +907,63 @@ const timestamp =
             }
 
 
-            const filteredQuizzes =
-                adminQuizzes.filter(
-                    (
-                        quiz
-                    ) => {
-
-                        if (
-                            activeQuizFilter ===
-                            "all"
-                        ) {
-
-                            return true;
-
-                        }
+const normalizedSearch =
+    activeQuizSearch
+        .trim()
+        .toLocaleLowerCase(
+            "id"
+        );
 
 
-                        return (
-                            quiz.status ===
-                            activeQuizFilter
-                        );
+const filteredQuizzes =
+    adminQuizzes.filter(
+        quiz => {
 
-                    }
+            /*
+                Gunakan status tampilan agar Quiz
+                Published yang deadline-nya lewat
+                masuk ke filter expired.
+            */
+            const displayStatus =
+                getQuizDisplayStatus(
+                    quiz
                 );
+
+
+            const matchesStatus =
+                activeQuizFilter === "all" ||
+                displayStatus.key ===
+                    activeQuizFilter;
+
+
+            const searchableText =
+                [
+                    quiz.title,
+                    quiz.subject,
+                    quiz.material,
+                    quiz.creatorName
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLocaleLowerCase(
+                        "id"
+                    );
+
+
+            const matchesSearch =
+                !normalizedSearch ||
+                searchableText.includes(
+                    normalizedSearch
+                );
+
+
+            return (
+                matchesStatus &&
+                matchesSearch
+            );
+
+        }
+    );
 
 
             if (
@@ -873,27 +971,43 @@ const timestamp =
                 0
             ) {
 
-                const emptyTitle =
-                    adminQuizzes.length ===
-                    0
-
-                        ? "Belum ada Quiz"
-                        : "Tidak ada Quiz pada filter ini";
+const searchIsActive =
+    activeQuizSearch
+        .trim()
+        .length > 0;
 
 
-                const emptyMessage =
-                    adminQuizzes.length ===
-                    0
+const emptyTitle =
+    adminQuizzes.length === 0
 
-                        ? `
-                            Buat Quiz pertama untuk
-                            assessment atau review materi.
-                        `
+        ? "Belum ada Quiz"
 
-                        : `
-                            Pilih filter lain untuk
-                            melihat Quiz yang tersedia.
-                        `;
+        : searchIsActive
+
+            ? "Quiz tidak ditemukan"
+
+            : "Tidak ada Quiz pada filter ini";
+
+
+const emptyMessage =
+    adminQuizzes.length === 0
+
+        ? `
+            Buat Quiz pertama untuk
+            assessment atau review materi.
+        `
+
+        : searchIsActive
+
+            ? `
+                Coba gunakan kata kunci lain
+                atau ubah filter status Quiz.
+            `
+
+            : `
+                Pilih filter lain untuk
+                melihat Quiz yang tersedia.
+            `;
 
 
                 list.innerHTML = `
@@ -1571,39 +1685,83 @@ const timestamp =
         // FILTER
         // =====================================
 
-        function setQuizFilter(
-            filter,
-            button
-        ) {
+        function setQuizSearch(
+    value
+) {
 
-            activeQuizFilter =
-                filter;
+    activeQuizSearch =
+        String(
+            value || ""
+        );
 
 
-            document
-                .querySelectorAll(
-                    ".quiz-filter-button"
-                )
-                .forEach(
-                    (
-                        filterButton
-                    ) => {
+    renderAdminQuizzes();
 
-                        filterButton
-                            .classList
-                            .toggle(
-                                "active",
-                                filterButton ===
-                                    button
-                            );
+}
 
-                    }
+function setQuizFilter(
+    filter
+) {
+
+    const validFilters =
+        [
+            "all",
+            "draft",
+            "published",
+            "expired",
+            "closed"
+        ];
+
+
+    activeQuizFilter =
+        validFilters.includes(
+            filter
+        )
+            ? filter
+            : "all";
+
+
+    /*
+        Sinkronkan tombol filter desktop.
+    */
+    document
+        .querySelectorAll(
+            ".quiz-filter-button"
+        )
+        .forEach(
+            filterButton => {
+
+                filterButton.classList.toggle(
+                    "active",
+
+                    filterButton.dataset.filter ===
+                        activeQuizFilter
                 );
 
+            }
+        );
 
-            renderAdminQuizzes();
 
-        }
+    /*
+        Sinkronkan dropdown tablet/mobile.
+    */
+    const statusSelect =
+        document.getElementById(
+            "quizStatusFilter"
+        );
+
+
+    if (statusSelect) {
+
+        statusSelect.value =
+            activeQuizFilter;
+
+    }
+
+
+    renderAdminQuizzes();
+
+}
 
 
         // =====================================

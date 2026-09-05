@@ -45,7 +45,7 @@
                 <div>
 
                     <strong>
-                        mrsteveid
+                        mrsteve.my.id
                     </strong>
 
                     <small>
@@ -266,395 +266,448 @@
             </header>
 
 
-            <div class="admin-page-content">
+<div class="
+    admin-page-content
+    student-modern-page
+">
 
+    <!-- DATA SISWA HERO -->
 
-                <!-- PAGE HERO -->
+    <section class="
+        admin-page-hero
+        student-data-hero
+    ">
 
-                <section class="admin-page-hero">
+        <div class="student-data-hero-content">
 
-                    <div>
+            <small class="eyebrow">
+                STUDENT MANAGEMENT
+            </small>
 
-                        <small class="eyebrow">
-                            STUDENTS
-                        </small>
-
-                        <h1>
-                            Data Siswa
-                        </h1>
-
-                        <p>
-                            Buat akun siswa baru dan kelola
-                            daftar siswa yang sudah terdaftar.
-                        </p>
-
-                    </div>
-
-                </section>
-
-                <!-- MASTER KELAS -->
-
-<section class="admin-form-section">
-
-    <div class="section-heading">
-
-        <div>
-
-            <h2>
-                Master Kelas
-            </h2>
+            <h1>
+                Data Siswa
+            </h1>
 
             <p>
-                Tambahkan kelas yang digunakan
-                untuk data siswa.
+                Buat akun, atur kelas, dan kelola seluruh
+                data siswa dari satu ruang kerja.
             </p>
 
         </div>
 
+
+        <div class="student-data-hero-stats">
+
+            <div>
+
+                <span>
+                    TOTAL SISWA
+                </span>
+
+                <strong id="heroStudentCount">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    TOTAL KELAS
+                </span>
+
+                <strong id="heroClassCount">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MANAGEMENT WORKSPACE -->
+
+    <div class="student-management-workspace">
+
+        <!-- MASTER KELAS -->
+
+        <section class="
+            student-modern-panel
+            student-class-manager
+        ">
+
+            <div class="student-modern-heading">
+
+                <div class="student-modern-heading-icon">
+                    K
+                </div>
+
+                <div>
+
+                    <small>
+                        CLASS MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Master Kelas
+                    </h2>
+
+                    <p>
+                        Buat dan kelola kelas yang tersedia.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="classForm"
+                class="student-modern-class-form"
+            >
+
+                <div class="student-modern-field">
+
+                    <label for="classNameMaster">
+                        Nama Kelas
+                    </label>
+
+                    <input
+                        type="text"
+                        id="classNameMaster"
+                        placeholder="Contoh: Grade 9A"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="student-modern-primary-button"
+                >
+                    Tambah Kelas
+                </button>
+
+            </form>
+
+
+            <p
+                id="classMessage"
+                class="admin-form-message"
+            ></p>
+
+
+            <div
+                id="classList"
+                class="student-class-card-list"
+            >
+
+<div class="
+    quiz-dashboard-loading
+    student-class-loading
+">
+    Memuat kelas...
+</div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TAMBAH SISWA -->
+
+        <section class="
+            student-modern-panel
+            student-create-panel
+        ">
+
+            <div class="student-modern-heading">
+
+                <div class="
+                    student-modern-heading-icon
+                    student-modern-heading-icon-purple
+                ">
+                    S
+                </div>
+
+                <div>
+
+                    <small>
+                        NEW STUDENT
+                    </small>
+
+                    <h2>
+                        Tambah Siswa
+                    </h2>
+
+                    <p>
+                        Kode login dibuat otomatis oleh sistem.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="studentForm"
+                class="student-modern-create-form"
+            >
+
+                <div class="
+                    student-modern-field
+                    student-modern-field-wide
+                ">
+
+                    <label for="fullName">
+                        Nama Lengkap
+                    </label>
+
+                    <input
+                        type="text"
+                        id="fullName"
+                        placeholder="Contoh: Budi Santoso Pratama"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="student-modern-field">
+
+                    <label for="name">
+                        Nama Pendek
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Contoh: Budi"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="student-modern-field">
+
+                    <label for="dateOfBirth">
+                        Tanggal Lahir
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dateOfBirth"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="
+                    student-modern-field
+                    student-modern-field-wide
+                ">
+
+                    <label for="className">
+                        Kelas
+                    </label>
+
+                    <div class="student-class-select">
+
+                        <select
+                            id="className"
+                            required
+                        >
+                            <option value="">
+                                Pilih kelas
+                            </option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="
+                        student-modern-primary-button
+                        student-modern-create-button
+                    "
+                >
+                    Tambah Siswa
+                </button>
+
+            </form>
+
+
+            <p
+                id="message"
+                class="admin-form-message"
+            ></p>
+
+        </section>
+
     </div>
 
 
-<form
-    id="classForm"
-    class="admin-student-form"
+    <!-- STUDENT DIRECTORY -->
+
+    <section class="
+        student-modern-panel
+        student-directory-panel
+    ">
+
+        <div class="
+            student-modern-heading
+            student-directory-heading
+        ">
+
+            <div>
+
+                <small>
+                    STUDENT DIRECTORY
+                </small>
+
+                <h2>
+                    Daftar Siswa
+                </h2>
+
+                <p>
+                    Cari dan kelola seluruh siswa yang terdaftar.
+                </p>
+
+            </div>
+
+
+<button
+    type="button"
+    class="
+        secondary-button
+        quiz-refresh-button
+        student-directory-refresh
+    "
+    onclick="loadStudents()"
 >
-
-        <div class="admin-form-field">
-
-            <label for="classNameMaster">
-                Nama Kelas
-            </label>
-
-            <input
-                type="text"
-                id="classNameMaster"
-                placeholder="Contoh: Grade 9A"
-                required
-            >
+    ↻ Refresh
+</button>
 
         </div>
 
 
-        <div class="admin-form-action">
+        <div class="student-directory-controls">
+
+            <div class="
+                student-list-control
+                student-search-control
+            ">
+
+                <label for="studentSearchFilter">
+                    Cari siswa
+                </label>
+
+                <input
+                    type="search"
+                    id="studentSearchFilter"
+                    placeholder="Nama, kelas, atau kode login"
+                    oninput="renderStudentRows()"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="student-list-control">
+
+                <label for="studentClassFilter">
+                    Kelas
+                </label>
+
+                <select
+                    id="studentClassFilter"
+                    onchange="renderStudentRows()"
+                >
+                    <option value="all">
+                        Semua kelas
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div class="student-list-control">
+
+                <label for="studentSortFilter">
+                    Urutkan
+                </label>
+
+                <select
+                    id="studentSortFilter"
+                    onchange="renderStudentRows()"
+                >
+                    <option value="newest">
+                        Terbaru dibuat
+                    </option>
+
+                    <option value="oldest">
+                        Terlama dibuat
+                    </option>
+
+                    <option value="az">
+                        Nama A–Z
+                    </option>
+
+                    <option value="za">
+                        Nama Z–A
+                    </option>
+                </select>
+
+            </div>
+
 
             <button
-                type="submit"
-                class="admin-primary-button"
+                type="button"
+                class="student-filter-reset-button"
+                onclick="resetStudentFilters()"
             >
-                + Tambah Kelas
+                Reset
             </button>
 
         </div>
 
-    </form>
 
+        <div class="student-directory-result-bar">
 
-    <p
-        id="classMessage"
-        class="admin-form-message"
-    ></p>
+            <p
+                id="studentFilterSummary"
+                class="student-filter-summary"
+            ></p>
 
+        </div>
 
-    <div class="admin-table-wrapper">
 
-        <table class="admin-data-table">
-
-            <thead>
-
-                <tr>
-                    <th>No</th>
-                    <th>Nama Kelas</th>
-                    <th>Dibuat</th>
-                </tr>
-
-            </thead>
-
-            <tbody id="classList">
-
-                <tr>
-                    <td colspan="3">
-                        Memuat kelas...
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-
-                <!-- ADD STUDENT -->
-
-                <section class="admin-form-section">
-
-                    <div class="section-heading">
-
-                        <div>
-
-                            <h2>
-                                Tambah Siswa
-                            </h2>
-
-                            <p>
-                                Sistem akan membuat kode login
-                                siswa secara otomatis.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-<form
-    id="studentForm"
-    class="admin-student-form student-entry-form"
->
-
-<div class="admin-form-field">
-
-    <label for="fullName">
-        Nama Lengkap
-    </label>
-
-    <input
-        type="text"
-        id="fullName"
-        placeholder="Contoh: Budi Santoso Pratama"
-        required
-    >
-
-</div>
-
-
-<div class="admin-form-field">
-
-    <label for="name">
-        Nama Pendek
-    </label>
-
-    <input
-        type="text"
-        id="name"
-        placeholder="Contoh: Budi"
-        required
-    >
-
-</div>
-
-
-<div class="admin-form-field">
-
-    <label for="dateOfBirth">
-        Tanggal Lahir
-    </label>
-
-    <input
-        type="date"
-        id="dateOfBirth"
-        required
-    >
-
-</div>
-
-
-<div class="admin-form-field">
-
-    <label for="className">
-        Kelas
-    </label>
-
-<div class="student-class-select">
-
-    <select
-        id="className"
-        required
-    >
-        <option value="">
-            Pilih kelas
-        </option>
-    </select>
-
-</div>
-
-</div>
-
-
-<div class="admin-form-action student-submit-action">
-
-    <button
-        type="submit"
-        class="admin-primary-button"
-    >
-        + Tambah Siswa
-    </button>
-
-</div>
-
-                    </form>
-
-
-                    <p
-                        id="message"
-                        class="admin-form-message"
-                    ></p>
-
-                </section>
-
-
-                <!-- STUDENT LIST -->
-
-                <section class="admin-table-section">
-
- <div class="section-heading student-list-heading">
-
-    <div>
-
-        <h2>
-            Daftar Siswa
-        </h2>
-
-        <p>
-            Semua siswa yang terdaftar di LMS
-        </p>
-
-    </div>
-
-
-    <button
-        type="button"
-        class="secondary-button"
-        onclick="loadStudents()"
-    >
-        ↻ Refresh
-    </button>
-
-</div>
-
-
-<div class="student-list-controls">
-
-    <div class="student-list-control">
-
-        <label for="studentClassFilter">
-            Kelas
-        </label>
-
-        <select
-            id="studentClassFilter"
-            onchange="renderStudentRows()"
+        <div
+            id="studentList"
+            class="student-directory-grid"
         >
-            <option value="all">
-                Semua kelas
-            </option>
-        </select>
 
-    </div>
-
-
-    <div class="student-list-control">
-
-        <label for="studentSortFilter">
-            Urutkan
-        </label>
-
-        <select
-            id="studentSortFilter"
-            onchange="renderStudentRows()"
-        >
-            <option value="newest">
-                Terbaru dibuat
-            </option>
-
-            <option value="oldest">
-                Terlama dibuat
-            </option>
-
-            <option value="az">
-                Nama A–Z
-            </option>
-
-            <option value="za">
-                Nama Z–A
-            </option>
-        </select>
-
-    </div>
-
-
-    <button
-        type="button"
-        class="student-filter-reset-button"
-        onclick="resetStudentFilters()"
-    >
-        Reset
-    </button>
-
+<div class="
+    quiz-dashboard-loading
+    student-directory-loading
+">
+    Memuat data siswa...
 </div>
 
+        </div>
 
-<p
-    id="studentFilterSummary"
-    class="student-filter-summary"
-></p>
+    </section>
 
-
-                    <div class="admin-table-wrapper">
-
-                        <table class="admin-data-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>
-                                        No
-                                    </th>
-
-                                    <th>
-                                        Nama
-                                    </th>
-
-                                    <th>
-                                        Kelas
-                                    </th>
-
-                                    <th>
-                                        Kode Login
-                                    </th>
-
-                                    <th>
-                                        Dibuat
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody id="studentList">
-
-                                <tr>
-
-                                    <td colspan="5">
-                                        Memuat data...
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </section>
-
-            </div>
-
-        </main>
+</div>
 
     </div>
 
@@ -833,8 +886,8 @@ classForm.addEventListener(
             submitButton.disabled =
                 false;
 
-            submitButton.textContent =
-                "+ Tambah Kelas";
+submitButton.textContent =
+    "Tambah Kelas";
         }
     }
 );
@@ -846,19 +899,26 @@ classForm.addEventListener(
 
 async function loadClasses() {
 
-    classList.innerHTML = `
-        <tr>
-            <td colspan="3">
-                Memuat kelas...
-            </td>
-        </tr>
-    `;
+classList.innerHTML = `
+
+    <div class="
+        quiz-dashboard-loading
+        student-class-loading
+    ">
+        Memuat kelas...
+    </div>
+
+`;
+
 
     studentClassSelect.innerHTML = `
+
         <option value="">
             Pilih kelas
         </option>
+
     `;
+
 
     try {
 
@@ -867,74 +927,179 @@ async function loadClasses() {
                 "/api/admin/classes"
             );
 
+
         const data =
             await response.json();
 
-        if (!data.success) {
 
-            classList.innerHTML = `
-                <tr>
-                    <td colspan="3">
-                        ${escapeHtml(
-                            data.message
-                        )}
-                    </td>
-                </tr>
-            `;
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            return;
+            throw new Error(
+                data.message ||
+                "Gagal mengambil daftar kelas."
+            );
+
         }
 
 
-        if (data.classes.length === 0) {
+        const classes =
+            Array.isArray(data.classes)
+                ? data.classes
+                : [];
+
+
+        document
+            .getElementById(
+                "heroClassCount"
+            )
+            .textContent =
+                classes.length;
+
+
+        if (classes.length === 0) {
 
             classList.innerHTML = `
-                <tr>
-                    <td colspan="3">
-                        Belum ada kelas.
-                    </td>
-                </tr>
+
+                <div class="student-modern-empty">
+
+                    <strong>
+                        Belum ada kelas
+                    </strong>
+
+                    <span>
+                        Tambahkan kelas pertama melalui
+                        form di atas.
+                    </span>
+
+                </div>
+
             `;
 
             return;
+
         }
 
 
         classList.innerHTML = "";
 
 
-        data.classes.forEach(
-            (classData, index) => {
+        classes.forEach(
+            classData => {
 
-                const row =
+                const classCard =
                     document.createElement(
-                        "tr"
+                        "article"
                     );
 
-                row.innerHTML = `
-                    <td>
-                        ${index + 1}
-                    </td>
 
-                    <td>
-                        <strong>
+                const className =
+                    String(
+                        classData.name ||
+                        "Tanpa nama"
+                    );
+
+
+                const classInitial =
+                    className
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase() ||
+                    "K";
+
+
+                const studentCount =
+                    Number(
+                        classData.student_count ||
+                        0
+                    );
+
+
+                classCard.className =
+                    "student-class-card";
+
+
+                classCard.innerHTML = `
+
+                    <div class="student-class-card-main">
+
+                        <div class="student-class-card-icon">
+
                             ${escapeHtml(
-                                classData.name
+                                classInitial
                             )}
-                        </strong>
-                    </td>
 
-                    <td>
-${escapeHtml(
-    formatDeviceDateTime(
-        classData.created_at
-    )
-)}
-                    </td>
+                        </div>
+
+
+                        <div class="student-class-card-text">
+
+                            <strong>
+                                ${escapeHtml(
+                                    className
+                                )}
+                            </strong>
+
+                            <span>
+                                ${studentCount}
+                                siswa terdaftar
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="student-class-card-footer">
+
+                        <span>
+                            Dibuat
+                            ${escapeHtml(
+                                formatDeviceDateTime(
+                                    classData.created_at
+                                )
+                            )}
+                        </span>
+
+
+                        <button
+                            type="button"
+                            class="
+                                admin-delete-button
+                                delete-class-button
+                            "
+                        >
+                            Hapus
+                        </button>
+
+                    </div>
+
                 `;
 
+
+                const deleteClassButton =
+                    classCard.querySelector(
+                        ".delete-class-button"
+                    );
+
+
+                deleteClassButton.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteClass(
+                            classData,
+                            deleteClassButton
+                        );
+
+                    }
+                );
+
+
                 classList.appendChild(
-                    row
+                    classCard
                 );
 
 
@@ -943,31 +1108,173 @@ ${escapeHtml(
                         "option"
                     );
 
+
                 option.value =
-                    classData.name;
+                    className;
 
                 option.textContent =
-                    classData.name;
+                    className;
+
 
                 studentClassSelect
                     .appendChild(
                         option
                     );
+
             }
         );
 
+
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
+
+
+        document
+            .getElementById(
+                "heroClassCount"
+            )
+            .textContent =
+                "—";
+
 
         classList.innerHTML = `
-            <tr>
-                <td colspan="3">
-                    Gagal mengambil daftar kelas.
-                </td>
-            </tr>
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Gagal memuat kelas
+                </strong>
+
+                <span>
+                    ${escapeHtml(
+                        error.message ||
+                        "Tidak dapat terhubung ke server."
+                    )}
+                </span>
+
+            </div>
+
         `;
+
     }
+
+}
+
+async function deleteClass(
+    classData,
+    deleteButton
+) {
+
+    const className =
+        String(
+            classData.name ||
+            "Tanpa nama"
+        );
+
+
+    const studentCount =
+        Number(
+            classData.student_count ||
+            0
+        );
+
+
+    const warningMessage =
+        studentCount > 0
+            ? (
+                `HAPUS KELAS "${className}"?\n\n` +
+
+                `Kelas ini mempunyai ${studentCount} siswa.\n\n` +
+
+                "Tindakan ini tidak dapat dibatalkan."
+            )
+            : (
+                `HAPUS KELAS "${className}"?\n\n` +
+                "Kelas ini tidak mempunyai siswa.\n\n" +
+                "Tindakan ini tidak dapat dibatalkan."
+            );
+
+
+    const confirmed =
+        window.confirm(
+            warningMessage
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    deleteButton.disabled = true;
+    deleteButton.textContent =
+        "Menghapus...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/classes/${encodeURIComponent(
+                    classData.id
+                )}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Gagal menghapus kelas."
+            );
+
+        }
+
+
+        window.alert(
+            data.message
+        );
+
+
+        await loadClasses();
+        await loadStudents();
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus kelas:",
+            error
+        );
+
+
+        window.alert(
+            error.message ||
+            "Gagal menghapus kelas."
+        );
+
+
+        deleteButton.disabled = false;
+        deleteButton.textContent =
+            "Hapus";
+
+    }
+
 }
 
         // =================================
@@ -1058,7 +1365,7 @@ const className =
                     if (data.success) {
 
                         message.textContent =
-                            `Siswa berhasil dibuat. Kode login: ${data.student.loginCode}`;
+                            `Siswa berhasil dibuat.`;
 
 
                         form.reset();
@@ -1208,22 +1515,67 @@ function getVisibleStudents() {
             "studentSortFilter"
         ).value;
 
+    const searchQuery =
+    document
+        .getElementById(
+            "studentSearchFilter"
+        )
+        .value
+        .trim()
+        .toLocaleLowerCase(
+            "id"
+        );
 
-    const visibleStudents =
-        allStudents.filter(student => {
 
-            if (selectedClass === "all") {
+const visibleStudents =
+    allStudents.filter(student => {
 
-                return true;
+        const studentClass =
+            String(
+                student.class_name ||
+                ""
+            ).trim();
 
-            }
+
+        const matchesClass =
+            selectedClass === "all" ||
+            studentClass ===
+                selectedClass;
 
 
-            return String(
-                student.class_name || ""
-            ).trim() === selectedClass;
+        const searchableText =
+            [
+                student.name,
+                student.full_name,
+                student.class_name,
+                student.login_code
+            ]
+                .map(
+                    value =>
+                        String(
+                            value ||
+                            ""
+                        )
+                            .toLocaleLowerCase(
+                                "id"
+                            )
+                )
+                .join(" ");
 
-        });
+
+        const matchesSearch =
+            !searchQuery ||
+            searchableText.includes(
+                searchQuery
+            );
+
+
+        return (
+            matchesClass &&
+            matchesSearch
+        );
+
+    });
 
 
     visibleStudents.sort((studentA, studentB) => {
@@ -1309,11 +1661,22 @@ function renderStudentRows() {
     if (visibleStudents.length === 0) {
 
         studentList.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    Tidak ada siswa yang cocok dengan filter.
-                </td>
-            </tr>
+
+            <div class="
+                student-modern-empty
+                student-directory-empty
+            ">
+
+                <strong>
+                    Tidak ada siswa ditemukan
+                </strong>
+
+                <span>
+                    Coba ubah pencarian atau filter kelas.
+                </span>
+
+            </div>
+
         `;
 
         return;
@@ -1325,86 +1688,285 @@ function renderStudentRows() {
 
 
     visibleStudents.forEach(
-        (student, index) => {
+        student => {
 
-            const row =
-                document.createElement("tr");
+            const studentCard =
+                document.createElement(
+                    "article"
+                );
 
 
             const studentName =
-                String(student.name || "");
+                String(
+                    student.name ||
+                    "Tanpa nama"
+                );
+
+
+            const fullName =
+                String(
+                    student.full_name ||
+                    studentName
+                );
 
 
             const studentInitial =
                 studentName
                     .trim()
                     .charAt(0)
-                    .toUpperCase() || "S";
+                    .toUpperCase() ||
+                "S";
 
 
-            row.innerHTML = `
+            const className =
+                String(
+                    student.class_name ||
+                    "Tanpa kelas"
+                );
 
-                <td>
-                    ${index + 1}
-                </td>
 
-                <td>
+            studentCard.className =
+                "student-directory-card";
 
-                    <div class="student-name-cell">
 
-                        <div class="student-mini-avatar">
+            studentCard.innerHTML = `
+
+                <div class="student-directory-card-header">
+
+                    <div class="student-directory-avatar">
+
+                        ${escapeHtml(
+                            studentInitial
+                        )}
+
+                    </div>
+
+
+                    <div class="student-directory-identity">
+
+<strong>
+    ${escapeHtml(
+        fullName
+    )}
+</strong>
+
+<span>
+    ${escapeHtml(
+        studentName
+    )}
+</span>
+
+                    </div>
+
+
+                    <span class="student-directory-class">
+
+                        ${escapeHtml(
+                            className
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="student-directory-details">
+
+                    <div>
+
+                        <span>
+                            KODE LOGIN
+                        </span>
+
+                        <strong class="student-login-code">
+
                             ${escapeHtml(
-                                studentInitial
+                                student.login_code ||
+                                "-"
                             )}
-                        </div>
 
-                        <strong>
-                            ${escapeHtml(
-                                studentName
-                            )}
                         </strong>
 
                     </div>
 
-                </td>
 
-                <td>
-                    ${escapeHtml(
-                        student.class_name ||
-                        "-"
-                    )}
-                </td>
+                    <div>
 
-                <td>
+                        <span>
+                            DIBUAT
+                        </span>
 
-                    <span class="student-login-code">
-                        ${escapeHtml(
-                            student.login_code
-                        )}
-                    </span>
+                        <strong>
 
-                </td>
+                            ${escapeHtml(
+                                formatDeviceDateTime(
+                                    student.created_at
+                                )
+                            )}
 
-                <td>
-                    ${escapeHtml(
-                        formatDeviceDateTime(
-                            student.created_at
-                        )
-                    )}
-                </td>
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="student-directory-card-footer">
+
+
+                    <button
+                        type="button"
+                        class="
+                            admin-delete-button
+                            delete-student-button
+                        "
+                    >
+                        Hapus siswa
+                    </button>
+
+                </div>
 
             `;
 
 
-            studentList.appendChild(row);
+            const deleteStudentButton =
+                studentCard.querySelector(
+                    ".delete-student-button"
+                );
+
+
+            deleteStudentButton.addEventListener(
+                "click",
+                () => {
+
+                    deleteStudent(
+                        student,
+                        deleteStudentButton
+                    );
+
+                }
+            );
+
+
+            studentList.appendChild(
+                studentCard
+            );
 
         }
     );
 
 }
 
+async function deleteStudent(
+    student,
+    deleteButton
+) {
+
+    const studentName =
+        String(
+            student.name ||
+            "Tanpa nama"
+        );
+
+
+    const className =
+        String(
+            student.class_name ||
+            "Tanpa kelas"
+        );
+
+
+    const confirmed =
+        window.confirm(
+            `HAPUS SISWA "${studentName}"?\n\n` +
+
+            `Kelas: ${className}\n\n` +
+
+            "Tindakan ini tidak dapat dibatalkan."
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    deleteButton.disabled = true;
+    deleteButton.textContent =
+        "Menghapus...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/students/${encodeURIComponent(
+                    student.id
+                )}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Gagal menghapus siswa."
+            );
+
+        }
+
+
+        window.alert(
+            data.message
+        );
+
+
+        await loadStudents();
+        await loadClasses();
+
+    } catch (error) {
+
+        console.error(
+            "Gagal menghapus siswa:",
+            error
+        );
+
+
+        window.alert(
+            error.message ||
+            "Gagal menghapus siswa."
+        );
+
+
+        deleteButton.disabled = false;
+        deleteButton.textContent =
+            "Hapus";
+
+    }
+
+}
+
 
 function resetStudentFilters() {
+
+    document
+    .getElementById(
+        "studentSearchFilter"
+    )
+    .value = "";
 
     document
         .getElementById(
@@ -1421,6 +1983,66 @@ function resetStudentFilters() {
 
 
     renderStudentRows();
+
+}
+
+async function runRefreshButton(
+    button,
+    refreshFunction
+) {
+
+    if (
+        !button ||
+        button.disabled
+    ) {
+
+        return;
+
+    }
+
+
+    const label =
+        button.querySelector(
+            ".student-refresh-label"
+        );
+
+
+    button.disabled = true;
+
+    button.classList.add(
+        "is-loading"
+    );
+
+
+    if (label) {
+
+        label.textContent =
+            "Memuat...";
+
+    }
+
+
+    try {
+
+        await refreshFunction();
+
+    } finally {
+
+        button.disabled = false;
+
+        button.classList.remove(
+            "is-loading"
+        );
+
+
+        if (label) {
+
+            label.textContent =
+                "Refresh";
+
+        }
+
+    }
 
 }
 
@@ -1443,13 +2065,16 @@ async function loadStudents() {
         );
 
 
-    studentList.innerHTML = `
-        <tr>
-            <td colspan="5">
-                Memuat data...
-            </td>
-        </tr>
-    `;
+studentList.innerHTML = `
+
+    <div class="
+        quiz-dashboard-loading
+        student-directory-loading
+    ">
+        Memuat data siswa...
+    </div>
+
+`;
 
 
     summary.textContent = "";
@@ -1467,20 +2092,15 @@ async function loadStudents() {
             await response.json();
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            studentList.innerHTML = `
-                <tr>
-                    <td colspan="5">
-                        ${escapeHtml(
-                            data.message ||
-                            "Gagal mengambil data siswa."
-                        )}
-                    </td>
-                </tr>
-            `;
-
-            return;
+            throw new Error(
+                data.message ||
+                "Gagal mengambil data siswa."
+            );
 
         }
 
@@ -1491,18 +2111,39 @@ async function loadStudents() {
                 : [];
 
 
+        document
+            .getElementById(
+                "heroStudentCount"
+            )
+            .textContent =
+                allStudents.length;
+
+
         populateStudentClassFilter();
 
 
         if (allStudents.length === 0) {
 
             studentList.innerHTML = `
-                <tr>
-                    <td colspan="5">
-                        Belum ada siswa.
-                    </td>
-                </tr>
+
+                <div class="
+                    student-modern-empty
+                    student-directory-empty
+                ">
+
+                    <strong>
+                        Belum ada siswa
+                    </strong>
+
+                    <span>
+                        Tambahkan siswa pertama melalui
+                        panel Tambah Siswa.
+                    </span>
+
+                </div>
+
             `;
+
 
             summary.textContent =
                 "0 siswa ditampilkan";
@@ -1517,15 +2158,39 @@ async function loadStudents() {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
+
+
+        document
+            .getElementById(
+                "heroStudentCount"
+            )
+            .textContent =
+                "—";
 
 
         studentList.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    Gagal mengambil data siswa.
-                </td>
-            </tr>
+
+            <div class="
+                student-modern-empty
+                student-directory-empty
+            ">
+
+                <strong>
+                    Gagal memuat data siswa
+                </strong>
+
+                <span>
+                    ${escapeHtml(
+                        error.message ||
+                        "Tidak dapat terhubung ke server."
+                    )}
+                </span>
+
+            </div>
+
         `;
 
 

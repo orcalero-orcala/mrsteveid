@@ -426,16 +426,26 @@
 }
 
 .public-quiz-review-answer-grid {
+    width: 100%;
+    min-width: 0;
+    margin-top: 14px;
+
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
 }
 
 .public-quiz-review-answer-box {
+    width: 100%;
     min-width: 0;
     padding: 12px;
+
+    box-sizing: border-box;
+    overflow: hidden;
+
     border: 1px solid rgba(255, 90, 103, 0.35);
     border-radius: 10px;
+
     background: rgba(255, 90, 103, 0.06);
 }
 
@@ -456,6 +466,32 @@
     font-size: 0.82rem;
     line-height: 1.5;
     overflow-wrap: anywhere;
+}
+
+.public-quiz-review-card.is-essay {
+    border-color: rgba(57, 136, 245, 0.38);
+}
+
+.public-quiz-review-card.is-essay
+.public-quiz-review-card-header strong {
+    color: #7eb5ff;
+}
+
+.public-quiz-review-answer-box.is-essay {
+    border-color: rgba(57, 136, 245, 0.32);
+    background: rgba(57, 136, 245, 0.07);
+}
+
+.public-quiz-review-answer-box.is-essay p {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0 0;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    line-height: 1.65;
 }
 
 @media (max-width: 700px) {
@@ -483,7 +519,7 @@
 
 .public-quiz-review-question-image {
   width: 100%;
-  margin: 0 0 15px;
+  margin: 14px 0 0;
   padding: 8px;
   display: flex;
   align-items: center;
@@ -521,12 +557,248 @@
     max-height: 270px;
   }
 }
+
+/* ========================================
+   PUBLIC QUIZ TOPBAR BRAND
+======================================== */
+
+.public-quiz-body
+.student-quiz-attempt-topbar {
+    grid-template-columns:
+        max-content
+        minmax(0, 1fr)
+        190px;
+
+    grid-template-areas:
+        "brand title progress";
+}
+
+
+.public-quiz-brand {
+    grid-area: brand;
+
+    min-width: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+
+    justify-self: start;
+}
+
+
+.public-quiz-brand-logo {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b8cff,
+            #286ee8
+        );
+
+    box-shadow:
+        0 7px 18px
+        rgba(36, 104, 220, 0.24);
+
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: -0.2px;
+}
+
+
+.public-quiz-brand-copy {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+}
+
+
+.public-quiz-brand-copy strong {
+    margin: 0;
+
+    color: #f4f7fb;
+
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+.public-quiz-brand-copy span {
+    margin: 0;
+
+    color: #7186a1;
+
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+.public-quiz-body
+.student-quiz-attempt-title {
+    grid-area: title;
+
+    min-width: 0;
+
+    text-align: right;
+}
+
+
+.public-quiz-body
+.student-quiz-attempt-title strong,
+
+.public-quiz-body
+.student-quiz-attempt-title span {
+    text-align: right;
+}
+
+
+.public-quiz-body
+.student-quiz-progress-summary {
+    grid-area: progress;
+}
+
+@media (max-width: 900px) {
+
+    .public-quiz-body
+    .student-quiz-attempt-topbar {
+        width: 100%;
+        min-height: 0;
+        padding: 9px 11px;
+
+        display: grid;
+        grid-template-columns:
+            max-content
+            minmax(0, 1fr);
+
+        grid-template-areas:
+            "brand title"
+            "progress progress";
+
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 11px;
+
+        box-sizing: border-box;
+    }
+
+
+    .public-quiz-brand {
+        justify-self: start;
+    }
+
+
+    .public-quiz-brand-logo {
+        width: 40px;
+        height: 40px;
+
+        flex-basis: 40px;
+
+        border-radius: 10px;
+        font-size: 10px;
+    }
+
+
+    .public-quiz-brand-copy {
+        gap: 5px;
+    }
+
+
+    .public-quiz-brand-copy strong {
+        font-size: 12px;
+    }
+
+
+    .public-quiz-brand-copy span {
+        font-size: 9px;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title {
+        width: 100%;
+        min-width: 0;
+
+        justify-self: stretch;
+        text-align: right;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong,
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        width: 100%;
+
+        display: block;
+        overflow: hidden;
+
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-progress-summary {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+
+        display: grid;
+        grid-template-columns:
+            max-content
+            minmax(0, 1fr);
+
+        align-items: center;
+        gap: 8px;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-progress-summary > span {
+        text-align: left;
+        white-space: nowrap;
+    }
+}
+
     </style>
 </head>
 
 <body class="student-quiz-attempt-body public-quiz-body">
     <div id="publicQuizPageShell" class="public-quiz-page-shell">
         <header class="student-quiz-attempt-topbar">
+
+<div class="public-quiz-brand home-v2-brand">
+    <div class="home-v2-brand-logo">LMS</div>
+
+    <div class="home-v2-brand-copy">
+        <strong>mrsteve.my.id</strong>
+        <small>Public Quiz</small>
+    </div>
+</div>
+
 
             <div class="student-quiz-attempt-title">
                 <strong id="publicQuizTopTitle">Memuat Quiz...</strong>
@@ -633,10 +905,22 @@
             <p id="publicQuizResultGuestName"></p>
 
             <div class="public-quiz-result-score">
-                <span id="publicQuizResultScore">0</span><small> / 100</small>
+                <span id="publicQuizResultScore">0</span>
+
+                <small id="publicQuizResultScoreMaximum">
+                    / 100
+                </small>
             </div>
 
-            <p id="publicQuizResultMeta" class="public-quiz-result-meta"></p>
+            <p
+                id="publicQuizResultScoreNote"
+                class="public-quiz-result-score-note"
+            ></p>
+
+            <p
+                id="publicQuizResultMeta"
+                class="public-quiz-result-meta"
+            ></p>
 
 <div class="public-quiz-dialog-actions">
     <button
@@ -647,14 +931,6 @@
         hidden
     >
         Lihat Jawaban
-    </button>
-
-    <button
-        class="student-quiz-primary-button"
-        type="button"
-        onclick="returnToPublicQuizHome()"
-    >
-        Home
     </button>
 </div>
         </section>
@@ -899,13 +1175,25 @@
             }
 
             publicQuizQuestionList.innerHTML = questions.map((question, questionIndex) => {
-                const type = question.type === "mcq" ? "mcq" : "essay";
+const type =
+    question.type === "mcq" ||
+    question.type === "short_answer" ||
+    question.type === "essay"
+
+        ? question.type
+        : "mcq";
 
                 return `
                     <article class="student-quiz-question-card" data-public-question-id="${Number(question.id)}">
                         <div class="student-quiz-question-header">
                             <span class="student-quiz-question-number">No. ${questionIndex + 1}</span>
-                            <span class="student-quiz-question-point">1 poin</span>
+<span class="student-quiz-question-point">
+    ${
+        type === "essay"
+            ? "Esai"
+            : "1 poin"
+    }
+</span>
                         </div>
 
 ${
@@ -970,17 +1258,41 @@ ${
                                     `).join("")}
                                 </div>
                             `
-                            : `
-                                <div class="student-quiz-text-answer">
-                                    <label for="public-answer-${Number(question.id)}">Jawaban kamu</label>
-                                    <textarea
-                                        id="public-answer-${Number(question.id)}"
-                                        maxlength="3000"
-                                        placeholder="Ketik jawaban kamu..."
-                                        oninput="updatePublicQuizTextAnswer(${Number(question.id)}, this.value)"
-                                    ></textarea>
-                                </div>
-                            `
+                            : type === "essay"
+                                ? `
+                                    <div class="
+                                        student-quiz-text-answer
+                                        student-quiz-essay-answer
+                                    ">
+                                        <label for="public-answer-${Number(question.id)}">
+                                            Jawaban kamu
+                                        </label>
+
+                                        <textarea
+                                            id="public-answer-${Number(question.id)}"
+                                            rows="6"
+                                            maxlength="5000"
+                                            placeholder="Tulis jawaban kamu..."
+                                            oninput="updatePublicQuizTextAnswer(${Number(question.id)}, this.value)"
+                                        ></textarea>
+                                    </div>
+                                `
+
+                                : `
+                                    <div class="student-quiz-text-answer">
+                                        <label for="public-answer-${Number(question.id)}">
+                                            Jawaban kamu
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            id="public-answer-${Number(question.id)}"
+                                            maxlength="1000"
+                                            placeholder="Ketik jawaban kamu..."
+                                            oninput="updatePublicQuizTextAnswer(${Number(question.id)}, this.value)"
+                                        >
+                                    </div>
+                                `
                         }
                     </article>
                 `;
@@ -1188,14 +1500,57 @@ ${
         function showPublicQuizResult(result) {
             clearInterval(publicQuizDeadlineTimer);
 
-            const score = Number(result.score ?? result.finalScore ?? 0);
-            const correct = Number(result.correctCount ?? result.correct ?? 0);
-            const total = Number(result.totalQuestions ?? currentPublicQuiz.questions.length ?? 0);
+            const score =
+                Number(
+                    result.score ??
+                    result.finalScore ??
+                    0
+                );
+
+
+            const correct =
+                Number(
+                    result.correctCount ??
+                    result.correct ??
+                    0
+                );
+
+
+            /*
+                Jangan memakai jumlah seluruh soal sebagai
+                fallback karena Essay tidak masuk autograde.
+            */
+            const total =
+                Number(
+                    result.totalQuestions ??
+                    0
+                );
+
+
+            const hasAutoGradedQuestions =
+                total >
+                0;
 
             publicQuizReview =
     Array.isArray(result.review)
         ? result.review
         : [];
+
+const publicResultHasEssayQuestions =
+    publicQuizReview.some(
+        review =>
+            review.questionType === "essay"
+    );
+
+
+document.getElementById(
+    "publicQuizResultScoreNote"
+).textContent =
+    publicResultHasEssayQuestions
+
+        ? "Jawaban Esai tidak dinilai otomatis. Nilai autograde bukan nilai akhir."
+
+        : "Nilai autograde bukan nilai akhir.";
 
 
 document.getElementById(
@@ -1204,10 +1559,41 @@ document.getElementById(
     publicQuizReview.length === 0;
 
             document.getElementById("publicQuizResultGuestName").textContent = `${publicQuizGuestName} · GUEST`;
-            document.getElementById("publicQuizResultScore").textContent = Number.isFinite(score)
-                ? String(Math.round(score * 100) / 100)
-                : "0";
-            document.getElementById("publicQuizResultMeta").textContent = `${correct} dari ${total} soal benar`;
+            document.getElementById(
+                "publicQuizResultScore"
+            ).textContent =
+                hasAutoGradedQuestions &&
+                Number.isFinite(
+                    score
+                )
+
+                    ? String(
+                        Math.round(
+                            score *
+                            100
+                        ) /
+                        100
+                    )
+
+                    : "-";
+
+
+            document.getElementById(
+                "publicQuizResultScoreMaximum"
+            ).textContent =
+                hasAutoGradedQuestions
+
+                    ? "/ 100"
+                    : "Tidak dinilai otomatis";
+
+
+            document.getElementById(
+                "publicQuizResultMeta"
+            ).textContent =
+                hasAutoGradedQuestions
+
+                    ? `${correct} dari ${total} soal benar`
+                    : "Jawaban Essay berhasil dikirim";
             document.getElementById("publicQuizResultOverlay").hidden = false;
             setPublicQuizPageBlur(true);
         }
@@ -1354,6 +1740,36 @@ document.getElementById(
                         </div>
                     `;
 
+} else if (
+    review.questionType ===
+    "essay"
+) {
+
+    answerContent = `
+        <div class="
+            public-quiz-review-answer-grid
+            is-single
+        ">
+
+            <div class="
+                public-quiz-review-answer-box
+                is-essay
+            ">
+
+                <span>
+                    Jawaban kamu
+                </span>
+
+                <p>${escapePublicQuizHtml(
+                    review.textAnswer ||
+                    "Tidak dijawab"
+                )}</p>
+
+            </div>
+
+        </div>
+    `;
+
 } else {
 
     answerContent =
@@ -1434,9 +1850,14 @@ document.getElementById(
                         public-quiz-review-card
 
                         ${
-                            isCorrect
-                                ? "is-correct"
-                                : "is-wrong"
+                            review.questionType ===
+                            "essay"
+
+                                ? "is-essay"
+
+                                : isCorrect
+                                    ? "is-correct"
+                                    : "is-wrong"
                         }
                     ">
 
@@ -1450,9 +1871,14 @@ document.getElementById(
 
                             <strong>
                                 ${
-                                    isCorrect
-                                        ? "✓ Benar"
-                                        : "✕ Salah"
+                                    review.questionType ===
+                                    "essay"
+
+                                        ? "Jawaban Esai"
+
+                                        : isCorrect
+                                            ? "✓ Benar"
+                                            : "✕ Salah"
                                 }
                             </strong>
 

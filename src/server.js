@@ -2491,10 +2491,10 @@ statements.push({
 });
 
 
-        if (
-            question.type ===
-                "short_answer"
-        ) {
+if (
+    question.type !==
+        "mcq"
+) {
 
             /*
                 Bila MCQ diubah menjadi Esai,
@@ -3226,20 +3226,40 @@ app.post(
                         question
                     ) => ({
 
-                        clientKey:
-                            question.clientKey,
+clientKey:
+    question.clientKey,
 
-                        type:
-                            question.type,
+type:
+    question.type,
 
-                        text:
-                            question.text,
+text:
+    question.text,
 
-                        correctText:
-                            question.correctText ||
-                            "",
+imageUrl:
+    question.imageUrl ||
+    null,
 
-                        options:
+imagePublicId:
+    question.imagePublicId ||
+    null,
+
+imageWidth:
+    question.imageWidth ||
+    null,
+
+imageHeight:
+    question.imageHeight ||
+    null,
+
+imageBytes:
+    question.imageBytes ||
+    null,
+
+correctText:
+    question.correctText ||
+    "",
+
+options:
                             question.options.map(
                                 (
                                     option
@@ -5412,10 +5432,52 @@ const availabilityError =
                                 textAnswer:
                                     null,
 
-                                isCorrect
+                                isCorrect,
+
+                                isAutoGraded:
+                                    true
                             };
 
                         }
+
+                        /*
+    ESAI PANJANG
+
+    Jawaban disimpan tetapi tidak
+    dinilai otomatis.
+*/
+if (
+    question.type ===
+    "essay"
+) {
+
+    const textAnswer =
+        String(
+            submittedAnswer.textAnswer ||
+            ""
+        ).slice(
+            0,
+            5000
+        );
+
+
+    return {
+        questionId:
+            question.id,
+
+        selectedOptionId:
+            null,
+
+        textAnswer,
+
+        isCorrect:
+            false,
+
+        isAutoGraded:
+            false
+    };
+
+}
 
 
                         /*
@@ -5471,26 +5533,39 @@ const availabilityError =
                             */
                             textAnswer,
 
-                            isCorrect
+                            isCorrect,
+
+                            isAutoGraded:
+                                true
                         };
 
                     }
                 );
 
 
- /*
-    Jumlah jawaban benar keseluruhan tetap
-    disimpan untuk ringkasan hasil.
+/*
+    Hanya MCQ dan Isian Singkat yang masuk
+    ke dalam perhitungan nilai otomatis.
+
+    Essay panjang tetap disimpan, tetapi tidak
+    menambah pembagi total nilai.
 */
-const correctCount =
+const autoGradedAnswers =
     gradedAnswers.filter(
+        answer =>
+            answer.isAutoGraded
+    );
+
+
+const correctCount =
+    autoGradedAnswers.filter(
         answer =>
             answer.isCorrect
     ).length;
 
 
 const totalQuestions =
-    quiz.questions.length;
+    autoGradedAnswers.length;
 
 
 /*
@@ -5590,7 +5665,20 @@ const useWeightedScore =
 let score;
 
 
-if (useWeightedScore) {
+/*
+    Jika seluruh pertanyaan merupakan Essay panjang,
+    tidak ada soal yang dapat dinilai otomatis.
+*/
+if (
+    totalQuestions === 0
+) {
+
+    score =
+        0;
+
+} else if (
+    useWeightedScore
+) {
 
     /*
         essayWeight sudah divalidasi saat
@@ -6807,6 +6895,41 @@ app.get(
 
             }
 
+                        /*
+                Hitung soal yang dapat dinilai otomatis.
+
+                Essay panjang tidak masuk ke dalam
+                perhitungan nilai.
+            */
+            const autoGradedQuestionRow =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            COUNT(*) AS total
+
+                        FROM quiz_questions
+
+                        WHERE
+                            quiz_id = ?
+
+                            AND question_type IN (
+                                'mcq',
+                                'short_answer'
+                            )
+                    `,
+                    [
+                        quizId
+                    ]
+                );
+
+
+            const autoGradedQuestionCount =
+                Number(
+                    autoGradedQuestionRow &&
+                    autoGradedQuestionRow.total ||
+                    0
+                );
+
 
             /*
                 DAFTAR RESPONDEN
@@ -7253,6 +7376,12 @@ const respondents =
             WHERE
                 quiz_questions.quiz_id = ?
 
+                AND quiz_questions.question_type
+                    IN (
+                        'mcq',
+                        'short_answer'
+                    )
+
             GROUP BY
                 quiz_questions.id,
                 quiz_questions.position,
@@ -7358,6 +7487,9 @@ const respondents =
 
                 summary: {
                     totalRespondents,
+
+                    autoGradedQuestionCount,
+
                     average,
                     median,
                     highest,
@@ -8148,6 +8280,10 @@ return {
                     type:
                         question.question_type,
 
+                    isAutoGraded:
+                        question.question_type !==
+                        "essay",
+
                     text:
                         question.question_text,
 
@@ -8159,24 +8295,34 @@ return {
                     correctCount,
 
                     incorrectCount:
-                        Math.max(
-                            0,
-                            totalRespondents -
-                            correctCount
-                        ),
+                        question.question_type ===
+                        "essay"
+
+                            ? 0
+
+                            : Math.max(
+                                0,
+                                totalRespondents -
+                                correctCount
+                            ),
 
                     percentageCorrect:
-                        totalRespondents > 0
+                        question.question_type ===
+                        "essay"
 
-                            ? Math.round(
-                                (
-                                    correctCount /
-                                    totalRespondents
-                                ) *
-                                100
-                            )
+                            ? null
 
-                            : 0,
+                            : totalRespondents > 0
+
+                                ? Math.round(
+                                    (
+                                        correctCount /
+                                        totalRespondents
+                                    ) *
+                                    100
+                                )
+
+                                : 0,
 
                     groups,
 
@@ -9534,13 +9680,25 @@ function validateQuizQuestions(
                 questionIndex + 1;
 
 
-            const type =
-                rawQuestion &&
-                rawQuestion.type ===
-                    "short_answer"
+const rawType =
+    String(
+        rawQuestion &&
+        rawQuestion.type ||
+        ""
+    );
 
-                    ? "short_answer"
-                    : "mcq";
+
+const type =
+    rawType ===
+        "short_answer"
+
+        ? "short_answer"
+
+        : rawType ===
+            "essay"
+
+            ? "essay"
+            : "mcq";
 
 
             const questionText =
@@ -9621,6 +9779,50 @@ if (
     throw new Error(
         `Soal nomor ${questionNumber} harus mempunyai teks atau gambar.`
     );
+}
+
+/*
+    ESAI PANJANG
+
+    Tidak mempunyai pilihan maupun
+    kunci jawaban otomatis.
+*/
+if (
+    type ===
+    "essay"
+) {
+
+    return {
+        clientKey,
+
+        type:
+            "essay",
+
+        text:
+            questionText,
+
+        correctText:
+            null,
+
+        imageUrl:
+            questionImage.imageUrl,
+
+        imagePublicId:
+            questionImage.imagePublicId,
+
+        imageWidth:
+            questionImage.imageWidth,
+
+        imageHeight:
+            questionImage.imageHeight,
+
+        imageBytes:
+            questionImage.imageBytes,
+
+        options:
+            []
+    };
+
 }
 
 
@@ -10711,14 +10913,62 @@ function gradePublicQuizAnswers(
                         textAnswer:
                             null,
 
-                        isCorrect
+                        isCorrect,
+
+                        isAutoGraded:
+                            true
                     };
 
                 }
 
 
                 /*
-                    ESAI / ISIAN SINGKAT
+                    ESAI PANJANG
+
+                    Jawaban tetap disimpan, tetapi
+                    tidak masuk perhitungan nilai.
+                */
+                if (
+                    question.type ===
+                        "essay"
+                ) {
+
+                    const textAnswer =
+                        String(
+                            submittedAnswer.textAnswer ||
+                            ""
+                        ).slice(
+                            0,
+                            5000
+                        );
+
+
+                    return {
+                        questionId:
+                            Number(
+                                question.id
+                            ),
+
+                        questionType:
+                            "essay",
+
+                        selectedOptionId:
+                            null,
+
+                        textAnswer,
+
+                        isCorrect:
+                            false,
+
+                        isAutoGraded:
+                            false
+                    };
+
+                }
+
+
+                /*
+                    ISIAN SINGKAT
                 */
                 const textAnswer =
                     String(
@@ -10765,22 +11015,39 @@ function gradePublicQuizAnswers(
 
                     textAnswer,
 
-                    isCorrect
+                    isCorrect,
+
+                    isAutoGraded:
+                        true
                 };
 
             }
         );
 
 
-    const correctCount =
+    /*
+        Hanya MCQ dan Isian Singkat yang
+        dihitung dalam nilai otomatis.
+
+        Essay panjang tetap ada di gradedAnswers
+        agar jawabannya dapat disimpan.
+    */
+    const autoGradedAnswers =
         gradedAnswers.filter(
+            answer =>
+                answer.isAutoGraded
+        );
+
+
+    const correctCount =
+        autoGradedAnswers.filter(
             answer =>
                 answer.isCorrect
         ).length;
 
 
     const totalQuestions =
-        quiz.questions.length;
+        autoGradedAnswers.length;
 
 
     const mcqAnswers =
@@ -10833,7 +11100,20 @@ function gradePublicQuizAnswers(
     let score;
 
 
-    if (useWeightedScore) {
+    /*
+        Jika seluruh soal berupa Essay panjang,
+        belum ada soal yang dapat dinilai otomatis.
+    */
+    if (
+        totalQuestions === 0
+    ) {
+
+        score =
+            0;
+
+    } else if (
+        useWeightedScore
+    ) {
 
         const rawEssayWeight =
             Number(
@@ -11031,6 +11311,45 @@ function buildPublicQuizReview(
             }
 
 
+            /*
+                ESAI PANJANG
+
+                Jawaban ditampilkan tanpa status
+                benar atau salah.
+            */
+            if (
+                question.type ===
+                "essay"
+            ) {
+
+                return {
+                    questionNumber:
+                        questionIndex + 1,
+
+                    questionId:
+                        Number(question.id),
+
+                    questionType:
+                        "essay",
+
+                    questionText:
+                        question.text,
+
+                    imageUrl:
+                        question.imageUrl ||
+                        null,
+
+                    textAnswer:
+                        gradedAnswer.textAnswer ||
+                        ""
+                };
+
+            }
+
+
+            /*
+                ISIAN SINGKAT
+            */
             return {
                 questionNumber:
                     questionIndex + 1,
@@ -11382,6 +11701,354 @@ async function ensureClassesTable() {
             class_name IS NOT NULL
             AND TRIM(class_name) <> ''
     `);
+}
+
+// ========================================
+// HAPUS SELURUH DATA SISWA
+// ========================================
+
+function buildStudentDeletionStatements(
+    rawStudentIds
+) {
+
+    const studentIds = [
+        ...new Set(
+            (
+                Array.isArray(rawStudentIds)
+                    ? rawStudentIds
+                    : []
+            )
+                .map(Number)
+                .filter(
+                    studentId =>
+                        Number.isInteger(
+                            studentId
+                        ) &&
+                        studentId > 0
+                )
+        )
+    ];
+
+
+    if (studentIds.length === 0) {
+
+        return [];
+
+    }
+
+
+    const placeholders =
+        studentIds
+            .map(() => "?")
+            .join(", ");
+
+
+    const copyIds = () => [
+        ...studentIds
+    ];
+
+
+    return [
+
+        /*
+            Jawaban Quiz harus dihapus sebelum
+            quiz_attempts.
+        */
+        {
+            sql: `
+                DELETE FROM quiz_answers
+
+                WHERE attempt_id IN (
+                    SELECT id
+                    FROM quiz_attempts
+                    WHERE student_id IN (
+                        ${placeholders}
+                    )
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+        {
+            sql: `
+                DELETE FROM quiz_attempts
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+        {
+            sql: `
+                DELETE FROM quiz_allowed_students
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Hapus seluruh riwayat moderasi
+            Classroom Feed.
+        */
+        {
+            sql: `
+                DELETE FROM feed_moderation_actions
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+        {
+            sql: `
+                DELETE FROM feed_moderation_events
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+        {
+            sql: `
+                DELETE FROM feed_moderation
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Hapus mention yang terhubung dengan
+            siswa, posting siswa, atau balasan siswa.
+        */
+        {
+            sql: `
+                DELETE FROM announcement_mentions
+
+                WHERE
+                    mentioned_student_id IN (
+                        ${placeholders}
+                    )
+
+                    OR announcement_id IN (
+                        SELECT id
+                        FROM announcements
+                        WHERE student_id IN (
+                            ${placeholders}
+                        )
+                    )
+
+                    OR reply_id IN (
+                        SELECT id
+                        FROM announcement_replies
+
+                        WHERE
+                            student_id IN (
+                                ${placeholders}
+                            )
+
+                            OR announcement_id IN (
+                                SELECT id
+                                FROM announcements
+                                WHERE student_id IN (
+                                    ${placeholders}
+                                )
+                            )
+                    )
+            `,
+
+            args: [
+                ...studentIds,
+                ...studentIds,
+                ...studentIds,
+                ...studentIds
+            ]
+        },
+
+
+        /*
+            Hapus notifikasi yang terhubung dengan
+            siswa, posting siswa, atau balasan siswa.
+        */
+        {
+            sql: `
+                DELETE FROM notifications
+
+                WHERE
+                    recipient_student_id IN (
+                        ${placeholders}
+                    )
+
+                    OR sender_student_id IN (
+                        ${placeholders}
+                    )
+
+                    OR announcement_id IN (
+                        SELECT id
+                        FROM announcements
+                        WHERE student_id IN (
+                            ${placeholders}
+                        )
+                    )
+
+                    OR reply_id IN (
+                        SELECT id
+                        FROM announcement_replies
+
+                        WHERE
+                            student_id IN (
+                                ${placeholders}
+                            )
+
+                            OR announcement_id IN (
+                                SELECT id
+                                FROM announcements
+                                WHERE student_id IN (
+                                    ${placeholders}
+                                )
+                            )
+                    )
+            `,
+
+            args: [
+                ...studentIds,
+                ...studentIds,
+                ...studentIds,
+                ...studentIds,
+                ...studentIds
+            ]
+        },
+
+
+        /*
+            Hapus semua balasan pada posting
+            milik siswa yang akan dihapus.
+        */
+        {
+            sql: `
+                DELETE FROM announcement_replies
+
+                WHERE announcement_id IN (
+                    SELECT id
+                    FROM announcements
+                    WHERE student_id IN (
+                        ${placeholders}
+                    )
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Hapus balasan yang dibuat siswa.
+        */
+        {
+            sql: `
+                DELETE FROM announcement_replies
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Hapus posting Classroom Feed siswa.
+        */
+        {
+            sql: `
+                DELETE FROM announcements
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Hapus poin dan nilai siswa.
+        */
+        {
+            sql: `
+                DELETE FROM point_transactions
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+        {
+            sql: `
+                DELETE FROM exam_scores
+
+                WHERE student_id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        },
+
+
+        /*
+            Akun siswa dihapus paling akhir.
+        */
+        {
+            sql: `
+                DELETE FROM students
+
+                WHERE id IN (
+                    ${placeholders}
+                )
+            `,
+
+            args:
+                copyIds()
+        }
+
+    ];
+
 }
 
 // ========================================
@@ -12584,15 +13251,29 @@ app.get(
 
             await ensureClassesTable();
 
-            const classes =
-                await tursoDb.all(`
-                    SELECT
-                        id,
-                        name,
-                        created_at
-                    FROM classes
-                    ORDER BY name COLLATE NOCASE ASC
-                `);
+const classes =
+    await tursoDb.all(`
+        SELECT
+            classes.id,
+            classes.name,
+            classes.created_at,
+
+            (
+                SELECT COUNT(*)
+                FROM students
+
+                WHERE
+                    students.class_name =
+                        classes.name
+                    COLLATE NOCASE
+            ) AS student_count
+
+        FROM classes
+
+        ORDER BY
+            classes.name
+            COLLATE NOCASE ASC
+    `);
 
             return res.json({
                 success: true,
@@ -12709,6 +13390,183 @@ app.post(
                     "Gagal menambahkan kelas."
             });
         }
+    }
+);
+
+// ========================================
+// HAPUS MASTER KELAS DAN SELURUH SISWANYA
+// ========================================
+
+app.delete(
+    "/api/admin/classes/:classId",
+    async (req, res) => {
+
+        const classId =
+            Number(
+                req.params.classId
+            );
+
+
+        if (
+            !Number.isInteger(classId) ||
+            classId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID kelas tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            await ensureClassesTable();
+            await ensureStudentProfileColumns();
+            await ensureQuizTables();
+            await ensureFeedModerationTables();
+
+
+            const classData =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name
+
+                        FROM classes
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        classId
+                    ]
+                );
+
+
+            if (!classData) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Kelas tidak ditemukan."
+                });
+
+            }
+
+
+            const students =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            profile_picture_public_id
+
+                        FROM students
+
+                        WHERE
+                            class_name = ?
+                            COLLATE NOCASE
+                    `,
+                    [
+                        classData.name
+                    ]
+                );
+
+
+            const studentIds =
+                students.map(
+                    student =>
+                        Number(student.id)
+                );
+
+
+            const profilePicturePublicIds =
+                students
+                    .map(
+                        student =>
+                            String(
+                                student
+                                    .profile_picture_public_id ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean);
+
+
+            const statements =
+                buildStudentDeletionStatements(
+                    studentIds
+                );
+
+
+            /*
+                Master kelas dihapus dalam
+                transaksi yang sama.
+            */
+            statements.push({
+                sql: `
+                    DELETE FROM classes
+                    WHERE id = ?
+                `,
+
+                args: [
+                    classId
+                ]
+            });
+
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            /*
+                Database sudah terhapus.
+                Kegagalan cleanup foto tidak boleh
+                membatalkan penghapusan akun.
+            */
+            await Promise.all(
+                profilePicturePublicIds.map(
+                    publicId =>
+                        deleteStudentProfilePicture(
+                            publicId
+                        )
+                )
+            );
+
+
+            return res.json({
+                success: true,
+
+                message:
+                    `Kelas ${classData.name} dan ${studentIds.length} siswa berhasil dihapus.`,
+
+                deletedStudentCount:
+                    studentIds.length
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error menghapus kelas:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menghapus kelas dan data siswanya."
+            });
+
+        }
+
     }
 );
 
@@ -12893,13 +13751,14 @@ app.get(
 
             const students =
                 await tursoDb.all(`
-                    SELECT
-                        id,
-                        login_code,
-                        name,
-                        class_name,
-                        created_at
-                    FROM students
+SELECT
+    id,
+    login_code,
+    full_name,
+    name,
+    class_name,
+    created_at
+FROM students
                     ORDER BY id DESC
                 `);
 
@@ -12928,6 +13787,116 @@ app.get(
                     message:
                         "Gagal mengambil data siswa."
                 });
+
+        }
+
+    }
+);
+
+// ========================================
+// HAPUS SATU SISWA DAN SELURUH DATANYA
+// ========================================
+
+app.delete(
+    "/api/admin/students/:studentId",
+    async (req, res) => {
+
+        const studentId =
+            Number(
+                req.params.studentId
+            );
+
+
+        if (
+            !Number.isInteger(studentId) ||
+            studentId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID siswa tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            await ensureStudentProfileColumns();
+            await ensureQuizTables();
+            await ensureFeedModerationTables();
+
+
+            const student =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            class_name,
+                            profile_picture_public_id
+
+                        FROM students
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (!student) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Siswa tidak ditemukan."
+                });
+
+            }
+
+
+            const statements =
+                buildStudentDeletionStatements([
+                    studentId
+                ]);
+
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            await deleteStudentProfilePicture(
+                student.profile_picture_public_id
+            );
+
+
+            return res.json({
+                success: true,
+
+                message:
+                    `Siswa ${student.name} dan seluruh datanya berhasil dihapus.`
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error menghapus siswa:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal menghapus siswa dan datanya."
+            });
 
         }
 
@@ -16766,7 +17735,7 @@ app.post(
 
 
 // ========================================
-// ADMIN HAPUS MAPEL
+// ADMIN HAPUS MAPEL BESERTA NILAINYA
 // ========================================
 
 app.delete(
@@ -16804,8 +17773,12 @@ app.delete(
                         SELECT
                             id,
                             name
+
                         FROM subjects
+
                         WHERE id = ?
+
+                        LIMIT 1
                     `,
                     [
                         subjectId
@@ -16824,14 +17797,76 @@ app.delete(
             }
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM subjects
-                    WHERE id = ?
-                `,
+            /*
+                Hitung nilai yang akan dihapus
+                untuk ditampilkan pada respons.
+            */
+
+            const scoreCountResult =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            COUNT(*) AS total
+
+                        FROM exam_scores
+
+                        WHERE
+                            TRIM(subject) = ?
+                            COLLATE NOCASE
+                    `,
+                    [
+                        String(
+                            subject.name
+                        ).trim()
+                    ]
+                );
+
+
+            const deletedScoreCount =
+                Number(
+                    scoreCountResult?.total ||
+                    0
+                );
+
+
+            /*
+                Nilai harus dihapus terlebih dahulu.
+
+                Jika hanya master mapel yang dihapus,
+                ensureSubjectsTable() akan membuat
+                mapel tersebut kembali dari exam_scores.
+            */
+
+            await tursoDb.batch(
                 [
-                    subjectId
-                ]
+                    {
+                        sql: `
+                            DELETE FROM exam_scores
+
+                            WHERE
+                                TRIM(subject) = ?
+                                COLLATE NOCASE
+                        `,
+
+                        args: [
+                            String(
+                                subject.name
+                            ).trim()
+                        ]
+                    },
+
+                    {
+                        sql: `
+                            DELETE FROM subjects
+                            WHERE id = ?
+                        `,
+
+                        args: [
+                            subjectId
+                        ]
+                    }
+                ],
+                "immediate"
             );
 
 
@@ -16840,7 +17875,16 @@ app.delete(
                 success: true,
 
                 message:
-                    "Mapel berhasil dihapus.",
+                    deletedScoreCount > 0
+                        ? (
+                            `Mapel ${subject.name} dan ` +
+                            `${deletedScoreCount} data nilai siswa berhasil dihapus.`
+                        )
+                        : (
+                            `Mapel ${subject.name} berhasil dihapus.`
+                        ),
+
+                deletedScoreCount,
 
                 deletedSubject: {
                     id:
@@ -16856,7 +17900,7 @@ app.delete(
         } catch (error) {
 
             console.error(
-                "Error menghapus mapel:",
+                "Error menghapus mapel dan nilainya:",
                 error
             );
 
@@ -16864,7 +17908,7 @@ app.delete(
             return res.status(500).json({
                 success: false,
                 message:
-                    "Gagal menghapus mapel."
+                    "Gagal menghapus mapel dan data nilainya."
             });
 
         }

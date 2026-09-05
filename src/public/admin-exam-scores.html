@@ -46,7 +46,7 @@
                 <div>
 
                     <strong>
-                        mrsteveid
+                        mrsteve.my.id
                     </strong>
 
                     <small>
@@ -454,17 +454,16 @@
         Mapel
     </label>
 
-    <select
-        id="subject"
-        required
-        disabled
-    >
+<select
+    id="subject"
+    required
+>
 
-        <option value="">
-            Memuat mapel...
-        </option>
+    <option value="">
+        Pilih mapel
+    </option>
 
-    </select>
+</select>
 
 </div>
 
@@ -530,21 +529,33 @@
 
                 <section class="admin-table-section">
 
-                    <div class="section-heading">
+<div class="
+    section-heading
+    admin-score-list-heading
+">
 
-                        <div>
+    <div>
 
-                            <h2>
-                                Daftar Nilai Siswa
-                            </h2>
+        <h2>
+            Daftar Nilai Siswa
+        </h2>
 
-                            <p>
-                                Pilih siswa untuk melihat semua nilai.
-                            </p>
+        <p>
+            Pilih siswa untuk melihat semua nilai.
+        </p>
 
-                        </div>
+    </div>
 
-                    </div>
+
+<button
+    type="button"
+    class="admin-score-refresh-button"
+    onclick="loadExamScores()"
+>
+    ↻ Refresh
+</button>
+
+</div>
 
 
                     <div class="admin-score-filter">
@@ -564,15 +575,6 @@
                             </select>
 
                         </div>
-
-
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            onclick="loadExamScores()"
-                        >
-                            ↻ Refresh
-                        </button>
 
                     </div>
 
@@ -1051,18 +1053,6 @@ async function loadSubjects(
     `;
 
 
-    subjectInput.disabled = true;
-
-
-    subjectInput.innerHTML = `
-
-        <option value="">
-            Memuat mapel...
-        </option>
-
-    `;
-
-
     try {
 
         const response =
@@ -1089,15 +1079,6 @@ async function loadSubjects(
                     </td>
 
                 </tr>
-
-            `;
-
-
-            subjectInput.innerHTML = `
-
-                <option value="">
-                    Gagal memuat mapel
-                </option>
 
             `;
 
@@ -1137,15 +1118,6 @@ async function loadSubjects(
                 </td>
 
             </tr>
-
-        `;
-
-
-        subjectInput.innerHTML = `
-
-            <option value="">
-                Gagal memuat mapel
-            </option>
 
         `;
 
@@ -1292,7 +1264,12 @@ async function deleteSubject(
 
     const confirmed =
         window.confirm(
-            `Hapus mapel "${subject.name}" dari daftar pilihan?\n\nNilai siswa lama tetap tersimpan.`
+            `HAPUS MAPEL "${subject.name}"?\n\n` +
+
+            "Semua data nilai siswa pada mapel ini " +
+            "juga akan dihapus permanen.\n\n" +
+
+            "Tindakan ini tidak dapat dibatalkan."
         );
 
 
@@ -1304,40 +1281,62 @@ async function deleteSubject(
 
 
     subjectMessage.textContent =
-        "Menghapus mapel...";
+        "Menghapus mapel dan data nilainya...";
 
 
     try {
 
         const response =
             await fetch(
-                `/api/admin/subjects/${subjectId}`,
+                `/api/admin/subjects/${encodeURIComponent(
+                    subjectId
+                )}`,
                 {
-                    method: "DELETE"
+                    method:
+                        "DELETE"
                 }
             );
 
 
         const data =
-            await response.json();
+            await response
+                .json()
+                .catch(
+                    () => ({
+                        success: false,
+                        message:
+                            "Respons server tidak valid."
+                    })
+                );
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            subjectMessage.textContent =
+            throw new Error(
                 data.message ||
-                "Gagal menghapus mapel.";
-
-            return;
+                "Gagal menghapus mapel."
+            );
 
         }
 
 
         subjectMessage.textContent =
-            "Mapel berhasil dihapus.";
+            data.message ||
+            "Mapel dan data nilainya berhasil dihapus.";
 
 
-        await loadSubjects();
+        /*
+            Perbarui dropdown, tabel mapel,
+            dan tabel nilai secara bersamaan.
+        */
+
+        await Promise.all([
+            loadSubjects(),
+            loadExamScores()
+        ]);
 
 
     } catch (error) {
@@ -1349,7 +1348,8 @@ async function deleteSubject(
 
 
         subjectMessage.textContent =
-            "Tidak dapat terhubung ke server.";
+            error.message ||
+            "Tidak dapat menghapus mapel.";
 
     }
 
@@ -1419,7 +1419,7 @@ async function deleteSubject(
 
 
                 option.textContent =
-                    `${student.name} — ${student.class_name}`;
+                    `${student.name} - ${student.class_name}`;
 
 
                 studentSelect.appendChild(

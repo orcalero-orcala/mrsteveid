@@ -272,6 +272,52 @@
             const attempt =
                 currentAttempt;
 
+            const resultHasEssayQuestions =
+    Array.isArray(attempt.answers) &&
+    attempt.answers.some(
+        answer =>
+            answer.type === "essay"
+    );
+
+
+const resultHasAutoGradedQuestions =
+    Number(
+        attempt.totalQuestions || 0
+    ) > 0;
+
+
+let resultScoreNote;
+
+
+if (
+    resultHasEssayQuestions &&
+    !resultHasAutoGradedQuestions
+) {
+
+    resultScoreNote =
+        "Jawaban Esai tidak dinilai otomatis. Nilai akhir akan dibagikan melalui halaman Nilai Saya setelah diperiksa oleh guru.";
+
+} else if (
+    resultHasEssayQuestions
+) {
+
+    resultScoreNote =
+        "Nilai ini merupakan hasil autograde, bukan nilai akhir. Jawaban Esai tidak dinilai otomatis. Nilai akhir akan dibagikan melalui halaman Nilai Saya setelah diperiksa oleh guru.";
+
+} else {
+
+    resultScoreNote =
+        "Nilai ini merupakan hasil autograde, bukan nilai akhir. Nilai akhir akan dibagikan melalui halaman Nilai Saya.";
+
+}
+
+                        const hasAutoGradedQuestions =
+                Number(
+                    attempt.totalQuestions ||
+                    0
+                ) >
+                0;
+
 
             resultContent.className =
                 "student-result-content";
@@ -292,35 +338,91 @@
                         </h1>
 
                         <p class="student-result-subtitle">
-                            Jawaban kamu sudah dikirim dan
-                            dinilai secara otomatis.
+
+                            ${
+                                hasAutoGradedQuestions
+
+                                    ? `
+                                        Jawaban kamu sudah dikirim dan
+                                        dinilai secara otomatis.
+                                    `
+
+                                    : `
+                                        Jawaban Essay kamu sudah berhasil
+                                        dikirim.
+                                    `
+                            }
+
                         </p>
 
 
-                        <div class="student-result-score-block">
+                        <div class="
+                            student-result-score-block
+
+                            ${
+                                hasAutoGradedQuestions
+                                    ? ""
+                                    : "no-autograde"
+                            }
+                        ">
 
                             <span class="student-result-score-label">
-                                SCORE
+
+                                ${
+                                    hasAutoGradedQuestions
+                                        ? "SCORE"
+                                        : "HASIL"
+                                }
+
                             </span>
 
                             <strong class="student-result-score">
-                                ${attempt.score}
+
+                                ${
+                                    hasAutoGradedQuestions
+                                        ? attempt.score
+                                        : "N/A"
+                                }
+
                             </strong>
 
                             <span class="student-result-score-maximum">
-                                / 100
+
+                                ${
+                                    hasAutoGradedQuestions
+                                        ? "/ 100"
+                                        : "Tidak dinilai otomatis"
+                                }
+
                             </span>
 
                         </div>
 
 
+                        <p class="student-result-score-note">
+                            ${escapeHtml(resultScoreNote)}
+                        </p>
+
+
 <div class="student-result-formula">
 
     <strong>
-        ${attempt.correctCount}
-        dari
-        ${attempt.totalQuestions}
-        soal benar
+
+        ${
+            hasAutoGradedQuestions
+
+                ? `
+                    ${attempt.correctCount}
+                    dari
+                    ${attempt.totalQuestions}
+                    soal benar
+                `
+
+                : `
+                    Quiz ini hanya berisi soal Essay
+                `
+        }
+
     </strong>
 
 </div>
@@ -402,27 +504,57 @@
             answerIndex
         ) {
 
+            const isEssay =
+                answer.type ===
+                "essay";
+
+
+            /*
+                Essay tidak diberi status benar
+                maupun salah karena tidak dinilai
+                otomatis.
+            */
             const statusClass =
-                answer.isCorrect
-                    ? "correct"
-                    : "incorrect";
+                isEssay
+                    ? "essay"
+                    : answer.isCorrect
+                        ? "correct"
+                        : "incorrect";
 
 
             const statusText =
-                answer.isCorrect
-                    ? "Benar"
-                    : "Salah";
+                isEssay
+                    ? "Jawaban Esai"
+                    : answer.isCorrect
+                        ? "Benar"
+                        : "Salah";
 
 
             const questionType =
-                answer.type === "mcq"
+                answer.type ===
+                "mcq"
+
                     ? "Pilihan Ganda"
-                    : "Isian Singkat";
+
+                    : answer.type ===
+                        "essay"
+
+                        ? "Esai"
+                        : "Isian Singkat";
 
 
+            /*
+                Kunci jawaban hanya ditampilkan
+                untuk jawaban autograde yang salah.
+
+                Essay tidak mempunyai kunci jawaban.
+            */
             const correctAnswerSection =
+                isEssay ||
                 answer.isCorrect
+
                     ? ""
+
                     : `
                         <div class="student-review-answer correct-answer">
 
@@ -517,11 +649,9 @@ ${
                             Jawaban kamu
                         </span>
 
-                        <strong>
-                            ${escapeHtml(
-                                answer.studentAnswer
-                            )}
-                        </strong>
+                        <strong>${escapeHtml(
+                            answer.studentAnswer
+                        )}</strong>
 
                     </div>
 
@@ -538,6 +668,13 @@ ${
 
             const attempt =
                 currentAttempt;
+
+                        const hasAutoGradedQuestions =
+                Number(
+                    attempt.totalQuestions ||
+                    0
+                ) >
+                0;
 
 
             const answers =
@@ -581,14 +718,32 @@ ${
                             <span>Nilai</span>
 
                             <strong>
-                                ${attempt.score}
+
+                                ${
+                                    hasAutoGradedQuestions
+                                        ? attempt.score
+                                        : "—"
+                                }
+
                             </strong>
 
                             <small>
-                                ${attempt.correctCount}
-                                /
-                                ${attempt.totalQuestions}
-                                benar
+
+                                ${
+                                    hasAutoGradedQuestions
+
+                                        ? `
+                                            ${attempt.correctCount}
+                                            /
+                                            ${attempt.totalQuestions}
+                                            benar
+                                        `
+
+                                        : `
+                                            Tidak dinilai otomatis
+                                        `
+                                }
+
                             </small>
 
                         </div>

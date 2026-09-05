@@ -834,7 +834,13 @@
 
 
                                 <span class="student-quiz-question-point">
-                                    1 poin
+                                    ${
+                                        question.type ===
+                                        "essay"
+
+                                            ? "Esai"
+                                            : "1 poin"
+                                    }
                                 </span>
 
                             </div>
@@ -973,36 +979,71 @@ ${
                                         </div>
                                     `
 
-                                    : `
-                                        <div class="student-quiz-text-answer">
+                                    : question.type ===
+                                        "essay"
 
-                                            <label>
-                                                Jawaban kamu
-                                            </label>
+                                        ? `
+                                            <div class="
+                                                student-quiz-text-answer
+                                                student-quiz-essay-answer
+                                            ">
+
+                                                <label>
+                                                    Jawaban kamu
+                                                </label>
 
 
-                                            <input
-                                                type="text"
+                                                <textarea
+                                                    rows="6"
 
-                                                value="${escapeStudentQuizAttemptHtml(
+                                                    placeholder="Tulis jawaban kamu..."
+
+                                                    maxlength="5000"
+
+                                                    oninput="
+                                                        updateStudentQuizTextAnswer(
+                                                            ${question.id},
+                                                            this.value
+                                                        )
+                                                    "
+                                                >${escapeStudentQuizAttemptHtml(
                                                     savedAnswer.textAnswer ||
                                                     ""
-                                                )}"
+                                                )}</textarea>
 
-                                                placeholder="Ketik jawaban kamu..."
+                                            </div>
+                                        `
 
-                                                maxlength="1000"
+                                        : `
+                                            <div class="student-quiz-text-answer">
 
-                                                oninput="
-                                                    updateStudentQuizTextAnswer(
-                                                        ${question.id},
-                                                        this.value
-                                                    )
-                                                "
-                                            >
+                                                <label>
+                                                    Jawaban kamu
+                                                </label>
 
-                                        </div>
-                                    `
+
+                                                <input
+                                                    type="text"
+
+                                                    value="${escapeStudentQuizAttemptHtml(
+                                                        savedAnswer.textAnswer ||
+                                                        ""
+                                                    )}"
+
+                                                    placeholder="Ketik jawaban kamu..."
+
+                                                    maxlength="1000"
+
+                                                    oninput="
+                                                        updateStudentQuizTextAnswer(
+                                                            ${question.id},
+                                                            this.value
+                                                        )
+                                                    "
+                                                >
+
+                                            </div>
+                                        `
                             }
 
                         </article>

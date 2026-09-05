@@ -102,15 +102,16 @@
         >
 
 
-        <span
-            id="quizStatusBadge"
-            class="
-                quiz-status-badge
-                quiz-status-draft
-            "
-        >
-            Draft
-        </span>
+<span
+    id="quizStatusBadge"
+    class="
+        quiz-status-badge
+        quiz-status-draft
+    "
+    hidden
+>
+    Draft
+</span>
 
     </div>
 
@@ -251,8 +252,8 @@
                     </h2>
 
                     <p>
-                        Susun pertanyaan Pilihan Ganda
-                        atau Isian Singkat.
+                        Susun pertanyaan Pilihan Ganda,
+Isian Singkat, atau Esai.
                     </p>
 
                 </div>
@@ -474,6 +475,24 @@
 
             </article>
 
+    <div
+        id="quizSettingsLockedNotice"
+        class="quiz-structure-locked-notice"
+        hidden
+    >
+
+        <strong>
+            Settings Quiz dikunci
+        </strong>
+
+        <p>
+            Quiz sudah mempunyai responden.
+            Bobot, akses, dan target siswa tidak
+            dapat diubah lagi.
+        </p>
+
+    </div>
+
     <!-- SCORING -->
 
     <article
@@ -497,7 +516,7 @@
 
                 <p>
                     Atur apakah Pilihan Ganda dan
-                    Esai mempunyai bobot berbeda.
+Isian Singkat mempunyai bobot berbeda.
                 </p>
 
             </div>
@@ -537,7 +556,7 @@
             <div class="admin-form-field">
 
                 <label for="quizEssayWeight">
-                    Bobot Esai
+                    Bobot Isian Singkat
                 </label>
 
                 <div class="quiz-weight-input">
@@ -685,23 +704,24 @@
                 Link Public Quiz
             </label>
 
+<div class="quiz-public-link-row">
 
-            <div class="quiz-public-link-row">
+    <input
+        type="text"
+        id="quizPublicLink"
+        readonly
+        placeholder="Membuat link..."
+    >
 
-                <input
-                    type="text"
-                    id="quizPublicLink"
-                    readonly
-                    placeholder="Link dibuat setelah Settings tersimpan"
-                >
+    <button
+        type="button"
+        id="copyQuizPublicLinkButton"
+        class="secondary-button"
+    >
+        Salin Link
+    </button>
 
-                <button
-                    type="button"
-                    id="copyQuizPublicLinkButton"
-                    class="secondary-button"
-                >
-                    Salin Link
-                </button>
+</div>
 
             </div>
 
@@ -742,23 +762,84 @@
         </div>
 
 
-        <div class="quiz-student-target-toolbar">
+<div class="quiz-student-target-toolbar">
 
-            <label class="quiz-student-select-all">
+    <label class="quiz-student-select-all">
 
-                <input
-                    type="checkbox"
-                    id="quizSelectAllStudents"
-                    checked
-                >
+        <input
+            type="checkbox"
+            id="quizSelectAllStudents"
+            checked
+        >
 
-                <span>
-                    Pilih semua siswa
-                </span>
+        <span>
+            Pilih semua siswa
+        </span>
 
-            </label>
+    </label>
+
+
+    <button
+        type="button"
+        id="quizClassTargetToggle"
+        class="quiz-class-target-toggle"
+        aria-expanded="false"
+        aria-controls="quizClassTargetPanel"
+        hidden
+    >
+        <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <path
+                d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13ZM8 8h8M8 12h8M8 16h5"
+            ></path>
+        </svg>
+
+        <span>
+            Pilih per kelas
+        </span>
+
+        <svg
+            class="quiz-class-target-chevron"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <path d="m7 10 5 5 5-5"></path>
+        </svg>
+    </button>
+
+</div>
+
+
+<div
+    id="quizClassTargetPanel"
+    class="quiz-class-target-panel"
+    hidden
+>
+    <div class="quiz-class-target-heading">
+
+        <div>
+
+            <strong>
+                Pilih kelas
+            </strong>
+
+            <span>
+                Centang kelas untuk memilih seluruh siswanya.
+            </span>
 
         </div>
+
+    </div>
+
+
+    <div
+        id="quizClassTargetList"
+        class="quiz-class-target-list"
+    ></div>
+
+</div>
 
 
         <div
@@ -789,25 +870,6 @@
         >
             Settings belum dimuat
         </span>
-
-    </div>
-
-
-    <div
-        id="quizSettingsLockedNotice"
-        class="quiz-structure-locked-notice"
-        hidden
-    >
-
-        <strong>
-            Settings Quiz dikunci
-        </strong>
-
-        <p>
-            Quiz sudah mempunyai responden.
-            Bobot, akses, dan target siswa tidak
-            dapat diubah lagi.
-        </p>
 
     </div>
 
@@ -1251,6 +1313,17 @@ let currentQuizResponseSubtab =
 let selectedQuizIndividualAttemptId =
     null;
 
+let quizIndividualNameFilter =
+    "";
+
+
+let quizIndividualClassFilter =
+    "all";
+
+
+let quizIndividualSortOrder =
+    "az";
+
 
 let quizIndividualAttemptLoading =
     false;
@@ -1598,9 +1671,70 @@ const copyQuizPublicLinkButton =
     );
 
 
+let quizPublicLinkCopyFeedbackTimer =
+    null;
+
+
+function showQuizPublicLinkCopyFeedback() {
+
+    clearTimeout(
+        quizPublicLinkCopyFeedbackTimer
+    );
+
+
+    copyQuizPublicLinkButton.classList.remove(
+        "copy-success"
+    );
+
+
+    /*
+        Memulai ulang animasi meskipun tombol
+        ditekan beberapa kali.
+    */
+    void copyQuizPublicLinkButton.offsetWidth;
+
+
+    copyQuizPublicLinkButton.classList.add(
+        "copy-success"
+    );
+
+
+    quizPublicLinkCopyFeedbackTimer =
+        setTimeout(
+            () => {
+
+                copyQuizPublicLinkButton.classList.remove(
+                    "copy-success"
+                );
+
+            },
+
+            850
+        );
+
+}
+
+
 const quizSelectAllStudents =
     document.getElementById(
         "quizSelectAllStudents"
+    );
+
+const quizClassTargetToggle =
+    document.getElementById(
+        "quizClassTargetToggle"
+    );
+
+
+const quizClassTargetPanel =
+    document.getElementById(
+        "quizClassTargetPanel"
+    );
+
+
+const quizClassTargetList =
+    document.getElementById(
+        "quizClassTargetList"
     );
 
 
@@ -1909,6 +2043,15 @@ closeQuizButton.disabled =
 
         }
 
+
+        /*
+            Status baru ditampilkan setelah data
+            Quiz selesai dimuat dan status aslinya
+            sudah ditentukan.
+        */
+        quizStatusBadge.hidden =
+            false;
+
     }
 
 
@@ -2115,6 +2258,9 @@ publishQuizButton.disabled =
     // =====================================
 
     async function loadCurrentQuiz() {
+
+        quizStatusBadge.hidden =
+    true;
 
         if (
             !Number.isInteger(
@@ -2726,6 +2872,17 @@ function renderQuizRespondentSummary() {
             0
         );
 
+        const autoGradedQuestionCount =
+        Number(
+            summary.autoGradedQuestionCount ||
+            0
+        );
+
+
+    const hasAutoGradedQuestions =
+        autoGradedQuestionCount >
+        0;
+
 
     const scoreDistribution =
         Array.isArray(
@@ -2743,92 +2900,226 @@ function renderQuizRespondentSummary() {
             : [];
 
 
-    const maximumDistributionCount =
-        Math.max(
-            1,
-
-            ...scoreDistribution.map(
-                (
-                    group
-                ) =>
-                    Number(
-                        group.count ||
-                        0
-                    )
+const achievementGroups = [
+    {
+        key: "needs-guidance",
+        label: "Perlu Bimbingan",
+        range: "< 60",
+        color: "#ef4444",
+        count: scoreDistribution
+            .filter(
+                (group) =>
+                    Number(group.maximum) <
+                    60
             )
-        );
+            .reduce(
+                (total, group) =>
+                    total +
+                    Number(group.count || 0),
+                0
+            )
+    },
+
+    {
+        key: "enough",
+        label: "Cukup",
+        range: "60–79",
+        color: "#f59e0b",
+        count: scoreDistribution
+            .filter(
+                (group) =>
+                    Number(group.minimum) >=
+                        60 &&
+
+                    Number(group.maximum) <=
+                        79
+            )
+            .reduce(
+                (total, group) =>
+                    total +
+                    Number(group.count || 0),
+                0
+            )
+    },
+
+    {
+        key: "good",
+        label: "Baik",
+        range: "80–100",
+        color: "#22c55e",
+        count: scoreDistribution
+            .filter(
+                (group) =>
+                    Number(group.minimum) >=
+                    80
+            )
+            .reduce(
+                (total, group) =>
+                    total +
+                    Number(group.count || 0),
+                0
+            )
+    }
+];
 
 
-    const distributionHtml =
-        totalRespondents > 0
-
-            ? scoreDistribution.map(
-                (
-                    group
-                ) => {
-
-                    const count =
-                        Number(
-                            group.count ||
-                            0
-                        );
+const achievementTotal =
+    achievementGroups.reduce(
+        (total, group) =>
+            total + group.count,
+        0
+    );
 
 
-                    const barHeight =
-                        count > 0
+const redPercentage =
+    achievementTotal > 0
 
-                            ? Math.max(
-                                7,
+        ? (
+            achievementGroups[0].count /
+            achievementTotal
+        ) * 100
 
-                                Math.round(
-                                    (
-                                        count /
-                                        maximumDistributionCount
-                                    ) *
-                                    100
-                                )
-                            )
-
-                            : 0;
+        : 0;
 
 
-                    return `
-                        <div class="quiz-score-bar-item">
+const orangePercentage =
+    achievementTotal > 0
 
-                            <span class="quiz-score-bar-count">
-                                ${count}
-                            </span>
+        ? (
+            achievementGroups[1].count /
+            achievementTotal
+        ) * 100
 
-                            <div class="quiz-score-bar-track">
+        : 0;
 
-                                <div
-                                    class="quiz-score-bar-fill"
-                                    style="
-                                        height:
-                                            ${barHeight}%;
-                                    "
-                                ></div>
 
-                            </div>
+const redEnd =
+    redPercentage;
 
-                            <span class="quiz-score-bar-label">
-                                ${escapeQuizHtml(
-                                    group.label
-                                )}
-                            </span>
 
-                        </div>
-                    `;
+const orangeEnd =
+    redPercentage +
+    orangePercentage;
 
-                }
-            ).join("")
 
-            : `
-                <div class="quiz-response-empty-chart">
-                    Distribusi nilai akan muncul setelah
-                    siswa mengirim jawaban.
+let achievementHtml =
+    achievementTotal > 0
+
+        ? `
+            <div class="quiz-achievement-composition">
+
+                <div
+                    class="quiz-achievement-donut"
+                    role="img"
+                    aria-label="Komposisi capaian ${achievementTotal} siswa"
+                    style="
+                        --red-end:
+                            ${redEnd}%;
+
+                        --orange-end:
+                            ${orangeEnd}%;
+                    "
+                >
+                    <div class="quiz-achievement-donut-center">
+
+                        <strong>
+                            ${achievementTotal}
+                        </strong>
+
+                        <span>
+                            Siswa
+                        </span>
+
+                    </div>
                 </div>
-            `;
+
+
+                <div class="quiz-achievement-legend">
+
+                    ${achievementGroups.map(
+                        (group) => {
+
+                            const percentage =
+                                achievementTotal > 0
+
+                                    ? Math.round(
+                                        (
+                                            group.count /
+                                            achievementTotal
+                                        ) *
+                                        100
+                                    )
+
+                                    : 0;
+
+
+                            return `
+                                <div class="quiz-achievement-legend-item">
+
+                                    <span
+                                        class="quiz-achievement-color"
+                                        style="
+                                            background:
+                                                ${group.color};
+                                        "
+                                    ></span>
+
+
+                                    <div class="quiz-achievement-label">
+
+                                        <strong>
+                                            ${group.label}
+                                        </strong>
+
+                                        <span>
+                                            Nilai ${group.range}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="quiz-achievement-value">
+
+                                        <strong>
+                                            ${percentage}%
+                                        </strong>
+
+                                        <span>
+                                            ${group.count} siswa
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            `;
+
+                        }
+                    ).join("")}
+
+                </div>
+
+            </div>
+        `
+
+        : `
+            <div class="quiz-response-empty-chart">
+                Komposisi capaian akan muncul setelah
+                siswa mengirim jawaban.
+            </div>
+        `;
+
+if (
+    !hasAutoGradedQuestions
+) {
+
+    achievementHtml = `
+        <div class="quiz-response-empty-chart">
+            Quiz ini hanya berisi soal Essay sehingga
+            tidak mempunyai komposisi nilai otomatis.
+        </div>
+    `;
+
+}
 
 
     const accuracyHtml =
@@ -2916,8 +3207,21 @@ function renderQuizRespondentSummary() {
 
             : `
                 <div class="quiz-response-empty-chart">
-                    Akurasi soal akan muncul setelah
-                    siswa mengirim jawaban.
+
+                    ${
+                        !hasAutoGradedQuestions
+
+                            ? `
+                                Quiz ini hanya berisi soal Essay.
+                                Tidak ada soal yang dinilai otomatis.
+                            `
+
+                            : `
+                                Akurasi soal akan muncul setelah
+                                siswa mengirim jawaban.
+                            `
+                    }
+
                 </div>
             `;
 
@@ -2945,10 +3249,16 @@ function renderQuizRespondentSummary() {
                 </span>
 
                 <strong>
-                    ${Number(
-                        summary.average ||
-                        0
-                    )}
+                    ${
+                        hasAutoGradedQuestions
+
+                            ? Number(
+                                summary.average ||
+                                0
+                            )
+
+                            : "-"
+                    }
                 </strong>
 
             </article>
@@ -2961,10 +3271,16 @@ function renderQuizRespondentSummary() {
                 </span>
 
                 <strong>
-                    ${Number(
-                        summary.median ||
-                        0
-                    )}
+                    ${
+                        hasAutoGradedQuestions
+
+                            ? Number(
+                                summary.median ||
+                                0
+                            )
+
+                            : "-"
+                    }
                 </strong>
 
             </article>
@@ -2977,10 +3293,16 @@ function renderQuizRespondentSummary() {
                 </span>
 
                 <strong>
-                    ${Number(
-                        summary.highest ||
-                        0
-                    )}
+                    ${
+                        hasAutoGradedQuestions
+
+                            ? Number(
+                                summary.highest ||
+                                0
+                            )
+
+                            : "-"
+                    }
                 </strong>
 
             </article>
@@ -2993,10 +3315,16 @@ function renderQuizRespondentSummary() {
                 </span>
 
                 <strong>
-                    ${Number(
-                        summary.lowest ||
-                        0
-                    )}
+                    ${
+                        hasAutoGradedQuestions
+
+                            ? Number(
+                                summary.lowest ||
+                                0
+                            )
+
+                            : "-"
+                    }
                 </strong>
 
             </article>
@@ -3010,23 +3338,23 @@ function renderQuizRespondentSummary() {
 
                 <div>
 
-                    <h2>
-                        Distribusi Nilai
-                    </h2>
+<h2>
+    Komposisi Capaian
+</h2>
 
-                    <p>
-                        Jumlah siswa pada setiap rentang
-                        nilai.
-                    </p>
+<p>
+    Persentase siswa berdasarkan tingkat
+    capaian nilai.
+</p>
 
                 </div>
 
             </div>
 
 
-            <div class="quiz-score-distribution">
-                ${distributionHtml}
-            </div>
+<div class="quiz-achievement-chart">
+    ${achievementHtml}
+</div>
 
         </section>
 
@@ -3271,7 +3599,7 @@ function getQuizOptionLetter(
         numericPosition <= 0
     ) {
 
-        return "—";
+        return "-";
 
     }
 
@@ -3421,19 +3749,6 @@ function renderQuizQuestionResponseGroups(
 
                     </div>
 
-
-                    ${
-                        group.isCorrect
-
-                            ? `
-                                <span class="quiz-response-correct-mark">
-                                    ✓ Jawaban benar
-                                </span>
-                            `
-
-                            : ""
-                    }
-
                 </article>
             `;
 
@@ -3455,6 +3770,11 @@ function renderQuizQuestionStudentAnswers(
             : [];
 
 
+    const isEssay =
+        question.type ===
+        "essay";
+
+
     if (
         answers.length ===
         0
@@ -3462,7 +3782,7 @@ function renderQuizQuestionStudentAnswers(
 
         return `
             <div class="quiz-response-question-empty">
-                Belum ada jawaban siswa.
+                Belum ada jawaban responden.
             </div>
         `;
 
@@ -3472,73 +3792,108 @@ function renderQuizQuestionStudentAnswers(
     return answers.map(
         (
             answer
-        ) => `
-            <article
-                class="
-                    quiz-question-student-answer
-                    ${
-                        answer.isCorrect
-                            ? "correct"
-                            : "incorrect"
-                    }
-                "
-            >
+        ) => {
 
-                <div class="quiz-question-student-identity">
+            const statusClass =
+                isEssay
 
-                    <strong>
-                        ${escapeQuizHtml(
-                            answer.studentName ||
-                            "Siswa"
-                        )}
-                    </strong>
+                    ? "essay"
 
-                    <span>
-                        ${escapeQuizHtml(
-                            answer.className ||
-                            "Tanpa kelas"
-                        )}
-                    </span>
-
-                </div>
+                    : answer.isCorrect
+                        ? "correct"
+                        : "incorrect";
 
 
-                <div class="quiz-question-student-value">
+            const statusText =
+                isEssay
 
-                    <span>
-                        Jawaban
-                    </span>
+                    ? "Jawaban Esai"
 
-                    <strong>
-                        ${escapeQuizHtml(
-                            answer.answer ||
-                            "Tidak menjawab"
-                        )}
-                    </strong>
-
-                </div>
+                    : answer.isCorrect
+                        ? "Benar"
+                        : "Salah";
 
 
-                <span
+            return `
+                <article
                     class="
-                        quiz-question-student-status
-                        ${
-                            answer.isCorrect
-                                ? "correct"
-                                : "incorrect"
-                        }
+                        quiz-question-student-answer
+                        ${statusClass}
                     "
                 >
-                    ${
-                        answer.isCorrect
-                            ? "Benar"
-                            : "Salah"
-                    }
-                </span>
 
-            </article>
-        `
+                    <div class="quiz-question-student-identity">
+
+                        <strong>
+                            ${escapeQuizHtml(
+                                answer.studentName ||
+                                "Siswa"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeQuizHtml(
+                                answer.className ||
+                                "Tanpa kelas"
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <div class="quiz-question-student-value">
+
+                        <span>
+                            Jawaban
+                        </span>
+
+                        <strong>${escapeQuizHtml(
+                            answer.answer ||
+                            "Tidak menjawab"
+                        )}</strong>
+
+                    </div>
+
+
+                    <span
+                        class="
+                            quiz-question-student-status
+                            ${statusClass}
+                        "
+                    >
+                        ${statusText}
+                    </span>
+
+                </article>
+            `;
+
+        }
     ).join("");
+
+}
+
+function getQuizResponseTotalRespondents() {
+
+    if (
+        quizRespondentDashboardData &&
+        quizRespondentDashboardData.summary
+    ) {
+
+        return Number(
+            quizRespondentDashboardData
+                .summary
+                .totalRespondents ||
+            0
+        );
+
+    }
+
+
+    return Number(
+        currentQuiz &&
+        currentQuiz.responseCount ||
+        0
+    );
 
 }
 
@@ -3575,6 +3930,39 @@ function renderQuizQuestionResponses() {
                 <p>
                     Tambahkan soal terlebih dahulu untuk
                     melihat ringkasan jawaban.
+                </p>
+
+            </div>
+        `;
+
+
+        return;
+
+    }
+
+
+    const totalRespondents =
+        getQuizResponseTotalRespondents();
+
+
+    /*
+        Kalau soal sudah ada tetapi belum ada
+        responden, jangan render kartu setiap soal.
+    */
+    if (
+        totalRespondents === 0
+    ) {
+
+        questionsView.innerHTML = `
+            <div class="quiz-response-question-empty">
+
+                <h3>
+                    Belum ada responden
+                </h3>
+
+                <p>
+                    Detail per pertanyaan akan muncul setelah
+                    siswa atau Guest mengirim jawaban.
                 </p>
 
             </div>
@@ -3642,9 +4030,16 @@ responseData.question;
 
 
                 const typeLabel =
-                    question.type === "mcq"
+                    question.type ===
+                    "mcq"
+
                         ? "Pilihan Ganda"
-                        : "Isian Singkat";
+
+                        : question.type ===
+                            "essay"
+
+                            ? "Esai"
+                            : "Isian Singkat";
 
 
                 const correctKey =
@@ -3713,24 +4108,53 @@ ${
                             </div>
 
 
-                            <div class="quiz-response-question-score">
+                            ${
+                                question.type ===
+                                "essay"
 
-                                <span>
-                                    Jawaban benar
-                                </span>
+                                    ? `
+                                        <div class="
+                                            quiz-response-question-score
+                                            essay
+                                        ">
 
-                                <strong>
-                                    ${percentageCorrect}%
-                                </strong>
+                                            <span>
+                                                Tipe penilaian
+                                            </span>
 
-                                <small>
-                                    ${question.correctCount}
-                                    dari
-                                    ${question.totalRespondents}
-                                    responden
-                                </small>
+                                            <strong>
+                                                Esai
+                                            </strong>
 
-                            </div>
+                                            <small>
+                                                ${question.totalRespondents}
+                                                responden
+                                            </small>
+
+                                        </div>
+                                    `
+
+                                    : `
+                                        <div class="quiz-response-question-score">
+
+                                            <span>
+                                                Jawaban benar
+                                            </span>
+
+                                            <strong>
+                                                ${percentageCorrect}%
+                                            </strong>
+
+                                            <small>
+                                                ${question.correctCount}
+                                                dari
+                                                ${question.totalRespondents}
+                                                responden
+                                            </small>
+
+                                        </div>
+                                    `
+                            }
 
                         </header>
 
@@ -3769,31 +4193,76 @@ ${
                         ${correctKey}
 
 
-                        <section class="quiz-response-question-section">
+                        ${
+                            question.type ===
+                            "essay"
 
-                            <div class="quiz-response-question-section-heading">
+                                ? ""
 
-                                <h3>
-                                    Distribusi Jawaban
-                                </h3>
+                                : question.type ===
+                                    "short_answer"
 
-                                <span>
-                                    ${question.totalRespondents}
-                                    responden
-                                </span>
+                                    ? `
+                                        <details class="
+                                            quiz-question-answer-details
+                                            quiz-question-distribution-details
+                                        ">
 
-                            </div>
+                                            <summary>
+
+                                                Distribusi Jawaban
+
+                                                <span>
+                                                    ${question.totalRespondents}
+                                                </span>
+
+                                            </summary>
 
 
-                            <div class="quiz-response-group-list">
+                                            <div class="
+                                                quiz-question-student-answer-list
+                                                quiz-response-group-list
+                                            ">
 
-                                ${renderQuizQuestionResponseGroups(
-                                    question
-                                )}
+                                                ${renderQuizQuestionResponseGroups(
+                                                    question
+                                                )}
 
-                            </div>
+                                            </div>
 
-                        </section>
+                                        </details>
+                                    `
+
+                                    : `
+                                        <section class="quiz-response-question-section">
+
+                                            <div class="quiz-response-question-section-heading">
+
+                                                <h3>
+                                                    Distribusi Jawaban
+                                                </h3>
+
+                                                <span>
+                                                    ${question.totalRespondents}
+                                                    responden
+                                                </span>
+
+                                            </div>
+
+
+                                            <div class="quiz-response-group-list">
+
+                                                ${renderQuizQuestionResponseGroups(
+                                                    question
+                                                )}
+
+                                            </div>
+
+                                        </section>
+                                    `
+                        }
+
+
 
 
                         <details class="quiz-question-answer-details">
@@ -3879,6 +4348,33 @@ async function loadQuizQuestionResponses(
         document.getElementById(
             "quizResponseQuestionsView"
         );
+
+    const totalRespondents =
+        getQuizResponseTotalRespondents();
+
+
+    /*
+        Belum ada responden:
+        tidak perlu mengambil response-summary
+        untuk setiap soal.
+    */
+    if (
+        totalRespondents === 0
+    ) {
+
+        quizQuestionResponseSummaries.clear();
+
+
+        quizQuestionResponsesLoaded =
+            true;
+
+
+        renderQuizQuestionResponses();
+
+
+        return;
+
+    }
 
 
     if (
@@ -4128,6 +4624,159 @@ function formatAdminQuizResponseDate(
 // INDIVIDUAL RESPONDENTS
 // =====================================
 
+function getQuizIndividualClassValue(
+    respondent
+) {
+
+    if (
+        respondent.attemptType === "guest" ||
+        respondent.isGuest
+    ) {
+
+        return "__guest__";
+
+    }
+
+
+    const className =
+        String(
+            respondent.className || ""
+        ).trim();
+
+
+    return className || "__without_class__";
+
+}
+
+
+function getQuizIndividualClassLabel(
+    classValue
+) {
+
+    if (
+        classValue === "__guest__"
+    ) {
+
+        return "Guest";
+
+    }
+
+
+    if (
+        classValue === "__without_class__"
+    ) {
+
+        return "Tanpa kelas";
+
+    }
+
+
+    return classValue;
+
+}
+
+
+function updateQuizIndividualNameFilter(
+    input
+) {
+
+    quizIndividualNameFilter =
+        input.value;
+
+
+    const cursorPosition =
+        input.selectionStart;
+
+
+    renderQuizIndividualRespondents();
+
+
+    requestAnimationFrame(
+        () => {
+
+            const nextInput =
+                document.getElementById(
+                    "quizIndividualNameSearch"
+                );
+
+
+            if (!nextInput) {
+
+                return;
+
+            }
+
+
+            nextInput.focus();
+
+
+            if (
+                Number.isInteger(
+                    cursorPosition
+                )
+            ) {
+
+                nextInput.setSelectionRange(
+                    cursorPosition,
+                    cursorPosition
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+function updateQuizIndividualClassFilter(
+    value
+) {
+
+    quizIndividualClassFilter =
+        value;
+
+
+    renderQuizIndividualRespondents();
+
+}
+
+
+function updateQuizIndividualSortOrder(
+    value
+) {
+
+    quizIndividualSortOrder =
+        value;
+
+
+    renderQuizIndividualRespondents();
+
+}
+
+
+function resetQuizIndividualFilters() {
+
+    quizIndividualNameFilter =
+        "";
+
+
+    quizIndividualClassFilter =
+        "all";
+
+
+    quizIndividualSortOrder =
+        "az";
+
+
+    selectedQuizIndividualAttemptId =
+        null;
+
+
+    renderQuizIndividualRespondents();
+
+}
+
 function getQuizRespondentKey(
     respondent
 ) {
@@ -4184,8 +4833,7 @@ function renderQuizIndividualRespondents() {
 
 
     if (
-        respondents.length ===
-        0
+        respondents.length === 0
     ) {
 
         individualView.innerHTML = `
@@ -4197,7 +4845,7 @@ function renderQuizIndividualRespondents() {
 
                 <p>
                     Detail individual akan muncul setelah
-                    siswa mengirim jawaban.
+                    siswa atau Guest mengirim jawaban.
                 </p>
 
             </div>
@@ -4209,26 +4857,176 @@ function renderQuizIndividualRespondents() {
     }
 
 
-const selectedRespondentStillExists =
-    respondents.some(
-        respondent =>
-            getQuizRespondentKey(
-                respondent
-            ) ===
-            selectedQuizIndividualAttemptId
-    );
+    const availableClasses =
+        Array.from(
+            new Set(
+                respondents.map(
+                    respondent =>
+                        getQuizIndividualClassValue(
+                            respondent
+                        )
+                )
+            )
+        ).sort(
+            (
+                firstClass,
+                secondClass
+            ) => {
+
+                if (
+                    firstClass === "__guest__"
+                ) {
+
+                    return 1;
+
+                }
 
 
-if (
-    !selectedRespondentStillExists
-) {
+                if (
+                    secondClass === "__guest__"
+                ) {
 
-    selectedQuizIndividualAttemptId =
-        getQuizRespondentKey(
-            respondents[0]
+                    return -1;
+
+                }
+
+
+                return getQuizIndividualClassLabel(
+                    firstClass
+                ).localeCompare(
+                    getQuizIndividualClassLabel(
+                        secondClass
+                    ),
+
+                    "id",
+
+                    {
+                        numeric: true,
+                        sensitivity: "base"
+                    }
+                );
+
+            }
         );
 
-}
+
+    const normalizedSearch =
+        quizIndividualNameFilter
+            .trim()
+            .toLocaleLowerCase(
+                "id"
+            );
+
+
+    const filteredRespondents =
+        respondents
+            .filter(
+                respondent => {
+
+                    const respondentName =
+                        String(
+                            respondent.studentName ||
+                            ""
+                        ).toLocaleLowerCase(
+                            "id"
+                        );
+
+
+                    const matchesName =
+                        !normalizedSearch ||
+                        respondentName.includes(
+                            normalizedSearch
+                        );
+
+
+                    const respondentClass =
+                        getQuizIndividualClassValue(
+                            respondent
+                        );
+
+
+                    const matchesClass =
+                        quizIndividualClassFilter ===
+                            "all" ||
+                        respondentClass ===
+                            quizIndividualClassFilter;
+
+
+                    return (
+                        matchesName &&
+                        matchesClass
+                    );
+
+                }
+            )
+            .sort(
+                (
+                    firstRespondent,
+                    secondRespondent
+                ) => {
+
+                    const firstName =
+                        String(
+                            firstRespondent.studentName ||
+                            ""
+                        );
+
+
+                    const secondName =
+                        String(
+                            secondRespondent.studentName ||
+                            ""
+                        );
+
+
+                    const comparison =
+                        firstName.localeCompare(
+                            secondName,
+
+                            "id",
+
+                            {
+                                numeric: true,
+                                sensitivity: "base"
+                            }
+                        );
+
+
+                    return (
+                        quizIndividualSortOrder ===
+                            "za"
+                            ? -comparison
+                            : comparison
+                    );
+
+                }
+            );
+
+
+    const selectedRespondentStillExists =
+        filteredRespondents.some(
+            respondent =>
+                getQuizRespondentKey(
+                    respondent
+                ) ===
+                selectedQuizIndividualAttemptId
+        );
+
+
+    if (
+        !selectedRespondentStillExists
+    ) {
+
+        selectedQuizIndividualAttemptId =
+            filteredRespondents.length > 0
+
+                ? getQuizRespondentKey(
+                    filteredRespondents[0]
+                )
+
+                : null;
+
+    }
 
 
     individualView.innerHTML = `
@@ -4245,8 +5043,10 @@ if (
                         </h2>
 
                         <p>
+                            ${filteredRespondents.length}
+                            dari
                             ${respondents.length}
-                            siswa telah mengirim Quiz.
+                            responden ditampilkan.
                         </p>
 
                     </div>
@@ -4254,102 +5054,263 @@ if (
                 </div>
 
 
+                <div class="quiz-individual-filter-toolbar">
+
+                    <label class="quiz-individual-filter-field search">
+
+                        <span>
+                            Cari nama
+                        </span>
+
+                        <input
+                            id="quizIndividualNameSearch"
+                            type="search"
+                            placeholder="Cari nama responden..."
+                            value="${escapeQuizHtml(
+                                quizIndividualNameFilter
+                            )}"
+                            oninput="
+                                updateQuizIndividualNameFilter(
+                                    this
+                                )
+                            "
+                        >
+
+                    </label>
+
+
+                    <label class="quiz-individual-filter-field">
+
+                        <span>
+                            Kelas
+                        </span>
+
+                        <select
+                            onchange="
+                                updateQuizIndividualClassFilter(
+                                    this.value
+                                )
+                            "
+                        >
+
+                            <option
+                                value="all"
+
+                                ${
+                                    quizIndividualClassFilter ===
+                                        "all"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Semua kelas
+                            </option>
+
+
+                            ${availableClasses.map(
+                                classValue => `
+                                    <option
+                                        value="${escapeQuizHtml(
+                                            classValue
+                                        )}"
+
+                                        ${
+                                            quizIndividualClassFilter ===
+                                                classValue
+                                                ? "selected"
+                                                : ""
+                                        }
+                                    >
+                                        ${escapeQuizHtml(
+                                            getQuizIndividualClassLabel(
+                                                classValue
+                                            )
+                                        )}
+                                    </option>
+                                `
+                            ).join("")}
+
+                        </select>
+
+                    </label>
+
+
+                    <label class="quiz-individual-filter-field">
+
+                        <span>
+                            Urutan
+                        </span>
+
+                        <select
+                            onchange="
+                                updateQuizIndividualSortOrder(
+                                    this.value
+                                )
+                            "
+                        >
+
+                            <option
+                                value="az"
+
+                                ${
+                                    quizIndividualSortOrder ===
+                                        "az"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                A–Z
+                            </option>
+
+                            <option
+                                value="za"
+
+                                ${
+                                    quizIndividualSortOrder ===
+                                        "za"
+                                        ? "selected"
+                                        : ""
+                                }
+                            >
+                                Z–A
+                            </option>
+
+                        </select>
+
+                    </label>
+
+
+                    <button
+                        class="
+                            secondary-button
+                            quiz-individual-filter-reset
+                        "
+                        type="button"
+                        onclick="resetQuizIndividualFilters()"
+                    >
+                        Reset
+                    </button>
+
+                </div>
+
+
                 <div class="quiz-individual-respondent-list">
 
-                    ${respondents.map(
-                        (
-                            respondent
-                        ) => `
-                            <button
-                                class="
-                                    quiz-individual-respondent-button
+                    ${
+                        filteredRespondents.length > 0
 
-                                    ${
-getQuizRespondentKey(
-    respondent
-) ===
-selectedQuizIndividualAttemptId
+                            ? filteredRespondents.map(
+                                respondent => `
+                                    <button
+                                        class="
+                                            quiz-individual-respondent-button
 
-                                            ? "active"
-                                            : ""
-                                    }
-                                "
+                                            ${
+                                                getQuizRespondentKey(
+                                                    respondent
+                                                ) ===
+                                                selectedQuizIndividualAttemptId
 
-                                type="button"
+                                                    ? "active"
+                                                    : ""
+                                            }
+                                        "
 
-data-individual-response-key="${
-    getQuizRespondentKey(
-        respondent
-    )
-}"
+                                        type="button"
 
-onclick="
-    loadQuizIndividualAttempt(
-        ${Number(
-            respondent.attemptId
-        )},
-        '${
-            respondent.attemptType ===
-                "guest"
-                ? "guest"
-                : "student"
-        }'
-    )
-"
-                            >
-
-                                <div class="quiz-individual-avatar">
-
-                                    ${escapeQuizHtml(
-                                        String(
-                                            respondent.studentName ||
-                                            "S"
-                                        )
-                                            .trim()
-                                            .charAt(
-                                                0
+                                        data-individual-response-key="${
+                                            getQuizRespondentKey(
+                                                respondent
                                             )
-                                            .toUpperCase() ||
-                                        "S"
-                                    )}
+                                        }"
 
-                                </div>
+                                        onclick="
+                                            loadQuizIndividualAttempt(
+                                                ${Number(
+                                                    respondent.attemptId
+                                                )},
+
+                                                '${
+                                                    respondent.attemptType ===
+                                                        "guest"
+                                                        ? "guest"
+                                                        : "student"
+                                                }'
+                                            )
+                                        "
+                                    >
+
+                                        <div class="quiz-individual-avatar">
+
+                                            ${escapeQuizHtml(
+                                                String(
+                                                    respondent.studentName ||
+                                                    "S"
+                                                )
+                                                    .trim()
+                                                    .charAt(0)
+                                                    .toUpperCase() ||
+                                                "S"
+                                            )}
+
+                                        </div>
 
 
-                                <div class="quiz-individual-person">
+                                        <div class="quiz-individual-person">
+
+                                            <strong>
+                                                ${escapeQuizHtml(
+                                                    respondent.studentName ||
+                                                    "Siswa"
+                                                )}
+                                            </strong>
+
+                                            <span>
+                                                ${escapeQuizHtml(
+                                                    respondent.attemptType ===
+                                                        "guest"
+
+                                                        ? "Guest"
+
+                                                        : respondent.className ||
+                                                          "Tanpa kelas"
+                                                )}
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="quiz-individual-list-score">
+
+                                            <span>
+                                                Nilai
+                                            </span>
+
+                                            <strong>
+                                                ${respondent.score}
+                                            </strong>
+
+                                        </div>
+
+                                    </button>
+                                `
+                            ).join("")
+
+                            : `
+                                <div class="quiz-individual-filter-empty">
 
                                     <strong>
-                                        ${escapeQuizHtml(
-                                            respondent.studentName ||
-                                            "Siswa"
-                                        )}
+                                        Tidak ditemukan
                                     </strong>
 
                                     <span>
-                                        ${escapeQuizHtml(
-                                            respondent.className ||
-                                            "Tanpa kelas"
-                                        )}
+                                        Tidak ada responden yang sesuai
+                                        dengan filter.
                                     </span>
 
                                 </div>
-
-
-                                <div class="quiz-individual-list-score">
-
-                                    <span>
-                                        Nilai
-                                    </span>
-
-                                    <strong>
-                                        ${respondent.score}
-                                    </strong>
-
-                                </div>
-
-                            </button>
-                        `
-                    ).join("")}
+                            `
+                    }
 
                 </div>
 
@@ -4361,9 +5322,30 @@ onclick="
                 class="quiz-individual-detail-panel"
             >
 
-                <div class="quiz-editor-loading">
-                    Memuat detail respons...
-                </div>
+                ${
+                    filteredRespondents.length > 0
+
+                        ? `
+                            <div class="quiz-editor-loading">
+                                Memuat detail respons...
+                            </div>
+                        `
+
+                        : `
+                            <div class="quiz-individual-empty">
+
+                                <h3>
+                                    Tidak ada hasil
+                                </h3>
+
+                                <p>
+                                    Ubah filter atau tekan Reset untuk
+                                    menampilkan responden.
+                                </p>
+
+                            </div>
+                        `
+                }
 
             </section>
 
@@ -4371,27 +5353,36 @@ onclick="
     `;
 
 
-const selectedRespondent =
-    respondents.find(
-        respondent =>
-            getQuizRespondentKey(
-                respondent
-            ) ===
-            selectedQuizIndividualAttemptId
-    ) ||
-    respondents[0];
+    if (
+        filteredRespondents.length === 0
+    ) {
+
+        return;
+
+    }
 
 
-loadQuizIndividualAttempt(
-    Number(
-        selectedRespondent.attemptId
-    ),
+    const selectedRespondent =
+        filteredRespondents.find(
+            respondent =>
+                getQuizRespondentKey(
+                    respondent
+                ) ===
+                selectedQuizIndividualAttemptId
+        ) ||
+        filteredRespondents[0];
 
-    selectedRespondent.attemptType ===
-        "guest"
-        ? "guest"
-        : "student"
-);
+
+    loadQuizIndividualAttempt(
+        Number(
+            selectedRespondent.attemptId
+        ),
+
+        selectedRespondent.attemptType ===
+            "guest"
+            ? "guest"
+            : "student"
+    );
 
 }
 
@@ -4439,14 +5430,53 @@ const answerCards =
                     answerIndex
                 ) => {
 
+                    const isEssay =
+                        answer.type ===
+                        "essay";
+
+
                     const typeLabel =
-                        answer.type === "mcq"
+                        answer.type ===
+                        "mcq"
 
                             ? "Pilihan Ganda"
-                            : "Isian Singkat";
+
+                            : isEssay
+
+                                ? "Esai"
+                                : "Isian Singkat";
 
 
+                    /*
+                        Essay tidak memiliki status
+                        benar maupun salah.
+                    */
+                    const answerStatusClass =
+                        isEssay
+
+                            ? "essay"
+
+                            : answer.isCorrect
+                                ? "correct"
+                                : "incorrect";
+
+
+                    const answerStatusText =
+                        isEssay
+
+                            ? "Jawaban Esai"
+
+                            : answer.isCorrect
+                                ? "Benar"
+                                : "Salah";
+
+
+                    /*
+                        Jangan tampilkan kunci jawaban
+                        pada soal Essay panjang.
+                    */
                     const correctAnswer =
+                        isEssay ||
                         answer.isCorrect
 
                             ? ""
@@ -4472,11 +5502,7 @@ const answerCards =
                         <article
                             class="
                                 quiz-individual-answer-card
-                                ${
-                                    answer.isCorrect
-                                        ? "correct"
-                                        : "incorrect"
-                                }
+                                ${answerStatusClass}
                             "
                         >
 
@@ -4499,18 +5525,10 @@ const answerCards =
 
                                 <b
                                     class="
-                                        ${
-                                            answer.isCorrect
-                                                ? "correct"
-                                                : "incorrect"
-                                        }
+                                        ${answerStatusClass}
                                     "
                                 >
-                                    ${
-                                        answer.isCorrect
-                                            ? "Benar"
-                                            : "Salah"
-                                    }
+                                    ${answerStatusText}
                                 </b>
 
                             </div>
@@ -4570,11 +5588,9 @@ ${
     ${respondentAnswerLabel}
 </span>
 
-                                <strong>
-                                    ${escapeQuizHtml(
-                                        answer.studentAnswer
-                                    )}
-                                </strong>
+                                <strong>${escapeQuizHtml(
+                                    answer.studentAnswer
+                                )}</strong>
 
                             </div>
 
@@ -4649,13 +5665,40 @@ ${
                 </span>
 
                 <strong>
-                    ${attempt.score}
+
+                    ${
+                        Number(
+                            attempt.totalQuestions ||
+                            0
+                        ) >
+                        0
+
+                            ? attempt.score
+                            : "-"
+                    }
+
                 </strong>
 
                 <small>
-                    ${attempt.correctCount}/${
-                        attempt.totalQuestions
-                    } benar
+
+                    ${
+                        Number(
+                            attempt.totalQuestions ||
+                            0
+                        ) >
+                        0
+
+                            ? `
+                                ${attempt.correctCount}/${
+                                    attempt.totalQuestions
+                                } benar
+                            `
+
+                            : `
+                                Tidak dinilai otomatis
+                            `
+                    }
+
                 </small>
 
             </div>
@@ -4985,6 +6028,264 @@ function getSelectedQuizStudentIds() {
 
 }
 
+function getQuizClassCheckboxes() {
+
+    return [
+        ...quizClassTargetList
+            .querySelectorAll(
+                'input[data-class-name]'
+            )
+    ];
+
+}
+
+
+function getQuizTargetClassGroups() {
+
+    const classGroups =
+        new Map();
+
+
+    quizTargetStudents.forEach(
+        student => {
+
+            const className =
+                String(
+                    student.className ||
+                    ""
+                ).trim();
+
+
+            /*
+                Siswa tanpa kelas tetap dapat dipilih
+                melalui daftar siswa, tetapi tidak
+                dimasukkan ke selector kelas.
+            */
+            if (!className) {
+
+                return;
+
+            }
+
+
+            if (
+                !classGroups.has(
+                    className
+                )
+            ) {
+
+                classGroups.set(
+                    className,
+                    []
+                );
+
+            }
+
+
+            classGroups
+                .get(className)
+                .push(
+                    Number(
+                        student.id
+                    )
+                );
+
+        }
+    );
+
+
+    return [
+        ...classGroups.entries()
+    ]
+        .map(
+            (
+                [
+                    className,
+                    studentIds
+                ]
+            ) => ({
+
+                className,
+
+                studentIds,
+
+                studentCount:
+                    studentIds.length
+
+            })
+        )
+        .sort(
+            (
+                firstClass,
+                secondClass
+            ) =>
+                firstClass.className.localeCompare(
+                    secondClass.className,
+                    "id",
+                    {
+                        numeric:
+                            true,
+
+                        sensitivity:
+                            "base"
+                    }
+                )
+        );
+
+}
+
+
+function updateQuizClassTargetStates() {
+
+    const studentCheckboxes =
+        getQuizStudentCheckboxes();
+
+
+    getQuizClassCheckboxes()
+        .forEach(
+            classCheckbox => {
+
+                const className =
+                    classCheckbox.dataset.className ||
+                    "";
+
+
+                const classStudents =
+                    studentCheckboxes.filter(
+                        studentCheckbox =>
+                            (
+                                studentCheckbox.dataset.className ||
+                                ""
+                            ) === className
+                    );
+
+
+                const selectedCount =
+                    classStudents.filter(
+                        checkbox =>
+                            checkbox.checked
+                    ).length;
+
+
+                classCheckbox.checked =
+                    classStudents.length > 0 &&
+                    selectedCount ===
+                        classStudents.length;
+
+
+                classCheckbox.indeterminate =
+                    selectedCount > 0 &&
+                    selectedCount <
+                        classStudents.length;
+
+            }
+        );
+
+}
+
+
+function renderQuizClassTargets() {
+
+    const classGroups =
+        getQuizTargetClassGroups();
+
+
+    if (
+        classGroups.length ===
+        0
+    ) {
+
+        quizClassTargetToggle.hidden =
+            true;
+
+
+        quizClassTargetPanel.hidden =
+            true;
+
+
+        quizClassTargetToggle.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+
+        quizClassTargetList.innerHTML =
+            "";
+
+
+        return;
+
+    }
+
+
+    quizClassTargetToggle.hidden =
+        false;
+
+
+    quizClassTargetList.innerHTML =
+        classGroups.map(
+            classGroup => `
+
+                <label class="quiz-class-target-option">
+
+                    <input
+                        type="checkbox"
+                        data-class-name="${escapeQuizHtml(
+                            classGroup.className
+                        )}"
+                    >
+
+                    <span>
+
+                        <strong>
+                            ${escapeQuizHtml(
+                                classGroup.className
+                            )}
+                        </strong>
+
+                        <small>
+                            ${classGroup.studentCount}
+                            siswa
+                        </small>
+
+                    </span>
+
+                </label>
+
+            `
+        ).join("");
+
+
+    updateQuizClassTargetStates();
+
+}
+
+
+function setQuizClassTargetPanelOpen(
+    open
+) {
+
+    const shouldOpen =
+        Boolean(
+            open
+        ) &&
+        quizAllowPrivate.checked &&
+        !quizClassTargetToggle.disabled;
+
+
+    quizClassTargetPanel.hidden =
+        !shouldOpen;
+
+
+    quizClassTargetToggle.setAttribute(
+        "aria-expanded",
+        String(
+            shouldOpen
+        )
+    );
+
+}
+
 
 function updateQuizWeightFields(
     changedWeight = "essay"
@@ -5122,6 +6423,8 @@ function updateQuizStudentTargetSummary() {
         selectedCount > 0 &&
         selectedCount < totalCount;
 
+    updateQuizClassTargetStates();
+
 
     if (totalCount === 0) {
 
@@ -5170,7 +6473,7 @@ function updateQuizPublicLink() {
     if (!publicToken) {
 
         quizPublicLink.value =
-            "Link dibuat setelah Settings tersimpan";
+            "Membuat link...";
 
         return;
 
@@ -5196,6 +6499,14 @@ function updateQuizAccessFields() {
 
     const privateDisabled =
         !quizAllowPrivate.checked;
+
+    if (privateDisabled) {
+
+    setQuizClassTargetPanelOpen(
+        false
+    );
+
+}
 
 
     quizPrivateTargetCard.classList.toggle(
@@ -5278,9 +6589,11 @@ function renderQuizTargetStudents() {
         `;
 
 
-        updateQuizStudentTargetSummary();
+renderQuizClassTargets();
 
-        return;
+updateQuizStudentTargetSummary();
+
+return;
 
     }
 
@@ -5291,9 +6604,12 @@ function renderQuizTargetStudents() {
 
                 <label class="quiz-student-target-option">
 
-                    <input
-                        type="checkbox"
-                        data-student-id="${student.id}"
+<input
+    type="checkbox"
+    data-student-id="${student.id}"
+    data-class-name="${escapeQuizHtml(
+        student.className || ""
+    )}"
 
                         ${
                             selectEveryone ||
@@ -5328,9 +6644,11 @@ function renderQuizTargetStudents() {
         ).join("");
 
 
-    updateQuizStudentTargetSummary();
+renderQuizClassTargets();
 
-    updateQuizAccessFields();
+updateQuizStudentTargetSummary();
+
+updateQuizAccessFields();
 
 }
 
@@ -5819,89 +7137,259 @@ quizMcqWeight.addEventListener(
 );
 
 
-    [
-        quizAllowPrivate,
-        quizAllowPublic
-    ].forEach(
-        checkbox => {
+[
+    quizAllowPrivate,
+    quizAllowPublic
+].forEach(
+    checkbox => {
 
-            checkbox.addEventListener(
-                "change",
-                () => {
+        checkbox.addEventListener(
+            "change",
+            () => {
 
-                    if (
-                        !quizAllowPrivate.checked &&
-                        !quizAllowPublic.checked
-                    ) {
+                /*
+                    Minimal satu jenis akses harus aktif.
+                    Jika aksi ditolak, kembalikan checkbox
+                    dan hentikan event sebelum autosave.
+                */
+                if (
+                    !quizAllowPrivate.checked &&
+                    !quizAllowPublic.checked
+                ) {
 
-                        checkbox.checked =
-                            true;
-
-
-                        quizSettingsSaveStatus.textContent =
-                            "Minimal satu akses harus aktif.";
-
-                    }
+                    checkbox.checked =
+                        true;
 
 
                     updateQuizAccessFields();
 
-                    scheduleQuizSettingsSave();
+
+                    return;
 
                 }
-            );
-
-        }
-    );
 
 
-    quizSelectAllStudents.addEventListener(
-        "change",
-        () => {
+                updateQuizAccessFields();
 
-            const checked =
-                quizSelectAllStudents.checked;
+                scheduleQuizSettingsSave();
+
+            }
+        );
+
+    }
+);
 
 
-            getQuizStudentCheckboxes()
-                .forEach(
-                    checkbox => {
+quizSelectAllStudents.addEventListener(
+    "change",
+    () => {
 
-                        checkbox.checked =
-                            checked;
+        const studentCheckboxes =
+            getQuizStudentCheckboxes();
 
-                    }
-                );
+
+        const checked =
+            quizSelectAllStudents.checked;
+
+
+        /*
+            Jangan izinkan semua target menjadi kosong.
+            Aksi ditolak tanpa menjalankan autosave.
+        */
+        if (
+            !checked &&
+            studentCheckboxes.length > 0
+        ) {
+
+            quizSelectAllStudents.checked =
+                true;
+
+
+            quizSelectAllStudents.indeterminate =
+                false;
 
 
             updateQuizStudentTargetSummary();
 
-            scheduleQuizSettingsSave();
+
+            return;
 
         }
-    );
 
-    quizStudentTargetList.addEventListener(
-        "change",
-        event => {
+
+        studentCheckboxes.forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    checked;
+
+            }
+        );
+
+
+        updateQuizStudentTargetSummary();
+
+        scheduleQuizSettingsSave();
+
+    }
+);
+
+quizStudentTargetList.addEventListener(
+    "change",
+    event => {
+
+        if (
+            !event.target.matches(
+                'input[data-student-id]'
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+            Checkbox siswa terakhir tidak boleh
+            dimatikan jika Private masih aktif.
+        */
+        if (
+            quizAllowPrivate.checked &&
+            getSelectedQuizStudentIds().length ===
+                0
+        ) {
+
+            event.target.checked =
+                true;
+
+
+            updateQuizStudentTargetSummary();
+
+
+            return;
+
+        }
+
+
+        updateQuizStudentTargetSummary();
+
+        scheduleQuizSettingsSave();
+
+    }
+);
+
+quizClassTargetToggle.addEventListener(
+    "click",
+    () => {
+
+        const currentlyOpen =
+            quizClassTargetToggle.getAttribute(
+                "aria-expanded"
+            ) ===
+            "true";
+
+
+        setQuizClassTargetPanelOpen(
+            !currentlyOpen
+        );
+
+    }
+);
+
+
+quizClassTargetList.addEventListener(
+    "change",
+    event => {
+
+        if (
+            !event.target.matches(
+                'input[data-class-name]'
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const classCheckbox =
+            event.target;
+
+
+        const className =
+            classCheckbox.dataset.className ||
+            "";
+
+
+        const studentCheckboxes =
+            getQuizStudentCheckboxes();
+
+
+        const classStudentCheckboxes =
+            studentCheckboxes.filter(
+                checkbox =>
+                    (
+                        checkbox.dataset.className ||
+                        ""
+                    ) === className
+            );
+
+
+        const shouldSelect =
+            classCheckbox.checked;
+
+
+        /*
+            Jika kelas terakhir dimatikan dan tidak
+            ada target lain, batalkan tanpa autosave.
+        */
+        if (!shouldSelect) {
+
+            const hasSelectedStudentOutsideClass =
+                studentCheckboxes.some(
+                    checkbox =>
+                        checkbox.checked &&
+                        (
+                            checkbox.dataset.className ||
+                            ""
+                        ) !== className
+                );
+
 
             if (
-                !event.target.matches(
-                    'input[data-student-id]'
-                )
+                !hasSelectedStudentOutsideClass
             ) {
+
+                updateQuizStudentTargetSummary();
+
 
                 return;
 
             }
 
-
-            updateQuizStudentTargetSummary();
-
-            scheduleQuizSettingsSave();
-
         }
-    );
+
+
+        classStudentCheckboxes.forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    shouldSelect;
+
+            }
+        );
+
+
+        updateQuizStudentTargetSummary();
+
+        /*
+            Satu aksi kelas hanya menghasilkan
+            satu proses autosave.
+        */
+        scheduleQuizSettingsSave();
+
+    }
+);
 
 
     copyQuizPublicLinkButton.addEventListener(
@@ -5927,8 +7415,7 @@ quizMcqWeight.addEventListener(
                 );
 
 
-                quizSettingsSaveStatus.textContent =
-                    "Link Public berhasil disalin";
+showQuizPublicLinkCopyFeedback();
 
 
             } catch (error) {
@@ -5940,8 +7427,7 @@ quizMcqWeight.addEventListener(
                 );
 
 
-                quizSettingsSaveStatus.textContent =
-                    "Link Public berhasil disalin";
+showQuizPublicLinkCopyFeedback();
 
             }
 
@@ -6003,6 +7489,16 @@ settingsTab.hidden =
 responsesTab.hidden =
     tabName !==
     "responses";
+
+if (
+    tabName !== "responses"
+) {
+
+    document.body.classList.remove(
+        "quiz-individual-scroll-mode"
+    );
+
+}
 
 
         document
@@ -6091,6 +7587,15 @@ function switchQuizResponseTab(
         return;
 
     }
+
+        /*
+        Saat membuka Individual, kunci scroll
+        halaman dan gunakan scroll masing-masing panel.
+    */
+    document.body.classList.toggle(
+        "quiz-individual-scroll-mode",
+        tabName === "individual"
+    );
 
 
     /*
@@ -7976,12 +9481,17 @@ function renderQuizQuestionCards() {
                 questionIndex
             ) => {
 
-                const questionType =
-                    question.type ===
-                        "short_answer"
+const questionType =
+    question.type ===
+        "short_answer"
 
-                        ? "short_answer"
-                        : "mcq";
+        ? "short_answer"
+
+        : question.type ===
+            "essay"
+
+            ? "essay"
+            : "mcq";
 
 
                 const questionOptions =
@@ -8159,6 +9669,18 @@ ondrop="
                                 >
                                     Isian Singkat
                                 </option>
+
+                                <option
+    value="essay"
+    ${
+        questionType ===
+            "essay"
+            ? "selected"
+            : ""
+    }
+>
+    Esai
+</option>
 
                             </select>
 
@@ -8399,7 +9921,10 @@ ${
                                     </div>
                                 `
 
-: `
+                                : questionType ===
+                                    "short_answer"
+
+                                    ? `
     <div class="quiz-short-answer-key">
 
         <label>
@@ -8438,6 +9963,8 @@ ${
 
     </div>
 `
+
+                                    : ""
                         }
 
 <div class="quiz-question-management-actions">
@@ -8892,11 +10419,16 @@ function changeQuizQuestionType(
         Guru sudah memahami bahwa pilihan atau
         kunci lama akan dikosongkan.
     */
-    question.type =
-        newType ===
-            "short_answer"
+question.type =
+    newType ===
+        "short_answer"
 
-            ? "short_answer"
+        ? "short_answer"
+
+        : newType ===
+            "essay"
+
+            ? "essay"
             : "mcq";
 
 
@@ -10074,6 +11606,19 @@ if (
             continue;
 
         }
+
+        if (
+    question.type ===
+    "essay"
+) {
+
+    /*
+        Esai hanya memerlukan pertanyaan
+        berupa teks atau gambar.
+    */
+    continue;
+
+}
 
 
         const options =

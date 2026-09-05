@@ -26,6 +26,7 @@
 </head>
 
 <script src="/student-profile-initial.js"></script>
+<script src="/student-session.js"></script>
 
 
 <body class="student-quiz-dashboard-body">
@@ -45,7 +46,7 @@
                 <div>
 
                     <strong>
-                        mrsteveid
+                        mrsteve.my.id
                     </strong>
 
                     <small>
@@ -1303,7 +1304,16 @@ function renderStudentCompletedQuizzes() {
                         </span>
 
                         <strong>
-                            ${attempt.score}
+                            ${
+                                Number(
+                                    attempt.totalQuestions ||
+                                    0
+                                ) >
+                                0
+
+                                    ? attempt.score
+                                    : "—"
+                            }
                         </strong>
 
                     </div>
@@ -1326,11 +1336,26 @@ function renderStudentCompletedQuizzes() {
                                     "Tanpa mapel"
                                 )}
                             </span>
-
                             <strong>
-                                ${attempt.correctCount}/${
-                                    attempt.totalQuestions
-                                } Benar
+
+                                ${
+                                    Number(
+                                        attempt.totalQuestions ||
+                                        0
+                                    ) >
+                                    0
+
+                                        ? `
+                                            ${attempt.correctCount}/${
+                                                attempt.totalQuestions
+                                            } Benar
+                                        `
+
+                                        : `
+                                            Esai · Tidak dinilai otomatis
+                                        `
+                                }
+
                             </strong>
 
                         </div>

@@ -1,12 +1,3 @@
----
-Ganti distribusi nilai
-
-Teks link disalin jangan di area autosave setting indicator, melainkan pindah ke sebelah tombol salin link, kasih feedback aja berupa non teks seperti glow atau apa gitu
-
-Naikkan autosave settings indicator sedikit, sekitar 10-20px
-
-Publish masih gagal saat buat soal tanpa soal teks tapi ada gambar, bilangnya soal no 1 harus ada teks atau gambar padahal no 1 gak ada teks tapi ada gambar
----
 Upload image feature via googleusercontent Class feed
 
 Tombol show replies (xx)
@@ -18,6 +9,6 @@ Link click di feed announcement sama info board
 Tambahkan formatting di feed dan info board, Bold underline strikethrough, point dotted, italic
 ---
 settings panel tambah password buat ada adminjstartor settings
-Bisa ganti env variables dipanel jika bisa
 hapus guru
+Permudah penggantian Env variabels misal mau ditukar ke env lain buat owner lain
 ---

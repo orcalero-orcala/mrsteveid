@@ -45,7 +45,7 @@
                 <div>
 
                     <strong>
-                        mrsteveid
+                        mrsteve.my.id
                     </strong>
 
                     <small>
@@ -633,7 +633,7 @@ document.getElementById(
 
 
                         option.textContent =
-                            `${student.name} — ${student.class_name} (${student.login_code})`;
+                            `${student.name} - ${student.class_name}`;
 
 
                         studentSelect.appendChild(
@@ -734,13 +734,26 @@ document.getElementById(
 
 
                 // Tampilkan info siswa
+
+const studentInitial =
+    String(
+        data.student.name ||
+        ""
+    )
+        .trim()
+        .charAt(0)
+        .toUpperCase() ||
+    "S";
+
 studentInfo.innerHTML = `
 
     <div class="admin-point-student-main">
 
-        <div class="student-large-avatar">
-            S
-        </div>
+<div class="student-large-avatar">
+    ${escapeHtml(
+        studentInitial
+    )}
+</div>
 
         <div>
 
