@@ -499,11 +499,31 @@
                         Tanggal Lahir
                     </label>
 
-                    <input
-                        type="date"
-                        id="dateOfBirth"
-                        required
-                    >
+<div class="student-date-input">
+
+    <input
+        type="date"
+        id="dateOfBirth"
+        required
+        onchange="
+            this.parentElement.classList.toggle(
+                'has-value',
+                Boolean(this.value)
+            )
+        "
+        oninput="
+            this.parentElement.classList.toggle(
+                'has-value',
+                Boolean(this.value)
+            )
+        "
+    >
+
+    <span aria-hidden="true">
+        dd/mm/yyyy
+    </span>
+
+</div>
 
                 </div>
 

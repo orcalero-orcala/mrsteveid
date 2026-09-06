@@ -1910,17 +1910,15 @@ const plotBottom =
     tabindex="0"
     class="student-score-trend-dot"
 
-data-chart-tooltip="Nilai: ${formatScoreNumber(
+data-chart-tooltip="${escapeHtml(
+    String(
+        point.examScore.subject ||
+        "Tanpa mapel"
+    )
+)}: ${formatScoreNumber(
     point.score
 )}"
 >
-
-<title>
-    Nilai:
-    ${formatScoreNumber(
-        point.score
-    )}
-</title>
 
             </circle>
 

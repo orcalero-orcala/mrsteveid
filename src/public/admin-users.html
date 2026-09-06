@@ -242,117 +242,216 @@
             </header>
 
 
-            <div class="admin-page-content">
+<div class="
+    admin-page-content
+    student-modern-page
+    admin-users-modern-page
+">
 
-                <section class="admin-page-hero">
+    <!-- HERO -->
 
-                    <div>
+    <section class="
+        admin-page-hero
+        student-data-hero
+        teacher-data-hero
+    ">
 
-                        <small class="eyebrow">
-                            TEACHER REGISTRATION
-                        </small>
+        <div class="student-data-hero-content">
 
-                        <h1>
-                            Kode Registrasi Guru
-                        </h1>
+            <small class="eyebrow">
+                TEACHER MANAGEMENT
+            </small>
 
-                        <p>
-                            Gunakan kode ini untuk mendaftarkan akun guru baru.
-                            Hanya satu kode yang aktif dalam satu waktu.
-                        </p>
-
-                    </div>
-
-                </section>
-
-                
-
-
-                <section class="admin-form-section">
-
-                    <div class="section-heading">
-
-                        <div>
-
-                            <h2>
-                                Kode Aktif
-                            </h2>
-
-                            <p>
-                                Kode akan hangus setelah digunakan atau diregenerate.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div id="teacherCodeBox">
-
-                        <p id="teacherCodeStatus">
-                            Memuat kode registrasi...
-                        </p>
-
-                    </div>
-
-                </section>
-
-                <section
-    id="teacherListPanel"
-    class="admin-table-section"
->
-
-    <div class="section-heading">
-
-        <div>
-
-            <h2>
-                Daftar Guru
-            </h2>
+            <h1>
+                Kelola Guru
+            </h1>
 
             <p>
-                Akun guru yang sudah terdaftar di LMS.
+                Kelola kode registrasi dan seluruh akun guru
+                yang memiliki akses ke LMS sekolah.
             </p>
 
         </div>
 
-    </div>
+    </section>
 
 
-    <div class="admin-table-wrapper">
+    <!-- KODE REGISTRASI -->
 
-        <table class="admin-data-table">
+    <section class="
+        student-modern-panel
+        teacher-registration-panel
+    ">
 
-            <thead>
+        <div class="student-modern-heading">
 
-                <tr>
-                    <th>Nama</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Dibuat</th>
-                    <th>Aksi</th>
-                </tr>
+            <div class="
+                student-modern-heading-icon
+                student-modern-heading-icon-purple
+            ">
+                K
+            </div>
 
-            </thead>
+            <div>
 
+                <small>
+                    TEACHER REGISTRATION
+                </small>
 
-            <tbody id="teacherTableBody">
+                <h2>
+                    Kode Registrasi
+                </h2>
 
-                <tr>
-                    <td colspan="5">
-                        Memuat daftar guru...
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
+                <p>
+                    Satu kode aktif untuk pendaftaran akun guru baru.
+                </p>
 
             </div>
+
+        </div>
+
+
+        <div id="teacherCodeBox">
+
+            <div class="
+                quiz-dashboard-loading
+                teacher-code-state
+            ">
+                Memuat kode registrasi...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DIRECTORY GURU -->
+
+    <section
+        id="teacherListPanel"
+        class="
+            student-modern-panel
+            teacher-directory-panel
+        "
+    >
+
+        <div class="
+            student-modern-heading
+            student-directory-heading
+            teacher-directory-heading
+        ">
+
+            <div>
+
+                <small>
+                    TEACHER DIRECTORY
+                </small>
+
+                <h2>
+                    Daftar Guru
+                </h2>
+
+                <p>
+                    Cari dan kelola seluruh akun guru yang terdaftar.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="teacherRefreshButton"
+                class="student-directory-refresh"
+                onclick="loadTeachers()"
+            >
+
+                <span class="student-refresh-icon">
+                    ↻
+                </span>
+
+                <span class="student-refresh-label">
+                    Refresh
+                </span>
+
+            </button>
+
+        </div>
+
+
+<div class="student-directory-controls teacher-directory-controls">
+
+    <div class="student-filter-control">
+
+        <label for="teacherSearchInput">
+            Cari guru
+        </label>
+
+        <input
+            type="search"
+            id="teacherSearchInput"
+            placeholder="Cari nama atau username"
+            autocomplete="off"
+        >
+
+    </div>
+
+
+    <div class="student-filter-control">
+
+        <label for="teacherSortSelect">
+            Urutkan
+        </label>
+
+        <select id="teacherSortSelect">
+            <option value="newest">Terbaru dibuat</option>
+            <option value="oldest">Terlama dibuat</option>
+            <option value="az">Nama A–Z</option>
+            <option value="za">Nama Z–A</option>
+        </select>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="secondary-button teacher-filter-reset"
+        onclick="resetTeacherFilters()"
+    >
+        Reset
+    </button>
+
+</div>
+
+
+        <div class="student-directory-result-bar">
+
+            <p
+                id="teacherDirectorySummary"
+                class="student-filter-summary"
+            >
+                Memuat daftar guru...
+            </p>
+
+        </div>
+
+
+        <div
+            id="teacherTableBody"
+            class="teacher-card-list"
+        >
+
+            <div class="
+                quiz-dashboard-loading
+                teacher-list-state
+            ">
+                Memuat daftar guru...
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
 
         </main>
 
@@ -423,12 +522,405 @@
         ).textContent =
             displayRole;
 
-            async function loadTeachers() {
+        const teacherList =
+    document.getElementById(
+        "teacherTableBody"
+    );
 
-    const tableBody =
-        document.getElementById(
-            "teacherTableBody"
+
+const teacherRefreshButton =
+    document.getElementById(
+        "teacherRefreshButton"
+    );
+
+
+const teacherSearch =
+    document.getElementById(
+        "teacherSearchInput"
+    );
+
+
+const teacherSortFilter =
+    document.getElementById(
+        "teacherSortSelect"
+    );
+
+
+const teacherDirectorySummary =
+    document.getElementById(
+        "teacherDirectorySummary"
+    );
+
+
+let currentTeachers = [];
+
+function getTeacherTimestamp(
+    teacher
+) {
+
+    const timestamp =
+        new Date(
+            teacher.created_at
+        ).getTime();
+
+
+    return Number.isFinite(timestamp)
+        ? timestamp
+        : 0;
+
+}
+
+
+function getTeacherDisplayRole(
+    role
+) {
+
+    return role === "teacher"
+        ? "Teacher"
+        : role === "admin"
+            ? "Administrator"
+            : role || "Teacher";
+
+}
+
+
+function renderTeachers() {
+
+    const searchValue =
+        String(
+            teacherSearch.value ||
+            ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "id-ID"
+            );
+
+
+    const sortValue =
+        teacherSortFilter.value;
+
+
+    let filteredTeachers =
+        currentTeachers.filter(
+            teacher => {
+
+                const name =
+                    String(
+                        teacher.name ||
+                        ""
+                    );
+
+
+                const username =
+                    String(
+                        teacher.username ||
+                        ""
+                    );
+
+
+                const searchableText =
+                    `${name} ${username}`
+                        .toLocaleLowerCase(
+                            "id-ID"
+                        );
+
+
+                const matchesSearch =
+                    !searchValue ||
+                    searchableText.includes(
+                        searchValue
+                    );
+
+
+return matchesSearch;
+
+            }
         );
+
+
+    filteredTeachers.sort(
+        (teacherA, teacherB) => {
+
+            if (
+                sortValue ===
+                "oldest"
+            ) {
+
+                return (
+                    getTeacherTimestamp(
+                        teacherA
+                    ) -
+                    getTeacherTimestamp(
+                        teacherB
+                    )
+                );
+
+            }
+
+
+            if (
+                sortValue ===
+                "az"
+            ) {
+
+                return String(
+                    teacherA.name ||
+                    teacherA.username ||
+                    ""
+                ).localeCompare(
+                    String(
+                        teacherB.name ||
+                        teacherB.username ||
+                        ""
+                    ),
+                    "id"
+                );
+
+            }
+
+
+            if (
+                sortValue ===
+                "za"
+            ) {
+
+                return String(
+                    teacherB.name ||
+                    teacherB.username ||
+                    ""
+                ).localeCompare(
+                    String(
+                        teacherA.name ||
+                        teacherA.username ||
+                        ""
+                    ),
+                    "id"
+                );
+
+            }
+
+
+            return (
+                getTeacherTimestamp(
+                    teacherB
+                ) -
+                getTeacherTimestamp(
+                    teacherA
+                )
+            );
+
+        }
+    );
+
+
+    teacherDirectorySummary.textContent =
+        `${filteredTeachers.length} dari ${currentTeachers.length} guru ditampilkan`;
+
+
+    if (
+        currentTeachers.length ===
+        0
+    ) {
+
+        teacherList.innerHTML = `
+
+            <div class="
+                student-modern-empty
+                teacher-list-state
+            ">
+
+                <strong>
+                    Belum ada akun guru
+                </strong>
+
+                <span>
+                    Buat kode registrasi untuk menambahkan guru.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    if (
+        filteredTeachers.length ===
+        0
+    ) {
+
+        teacherList.innerHTML = `
+
+            <div class="
+                student-modern-empty
+                teacher-list-state
+            ">
+
+                <strong>
+                    Guru tidak ditemukan
+                </strong>
+
+                <span>
+                    Coba ubah pencarian atau filter guru.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    teacherList.innerHTML =
+        "";
+
+
+    filteredTeachers.forEach(
+        teacher => {
+
+            const teacherName =
+                String(
+                    teacher.name ||
+                    teacher.username ||
+                    "Guru"
+                );
+
+
+            const teacherUsername =
+                String(
+                    teacher.username ||
+                    "-"
+                );
+
+
+            const teacherInitial =
+                teacherName
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() ||
+                "G";
+
+
+            const isCurrentTeacher =
+                Number(teacher.id) ===
+                Number(adminId);
+
+
+            const teacherCard =
+                document.createElement(
+                    "article"
+                );
+
+
+            teacherCard.className =
+                `teacher-directory-card${
+                    isCurrentTeacher
+                        ? " current"
+                        : ""
+                }`;
+
+
+            teacherCard.innerHTML = `
+
+                <div class="teacher-card-profile">
+
+                    <div class="teacher-card-avatar">
+
+                        ${escapeHtml(
+                            teacherInitial
+                        )}
+
+                    </div>
+
+
+                    <div class="teacher-card-identity">
+
+                        <span>
+                            ${
+                                isCurrentTeacher
+                                    ? "AKUN SAAT INI"
+                                    : "TEACHER ACCOUNT"
+                            }
+                        </span>
+
+                        <h3>
+                            ${escapeHtml(
+                                teacherName
+                            )}
+                        </h3>
+
+                        <p>
+                            @${escapeHtml(
+                                teacherUsername
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="teacher-card-meta">
+
+
+                    <div>
+
+                        <small>
+                            DIBUAT
+                        </small>
+
+                        <strong>
+                            ${escapeHtml(
+                                teacher.created_at
+                                    ? formatDeviceDateTime(
+                                        teacher.created_at
+                                    )
+                                    : "-"
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            teacherList.appendChild(
+                teacherCard
+            );
+
+        }
+    );
+
+}
+
+
+async function loadTeachers() {
+
+    teacherRefreshButton.disabled =
+        true;
+
+
+    teacherDirectorySummary.textContent =
+        "Memuat daftar guru...";
+
+
+    teacherList.innerHTML = `
+
+        <div class="
+            quiz-dashboard-loading
+            teacher-list-state
+        ">
+            Memuat daftar guru...
+        </div>
+
+    `;
 
 
     try {
@@ -443,237 +935,124 @@
             await response.json();
 
 
-        if (!data.success) {
-
-            tableBody.innerHTML = `
-
-                <tr>
-                    <td colspan="5">
-                        ${escapeHtml(
-                            data.message ||
-                            "Gagal mengambil daftar guru."
-                        )}
-                    </td>
-                </tr>
-
-            `;
-
-            return;
-
-        }
-
-
         if (
-            !Array.isArray(
-                data.teachers
-            ) ||
-            data.teachers.length === 0
+            !response.ok ||
+            !data.success
         ) {
 
-            tableBody.innerHTML = `
-
-                <tr>
-                    <td colspan="5">
-                        Belum ada akun guru.
-                    </td>
-                </tr>
-
-            `;
-
-            return;
+            throw new Error(
+                data.message ||
+                "Gagal mengambil daftar guru."
+            );
 
         }
 
 
-        tableBody.innerHTML =
-            "";
+        currentTeachers =
+            Array.isArray(
+                data.teachers
+            )
+                ? data.teachers
+                : [];
 
 
-        data.teachers.forEach(
-            (teacher) => {
-
-                const row =
-                    document.createElement(
-                        "tr"
-                    );
-
-
-                const isCurrentTeacher =
-                    Number(teacher.id) ===
-                    Number(adminId);
-
-
-                const displayRole =
-                    teacher.role === "teacher"
-                        ? "Teacher"
-                        : teacher.role;
-
-
-                row.innerHTML = `
-
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                                teacher.name ||
-                                "-"
-                            )}
-                        </strong>
-                    </td>
-
-
-                    <td>
-                        ${escapeHtml(
-                            teacher.username ||
-                            "-"
-                        )}
-                    </td>
-
-
-                    <td>
-                        ${escapeHtml(
-                            displayRole ||
-                            "-"
-                        )}
-                    </td>
-
-
-                    <td>
-${escapeHtml(
-    teacher.created_at
-        ? formatDeviceDateTime(
-            teacher.created_at
-        )
-        : "-"
-)}
-                    </td>
-
-
-                    <td>
-
-                        ${
-                            isCurrentTeacher
-                                ? `
-                                    <span class="teacher-current-badge">
-                                        Akun Saya
-                                    </span>
-                                `
-                                : `
-                                    <button
-                                        type="button"
-                                        class="admin-delete-button"
-                                        onclick="
-                                            deleteTeacher(
-                                                ${teacher.id},
-                                                '${escapeJsString(
-                                                    teacher.name ||
-                                                    teacher.username ||
-                                                    "Guru"
-                                                )}'
-                                            )
-                                        "
-                                    >
-                                        Hapus
-                                    </button>
-                                `
-                        }
-
-                    </td>
-
-                `;
-
-
-                tableBody.appendChild(
-                    row
-                );
-
-            }
-        );
+        renderTeachers();
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Gagal memuat guru:",
+            error
+        );
 
 
-        tableBody.innerHTML = `
+        currentTeachers = [];
 
-            <tr>
-                <td colspan="5">
-                    Tidak dapat terhubung ke server.
-                </td>
-            </tr>
+
+        teacherDirectorySummary.textContent =
+            "Gagal memuat daftar guru.";
+
+
+        teacherList.innerHTML = `
+
+            <div class="
+                student-modern-empty
+                teacher-list-state
+            ">
+
+                <strong>
+                    Gagal memuat guru
+                </strong>
+
+                <span>
+                    Tidak dapat mengambil data guru dari server.
+                </span>
+
+            </div>
 
         `;
+
+    } finally {
+
+        teacherRefreshButton.disabled =
+            false;
 
     }
 
 }
 
-async function deleteTeacher(
-    teacherId,
-    teacherName
-) {
+function resetTeacherFilters() {
 
-    const confirmed =
-        confirm(
-            `Yakin ingin menghapus akun ${teacherName}?\n\n` +
-            "Semua postingan, reply, announcement, mention, " +
-            "notification, dan data LMS yang dibuat akun ini " +
-            "akan ikut dihapus permanen."
+    teacherSearch.value =
+        "";
+
+    teacherSortFilter.value =
+        "newest";
+
+
+    renderTeachers();
+
+}
+
+
+teacherSearch.addEventListener(
+    "input",
+    renderTeachers
+);
+
+
+teacherSortFilter.addEventListener(
+    "change",
+    renderTeachers
+);
+
+
+async function loadRegistrationCode() {
+
+    const codeBox =
+        document.getElementById(
+            "teacherCodeBox"
         );
 
 
-    if (!confirmed) {
-        return;
-    }
+    codeBox.innerHTML = `
 
+        <div class="
+            quiz-dashboard-loading
+            teacher-code-state
+        ">
+            Memuat kode registrasi...
+        </div>
 
-    const password =
-        prompt(
-            `Masukkan password akun ${teacherName} untuk menghapus akun secara permanen:`
-        );
-
-
-    /*
-        Cancel prompt.
-    */
-    if (password === null) {
-        return;
-    }
-
-
-    if (
-        password.trim().length === 0
-    ) {
-
-        alert(
-            "Password wajib diisi."
-        );
-
-        return;
-
-    }
+    `;
 
 
     try {
 
         const response =
             await fetch(
-                `/api/admin/teachers/${teacherId}`,
-                {
-                    method:
-                        "DELETE",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            password
-                        })
-                }
+                "/api/admin/registration-code"
             );
 
 
@@ -681,182 +1060,262 @@ async function deleteTeacher(
             await response.json();
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            alert(
+            throw new Error(
                 data.message ||
-                "Gagal menghapus akun guru."
+                "Gagal mengambil kode."
             );
+
+        }
+
+
+        if (!data.code) {
+
+            codeBox.innerHTML = `
+
+                <div class="
+                    student-modern-empty
+                    teacher-code-empty
+                ">
+
+                    <strong>
+                        Belum ada kode aktif
+                    </strong>
+
+                    <span>
+                        Buat kode registrasi untuk guru baru.
+                    </span>
+
+                    <button
+                        type="button"
+                        class="
+                            admin-primary-button
+                            teacher-generate-button
+                        "
+                        onclick="regenerateCode()"
+                    >
+                        Generate Code
+                    </button>
+
+                </div>
+
+            `;
 
             return;
 
         }
 
 
-        alert(
-            data.message ||
-            "Akun guru berhasil dihapus beserta seluruh data terkait."
-        );
+        codeBox.innerHTML = `
+
+            <div class="teacher-code-modern-card">
+
+                <div class="teacher-code-content">
+
+                    <span>
+                        KODE REGISTRASI AKTIF
+                    </span>
+
+                    <strong
+                        id="activeTeacherRegistrationCode"
+                    >
+                        ${escapeHtml(
+                            data.code.code
+                        )}
+                    </strong>
+
+                    <p>
+                        Dibuat oleh
+                        <b>
+                            ${escapeHtml(
+                                data.code.creator_name ||
+                                "Guru"
+                            )}
+                        </b>
+                    </p>
+
+                </div>
 
 
-        await loadTeachers();
+                <div class="teacher-code-actions">
+
+<button
+    type="button"
+    id="copyTeacherCodeButton"
+    class="admin-primary-button teacher-copy-button"
+    data-code="${escapeHtml(data.code.code)}"
+    onclick="copyTeacherCode(this)"
+>
+    Salin Kode
+</button>
+
+
+                    <button
+                        type="button"
+                        class="admin-primary-button"
+                        onclick="regenerateCode()"
+                    >
+                        Regenerate Code
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
 
 
     } catch (error) {
 
-        console.error(error);
-
-
-        alert(
-            "Tidak dapat terhubung ke server."
+        console.error(
+            "Gagal memuat kode:",
+            error
         );
+
+
+        codeBox.innerHTML = `
+
+            <div class="
+                student-modern-empty
+                teacher-code-state
+            ">
+
+                <strong>
+                    Gagal memuat kode
+                </strong>
+
+                <span>
+                    Tidak dapat mengambil kode registrasi.
+                </span>
+
+            </div>
+
+        `;
 
     }
 
 }
 
-function escapeJsString(text) {
+let teacherCodeCopyFeedbackTimer =
+    null;
 
-    return String(
-        text ?? ""
-    )
-        .replaceAll(
-            "\\",
-            "\\\\"
-        )
-        .replaceAll(
-            "'",
-            "\\'"
-        )
-        .replaceAll(
-            "\n",
-            " "
-        )
-        .replaceAll(
-            "\r",
-            " "
+
+function showTeacherCodeCopyFeedback(
+    copyButton
+) {
+
+    clearTimeout(
+        teacherCodeCopyFeedbackTimer
+    );
+
+
+    copyButton.classList.remove(
+        "copy-success"
+    );
+
+
+    /*
+        Restart animasi jika tombol ditekan
+        berulang kali.
+    */
+    void copyButton.offsetWidth;
+
+
+    copyButton.classList.add(
+        "copy-success"
+    );
+
+
+    teacherCodeCopyFeedbackTimer =
+        setTimeout(
+            () => {
+
+                copyButton.classList.remove(
+                    "copy-success"
+                );
+
+            },
+
+            850
         );
 
 }
 
 
-        async function loadRegistrationCode() {
+async function copyTeacherCode(
+    copyButton
+) {
 
-            const codeBox =
-                document.getElementById(
-                    "teacherCodeBox"
-                );
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/admin/registration-code"
-                    );
+    const code =
+        copyButton.dataset.code;
 
 
-                const data =
-                    await response.json();
+    if (!code) {
+        return;
+    }
 
 
-                if (!data.success) {
+    try {
 
-                    codeBox.innerHTML = `
-                        <p class="admin-form-message">
-                            ${escapeHtml(
-                                data.message ||
-                                "Gagal mengambil kode."
-                            )}
-                        </p>
-                    `;
-
-                    return;
-
-                }
+        await navigator.clipboard.writeText(
+            code
+        );
 
 
-                if (!data.code) {
-
-                    codeBox.innerHTML = `
-
-                        <div class="empty-state">
-
-                            <strong>
-                                Belum ada kode aktif
-                            </strong>
-
-                            <span>
-                                Buat kode registrasi untuk guru baru.
-                            </span>
-
-                            <button
-                                type="button"
-                                class="admin-primary-button"
-                                onclick="regenerateCode()"
-                            >
-                                Generate Code
-                            </button>
-
-                        </div>
-
-                    `;
-
-                    return;
-
-                }
+        showTeacherCodeCopyFeedback(
+            copyButton
+        );
 
 
-                codeBox.innerHTML = `
+    } catch (error) {
 
-                    <div class="teacher-registration-card">
-
-                        <span class="teacher-code-label">
-                            KODE REGISTRASI AKTIF
-                        </span>
-
-                        <strong class="teacher-registration-code">
-                            ${escapeHtml(
-                                data.code.code
-                            )}
-                        </strong>
-
-                        <p>
-                            Dibuat oleh
-                            <strong>
-                                ${escapeHtml(
-                                    data.code.creator_name ||
-                                    "Guru"
-                                )}
-                            </strong>
-                        </p>
-
-                        <button
-                            type="button"
-                            class="admin-primary-button"
-                            onclick="regenerateCode()"
-                        >
-                            Regenerate Code
-                        </button>
-
-                    </div>
-
-                `;
+        const temporaryInput =
+            document.createElement(
+                "textarea"
+            );
 
 
-            } catch (error) {
+        temporaryInput.value =
+            code;
 
-                console.error(error);
+        temporaryInput.setAttribute(
+            "readonly",
+            ""
+        );
 
-                codeBox.innerHTML = `
-                    <p class="admin-form-message">
-                        Tidak dapat terhubung ke server.
-                    </p>
-                `;
+        temporaryInput.style.position =
+            "fixed";
 
-            }
+        temporaryInput.style.opacity =
+            "0";
 
-        }
+
+        document.body.appendChild(
+            temporaryInput
+        );
+
+
+        temporaryInput.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+
+        temporaryInput.remove();
+
+
+        showTeacherCodeCopyFeedback(
+            copyButton
+        );
+
+    }
+
+}
 
 
  async function regenerateCode() {
@@ -881,31 +1340,16 @@ function escapeJsString(text) {
     /*
         Feedback langsung saat proses generate.
     */
-    codeBox.innerHTML = `
-        <div class="teacher-registration-card">
+codeBox.innerHTML = `
 
-            <span class="teacher-code-label">
-                KODE REGISTRASI AKTIF
-            </span>
+    <div class="
+        quiz-dashboard-loading
+        teacher-code-state
+    ">
+        Membuat kode registrasi baru...
+    </div>
 
-            <strong class="teacher-registration-code">
-                ...
-            </strong>
-
-            <p>
-                Dibuat oleh...
-            </p>
-
-            <button
-                type="button"
-                class="admin-primary-button"
-                disabled
-            >
-                Memuat...
-            </button>
-
-        </div>
-    `;
+`;
 
 
     try {

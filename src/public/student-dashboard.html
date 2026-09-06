@@ -208,197 +208,279 @@
             </header>
 
 
-            <div class="dashboard-content">
+            <div class="
+                admin-dashboard-content
+                dashboard-v2
+                student-dashboard-v2
+            ">
 
+                <!-- STUDENT HERO -->
 
-                <!-- WELCOME -->
+                <section class="dashboard-v2-hero student-dashboard-v2-hero">
 
-                <section class="welcome-card">
+                    <div class="dashboard-v2-hero-content">
 
-                    <div>
-
-                        <small class="eyebrow">
-                            STUDENT PORTAL
-                        </small>
+                        <div class="dashboard-v2-status">
+                            <span></span>
+                            STUDENT WORKSPACE
+                        </div>
 
                         <h1 id="studentName">
                             Selamat datang
                         </h1>
 
                         <p>
-                            Pantau informasi sekolah,
-                            nilai, poin dan aktivitas
-                            kelas kamu.
+                            Semua kebutuhan belajar, informasi sekolah,
+                            nilai, poin, dan aktivitas kelas tersedia dalam
+                            satu ruang siswa.
                         </p>
 
                     </div>
 
 
-                    <div class="welcome-decoration">
-                        ★
-                    </div>
+                    <aside class="dashboard-v2-command student-dashboard-profile-card">
+
+                        <div class="dashboard-v2-command-header">
+
+                            <div class="dashboard-v2-command-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="3.5"></circle>
+                                    <path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6"></path>
+                                </svg>
+                            </div>
+
+                            <div>
+                                <span>STUDENT PROFILE</span>
+                                <strong id="studentHeroName">Student</strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="dashboard-v2-command-list">
+
+                            <div>
+                                <span class="dashboard-v2-command-dot blue"></span>
+                                <p>
+                                    <strong id="studentHeroClass">Kelas</strong>
+                                    <small>Kelas aktif saat ini</small>
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="dashboard-v2-command-dot green"></span>
+                                <p>
+                                    <strong>Akun aktif</strong>
+                                    <small>Terhubung dengan portal siswa</small>
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="dashboard-v2-role">
+                            <span>Akses portal</span>
+                            <strong>STUDENT</strong>
+                        </div>
+
+                    </aside>
 
                 </section>
 
-<!-- QUICK MENU -->
 
-<section class="student-quick-access-section">
+                <!-- MAIN MODULES -->
 
-                    <div class="section-heading">
+                <section class="dashboard-v2-section" id="studentMainModules">
+
+                    <div class="dashboard-v2-section-heading">
 
                         <div>
-
-                            <h2>
-                                Akses Cepat
-                            </h2>
-
-                            <p>
-                                Menu utama kamu
-                            </p>
-
+                            <small class="dashboard-v2-eyebrow">MAIN MODULES</small>
+                            <h2>Aktivitas belajar kamu</h2>
+                            <p>Pilih bagian yang ingin kamu buka.</p>
                         </div>
 
                     </div>
 
 
-                    <div class="quick-grid">
+                    <div class="dashboard-v2-module-grid">
+
+                        <button
+                            type="button"
+                            class="dashboard-v2-module module-students"
+                            onclick="goToProfile()"
+                        >
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <circle cx="12" cy="8" r="3.5"></circle>
+                                        <path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6"></path>
+                                    </svg>
+                                </span>
+                                <span class="dashboard-v2-module-tag">ACCOUNT</span>
+                            </div>
+                            <h3>Profil Saya</h3>
+                            <p>Lihat dan sesuaikan informasi profil siswa kamu.</p>
+                            <span class="dashboard-v2-module-link">Buka modul <span>→</span></span>
+                        </button>
 
 
                         <button
-                            class="quick-card"
                             type="button"
+                            class="dashboard-v2-module module-quiz"
+                            onclick="window.location.href='/student-quizzes.html'"
+                        >
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M9 7a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.1-1.5 2.4"></path>
+                                        <path d="M12 16h.01"></path>
+                                        <rect x="4" y="3" width="16" height="18" rx="3"></rect>
+                                    </svg>
+                                </span>
+                                <span class="dashboard-v2-module-tag">LEARNING</span>
+                            </div>
+                            <h3>Online Quiz</h3>
+                            <p>Kerjakan quiz aktif dan tinjau hasil pengerjaan kamu.</p>
+                            <span class="dashboard-v2-module-link">Buka modul <span>→</span></span>
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="dashboard-v2-module module-points"
                             onclick="goToPoints()"
                         >
-
-                            <div class="quick-icon">
-                                ★
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Poin Saya
-                                </strong>
-
-                                <span>
-                                    Lihat riwayat poin
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"></path>
+                                    </svg>
                                 </span>
-
+                                <span class="dashboard-v2-module-tag">REWARD</span>
                             </div>
-
-                            <span class="quick-arrow">
-                                →
-                            </span>
-
+                            <h3>Poin Saya</h3>
+                            <p>Pantau saldo, penghargaan, dan riwayat perubahan poin.</p>
+                            <span class="dashboard-v2-module-link">Buka modul <span>→</span></span>
                         </button>
 
 
                         <button
-                            class="quick-card"
                             type="button"
-                            onclick="goToAnnouncements()"
-                        >
-
-                            <div class="quick-icon">
-                                ◉
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Classroom Feed
-                                </strong>
-
-                                <span>
-                                    Diskusi dan komunikasi kelas
-                                </span>
-
-                            </div>
-
-                            <span class="quick-arrow">
-                                →
-                            </span>
-
-                        </button>
-
-
-                        <button
-                            class="quick-card"
-                            type="button"
+                            class="dashboard-v2-module module-scores"
                             onclick="goToExamScores()"
                         >
-
-                            <div class="quick-icon">
-                                ▤
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Nilai Saya
-                                </strong>
-
-                                <span>
-                                    Lihat hasil ujian
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M5 20V10M12 20V4M19 20v-7"></path>
+                                    </svg>
                                 </span>
-
+                                <span class="dashboard-v2-module-tag">ACADEMIC</span>
                             </div>
-
-                            <span class="quick-arrow">
-                                →
-                            </span>
-
+                            <h3>Nilai Saya</h3>
+                            <p>Lihat nilai ujian dan perkembangan akademik kamu.</p>
+                            <span class="dashboard-v2-module-link">Buka modul <span>→</span></span>
                         </button>
 
+
+                        <button
+                            type="button"
+                            class="dashboard-v2-module module-feed"
+                            onclick="goToAnnouncements()"
+                        >
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path>
+                                        <path d="M8 9h8M8 13h5"></path>
+                                    </svg>
+                                </span>
+                                <span class="dashboard-v2-module-tag">COMMUNITY</span>
+                            </div>
+                            <h3>Classroom Feed</h3>
+                            <p>Ikuti diskusi, posting, balasan, dan aktivitas kelas.</p>
+                            <span class="dashboard-v2-module-link">Buka modul <span>→</span></span>
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="dashboard-v2-module module-information"
+                            onclick="document.getElementById('studentInformationBoard').scrollIntoView({ behavior: 'smooth' })"
+                        >
+                            <div class="dashboard-v2-module-top">
+                                <span class="dashboard-v2-module-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M4 13V8l14-4v13L4 13Z"></path>
+                                        <path d="M7 14v5a2 2 0 0 0 2 2h2v-6"></path>
+                                        <path d="M20 8v5"></path>
+                                    </svg>
+                                </span>
+                                <span class="dashboard-v2-module-tag">INFORMATION</span>
+                            </div>
+                            <h3>Information Board</h3>
+                            <p>Baca informasi resmi dan pembaruan terbaru sekolah.</p>
+                            <span class="dashboard-v2-module-link">Lihat informasi <span>↓</span></span>
+                        </button>
 
                     </div>
 
                 </section>
 
 
-                <!-- ANNOUNCEMENT -->
+                <!-- INFORMATION BOARD -->
 
- <section class="announcement-section">
+                <section
+                    id="studentInformationBoard"
+                    class="
+                        dashboard-v2-section
+                        announcement-section
+                        student-dashboard-board
+                    "
+                >
 
-<div class="section-heading student-information-board-heading">
+                    <div class="dashboard-v2-section-heading student-information-board-heading">
 
-    <div class="student-information-board-copy">
+                        <div class="student-information-board-copy">
 
-<div class="student-information-board-title">
+                            <small class="dashboard-v2-eyebrow">SCHOOL INFORMATION</small>
 
-    <h2>Information Board</h2>
+                            <div class="student-information-board-title">
+                                <h2>Information Board</h2>
 
-    <div class="student-announcement-live">
-        <span class="student-announcement-live-dot"></span>
-        <span>LIVE</span>
-    </div>
+                                <div class="student-announcement-live">
+                                    <span class="student-announcement-live-dot"></span>
+                                    <span>LIVE</span>
+                                </div>
+                            </div>
 
-</div>
+                            <p>Informasi terbaru dari sekolah.</p>
 
-        <p>Informasi terbaru dari sekolah</p>
-
-    </div>
-
-    <button
-        type="button"
-        class="student-announcement-view-all-button"
-        onclick="openAnnouncementViewAll()"
-    >
-        View All
-    </button>
-
-</div>
+                        </div>
 
 
-    <div
-        id="publicAnnouncementList"
-        class="announcement-list"
-    >
-        Memuat announcement...
-    </div>
+                        <button
+                            type="button"
+                            class="student-announcement-view-all-button"
+                            onclick="openAnnouncementViewAll()"
+                        >
+                            View All
+                        </button>
 
-</section>
+                    </div>
 
+
+                    <div
+                        id="publicAnnouncementList"
+                        class="announcement-list"
+                    >
+                        <div class="quiz-dashboard-loading">
+                            Memuat announcement...
+                        </div>
+                    </div>
+
+                </section>
 
             </div>
 
@@ -593,6 +675,18 @@ let publicAnnouncementPollingTimer =
             "topStudentName"
         ).textContent =
             studentName;
+
+
+        document.getElementById(
+            "studentHeroName"
+        ).textContent =
+            studentName || "Student";
+
+
+        document.getElementById(
+            "studentHeroClass"
+        ).textContent =
+            studentClass || "Kelas belum tersedia";
 
 loadPublicAnnouncements();
 
@@ -981,7 +1075,11 @@ async function loadPublicAnnouncements(
     if (showLoading) {
 
         publicAnnouncementList.innerHTML =
-            "Memuat announcement...";
+            `
+                <div class="quiz-dashboard-loading">
+                    Memuat announcement...
+                </div>
+            `;
 
     }
 
@@ -1162,7 +1260,7 @@ function startPublicAnnouncementLive() {
                 );
 
             },
-            5000
+            12000
         );
 
 }

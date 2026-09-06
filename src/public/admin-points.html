@@ -242,254 +242,448 @@
             </header>
 
 
-            <div class="admin-page-content">
+ <div class="
+    admin-page-content
+    student-modern-page
+    admin-points-modern-page
+">
 
-                <!-- HERO -->
+    <!-- HERO -->
 
-                <section class="admin-page-hero">
+    <section class="
+        admin-page-hero
+        student-data-hero
+        points-data-hero
+    ">
 
-                    <div>
+        <div class="student-data-hero-content">
 
-                        <small class="eyebrow">
-                            BEHAVIOR POINTS
-                        </small>
+            <small class="eyebrow">
+                BEHAVIOR POINTS
+            </small>
 
-                        <h1>
-                            Poin Siswa
-                        </h1>
+            <h1>
+                Poin Siswa
+            </h1>
 
-                        <p>
-                            Pilih siswa untuk melihat total poin,
-                            menambah atau mengurangi poin,
-                            serta melihat riwayat transaksi.
-                        </p>
+            <p>
+                Kelola penghargaan dan pengurangan poin siswa
+                dari satu ruang kerja.
+            </p>
 
-                    </div>
+        </div>
 
-                </section>
+    </section>
 
 
-                <!-- SELECT STUDENT -->
+    <!-- WORKSPACE -->
 
-                <section class="admin-form-section">
+    <div class="admin-points-workspace">
 
-                    <div class="section-heading">
+        <!-- STUDENT SELECTOR -->
 
-                        <div>
+<section
+    id="pointsHistoryPanel"
+    data-student-selected="false"
+    class="
+        student-modern-panel
+        points-history-panel
+    "
+>
 
-                            <h2>
-                                Pilih Siswa
-                            </h2>
+            <div class="student-modern-heading">
 
-                            <p>
-                                Cari siswa berdasarkan nama,
-                                kelas, atau kode login.
-                            </p>
+                <div class="student-modern-heading-icon">
+                    S
+                </div>
 
-                        </div>
+                <div>
 
-                    </div>
+                    <small>
+                        STUDENT SELECTOR
+                    </small>
 
+                    <h2>
+                        Pilih Siswa
+                    </h2>
 
-                    <div class="admin-point-select-row">
+                    <p>
+                        Tentukan siswa yang ingin dikelola.
+                    </p>
 
-                        <div class="admin-form-field">
-
-                            <label for="studentSelect">
-                                Siswa
-                            </label>
-
-                            <select id="studentSelect">
-
-                                <option value="">
-                                    -- Pilih Siswa --
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- STUDENT INFO -->
-
-                <section
-                    id="studentInfo"
-                    class="admin-point-student-card"
-                >
-
-                    <div class="empty-state">
-
-                        <strong>
-                            Belum ada siswa dipilih
-                        </strong>
-
-                        <span>
-                            Pilih siswa untuk melihat informasi poin.
-                        </span>
-
-                    </div>
-
-                </section>
-
-
-                <!-- POINT FORM -->
-
-                <section
-                    id="pointFormContainer"
-                    class="admin-form-section"
-                    style="display: none;"
-                >
-
-                    <div class="section-heading">
-
-                        <div>
-
-                            <h2>
-                                Tambah / Kurangi Poin
-                            </h2>
-
-                            <p>
-                                Gunakan angka positif untuk menambah,
-                                negatif untuk mengurangi.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <form
-                        id="pointForm"
-                        class="admin-point-form"
-                    >
-
-                        <div class="admin-form-field">
-
-                            <label for="points">
-                                Jumlah Poin
-                            </label>
-
-                            <input
-                                type="number"
-                                id="points"
-                                placeholder="Contoh: 10 atau -5"
-                                required
-                            >
-
-                            <small class="field-helper">
-                                Contoh: 10 untuk menambah, -5 untuk mengurangi.
-                            </small>
-
-                        </div>
-
-
-                        <div class="admin-form-field">
-
-                            <label for="reason">
-                                Keterangan
-                            </label>
-
-                            <input
-                                type="text"
-                                id="reason"
-                                placeholder="Contoh: Menjawab pertanyaan"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="admin-form-action">
-
-                            <button
-                                type="submit"
-                                class="admin-primary-button"
-                            >
-                                Simpan Transaksi
-                            </button>
-
-                        </div>
-
-                    </form>
-
-
-                    <p
-                        id="message"
-                        class="admin-form-message"
-                    ></p>
-
-                </section>
-
-
-                <!-- HISTORY -->
-
-                <section class="admin-table-section">
-
-                    <div class="section-heading">
-
-                        <div>
-
-                            <h2>
-                                Riwayat Transaksi
-                            </h2>
-
-                            <p>
-                                Semua perubahan poin siswa terpilih
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="admin-table-wrapper">
-
-                        <table class="admin-data-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>
-                                        Poin
-                                    </th>
-
-                                    <th>
-                                        Keterangan
-                                    </th>
-
-                                    <th>
-                                        Waktu
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody id="transactionList">
-
-                                <tr>
-
-                                    <td colspan="3">
-                                        Pilih siswa terlebih dahulu.
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </section>
+                </div>
 
             </div>
+
+
+            <div class="student-modern-field">
+
+                <label for="studentSelect">
+                    Siswa
+                </label>
+
+                <div class="student-class-select">
+
+                    <select id="studentSelect">
+
+                        <option value="">
+                            Pilih siswa
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="studentInfo"
+                class="points-selected-student"
+            >
+
+                <div class="student-modern-empty">
+
+                    <strong>
+                        Belum ada siswa dipilih
+                    </strong>
+
+                    <span>
+                        Pilih siswa untuk melihat informasi poin.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TRANSACTION FORM -->
+
+ <section
+    id="pointFormContainer"
+    class="
+        student-modern-panel
+        points-transaction-panel
+    "
+>
+
+    <div class="student-modern-heading">
+
+        <div class="
+            student-modern-heading-icon
+            student-modern-heading-icon-purple
+        ">
+            P
+        </div>
+
+        <div>
+
+            <small>
+                POINT TRANSACTION
+            </small>
+
+            <h2>
+                Tambah atau Kurangi Poin
+            </h2>
+
+            <p>
+                Gunakan angka negatif untuk pengurangan.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- KONDISI BELUM PILIH SISWA -->
+
+<div
+    id="pointFormEmpty"
+    class="quiz-dashboard-empty"
+>
+
+        <strong>
+            Belum memilih siswa
+        </strong>
+
+        <span>
+            Pilih siswa terlebih dahulu untuk membuat transaksi poin.
+        </span>
+
+    </div>
+
+
+    <!-- ISI FORM SETELAH SISWA DIPILIH -->
+
+<div
+    id="pointFormContent"
+    class="points-form-content"
+    style="display: none;"
+>
+
+        <form
+            id="pointForm"
+            class="points-modern-form"
+        >
+
+            <div class="student-modern-field">
+
+                <label for="points">
+                    Jumlah Poin
+                </label>
+
+                <input
+                    type="number"
+                    id="points"
+                    placeholder="10 atau -5"
+                    required
+                >
+
+            </div>
+
+
+            <div class="student-modern-field">
+
+                <label for="reason">
+                    Keterangan
+                </label>
+
+                <input
+                    type="text"
+                    id="reason"
+                    placeholder="Contoh: Menjawab pertanyaan"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="
+                    student-modern-primary-button
+                    points-submit-button
+                "
+            >
+                Simpan Transaksi
+            </button>
+
+        </form>
+
+
+        <div class="points-form-note">
+
+            <span>+</span>
+            Angka positif menambah poin.
+
+            <span>−</span>
+            Angka negatif mengurangi poin.
+
+        </div>
+
+
+        <p
+            id="message"
+            class="admin-form-message"
+        ></p>
+
+    </div>
+
+</section>
+
+    </div>
+
+
+    <!-- HISTORY -->
+
+    <section class="
+        student-modern-panel
+        points-history-panel
+    ">
+
+        <div class="
+            student-modern-heading
+            points-history-heading
+        ">
+
+            <div>
+
+                <small>
+                    TRANSACTION HISTORY
+                </small>
+
+                <h2>
+                    Riwayat Transaksi
+                </h2>
+
+                <p>
+                    Semua perubahan poin siswa terpilih.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="pointsRefreshButton"
+                class="student-directory-refresh"
+                onclick="
+                    refreshAdminPoints(
+                        this
+                    )
+                "
+                disabled
+            >
+
+                <span class="
+                    student-refresh-icon
+                    points-refresh-icon
+                ">
+                    ↻
+                </span>
+
+                <span class="student-refresh-label">
+                    Refresh
+                </span>
+
+            </button>
+
+        </div>
+
+        <div class="
+    student-directory-controls
+    points-history-controls
+">
+
+    <div class="
+        student-list-control
+        student-search-control
+    ">
+
+        <label for="pointHistorySearch">
+            Cari transaksi
+        </label>
+
+        <input
+            type="search"
+            id="pointHistorySearch"
+            placeholder="Cari keterangan atau jumlah poin"
+            autocomplete="off"
+            oninput="renderPointTransactions()"
+        >
+
+    </div>
+
+
+    <div class="student-list-control">
+
+        <label for="pointTypeFilter">
+            Jenis
+        </label>
+
+        <select
+            id="pointTypeFilter"
+            onchange="renderPointTransactions()"
+        >
+
+            <option value="all">
+                Semua transaksi
+            </option>
+
+            <option value="positive">
+                Poin ditambah
+            </option>
+
+            <option value="negative">
+                Poin dikurangi
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="student-list-control">
+
+        <label for="pointSortFilter">
+            Urutkan
+        </label>
+
+        <select
+            id="pointSortFilter"
+            onchange="renderPointTransactions()"
+        >
+
+            <option value="newest">
+                Terbaru
+            </option>
+
+            <option value="oldest">
+                Terlama
+            </option>
+
+            <option value="az">
+                A–Z
+            </option>
+
+            <option value="za">
+                Z–A
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="student-filter-reset-button"
+        onclick="resetPointHistoryFilters()"
+    >
+        Reset
+    </button>
+
+</div>
+
+
+<div class="student-directory-result-bar">
+
+    <p
+        id="pointHistorySummary"
+        class="student-filter-summary"
+    >
+        Pilih siswa untuk melihat transaksi.
+    </p>
+
+</div>
+
+
+        <div
+            id="transactionList"
+            class="points-transaction-list"
+        >
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Belum ada siswa dipilih
+                </strong>
+
+                <span>
+                    Riwayat transaksi akan muncul di sini.
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+</main>
 
         </main>
 
@@ -575,6 +769,17 @@ document.getElementById(
                 "pointFormContainer"
             );
 
+        const pointFormEmpty =
+    document.getElementById(
+        "pointFormEmpty"
+    );
+
+
+const pointFormContent =
+    document.getElementById(
+        "pointFormContent"
+    );
+
 
         const pointForm =
             document.getElementById(
@@ -592,6 +797,44 @@ document.getElementById(
             document.getElementById(
                 "transactionList"
             );
+
+
+const pointsRefreshButton =
+    document.getElementById(
+        "pointsRefreshButton"
+    );
+
+const pointHistorySearch =
+    document.getElementById(
+        "pointHistorySearch"
+    );
+
+
+const pointTypeFilter =
+    document.getElementById(
+        "pointTypeFilter"
+    );
+
+
+const pointSortFilter =
+    document.getElementById(
+        "pointSortFilter"
+    );
+
+
+const pointHistorySummary =
+    document.getElementById(
+        "pointHistorySummary"
+    );
+
+const pointsHistoryPanel =
+    document.getElementById(
+        "pointsHistoryPanel"
+    );
+
+
+let currentPointTransactions =
+    [];
 
 
         // =====================================
@@ -661,35 +904,68 @@ document.getElementById(
             "change",
             () => {
 
-                const studentId =
-                    studentSelect.value;
+const studentId =
+    String(
+        studentSelect.value ||
+        ""
+    ).trim();
+
+if (!studentId) {
+
+pointsHistoryPanel.dataset
+    .studentSelected =
+        "false";
+
+pointFormEmpty.style.display =
+    "flex";
 
 
-                if (!studentId) {
-
-                    pointFormContainer.style.display =
-                        "none";
+pointFormContent.style.display =
+    "none";
 
 
-                    studentInfo.innerHTML = `
-                        <p>
-                            Pilih siswa untuk melihat poin.
-                        </p>
-                    `;
+
+    studentInfo.innerHTML = `
+
+        <div class="student-modern-empty">
+
+            <strong>
+                Belum ada siswa dipilih
+            </strong>
+
+            <span>
+                Pilih siswa untuk melihat informasi poin.
+            </span>
+
+        </div>
+
+    `;
 
 
-                    transactionList.innerHTML = `
-                        <tr>
-                            <td colspan="3">
-                                Pilih siswa terlebih dahulu.
-                            </td>
-                        </tr>
-                    `;
+transactionList.innerHTML = `
+
+    <div class="student-modern-empty">
+
+        <strong>
+            Belum ada siswa dipilih
+        </strong>
+
+        <span>
+            Riwayat transaksi akan muncul di sini.
+        </span>
+
+    </div>
+
+`;
 
 
-                    return;
+    pointsRefreshButton.disabled =
+        true;
 
-                }
+
+    return;
+
+}
 
 
                 loadStudentPoints(
@@ -707,6 +983,18 @@ document.getElementById(
         async function loadStudentPoints(
             studentId
         ) {
+
+transactionList.innerHTML = `
+
+    <div class="quiz-dashboard-loading">
+        Memuat riwayat poin...
+    </div>
+
+`;
+
+
+pointsRefreshButton.disabled =
+    true;
 
             try {
 
@@ -732,44 +1020,63 @@ document.getElementById(
 
                 }
 
+                pointsHistoryPanel.dataset
+    .studentSelected =
+        "true";
 
-                // Tampilkan info siswa
 
-const studentInitial =
+// Tampilkan info siswa
+
+const studentName =
     String(
         data.student.name ||
-        ""
-    )
+        "Tanpa nama"
+    );
+
+
+const studentClass =
+    String(
+        data.student.className ||
+        "Tanpa kelas"
+    );
+
+
+const studentInitial =
+    studentName
         .trim()
         .charAt(0)
         .toUpperCase() ||
     "S";
 
+
 studentInfo.innerHTML = `
 
-    <div class="admin-point-student-main">
+    <div class="points-selected-profile">
 
-<div class="student-large-avatar">
-    ${escapeHtml(
-        studentInitial
-    )}
-</div>
+        <div class="student-large-avatar">
 
-        <div>
+            ${escapeHtml(
+                studentInitial
+            )}
 
-            <span class="admin-card-label">
-                STUDENT
+        </div>
+
+
+        <div class="points-selected-identity">
+
+            <span>
+                SISWA TERPILIH
             </span>
 
             <h3>
                 ${escapeHtml(
-                    data.student.name
+                    studentName
                 )}
             </h3>
 
             <p>
                 ${escapeHtml(
-                    data.student.className
+                    studentClass
                 )}
             </p>
 
@@ -781,11 +1088,14 @@ studentInfo.innerHTML = `
     <div class="admin-point-total">
 
         <span>
-            Total Poin
+            TOTAL POIN
         </span>
 
         <strong>
-            ${data.totalPoints}
+            ${Number(
+                data.totalPoints ||
+                0
+            )}
         </strong>
 
     </div>
@@ -793,99 +1103,504 @@ studentInfo.innerHTML = `
 `;
 
 
-                pointFormContainer.style.display =
-                    "block";
+pointsRefreshButton.disabled =
+    false;
+
+pointFormContent.hidden =
+    false;
 
 
-                // Tampilkan transaksi
-                if (
-                    data.transactions.length === 0
-                ) {
-
-                    transactionList.innerHTML = `
-                        <tr>
-                            <td colspan="3">
-                                Belum ada transaksi.
-                            </td>
-                        </tr>
-                    `;
-
-                    return;
-
-                }
+pointFormEmpty.style.display =
+    "none";
 
 
-                transactionList.innerHTML = "";
+pointFormContent.style.display =
+    "block";
 
 
-                data.transactions.forEach(
-                    (transaction) => {
+// Simpan transaksi untuk filter lokal
 
-                        const row =
-                            document.createElement(
-                                "tr"
-                            );
-
-
-const isPositive =
-    transaction.points > 0;
-
-
-row.innerHTML = `
-
-    <td>
-
-        <span
-            class="
-                admin-point-value
-                ${
-                    isPositive
-                        ? "positive"
-                        : "negative"
-                }
-            "
-        >
-            ${
-                isPositive
-                    ? "+"
-                    : ""
-            }${transaction.points}
-        </span>
-
-    </td>
+currentPointTransactions =
+    Array.isArray(
+        data.transactions
+    )
+        ? [
+            ...data.transactions
+        ]
+        : [];
 
 
-    <td>
-        ${escapeHtml(
-            transaction.reason
-        )}
-    </td>
-
-
-    <td>
-${formatDeviceDateTime(
-    transaction.created_at
-)}
-    </td>
-
-`;
-
-
-                        transactionList.appendChild(
-                            row
-                        );
-
-                    }
-                );
+renderPointTransactions();
 
 
             } catch (error) {
 
-                console.error(error);
+pointsHistoryPanel.dataset
+    .studentSelected =
+        "false";
+
+console.error(error);
+
+
+transactionList.innerHTML = `
+
+    <div class="student-modern-empty">
+
+        <strong>
+            Gagal memuat riwayat
+        </strong>
+
+        <span>
+            Tidak dapat mengambil transaksi poin dari server.
+        </span>
+
+    </div>
+
+`;
+
+
+pointsRefreshButton.disabled =
+    false;
 
             }
 
         }
+
+async function refreshAdminPoints(
+    button
+) {
+
+    const studentId =
+        studentSelect.value;
+
+
+    if (
+        !studentId ||
+        button.disabled
+    ) {
+
+        return;
+
+    }
+
+
+    button.disabled =
+        true;
+
+
+    try {
+
+        await loadStudentPoints(
+            studentId
+        );
+
+    } finally {
+
+        button.disabled =
+            false;
+
+    }
+
+}
+
+function getPointTransactionTimestamp(
+    transaction
+) {
+
+    const timestamp =
+        Date.parse(
+            transaction.created_at ||
+            ""
+        );
+
+
+    if (
+        Number.isFinite(
+            timestamp
+        )
+    ) {
+
+        return timestamp;
+
+    }
+
+
+    return Number(
+        transaction.id ||
+        0
+    );
+
+}
+
+
+function renderPointTransactions() {
+
+    const hasSelectedStudent =
+        pointsHistoryPanel.dataset
+            .studentSelected ===
+        "true";
+
+
+    if (!hasSelectedStudent) {
+
+        pointHistorySummary.textContent =
+            "Pilih siswa untuk melihat transaksi.";
+
+
+        transactionList.innerHTML = `
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Belum ada siswa dipilih
+                </strong>
+
+                <span>
+                    Riwayat transaksi akan muncul di sini.
+                </span>
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    const searchTerm =
+        String(
+            pointHistorySearch.value ||
+            ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "id-ID"
+            );
+
+
+    const selectedType =
+        pointTypeFilter.value;
+
+
+    const selectedSort =
+        pointSortFilter.value;
+
+
+    let filteredTransactions =
+        currentPointTransactions.filter(
+            transaction => {
+
+                const points =
+                    Number(
+                        transaction.points ||
+                        0
+                    );
+
+
+                const matchesType =
+                    selectedType === "all" ||
+
+                    (
+                        selectedType ===
+                            "positive" &&
+                        points > 0
+                    ) ||
+
+                    (
+                        selectedType ===
+                            "negative" &&
+                        points < 0
+                    );
+
+
+                const searchableText =
+                    [
+                        transaction.reason,
+                        points,
+                        formatDeviceDateTime(
+                            transaction.created_at
+                        )
+                    ]
+                        .join(" ")
+                        .toLocaleLowerCase(
+                            "id-ID"
+                        );
+
+
+                return (
+                    matchesType &&
+                    searchableText.includes(
+                        searchTerm
+                    )
+                );
+
+            }
+        );
+
+
+    filteredTransactions.sort(
+        (
+            transactionA,
+            transactionB
+        ) => {
+
+            if (
+                selectedSort ===
+                "oldest"
+            ) {
+
+                return (
+                    getPointTransactionTimestamp(
+                        transactionA
+                    ) -
+                    getPointTransactionTimestamp(
+                        transactionB
+                    )
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "az"
+            ) {
+
+                return String(
+                    transactionA.reason ||
+                    ""
+                ).localeCompare(
+                    String(
+                        transactionB.reason ||
+                        ""
+                    ),
+                    "id-ID",
+                    {
+                        sensitivity:
+                            "base"
+                    }
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "za"
+            ) {
+
+                return String(
+                    transactionB.reason ||
+                    ""
+                ).localeCompare(
+                    String(
+                        transactionA.reason ||
+                        ""
+                    ),
+                    "id-ID",
+                    {
+                        sensitivity:
+                            "base"
+                    }
+                );
+
+            }
+
+
+            return (
+                getPointTransactionTimestamp(
+                    transactionB
+                ) -
+                getPointTransactionTimestamp(
+                    transactionA
+                )
+            );
+
+        }
+    );
+
+
+    pointHistorySummary.textContent =
+        `${filteredTransactions.length} dari ${currentPointTransactions.length} transaksi ditampilkan`;
+
+
+    transactionList.innerHTML =
+        "";
+
+
+if (
+    currentPointTransactions.length ===
+    0
+) {
+
+    pointHistorySummary.textContent =
+        "0 transaksi ditampilkan";
+
+
+    transactionList.innerHTML = `
+
+        <div class="student-modern-empty">
+
+            <strong>
+                Belum ada transaksi
+            </strong>
+
+            <span>
+                Siswa ini belum mempunyai riwayat poin.
+            </span>
+
+        </div>
+
+    `;
+
+
+    return;
+
+}
+
+
+    if (
+        filteredTransactions.length ===
+        0
+    ) {
+
+        transactionList.innerHTML = `
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Transaksi tidak ditemukan
+                </strong>
+
+                <span>
+                    Coba ubah pencarian atau filter transaksi.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    filteredTransactions.forEach(
+        transaction => {
+
+            const pointValue =
+                Number(
+                    transaction.points ||
+                    0
+                );
+
+
+            const isPositive =
+                pointValue > 0;
+
+
+            const isNegative =
+                pointValue < 0;
+
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+
+            card.className =
+                `
+                    points-transaction-card
+                    ${
+                        isPositive
+                            ? "positive"
+                            : isNegative
+                                ? "negative"
+                                : "neutral"
+                    }
+                `;
+
+
+            card.innerHTML = `
+
+                <div class="points-transaction-value">
+
+                    <span>
+                        ${
+                            isPositive
+                                ? "+"
+                                : ""
+                        }${pointValue}
+                    </span>
+
+                </div>
+
+
+                <div class="points-transaction-content">
+
+                    <small>
+                        KETERANGAN
+                    </small>
+
+                    <strong>
+                        ${escapeHtml(
+                            transaction.reason ||
+                            "Tanpa keterangan"
+                        )}
+                    </strong>
+
+                </div>
+
+
+                <div class="points-transaction-time">
+
+                    <small>
+                        WAKTU
+                    </small>
+
+                    <span>
+                        ${escapeHtml(
+                            formatDeviceDateTime(
+                                transaction.created_at
+                            )
+                        )}
+                    </span>
+
+                </div>
+
+            `;
+
+
+            transactionList.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+function resetPointHistoryFilters() {
+
+    pointHistorySearch.value =
+        "";
+
+
+    pointTypeFilter.value =
+        "all";
+
+
+    pointSortFilter.value =
+        "newest";
+
+
+    renderPointTransactions();
+
+}
 
 
         // =====================================
@@ -919,6 +1634,13 @@ ${formatDeviceDateTime(
 
 
                 if (!studentId) {
+
+                    currentPointTransactions =
+    [];
+
+
+pointHistorySummary.textContent =
+    "Pilih siswa untuk melihat transaksi.";
 
                     return;
 

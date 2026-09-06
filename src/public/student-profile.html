@@ -2261,6 +2261,31 @@ font-size: 47px;
     border-top: none !important;
 }
 
+/* Animasi panel Sesuaikan Profil */
+
+.profile-customization-modal {
+    animation:
+        lmsPanelBackdropIn
+        0.2s
+        ease-out
+        both;
+}
+
+.profile-customization-panel {
+    transform-origin: center center;
+
+    animation:
+        lmsPanelPopupIn
+        0.22s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        )
+        both;
+}
+
     </style>
 
 </head>
@@ -2886,7 +2911,7 @@ font-size: 47px;
 
                 <button
                     type="submit"
-                    class="student-directory-submit"
+                    class="student-directory-submit student-modern-primary-button"
                     data-directory-submit
                 >
                     Cari

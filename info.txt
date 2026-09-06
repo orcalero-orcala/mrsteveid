@@ -12,3 +12,10 @@ settings panel tambah password buat ada adminjstartor settings
 hapus guru
 Permudah penggantian Env variabels misal mau ditukar ke env lain buat owner lain
 ---
+
+Load class feed post reply notif cek dan notif angka hilang lama bgt
+di admin kecepatan aman sih
+
+Aktivasi admin my profile
+
+Changelog feature Index html

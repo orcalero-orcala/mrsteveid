@@ -37862,3 +37862,4713 @@ font-weight: 700;
 
     box-sizing: border-box;
 }
+
+/* =========================================
+   DATE INPUT PLACEHOLDER FIX
+   ========================================= */
+
+.student-modern-page
+.student-date-input {
+    position: relative;
+
+    width: 100%;
+    height: 43px;
+}
+
+
+.student-modern-page
+.student-date-input input {
+    position: relative;
+    z-index: 1;
+
+    width: 100% !important;
+    height: 43px !important;
+    min-height: 43px !important;
+
+    color-scheme: dark;
+
+    box-sizing: border-box;
+}
+
+
+/*
+    Placeholder berada di atas input,
+    sehingga langsung terlihat sebelum diklik.
+*/
+
+.student-modern-page
+.student-date-input > span {
+    position: absolute;
+
+    top: 50%;
+    left: 14px;
+
+    z-index: 2;
+
+    color: #e4edf8;
+
+    font-size: 10px;
+    line-height: 1;
+
+    transform: translateY(-50%);
+
+    pointer-events: none;
+}
+
+
+.student-modern-page
+.student-date-input.has-value > span,
+
+.student-modern-page
+.student-date-input:focus-within > span {
+    display: none;
+}
+
+
+/*
+    Sembunyikan teks tanggal bawaan hanya
+    ketika input masih kosong dan belum fokus.
+*/
+
+.student-modern-page
+.student-date-input
+input:not(:focus):not(:valid) {
+    color: transparent;
+}
+
+
+.student-modern-page
+.student-date-input
+input:focus,
+
+.student-modern-page
+.student-date-input
+input:valid {
+    color: #e4edf8;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .student-modern-page
+    .student-date-input,
+
+    .student-modern-page
+    .student-date-input input {
+        height: 43px !important;
+        min-height: 43px !important;
+    }
+
+
+    .student-modern-page
+    .student-date-input > span {
+        display: block;
+
+        left: 14px;
+    }
+
+
+    .student-modern-page
+    .student-date-input.has-value > span,
+
+    .student-modern-page
+    .student-date-input:focus-within > span {
+        display: none;
+    }
+
+}
+
+/* STUDENT CLASS BADGE POSITION */
+
+.student-directory-card {
+    position: relative;
+}
+
+
+.student-directory-card-header {
+    grid-template-columns:
+        auto
+        minmax(0, 1fr);
+
+    padding-right: 74px;
+}
+
+
+/* =========================================
+   FINAL STUDENT CLASS BADGE POSITION
+   ========================================= */
+
+.student-directory-card-header {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        auto
+        minmax(0, 1fr) !important;
+
+    align-items: start;
+
+    gap: 12px;
+
+    min-height: 48px;
+
+    padding-right: 72px !important;
+}
+
+
+.student-directory-identity {
+    min-width: 0;
+
+    padding-top: 2px;
+}
+
+
+.student-directory-identity strong {
+    display: block;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.student-directory-class {
+    position: absolute !important;
+
+    top: 3px !important;
+    right: 0 !important;
+
+    grid-column: auto !important;
+    grid-row: auto !important;
+
+    width: auto !important;
+    max-width: 64px;
+
+    margin: 0 !important;
+    padding: 5px 8px;
+
+    overflow: hidden;
+
+    font-size: 7px;
+    line-height: 1.2;
+
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 520px) {
+
+    .student-directory-card-header {
+        grid-template-columns:
+            auto
+            minmax(0, 1fr) !important;
+
+        gap: 10px;
+
+        padding-right: 65px !important;
+    }
+
+
+    .student-directory-class {
+        position: absolute !important;
+
+        top: 3px !important;
+        right: 0 !important;
+
+        grid-column: auto !important;
+        grid-row: auto !important;
+
+        max-width: 57px;
+
+        padding: 4px 7px;
+
+        font-size: 6.5px;
+    }
+
+}
+
+/* ADMIN QUIZ MOBILE REFRESH — PERBESAR */
+
+@media (max-width: 600px) {
+
+    .quiz-dashboard-toolbar
+    .quiz-refresh-button {
+        width: auto !important;
+        min-width: 86px !important;
+
+        height: 34px !important;
+        min-height: 34px !important;
+
+        padding:
+            6px
+            10px !important;
+
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+
+        white-space: nowrap;
+    }
+
+}
+
+
+@media (max-width: 380px) {
+
+    .quiz-dashboard-toolbar
+    .quiz-refresh-button {
+        min-width: 80px !important;
+
+        padding:
+            5px
+            8px !important;
+
+        font-size: 9px !important;
+    }
+
+}
+
+/* =========================================
+   ADMIN QUIZ SEARCH INNER OUTLINE FIX
+   ========================================= */
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search
+input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    color: #dce8f7;
+    background: transparent !important;
+
+    border: 0 !important;
+    border-radius: 0;
+
+    outline: none !important;
+
+    box-shadow: none !important;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search
+input[type="search"]:hover,
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search
+input[type="search"]:focus,
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search
+input[type="search"]:focus-visible {
+    background: transparent !important;
+
+    border: 0 !important;
+    outline: none !important;
+
+    box-shadow: none !important;
+}
+
+
+/*
+    Hanya wrapper yang mendapat efek fokus.
+*/
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search:focus-within {
+    border-color: #3988f5;
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(57, 136, 245, 0.13);
+}
+
+
+/* TOMBOL X SEARCH BAWAAN CHROME */
+
+.quiz-dashboard-toolbar
+.quiz-dashboard-search
+input[type="search"]::-webkit-search-cancel-button {
+    cursor: pointer;
+
+    opacity: 0.7;
+
+    filter:
+        grayscale(1)
+        brightness(1.8);
+}
+
+/* =========================================
+   MODERN STUDENT SCORE METRICS
+   ========================================= */
+
+.student-score-metrics
+.score-summary-card {
+    --metric-color: #60a5fa;
+    --metric-rgb: 96, 165, 250;
+
+    position: relative;
+
+    overflow: hidden;
+
+    isolation: isolate;
+
+    background:
+        radial-gradient(
+            circle at 92% 8%,
+            rgba(
+                var(--metric-rgb),
+                0.2
+            ),
+            transparent 42%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--metric-rgb),
+                0.11
+            ),
+            rgba(
+                var(--metric-rgb),
+                0.025
+            )
+        ),
+        #101a27 !important;
+
+    border-color:
+        rgba(
+            var(--metric-rgb),
+            0.28
+        ) !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.025);
+}
+
+
+/* GARIS AKSEN BAGIAN ATAS */
+
+.student-score-metrics
+.score-summary-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 17px;
+    right: 17px;
+
+    height: 2px;
+
+    z-index: -1;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--metric-color),
+            transparent
+        );
+
+    opacity: 0.75;
+}
+
+
+/* CAHAYA LATAR */
+
+.student-score-metrics
+.score-summary-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 90px;
+    height: 90px;
+
+    right: -42px;
+    bottom: -52px;
+
+    z-index: -1;
+
+    background:
+        rgba(
+            var(--metric-rgb),
+            0.12
+        );
+
+    border-radius: 50%;
+
+    filter: blur(4px);
+
+    pointer-events: none;
+}
+
+
+/* JUMLAH NILAI */
+
+.student-score-metrics
+.score-summary-card:nth-child(1) {
+    --metric-color: #60a5fa;
+    --metric-rgb: 96, 165, 250;
+}
+
+
+/* RATA-RATA */
+
+.student-score-metrics
+.score-summary-card:nth-child(2) {
+    --metric-color: #a78bfa;
+    --metric-rgb: 167, 139, 250;
+}
+
+
+/* NILAI TERTINGGI */
+
+.student-score-metrics
+.score-summary-card:nth-child(3) {
+    --metric-color: #34d399;
+    --metric-rgb: 52, 211, 153;
+}
+
+
+/* NILAI TERBARU */
+
+.student-score-metrics
+.score-summary-card:nth-child(4) {
+    --metric-color: #f59e0b;
+    --metric-rgb: 245, 158, 11;
+}
+
+
+.student-score-metrics
+.score-summary-card
+.student-score-metric-heading small {
+    color: var(--metric-color);
+
+    background:
+        rgba(
+            var(--metric-rgb),
+            0.11
+        );
+
+    border-color:
+        rgba(
+            var(--metric-rgb),
+            0.23
+        );
+}
+
+
+.student-score-metrics
+.score-summary-card > strong {
+    color: var(--metric-color);
+}
+
+
+.student-score-metrics
+.score-summary-card:hover {
+    background:
+        radial-gradient(
+            circle at 92% 8%,
+            rgba(
+                var(--metric-rgb),
+                0.25
+            ),
+            transparent 44%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--metric-rgb),
+                0.14
+            ),
+            rgba(
+                var(--metric-rgb),
+                0.035
+            )
+        ),
+        #121e2c !important;
+
+    border-color:
+        rgba(
+            var(--metric-rgb),
+            0.42
+        ) !important;
+
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   QUIZ ATTEMPT MOBILE TOPBAR WITHOUT PROGRESS
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    /*
+        Progress dihapus, tetapi tinggi topbar
+        tetap dipertahankan.
+    */
+
+    .student-quiz-attempt-body
+    .student-quiz-progress-summary {
+        display: none !important;
+    }
+
+
+    /* =====================================
+       STUDENT QUIZ ATTEMPT
+       ===================================== */
+
+    .student-quiz-attempt-body:not(.public-quiz-body)
+    .student-quiz-attempt-topbar {
+        width: 100%;
+
+        min-height: 74px !important;
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto !important;
+
+        grid-template-areas:
+            "title back" !important;
+
+        grid-template-rows:
+            minmax(48px, auto) !important;
+
+        align-items: center;
+
+        column-gap: 14px;
+        row-gap: 0 !important;
+
+        padding:
+            11px
+            14px !important;
+
+        box-sizing: border-box;
+    }
+
+
+    .student-quiz-attempt-body:not(.public-quiz-body)
+    .student-quiz-attempt-title {
+        grid-area: title;
+
+        min-width: 0;
+    }
+
+
+    .student-quiz-attempt-body:not(.public-quiz-body)
+    .student-quiz-attempt-title strong {
+        font-size: 14px !important;
+        line-height: 1.3;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .student-quiz-attempt-body:not(.public-quiz-body)
+    .student-quiz-attempt-title span {
+        margin-top: 4px;
+
+        font-size: 9px !important;
+        line-height: 1.3;
+    }
+
+
+    .student-quiz-attempt-body:not(.public-quiz-body)
+    .student-quiz-attempt-topbar
+    .secondary-button {
+        grid-area: back;
+
+        min-width: 82px;
+        min-height: 38px;
+
+        padding:
+            8px
+            12px;
+
+        justify-self: end;
+
+        font-size: 10px !important;
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+
+    /* =====================================
+       PUBLIC QUIZ ATTEMPT
+       ===================================== */
+
+    .public-quiz-body
+    .student-quiz-attempt-topbar {
+        width: 100%;
+
+        min-height: 74px !important;
+
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto !important;
+
+        grid-template-areas:
+            "title back" !important;
+
+        grid-template-rows:
+            minmax(48px, auto) !important;
+
+        align-items: center;
+
+        column-gap: 14px;
+        row-gap: 0 !important;
+
+        padding:
+            11px
+            14px !important;
+
+        box-sizing: border-box;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title {
+        grid-area: title;
+
+        min-width: 0;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong {
+        font-size: 14px !important;
+        line-height: 1.3;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        margin-top: 4px;
+
+        font-size: 9px !important;
+        line-height: 1.3;
+    }
+
+
+    .public-quiz-body
+    .public-quiz-home-button {
+        grid-area: back;
+
+        width: auto !important;
+        min-width: 42px;
+        height: 38px;
+        min-height: 38px;
+
+        justify-self: end;
+
+        padding:
+            8px
+            11px;
+
+        font-size: 10px;
+    }
+
+}
+
+/* ========================================
+   PUBLIC QUIZ RESPONSIVE TOPBAR FINAL
+======================================== */
+
+/*
+    Brand tidak digunakan lagi
+    pada semua ukuran layar.
+*/
+.public-quiz-body
+.public-quiz-brand {
+    display: none !important;
+}
+
+
+/* ========================================
+   MOBILE — INFORMASI QUIZ SAJA
+======================================== */
+
+@media (max-width: 600px) {
+
+    .public-quiz-body
+    .student-quiz-attempt-topbar {
+        width: 100%;
+        min-height: 74px !important;
+
+        padding: 11px 14px !important;
+
+        display: grid !important;
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+
+        grid-template-areas:
+            "title" !important;
+
+        align-items: center !important;
+
+        row-gap: 0 !important;
+        column-gap: 0 !important;
+
+        box-sizing: border-box;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title {
+        grid-area: title !important;
+
+        width: 100%;
+        min-width: 0;
+
+        margin: 0 !important;
+
+        align-self: center;
+        justify-self: stretch;
+
+        text-align: left !important;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong,
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        width: 100%;
+
+        display: block;
+        overflow: hidden;
+
+        text-align: left !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong {
+        font-size: 14px !important;
+        line-height: 1.3;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        margin-top: 4px;
+
+        font-size: 9px !important;
+        line-height: 1.3;
+    }
+
+
+    /*
+        Progress disembunyikan hanya di mobile.
+    */
+    .public-quiz-body
+    .student-quiz-progress-summary {
+        display: none !important;
+    }
+
+}
+
+
+/* ========================================
+   TABLET — PROGRESS MODEL DESKTOP
+======================================== */
+
+@media (min-width: 601px)
+and (max-width: 900px) {
+
+    .public-quiz-body
+    .student-quiz-attempt-topbar {
+        width: 100%;
+        min-height: 74px !important;
+
+        padding: 11px 18px !important;
+
+        display: grid !important;
+        grid-template-columns:
+            minmax(0, 1fr)
+            170px !important;
+
+        grid-template-areas:
+            "title progress" !important;
+
+        align-items: center !important;
+
+        column-gap: 22px !important;
+        row-gap: 0 !important;
+
+        box-sizing: border-box;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title {
+        grid-area: title !important;
+
+        width: 100%;
+        min-width: 0;
+
+        margin: 0 !important;
+
+        justify-self: stretch;
+        text-align: left !important;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong,
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        width: 100%;
+
+        display: block;
+        overflow: hidden;
+
+        text-align: left !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title strong {
+        font-size: 14px !important;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-attempt-title span {
+        margin-top: 4px;
+
+        font-size: 9px !important;
+    }
+
+
+    /*
+        Menggunakan progress horizontal
+        seperti tampilan desktop.
+    */
+    .public-quiz-body
+    .student-quiz-progress-summary {
+        grid-area: progress !important;
+
+        width: 170px !important;
+        min-width: 0;
+
+        margin: 0 !important;
+
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+
+        gap: 6px;
+
+        justify-self: end;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-progress-summary > span {
+        text-align: right !important;
+    }
+
+
+    .public-quiz-body
+    .student-quiz-progress-track {
+        width: 100%;
+        margin: 0;
+    }
+
+}
+
+/* Public Quiz — rapatkan informasi Quiz ke kiri
+   khusus tablet besar dan desktop */
+@media (min-width: 901px) {
+
+    .public-quiz-body
+    .student-quiz-attempt-title {
+        transform:
+            translateX(-15px) !important;
+    }
+
+}
+
+/* ========================================
+   MUTE DURATION — MOBILE ALIGNMENT
+======================================== */
+
+@media (max-width: 600px) {
+
+    .feed-mute-custom-time {
+        width: 100%;
+
+        display: grid !important;
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0, 1fr)
+            ) !important;
+
+        align-items: start;
+        gap: 8px !important;
+    }
+
+
+    .feed-mute-time-part {
+        min-width: 0;
+
+        display: flex !important;
+        flex-direction: column;
+
+        align-items: stretch !important;
+        gap: 5px !important;
+    }
+
+
+    .feed-mute-time-part input {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+
+        height: 40px;
+
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+
+    .feed-mute-time-part span {
+        width: 100%;
+
+        font-size: 9px;
+        text-align: center;
+    }
+
+}
+
+/* ========================================
+   ADMIN DASHBOARD MODULE HOVER FIX
+======================================== */
+
+.dashboard-v2-module,
+
+.dashboard-v2-module:hover,
+
+.dashboard-v2-module:focus,
+
+.dashboard-v2-module:active {
+    color: inherit !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--module-rgb),
+                0.075
+            ),
+            transparent 42%
+        ),
+        #101a27 !important;
+}
+
+
+.dashboard-v2-module:hover {
+    transform:
+        translateY(-4px);
+
+    border-color:
+        rgba(
+            var(--module-rgb),
+            0.52
+        ) !important;
+
+    box-shadow:
+        0 18px 35px
+        rgba(0, 0, 0, 0.18);
+}
+
+
+.dashboard-v2-module:active {
+    transform:
+        translateY(-1px);
+}
+
+/* ========================================
+   STUDENT ACADEMIC UI — MODERN CARD SYSTEM
+======================================== */
+
+/* WARNA KARTU NILAI */
+
+.student-score-metrics
+.score-summary-card:nth-child(1) {
+    --card-color: 96, 165, 250;
+}
+
+.student-score-metrics
+.score-summary-card:nth-child(2) {
+    --card-color: 167, 139, 250;
+}
+
+.student-score-metrics
+.score-summary-card:nth-child(3) {
+    --card-color: 52, 211, 153;
+}
+
+.student-score-metrics
+.score-summary-card:nth-child(4) {
+    --card-color: 245, 158, 11;
+}
+
+
+/* WARNA KARTU POIN */
+
+.student-points-metrics
+.points-summary-card:nth-child(1) {
+    --card-color: 96, 165, 250;
+}
+
+.student-points-metrics
+.points-summary-card:nth-child(2) {
+    --card-color: 52, 211, 153;
+}
+
+.student-points-metrics
+.points-summary-card:nth-child(3) {
+    --card-color: 251, 113, 133;
+}
+
+.student-points-metrics
+.points-summary-card:nth-child(4) {
+    --card-color: 167, 139, 250;
+}
+
+
+/* DASAR KARTU MODERN */
+
+.student-score-metrics
+.score-summary-card,
+
+.student-points-metrics
+.points-summary-card {
+    position: relative;
+    isolation: isolate;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(
+            var(--card-color),
+            0.28
+        ) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--card-color),
+                0.13
+            ),
+            rgba(
+                var(--card-color),
+                0.035
+            ) 48%,
+            #101923 100%
+        ) !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease !important;
+}
+
+
+/* GLOW DI SUDUT KARTU */
+
+.student-score-metrics
+.score-summary-card::after,
+
+.student-points-metrics
+.points-summary-card::after {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    width: 120px;
+    height: 120px;
+
+    right: -54px;
+    bottom: -65px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(
+            var(--card-color),
+            0.2
+        );
+
+    filter: blur(24px);
+
+    pointer-events: none;
+}
+
+
+/* GARIS CAHAYA BAGIAN ATAS */
+
+.student-score-metrics
+.score-summary-card::before,
+
+.student-points-metrics
+.points-summary-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 18px;
+    right: 18px;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(
+                var(--card-color),
+                0.72
+            ),
+            transparent
+        );
+
+    opacity: 0.65;
+
+    pointer-events: none;
+}
+
+
+/* HOVER SERAGAM DENGAN DASHBOARD */
+
+.student-score-metrics
+.score-summary-card:hover,
+
+.student-points-metrics
+.points-summary-card:hover {
+    transform:
+        translateY(-3px) !important;
+
+    border-color:
+        rgba(
+            var(--card-color),
+            0.55
+        ) !important;
+
+    box-shadow:
+        0 16px 32px
+        rgba(0, 0, 0, 0.17),
+
+        0 0 22px
+        rgba(
+            var(--card-color),
+            0.07
+        );
+}
+
+
+/* ========================================
+   EXAM SCORE METRICS
+======================================== */
+
+.student-score-metrics
+.score-summary-card strong {
+    color:
+        rgb(
+            var(--card-color)
+        ) !important;
+
+    text-shadow:
+        0 0 20px
+        rgba(
+            var(--card-color),
+            0.2
+        );
+}
+
+
+.student-score-metrics
+.student-score-metric-heading small {
+    color:
+        rgb(
+            var(--card-color)
+        ) !important;
+
+    border-color:
+        rgba(
+            var(--card-color),
+            0.28
+        ) !important;
+
+    background:
+        rgba(
+            var(--card-color),
+            0.11
+        ) !important;
+}
+
+
+/* ========================================
+   POINT METRICS
+======================================== */
+
+.student-points-metrics
+.points-summary-card {
+    min-height: 132px !important;
+
+    flex-direction: column;
+    align-items: flex-start !important;
+
+    gap: 12px !important;
+}
+
+
+.student-points-metrics
+.summary-icon {
+    width: 39px !important;
+    height: 39px !important;
+
+    flex: 0 0 39px;
+
+    color:
+        rgb(
+            var(--card-color)
+        ) !important;
+
+    border:
+        1px solid
+        rgba(
+            var(--card-color),
+            0.25
+        );
+
+    background:
+        rgba(
+            var(--card-color),
+            0.13
+        ) !important;
+
+    border-radius: 11px;
+}
+
+
+.student-points-metrics
+.points-summary-card strong {
+    color:
+        rgb(
+            var(--card-color)
+        ) !important;
+
+    font-size: 25px !important;
+
+    text-shadow:
+        0 0 20px
+        rgba(
+            var(--card-color),
+            0.18
+        );
+}
+
+
+/* ========================================
+   INSIGHT CARDS
+======================================== */
+
+.student-score-insight-card,
+
+.student-point-insight-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37, 99, 235, 0.045),
+            transparent 48%
+        ),
+        #101923 !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.022);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+
+.student-score-insight-card:hover,
+
+.student-point-insight-card:hover {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        #38506c;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(59, 130, 246, 0.07),
+            transparent 52%
+        ),
+        #111c29 !important;
+}
+
+
+/* ========================================
+   CHART PANELS
+======================================== */
+
+.student-score-analytics-card,
+
+.student-point-analytics-card {
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(59, 130, 246, 0.055),
+            transparent 34%
+        ),
+        linear-gradient(
+            145deg,
+            #111c29,
+            #0f1823
+        ) !important;
+
+    border-color:
+        #2b3c51 !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.025);
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 800px) {
+
+    .student-score-metrics
+    .score-summary-card,
+
+    .student-points-metrics
+    .points-summary-card {
+        min-height: 118px !important;
+
+        padding: 14px !important;
+    }
+
+
+    .student-points-metrics
+    .points-summary-card {
+        gap: 9px !important;
+    }
+
+
+    .student-points-metrics
+    .summary-icon {
+        width: 34px !important;
+        height: 34px !important;
+
+        flex-basis: 34px;
+    }
+
+
+    .student-points-metrics
+    .points-summary-card strong {
+        font-size: 21px !important;
+    }
+
+}
+
+/* ========================================
+   UNIFIED PANEL POPUP ANIMATION
+   Moderasi + Notifikasi Admin/Student
+======================================== */
+
+@keyframes lmsPanelBackdropIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes lmsPanelPopupIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(14px)
+            scale(0.982);
+
+        filter:
+            blur(1px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+        filter:
+            blur(0);
+    }
+
+}
+
+
+/* BACKDROP */
+
+.feed-moderation-overlay,
+
+.admin-notification-overlay,
+
+.student-notification-overlay,
+
+.student-feed-moderation-blocker {
+    animation:
+        lmsPanelBackdropIn
+        0.2s
+        ease-out
+        both;
+}
+
+
+/* PANEL UTAMA */
+
+.feed-moderation-panel,
+
+.feed-moderation-dialog,
+
+.admin-notification-panel,
+
+.student-notification-panel,
+
+.student-feed-moderation-panel {
+    transform-origin:
+        center center;
+
+    animation:
+        lmsPanelPopupIn
+        0.22s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        )
+        both;
+}
+
+
+/* ========================================
+   MOBILE — EFEK BOTTOM POPUP
+======================================== */
+
+@media (max-width: 600px) {
+
+    @keyframes lmsPanelPopupMobileIn {
+
+        from {
+            opacity: 0;
+
+            transform:
+                translateY(24px)
+                scale(0.99);
+        }
+
+        to {
+            opacity: 1;
+
+            transform:
+                translateY(0)
+                scale(1);
+        }
+
+    }
+
+
+    .feed-moderation-panel,
+
+    .feed-moderation-dialog,
+
+    .admin-notification-panel,
+
+    .student-notification-panel,
+
+    .student-feed-moderation-panel {
+        transform-origin:
+            center bottom;
+
+        animation:
+            lmsPanelPopupMobileIn
+            0.24s
+            cubic-bezier(
+                0.22,
+                1,
+                0.36,
+                1
+            )
+            both;
+    }
+
+}
+
+
+/* AKSESIBILITAS */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .feed-moderation-overlay,
+
+    .admin-notification-overlay,
+
+    .student-notification-overlay,
+
+    .student-feed-moderation-blocker,
+
+    .feed-moderation-panel,
+
+    .feed-moderation-dialog,
+
+    .admin-notification-panel,
+
+    .student-notification-panel,
+
+    .student-feed-moderation-panel {
+        animation:
+            none !important;
+    }
+
+}
+
+/* ========================================
+   ADMIN POINTS MODERN REDESIGN
+======================================== */
+
+.admin-points-modern-page {
+    display: grid;
+    gap: 18px;
+}
+
+
+/* HERO */
+
+.points-data-hero
+.student-data-hero-stats {
+    grid-template-columns:
+        minmax(150px, 1.4fr)
+        minmax(105px, 0.7fr);
+}
+
+
+.points-data-hero
+.student-data-hero-stats > div:first-child {
+    min-width: 0;
+}
+
+
+#pointsHeroStudent {
+    overflow: hidden;
+
+    font-size: 15px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* WORKSPACE */
+
+.admin-points-workspace {
+    display: grid;
+
+    grid-template-columns:
+        minmax(320px, 0.78fr)
+        minmax(480px, 1.22fr);
+
+    align-items: stretch;
+    gap: 14px;
+}
+
+
+.points-student-panel,
+.points-transaction-panel {
+    min-width: 0;
+    min-height: 330px;
+}
+
+
+/* SELECTED STUDENT */
+
+.points-selected-student {
+    min-height: 145px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    margin-top: 18px;
+    padding: 18px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(59, 130, 246, 0.12),
+            transparent 42%
+        ),
+        #0d1825;
+
+    border:
+        1px solid #293d55;
+
+    border-radius: 14px;
+}
+
+
+.points-selected-profile {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+}
+
+
+.points-selected-identity {
+    min-width: 0;
+}
+
+
+.points-selected-identity > span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #60a5fa;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+.points-selected-identity h3 {
+    margin: 0;
+
+    overflow: hidden;
+
+    color: #f1f5f9;
+
+    font-size: 17px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.points-selected-identity p {
+    margin: 5px 0 0;
+
+    color: #8295af;
+
+    font-size: 10px;
+}
+
+
+.points-selected-student
+.admin-point-total {
+    min-width: 102px;
+    min-height: 88px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(59, 130, 246, 0.13),
+            rgba(59, 130, 246, 0.025)
+        );
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.29);
+
+    border-radius: 13px;
+}
+
+
+.points-selected-student
+.admin-point-total span {
+    color: #8299b8;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.09em;
+}
+
+
+.points-selected-student
+.admin-point-total strong {
+    margin-top: 6px;
+
+    color: #60a5fa;
+
+    font-size: 28px;
+    line-height: 1;
+
+    text-shadow:
+        0 0 20px
+        rgba(59, 130, 246, 0.22);
+}
+
+
+/* FORM */
+
+.points-modern-form {
+    display: grid;
+
+    grid-template-columns:
+        minmax(130px, 0.45fr)
+        minmax(240px, 1fr)
+        max-content;
+
+    align-items: end;
+    gap: 11px;
+
+    margin-top: 22px;
+}
+
+
+.points-submit-button {
+    min-height: 43px;
+
+    white-space: nowrap;
+}
+
+
+.points-form-note {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 14px;
+
+    color: #71849e;
+
+    font-size: 9px;
+}
+
+
+.points-form-note span {
+    width: 20px;
+    height: 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #60a5fa;
+    font-weight: 900;
+
+    background:
+        rgba(59, 130, 246, 0.11);
+
+    border:
+        1px solid
+        rgba(59, 130, 246, 0.2);
+
+    border-radius: 6px;
+}
+
+
+.points-form-note span:nth-of-type(2) {
+    margin-left: 7px;
+
+    color: #fb7185;
+
+    background:
+        rgba(244, 63, 94, 0.1);
+
+    border-color:
+        rgba(244, 63, 94, 0.2);
+}
+
+
+/* HISTORY */
+
+.points-history-panel {
+    min-width: 0;
+}
+
+
+.points-history-heading {
+    grid-template-columns:
+        minmax(0, 1fr)
+        max-content;
+}
+
+
+.points-transaction-list {
+    display: grid;
+
+grid-template-columns:
+    minmax(0, 1fr);
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+
+.points-transaction-list
+.student-modern-empty {
+    grid-column:
+        1 / -1;
+
+    min-height: 180px;
+}
+
+
+.points-transaction-card {
+    --transaction-color:
+        96, 165, 250;
+
+    position: relative;
+
+    min-width: 0;
+    min-height: 105px;
+
+    display: grid;
+
+    grid-template-columns:
+        68px
+        minmax(0, 1fr)
+        max-content;
+
+    align-items: center;
+    gap: 14px;
+
+    padding: 15px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--transaction-color),
+                0.07
+            ),
+            transparent 48%
+        ),
+        #0f1925;
+
+    border:
+        1px solid
+        rgba(
+            var(--transaction-color),
+            0.22
+        );
+
+    border-radius: 13px;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.points-transaction-card.positive {
+    --transaction-color:
+        52, 211, 153;
+}
+
+
+.points-transaction-card.negative {
+    --transaction-color:
+        251, 113, 133;
+}
+
+
+.points-transaction-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 15px;
+    bottom: 15px;
+    left: 0;
+
+    width: 3px;
+
+    background:
+        rgb(
+            var(--transaction-color)
+        );
+
+    border-radius:
+        0 5px 5px 0;
+}
+
+
+.points-transaction-card:hover {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        rgba(
+            var(--transaction-color),
+            0.42
+        );
+
+    box-shadow:
+        0 14px 28px
+        rgba(0, 0, 0, 0.14);
+}
+
+
+.points-transaction-value {
+    min-height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(
+            var(--transaction-color),
+            0.1
+        );
+
+    border:
+        1px solid
+        rgba(
+            var(--transaction-color),
+            0.2
+        );
+
+    border-radius: 11px;
+}
+
+
+.points-transaction-value span {
+    color:
+        rgb(
+            var(--transaction-color)
+        );
+
+    font-size: 19px;
+    font-weight: 850;
+}
+
+
+.points-transaction-content,
+.points-transaction-time {
+    min-width: 0;
+}
+
+
+.points-transaction-content small,
+.points-transaction-time small {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #607792;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    letter-spacing: 0.1em;
+}
+
+
+.points-transaction-content strong {
+    display: block;
+
+    overflow: hidden;
+
+    color: #e5edf8;
+
+    font-size: 11px;
+    line-height: 1.45;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.points-transaction-time {
+    text-align: right;
+}
+
+
+.points-transaction-time span {
+    color: #91a5be;
+
+    font-size: 9px;
+
+    white-space: nowrap;
+}
+
+
+/* REFRESH */
+
+.points-history-heading
+.student-directory-refresh:disabled {
+    opacity: 0.48;
+
+    cursor: not-allowed;
+}
+
+
+.points-history-heading
+.student-directory-refresh.is-loading
+.points-refresh-icon {
+    animation:
+        pointsRefreshSpin
+        0.75s
+        linear
+        infinite;
+}
+
+
+@keyframes pointsRefreshSpin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+/* TABLET */
+
+@media (max-width: 1100px) {
+
+    .admin-points-workspace {
+        grid-template-columns: 1fr;
+    }
+
+
+    .points-student-panel,
+    .points-transaction-panel {
+        min-height: 0;
+    }
+
+
+    .points-modern-form {
+        grid-template-columns:
+            minmax(130px, 0.45fr)
+            minmax(220px, 1fr);
+
+        align-items: end;
+    }
+
+
+    .points-submit-button {
+        justify-self: end;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .points-data-hero
+    .student-data-hero-stats {
+        grid-template-columns:
+            minmax(0, 1.35fr)
+            minmax(80px, 0.65fr);
+    }
+
+
+    #pointsHeroStudent {
+        font-size: 12px;
+    }
+
+
+    .points-selected-student {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+
+    .points-selected-student
+    .admin-point-total {
+        width: 100%;
+        min-height: 75px;
+
+        box-sizing: border-box;
+    }
+
+
+    .points-modern-form {
+        grid-template-columns: 1fr;
+    }
+
+
+    .points-submit-button {
+        width: 100%;
+
+        justify-self: stretch;
+    }
+
+
+    .points-transaction-list {
+        grid-template-columns: 1fr;
+    }
+
+
+    .points-transaction-card {
+        grid-template-columns:
+            58px
+            minmax(0, 1fr);
+
+        grid-template-areas:
+            "value content"
+            "value time";
+
+        gap: 8px 12px;
+    }
+
+
+    .points-transaction-value {
+        grid-area: value;
+
+        height: 100%;
+    }
+
+
+    .points-transaction-content {
+        grid-area: content;
+    }
+
+
+    .points-transaction-time {
+        grid-area: time;
+
+        text-align: left;
+    }
+
+
+    .points-transaction-time small {
+        display: none;
+    }
+
+
+    .points-history-heading {
+        align-items: start;
+    }
+
+}
+
+/* ========================================
+   ADMIN POINTS PANEL STATE FIX
+======================================== */
+
+.points-data-hero {
+    grid-template-columns:
+        minmax(0, 1fr) !important;
+}
+
+
+.points-data-hero
+.student-data-hero-content {
+    max-width: 720px;
+}
+
+
+/* FORM PANEL SELALU TERLIHAT */
+
+.points-transaction-panel {
+    display: block !important;
+}
+
+
+.points-form-content[hidden] {
+    display: none !important;
+}
+
+.admin-points-modern-page
+#message {
+    margin-top:
+        5px;
+}
+
+.points-history-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.points-selected-student {
+    display: flex;
+    flex: 1;
+}
+
+.points-selected-student .student-modern-empty {
+    flex: 1;
+    min-height: 0;
+}
+
+/* ADMIN POINTS — TABLET SAMPAI MOBILE */
+
+@media (max-width: 1200px) {
+
+    .points-modern-form {
+        grid-template-columns:
+            minmax(0, 220px)
+            minmax(0, 1fr);
+    }
+
+    .points-submit-button {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin-top: 7px;
+        margin-bottom: 8px;
+        justify-self: stretch;
+    }
+
+    .points-selected-student {
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .points-selected-profile {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+        flex-direction: row !important;
+        gap: 12px;
+    }
+
+    .points-selected-identity {
+        min-width: 0;
+    }
+
+    .admin-point-total {
+        width: auto !important;
+        min-width: 100px;
+        flex-shrink: 0;
+        text-align: right !important;
+    }
+
+}
+
+
+/* ADMIN POINTS — KHUSUS HP */
+
+@media (max-width: 600px) {
+
+    .points-modern-form {
+        grid-template-columns: 1fr;
+    }
+
+    .points-submit-button {
+        grid-column: 1;
+    }
+
+    .points-selected-student {
+        gap: 8px;
+    }
+
+    .points-selected-profile {
+        gap: 8px;
+    }
+
+    .student-large-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .admin-point-total {
+        min-width: 78px;
+        padding: 9px 10px;
+    }
+
+    .admin-point-total strong {
+        font-size: 21px;
+    }
+
+    .points-selected-identity h3,
+    .points-selected-identity p {
+        white-space: nowrap;
+    }
+
+}
+
+.admin-points-modern-page > .admin-points-workspace {
+    margin-top: -18px;
+}
+
+/* ========================================
+   ADMIN EXAM SCORE — MODERN REDESIGN
+======================================== */
+
+.admin-exam-modern-page {
+    display: grid;
+    gap: 18px;
+}
+
+
+/* HERO */
+
+.exam-data-hero {
+    grid-template-columns:
+        minmax(0, 1fr) !important;
+}
+
+.exam-data-hero
+.student-data-hero-content {
+    max-width: 760px;
+}
+
+
+/* WORKSPACE */
+
+.admin-exam-workspace {
+    display: grid;
+
+    grid-template-columns:
+        minmax(340px, 0.82fr)
+        minmax(560px, 1.18fr);
+
+    align-items: stretch;
+    gap: 14px;
+}
+
+.exam-subject-panel,
+.exam-create-panel {
+    min-width: 0;
+}
+
+.exam-panel-heading {
+    display: grid;
+
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
+
+    align-items: start;
+}
+
+.exam-heading-copy {
+    min-width: 0;
+}
+
+.exam-subject-toggle {
+    width: auto;
+    min-width: 88px;
+}
+
+
+/* MASTER MAPEL */
+
+.exam-subject-form-modern {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        max-content;
+
+    align-items: end;
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.exam-subject-submit {
+    min-height: 43px;
+    white-space: nowrap;
+}
+
+.exam-subject-list-panel {
+    margin-top: 16px;
+}
+
+.exam-subject-list-panel[hidden] {
+    display: none !important;
+}
+
+.exam-subject-list {
+    max-height: 335px;
+
+    display: grid;
+    gap: 9px;
+
+    padding-right: 4px;
+
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #355273 transparent;
+}
+
+.exam-subject-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.exam-subject-list::-webkit-scrollbar-thumb {
+    background: #355273;
+    border-radius: 20px;
+}
+
+.exam-subject-card {
+    min-width: 0;
+
+    padding: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(59, 130, 246, 0.055),
+            transparent 55%
+        ),
+        #0e1926;
+
+    border:
+        1px solid #263a51;
+
+    border-radius: 12px;
+}
+
+.exam-subject-card-main,
+.exam-subject-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.exam-subject-card-main {
+    justify-content: flex-start;
+}
+
+.exam-subject-avatar {
+    width: 35px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #7dd3fc;
+    font-size: 11px;
+    font-weight: 850;
+
+    background:
+        rgba(14, 116, 144, 0.16);
+
+    border:
+        1px solid
+        rgba(56, 189, 248, 0.18);
+
+    border-radius: 10px;
+}
+
+.exam-subject-card-main strong,
+.exam-subject-card-main span {
+    display: block;
+}
+
+.exam-subject-card-main strong {
+    color: #e8f1fb;
+    font-size: 11px;
+}
+
+.exam-subject-card-main span {
+    margin-top: 3px;
+
+    color: #647d9b;
+    font-size: 8px;
+}
+
+.exam-subject-card-footer {
+    margin-top: 11px;
+    padding-top: 10px;
+
+    color: #7087a4;
+    font-size: 8px;
+
+    border-top:
+        1px solid #213247;
+}
+
+
+/* FORM NILAI */
+
+.exam-score-form-modern {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+
+    align-items: stretch;
+    gap: 13px;
+
+    margin-top: 12px;
+}
+
+.exam-material-field {
+    grid-column: auto;
+}
+
+.exam-score-submit {
+    width: 100%;
+    min-height: 43px;
+
+    margin-top: 10px;
+}
+
+
+/* DIRECTORY */
+
+.exam-score-directory {
+    min-width: 0;
+}
+
+.exam-score-directory-heading {
+    grid-template-columns:
+        minmax(0, 1fr)
+        max-content;
+}
+
+.exam-score-controls {
+    grid-template-columns:
+        minmax(185px, 0.8fr)
+        minmax(250px, 1.5fr)
+        minmax(150px, 0.75fr)
+        minmax(150px, 0.75fr)
+        minmax(155px, 0.75fr)
+        max-content;
+
+    align-items: end;
+}
+
+.exam-score-controls
+.student-search-control {
+    grid-column: auto;
+}
+
+
+/* SCORE CARDS */
+
+.exam-score-card-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 10px;
+
+    margin-top: 16px;
+}
+
+.exam-score-card-list
+.student-modern-empty,
+.exam-score-card-list
+.quiz-dashboard-loading {
+    grid-column: 1 / -1;
+
+    min-height: 230px;
+}
+
+.exam-score-card {
+    --score-color:
+        96, 165, 250;
+
+    position: relative;
+
+    min-width: 0;
+    min-height: 112px;
+
+    display: grid;
+
+    grid-template-columns:
+        72px
+        minmax(0, 1fr)
+        max-content;
+
+    align-items: center;
+    gap: 14px;
+
+    padding: 15px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                var(--score-color),
+                0.075
+            ),
+            transparent 52%
+        ),
+        #0e1926;
+
+    border:
+        1px solid
+        rgba(
+            var(--score-color),
+            0.23
+        );
+
+    border-radius: 13px;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.exam-score-card.high {
+    --score-color:
+        52, 211, 153;
+}
+
+.exam-score-card.medium {
+    --score-color:
+        250, 204, 21;
+}
+
+.exam-score-card.low {
+    --score-color:
+        251, 113, 133;
+}
+
+.exam-score-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 14px;
+    bottom: 14px;
+    left: 0;
+
+    width: 3px;
+
+    background:
+        rgb(
+            var(--score-color)
+        );
+
+    border-radius:
+        0 5px 5px 0;
+}
+
+.exam-score-card:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(
+            var(--score-color),
+            0.43
+        );
+
+    box-shadow:
+        0 14px 28px
+        rgba(0, 0, 0, 0.14);
+}
+
+.exam-score-value {
+    min-height: 65px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(
+            var(--score-color),
+            0.1
+        );
+
+    border:
+        1px solid
+        rgba(
+            var(--score-color),
+            0.22
+        );
+
+    border-radius: 11px;
+}
+
+.exam-score-value small {
+    color:
+        rgba(
+            var(--score-color),
+            0.78
+        );
+
+    font-size: 7px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+}
+
+.exam-score-value strong {
+    margin-top: 4px;
+
+    color:
+        rgb(
+            var(--score-color)
+        );
+
+    font-size: 23px;
+    line-height: 1;
+}
+
+.exam-score-card-content {
+    min-width: 0;
+}
+
+.exam-score-card-content span {
+    display: block;
+
+    overflow: hidden;
+
+    color:
+        rgb(
+            var(--score-color)
+        );
+
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.exam-score-card-content h3 {
+    margin: 6px 0 5px;
+
+    overflow: hidden;
+
+    color: #e6eef8;
+
+    font-size: 12px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.exam-score-card-content p {
+    margin: 0;
+
+    color: #7287a3;
+    font-size: 8px;
+}
+
+.exam-score-delete {
+    flex-shrink: 0;
+}
+
+
+/* LOADING MAPEL */
+
+/* LOADER MAPEL MEMENUHI PANEL */
+
+.exam-subject-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.exam-subject-list-panel {
+    display: flex;
+    flex: 1;
+
+    min-height: 0;
+    margin-top: 16px;
+    margin-bottom: 4px;
+}
+
+.exam-subject-list {
+    width: 100%;
+
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    min-height: 0;
+}
+
+.exam-subject-list > .exam-panel-state {
+    width: 100%;
+
+    flex: 1;
+
+    min-height: 290px !important;
+
+    box-sizing: border-box;
+}
+
+
+/* TABLET */
+
+@media (max-width: 1180px) {
+
+    .admin-exam-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-score-controls {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .exam-student-control,
+    .exam-score-search-control {
+        grid-column: 1 / -1 !important;
+    }
+
+    .exam-score-controls
+    .student-filter-reset-button {
+        grid-column: 1 / -1;
+
+        width: 100%;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .exam-panel-heading {
+        grid-template-columns:
+            auto
+            minmax(0, 1fr)
+            auto;
+    }
+
+    .exam-subject-toggle {
+        min-width: 70px;
+
+        padding:
+            7px 9px;
+
+        font-size: 8px;
+    }
+
+    .exam-subject-form-modern,
+    .exam-score-form-modern,
+    .exam-score-controls,
+    .exam-score-card-list {
+        grid-template-columns: 1fr;
+    }
+
+    .exam-material-field,
+    .exam-student-control,
+    .exam-score-search-control,
+    .exam-score-controls
+    .student-filter-reset-button {
+        grid-column: auto !important;
+    }
+
+    .exam-subject-submit,
+    .exam-score-submit {
+        width: 100%;
+    }
+
+    .exam-score-card {
+        grid-template-columns:
+            62px
+            minmax(0, 1fr);
+
+        grid-template-areas:
+            "value content"
+            "value delete";
+
+        gap: 8px 12px;
+    }
+
+    .exam-score-value {
+        grid-area: value;
+
+        height: 100%;
+    }
+
+    .exam-score-card-content {
+        grid-area: content;
+    }
+
+    .exam-score-delete {
+        grid-area: delete;
+
+        justify-self: end;
+    }
+
+}
+
+.admin-exam-modern-page {
+    gap: 20px;
+}
+
+.admin-exam-modern-page > .exam-data-hero {
+    margin-bottom: 0;
+}
+
+.admin-exam-modern-page
+.exam-score-controls label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #7890ad;
+
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* ========================================
+   GLOBAL PRIMARY ACTION BUTTON
+======================================== */
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+) {
+    position: relative;
+    isolation: isolate;
+
+    min-height: 43px;
+
+    overflow: hidden;
+
+    color: #f4f8ff;
+
+background:
+    radial-gradient(
+        circle at 88% 10%,
+        rgba(125, 211, 252, 0.17),
+        transparent 38%
+    ),
+    linear-gradient(
+        125deg,
+        #3b82f6 0%,
+        #3478ef 48%,
+        #2563eb 100%
+    );
+
+border:
+    1px solid
+    rgba(96, 165, 250, 0.48);
+
+box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.16),
+
+    inset 0 -1px 0
+    rgba(30, 64, 175, 0.16),
+
+    0 7px 17px
+    rgba(37, 99, 235, 0.19);
+
+    font-weight: 800;
+    letter-spacing: 0.01em;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        filter 0.18s ease;
+}
+
+
+/* SHIMMER HALUS */
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+)::before {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            105deg,
+            transparent 25%,
+            rgba(255, 255, 255, 0.13) 48%,
+            transparent 70%
+        );
+
+    transform:
+        translateX(-115%);
+
+    transition:
+        transform 0.55s ease;
+
+    pointer-events: none;
+}
+
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+):hover {
+    transform:
+        translateY(-2px);
+
+    filter:
+        brightness(1.08);
+
+    border-color:
+        rgba(165, 243, 252, 0.68);
+
+box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.2),
+
+    0 10px 23px
+    rgba(37, 99, 235, 0.27),
+
+    0 0 16px
+    rgba(59, 130, 246, 0.1);
+}
+
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+):hover::before {
+    transform:
+        translateX(115%);
+}
+
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+):active {
+    transform:
+        translateY(0)
+        scale(0.985);
+
+    box-shadow:
+        inset 0 2px 5px
+        rgba(3, 7, 18, 0.3),
+
+        0 5px 14px
+        rgba(30, 64, 175, 0.2);
+}
+
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+):focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.2),
+
+        0 10px 25px
+        rgba(37, 99, 235, 0.26);
+}
+
+
+:is(
+    .admin-primary-button,
+    .student-modern-primary-button,
+    .student-quiz-primary-button,
+    .student-result-primary-button,
+    .landing-primary-button
+):disabled {
+    transform: none;
+
+    opacity: 0.52;
+
+    filter:
+        saturate(0.65);
+
+    box-shadow: none;
+
+    cursor: not-allowed;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    :is(
+        .admin-primary-button,
+        .student-modern-primary-button,
+        .student-quiz-primary-button,
+        .student-result-primary-button,
+        .landing-primary-button
+    ),
+
+    :is(
+        .admin-primary-button,
+        .student-modern-primary-button,
+        .student-quiz-primary-button,
+        .student-result-primary-button,
+        .landing-primary-button,
+.student-directory-submit,
+.feed-post-button,
+.reply-send-button
+    )::before {
+        transition: none;
+    }
+
+}
+
+/* RAPATKAN FORM DENGAN DAFTAR MAPEL */
+
+.exam-subject-panel
+#subjectMessage:empty {
+    display: none;
+}
+
+.exam-subject-panel
+#subjectMessage:not(:empty) {
+    display: block;
+
+    min-height: 0;
+
+    margin:
+        8px 0 0;
+}
+
+.exam-subject-list-panel {
+    margin-top: 13px;
+}
+
+.exam-subject-panel > .exam-panel-heading {
+    margin-bottom: 0px !important;
+}
+
+/* ========================================
+   GLOBAL DARK DROPDOWN FIX
+======================================== */
+
+select:not([multiple]) {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+
+    padding-right: 38px !important;
+
+    color-scheme: dark;
+
+    background-color:
+        #0c1623 !important;
+
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            #8298b4 50%
+        ),
+
+        linear-gradient(
+            135deg,
+            #8298b4 50%,
+            transparent 50%
+        ) !important;
+
+    background-position:
+        calc(100% - 16px) 50%,
+        calc(100% - 11px) 50% !important;
+
+    background-size:
+        5px 5px,
+        5px 5px !important;
+
+    background-repeat:
+        no-repeat !important;
+}
+
+
+/* HAPUS PANAH BAWAAN WINDOWS LAMA */
+
+select::-ms-expand {
+    display: none;
+}
+
+
+/* WARNA DAFTAR OPSI */
+
+select option {
+    color: #e6eef8;
+
+    background-color: #0c1623;
+}
+
+
+/* CEGAH PANAH GANDA PADA WRAPPER LAMA */
+
+.student-class-select::after {
+    display: none !important;
+}
+
+
+/* DISABLED */
+
+select:disabled {
+    color: #657b96;
+
+    background-color:
+        #0a121d !important;
+
+    opacity: 0.7;
+}
+
+/* ========================================
+   FIX EXAM SCORE FILTER OVERFLOW
+======================================== */
+
+.admin-exam-modern-page
+.exam-score-directory {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+}
+
+
+.admin-exam-modern-page
+.exam-score-controls {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    box-sizing: border-box;
+}
+
+
+.admin-exam-modern-page
+.exam-score-controls > * {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+
+    box-sizing: border-box;
+}
+
+
+.admin-exam-modern-page
+.exam-score-controls
+input,
+
+.admin-exam-modern-page
+.exam-score-controls
+select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    box-sizing: border-box;
+}
+
+
+.admin-exam-modern-page
+.exam-score-controls
+.student-filter-reset-button {
+    width: 100%;
+    min-width: 0 !important;
+}
+
+
+/* TABLET BESAR / LAPTOP KECIL */
+
+@media (
+    min-width: 1101px
+) and (
+    max-width: 1400px
+) {
+
+    .admin-exam-modern-page
+    .exam-score-controls {
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0, 1fr)
+            ) !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-student-control {
+        grid-column:
+            span 1 !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-score-search-control {
+        grid-column:
+            span 3 !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-score-controls
+    .student-filter-reset-button {
+        grid-column:
+            auto !important;
+    }
+
+}
+
+
+/* TABLET SEDANG DAN KECIL */
+
+@media (
+    min-width: 701px
+) and (
+    max-width: 1100px
+) {
+
+    .admin-exam-modern-page
+    .exam-score-controls {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            ) !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-student-control,
+
+    .admin-exam-modern-page
+    .exam-score-search-control {
+        grid-column:
+            1 / -1 !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-score-controls
+    .student-filter-reset-button {
+        grid-column:
+            auto !important;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .admin-exam-modern-page
+    .exam-score-controls {
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+    }
+
+
+    .admin-exam-modern-page
+    .exam-student-control,
+
+    .admin-exam-modern-page
+    .exam-score-search-control,
+
+    .admin-exam-modern-page
+    .exam-score-controls
+    .student-filter-reset-button {
+        grid-column:
+            auto !important;
+    }
+
+}
+
+/* ========================================
+   ADMIN USERS — MODERN REVAMP
+======================================== */
+
+.admin-users-modern-page {
+    display: grid;
+    gap: 14px;
+}
+
+
+/* HERO */
+
+.teacher-data-hero {
+    grid-template-columns:
+        minmax(0, 1fr) !important;
+
+    margin-bottom: 0;
+}
+
+.teacher-data-hero
+.student-data-hero-content {
+    max-width: 760px;
+}
+
+
+/* REGISTRATION PANEL */
+
+.teacher-registration-panel {
+    min-width: 0;
+}
+
+.teacher-registration-panel
+.student-modern-heading {
+    margin-bottom: 14px;
+}
+
+#teacherCodeBox {
+    width: 100%;
+
+    margin-top: 0;
+}
+
+.teacher-code-modern-card {
+    position: relative;
+
+    min-height: 150px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        max-content;
+
+    align-items: center;
+    gap: 24px;
+
+    padding: 22px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 92% 8%,
+            rgba(124, 58, 237, 0.15),
+            transparent 36%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(59, 130, 246, 0.09),
+            transparent 48%
+        ),
+        #0d1825;
+
+    border:
+        1px solid #2a3e57;
+
+    border-radius: 15px;
+}
+
+.teacher-code-modern-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    top: -105px;
+    right: -60px;
+
+    background:
+        rgba(59, 130, 246, 0.07);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.teacher-code-content {
+    position: relative;
+    z-index: 1;
+
+    min-width: 0;
+}
+
+.teacher-code-content > span {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #60a5fa;
+
+    font-size: 8px;
+    font-weight: 850;
+
+    letter-spacing: 0.14em;
+}
+
+.teacher-code-content > strong {
+    display: block;
+
+    color: #dbeafe;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+
+    font-size: 34px;
+    line-height: 1.1;
+
+    letter-spacing: 0.13em;
+
+    text-shadow:
+        0 0 24px
+        rgba(59, 130, 246, 0.24);
+
+    overflow-wrap: anywhere;
+}
+
+.teacher-code-content p {
+    margin: 10px 0 0;
+
+    color: #7890ad;
+    font-size: 10px;
+}
+
+.teacher-code-content p b {
+    color: #b9cbe0;
+}
+
+.teacher-code-actions {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+
+    gap: 9px;
+}
+
+.teacher-code-actions button {
+    min-height: 41px;
+
+    white-space: nowrap;
+}
+
+.teacher-code-state {
+    min-height: 150px !important;
+}
+
+.teacher-code-empty {
+    min-height: 150px;
+}
+
+.teacher-generate-button {
+    margin-top: 8px;
+}
+
+
+/* DIRECTORY */
+
+#teacherListPanel.teacher-directory-panel {
+    width: 100%;
+
+    min-width: 0;
+    min-height: 0 !important;
+
+    margin-top: 0;
+
+    padding: 20px;
+
+    display: block !important;
+
+    background: #101a27;
+
+    border:
+        1px solid #293a50;
+
+    border-radius: 17px;
+}
+
+.teacher-directory-heading {
+    grid-template-columns:
+        minmax(0, 1fr)
+        max-content;
+}
+
+.teacher-directory-controls {
+    grid-template-columns:
+        minmax(280px, 1.5fr)
+        minmax(150px, 0.7fr)
+        minmax(170px, 0.8fr)
+        max-content;
+
+    align-items: end;
+}
+
+.teacher-directory-controls
+.teacher-search-control {
+    grid-column: auto;
+}
+
+.admin-users-modern-page
+.teacher-directory-controls label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #7890ad;
+
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.teacher-directory-controls > *,
+.teacher-directory-controls input,
+.teacher-directory-controls select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    box-sizing: border-box;
+}
+
+
+/* TEACHER CARDS */
+
+.teacher-card-list {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr);
+
+    gap: 10px;
+
+    margin-top: 16px;
+}
+
+.teacher-list-state {
+    grid-column:
+        1 / -1;
+
+    min-height: 220px !important;
+}
+
+.teacher-directory-card {
+    position: relative;
+
+    min-width: 0;
+    min-height: 105px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(230px, 1fr)
+        minmax(280px, 1.1fr)
+        max-content;
+
+    align-items: center;
+    gap: 18px;
+
+    padding: 15px 17px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(59, 130, 246, 0.055),
+            transparent 48%
+        ),
+        #0e1926;
+
+    border:
+        1px solid #273a50;
+
+    border-radius: 13px;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.teacher-directory-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 15px;
+    bottom: 15px;
+    left: 0;
+
+    width: 3px;
+
+    background: #3b82f6;
+
+    border-radius:
+        0 5px 5px 0;
+}
+
+.teacher-directory-card.current {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(59, 130, 246, 0.1),
+            transparent 52%
+        ),
+        #0e1926;
+
+    border-color:
+        rgba(96, 165, 250, 0.35);
+}
+
+.teacher-directory-card:hover {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        rgba(96, 165, 250, 0.43);
+
+    box-shadow:
+        0 14px 28px
+        rgba(0, 0, 0, 0.14);
+}
+
+.teacher-card-profile {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+}
+
+.teacher-card-avatar {
+    width: 45px;
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #93c5fd;
+
+    font-size: 14px;
+    font-weight: 850;
+
+    background:
+        rgba(37, 99, 235, 0.16);
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.2);
+
+    border-radius: 12px;
+}
+
+.teacher-card-identity {
+    min-width: 0;
+}
+
+.teacher-card-identity > span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #4b91f7;
+
+    font-size: 7px;
+    font-weight: 850;
+
+    letter-spacing: 0.11em;
+}
+
+.teacher-card-identity h3 {
+    margin: 0;
+
+    overflow: hidden;
+
+    color: #edf4fc;
+
+    font-size: 14px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.teacher-card-identity p {
+    margin: 4px 0 0;
+
+    overflow: hidden;
+
+    color: #7187a3;
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.teacher-card-meta {
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(110px, 0.7fr)
+        minmax(170px, 1fr);
+
+    gap: 12px;
+}
+
+.teacher-card-meta > div {
+    min-width: 0;
+
+    padding: 10px 12px;
+
+    background:
+        rgba(8, 18, 31, 0.48);
+
+    border:
+        1px solid #22354b;
+
+    border-radius: 10px;
+}
+
+.teacher-card-meta small,
+.teacher-card-meta strong {
+    display: block;
+}
+
+.teacher-card-meta small {
+    margin-bottom: 5px;
+
+    color: #607792;
+
+    font-size: 7px;
+    font-weight: 850;
+
+    letter-spacing: 0.1em;
+}
+
+.teacher-card-meta strong {
+    overflow: hidden;
+
+    color: #b7c8dc;
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.teacher-card-action {
+    display: flex;
+    justify-content: flex-end;
+
+    min-width: 80px;
+}
+
+
+/* TABLET */
+
+@media (
+    min-width: 701px
+) and (
+    max-width: 1100px
+) {
+
+    .admin-users-modern-page
+    .teacher-directory-controls {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            ) !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-search-control {
+        grid-column:
+            1 / -1 !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-directory-controls
+    .student-filter-reset-button {
+        grid-column: auto !important;
+
+        width: 100%;
+    }
+
+    .teacher-directory-card {
+        grid-template-columns:
+            minmax(0, 1fr)
+            max-content;
+    }
+
+    .teacher-card-meta {
+        grid-column:
+            1 / -1;
+
+        grid-row: 2;
+    }
+
+    .teacher-card-action {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .teacher-code-modern-card {
+        grid-template-columns: 1fr;
+
+        gap: 18px;
+    }
+
+    .teacher-code-content > strong {
+        font-size: 26px;
+    }
+
+    .teacher-code-actions {
+        justify-content: stretch;
+    }
+
+    .teacher-code-actions button {
+        width: 100%;
+    }
+
+    .admin-users-modern-page
+    .teacher-directory-controls {
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-search-control,
+
+    .admin-users-modern-page
+    .teacher-directory-controls
+    .student-filter-reset-button {
+        grid-column:
+            auto !important;
+    }
+
+    .teacher-directory-card {
+        grid-template-columns:
+            minmax(0, 1fr)
+            max-content;
+
+        gap: 13px;
+    }
+
+    .teacher-card-meta {
+        grid-column:
+            1 / -1;
+
+        grid-template-columns:
+            1fr;
+
+        gap: 8px;
+    }
+
+    .teacher-card-action {
+        align-self: start;
+    }
+
+}
+
+.admin-users-modern-page
+.teacher-role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 30px;
+    padding: 0 11px;
+
+    border: 1px solid rgba(96, 165, 250, 0.25);
+    border-radius: 999px;
+
+    background: rgba(37, 99, 235, 0.1);
+    color: #8fc1ff;
+
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+/* ========================================
+   ADMIN USERS — FINAL LAYOUT FIX
+======================================== */
+
+.admin-users-modern-page
+.teacher-directory-controls {
+    display: grid !important;
+    grid-template-columns:
+        minmax(260px, 1fr)
+        minmax(180px, 240px)
+        max-content !important;
+
+    align-items: end;
+    gap: 10px;
+}
+
+.admin-users-modern-page
+.teacher-filter-reset {
+    width: auto !important;
+    min-width: 82px;
+    height: 42px;
+    margin: 0 !important;
+}
+
+
+/* Tombol kode harus sejajar */
+
+.admin-users-modern-page
+.teacher-code-actions {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.admin-users-modern-page
+.teacher-code-actions button {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-width: 120px;
+    height: 42px;
+    margin: 0 !important;
+    padding-inline: 16px;
+    white-space: nowrap;
+}
+
+
+/* Tablet */
+
+@media (min-width: 701px) and (max-width: 1100px) {
+
+    .admin-users-modern-page
+    .teacher-directory-controls {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(170px, 220px)
+            auto !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-modern-card {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-actions {
+        flex-wrap: nowrap !important;
+    }
+
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .admin-users-modern-page
+    .teacher-directory-controls {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-filter-reset {
+        width: 100% !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-modern-card {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-actions {
+        display: grid !important;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+
+        width: 100%;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-actions button {
+        width: 100% !important;
+        min-width: 0;
+    }
+
+}
+
+.admin-users-modern-page
+#copyTeacherCodeButton {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+
+    transition:
+        color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 220ms ease,
+        transform 180ms ease;
+}
+
+
+.admin-users-modern-page
+#copyTeacherCodeButton::after {
+    content: "";
+
+    position: absolute;
+    top: -40%;
+    left: -65%;
+
+    width: 45%;
+    height: 180%;
+
+    pointer-events: none;
+    opacity: 0;
+
+    transform: skewX(-22deg);
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(151, 199, 255, 0.62),
+            transparent
+        );
+}
+
+
+.admin-users-modern-page
+#copyTeacherCodeButton.copy-success {
+    color: #e5f1ff;
+    border-color: #3b8cff;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 0 0 3px rgba(59, 140, 255, 0.12),
+        0 0 19px rgba(59, 140, 255, 0.44);
+}
+
+
+.admin-users-modern-page
+#copyTeacherCodeButton.copy-success::after {
+    animation:
+        quizCopyButtonShine
+        720ms
+        ease-out;
+}
+
+/* ========================================
+   STUDENT DASHBOARD — REVAMP V2
+======================================== */
+
+.student-dashboard-v2 {
+    scroll-behavior: smooth;
+}
+
+.student-dashboard-v2
+.student-dashboard-v2-hero {
+    margin-bottom: 30px;
+}
+
+.student-dashboard-v2
+.dashboard-v2-hero-content {
+    align-self: center;
+}
+
+.student-dashboard-v2
+.student-dashboard-profile-card {
+    min-height: 182px;
+}
+
+.student-dashboard-v2
+.dashboard-v2-command-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.student-dashboard-v2
+.dashboard-v2-module {
+    min-width: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.student-dashboard-v2
+.dashboard-v2-module-link > span {
+    display: inline-block;
+    transition: transform 180ms ease;
+}
+
+.student-dashboard-v2
+.dashboard-v2-module:hover
+.dashboard-v2-module-link > span {
+    transform: translateX(4px);
+}
+
+.student-dashboard-v2
+.module-information:hover
+.dashboard-v2-module-link > span {
+    transform: translateY(3px);
+}
+
+.student-dashboard-v2
+.student-dashboard-board {
+    scroll-margin-top: 24px;
+
+    padding: 20px;
+    margin-bottom: 0;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(251, 113, 133, 0.035),
+            transparent 38%
+        ),
+        #101a27;
+
+    border: 1px solid #29384b;
+    border-radius: 17px;
+}
+
+.student-dashboard-v2
+.student-dashboard-board
+.dashboard-v2-section-heading {
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.student-dashboard-v2
+.student-information-board-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.student-dashboard-v2
+.student-information-board-title h2 {
+    margin: 0;
+}
+
+.student-dashboard-v2
+.student-information-board-copy > p {
+    margin: 4px 0 0;
+    color: #718096;
+    font-size: 10px;
+}
+
+.student-dashboard-v2
+.announcement-list {
+    min-height: 150px;
+    padding: 10px;
+
+    background: rgba(7, 15, 27, 0.35);
+    border: 1px solid #223247;
+    border-radius: 14px;
+}
+
+.student-dashboard-v2
+.announcement-list
+> .quiz-dashboard-loading {
+    min-height: 128px !important;
+    margin: 0 !important;
+    padding: 20px !important;
+
+    background: transparent !important;
+    border: none !important;
+}
+
+.student-dashboard-v2
+.announcement-list
+> .empty-state {
+    min-height: 128px;
+    margin: 0 !important;
+}
+
+.student-dashboard-v2
+.student-announcement-view-all-button {
+    min-height: 34px;
+    padding: 0 12px;
+
+    color: #a9c8ed;
+    background: #0c1722;
+    border: 1px solid #30445d;
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 750;
+}
+
+@media (max-width: 850px) {
+
+    .student-dashboard-v2
+    .student-dashboard-profile-card {
+        min-height: 0;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .student-dashboard-v2
+    .student-dashboard-v2-hero {
+        margin-bottom: 25px;
+    }
+
+    .student-dashboard-v2
+    .dashboard-v2-status {
+        margin-bottom: 12px;
+    }
+
+    .student-dashboard-v2
+    .dashboard-v2-hero h1 {
+        font-size: 27px;
+    }
+
+    .student-dashboard-v2
+    .dashboard-v2-hero-content > p {
+        font-size: 11px;
+        line-height: 1.65;
+    }
+
+    .student-dashboard-v2
+    .dashboard-v2-module {
+        min-height: 178px;
+    }
+
+    .student-dashboard-v2
+    .student-dashboard-board {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .student-dashboard-v2
+    .student-dashboard-board
+    .dashboard-v2-section-heading {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .student-dashboard-v2
+    .student-announcement-view-all-button {
+        flex-shrink: 0;
+    }
+
+    .student-dashboard-v2
+    .announcement-list {
+        padding: 8px;
+    }
+
+}
+
+/* Admin Users — samakan ukuran search dan dropdown */
+
+.admin-users-modern-page
+.teacher-directory-controls input,
+
+.admin-users-modern-page
+.teacher-directory-controls select {
+    width: 100%;
+    height: 42px !important;
+    min-height: 42px !important;
+
+    margin: 0;
+    padding: 0 12px;
+
+    border: 1px solid #2d435e;
+    border-radius: 9px;
+
+    background-color: #0c1622;
+    color: #d4e0ef;
+
+    font-family: inherit;
+    font-size: 10px !important;
+    font-weight: 500;
+
+    box-sizing: border-box;
+}
+
+.admin-users-modern-page
+.teacher-directory-controls input::placeholder {
+    color: #617792;
+    font-size: 10px;
+    opacity: 1;
+}
+
+/* Kartu guru sekarang hanya profil dan tanggal dibuat */
+
+.admin-users-modern-page
+.teacher-directory-card {
+    grid-template-columns:
+        minmax(230px, 1fr)
+        minmax(280px, 1.1fr) !important;
+}
+
+.admin-users-modern-page
+.teacher-card-meta {
+    grid-template-columns:
+        minmax(0, 1fr) !important;
+}
+
+@media (max-width: 700px) {
+
+    .admin-users-modern-page
+    .teacher-directory-card {
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-card-meta {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+}
+
+/* Admin Users — registration card mobile fix */
+
+@media (max-width: 700px) {
+
+    .admin-users-modern-page
+    .teacher-code-content {
+        text-align: center;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-content > strong {
+        font-size: 22px !important;
+        line-height: 1.15;
+        letter-spacing: 0.1em;
+        text-align: center;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-content p {
+        text-align: center;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-actions button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        height: 42px;
+        min-height: 42px;
+
+        padding: 0 10px !important;
+
+        font-size: 10px !important;
+        font-weight: 750;
+        line-height: 1 !important;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+}
+
+/* Samakan bentuk kedua tombol kode */
+
+.admin-users-modern-page
+.teacher-code-actions
+#copyTeacherCodeButton,
+
+.admin-users-modern-page
+.teacher-code-actions
+.admin-primary-button {
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    padding: 0 14px !important;
+
+    border-radius: 9px !important;
+
+    box-sizing: border-box;
+    line-height: 1 !important;
+}
+
+@media (max-width: 700px) {
+
+    .admin-users-modern-page
+    .teacher-code-actions {
+        align-items: stretch !important;
+    }
+
+    .admin-users-modern-page
+    .teacher-code-actions
+    #copyTeacherCodeButton,
+
+    .admin-users-modern-page
+    .teacher-code-actions
+    .admin-primary-button {
+        width: 100% !important;
+        height: 42px !important;
+        border-radius: 9px !important;
+    }
+
+}
+
+/* Salin Kode memakai bentuk yang sama dengan Regenerate */
+
+.admin-users-modern-page
+#copyTeacherCodeButton.teacher-copy-button {
+    background: #0c1722 !important;
+    color: #a9c7eb !important;
+
+    border: 1px solid #30465f !important;
+    border-radius: 9px !important;
+
+    box-shadow: none !important;
+}
+
+.admin-users-modern-page
+#copyTeacherCodeButton.teacher-copy-button:hover {
+    background: #122236 !important;
+    color: #d8eaff !important;
+    border-color: #49719e !important;
+}
+
+/* Matikan shimmer primary button khusus Salin Kode */
+
+.admin-users-modern-page
+#copyTeacherCodeButton::before,
+
+.admin-users-modern-page
+#copyTeacherCodeButton:hover::before {
+    content: none !important;
+    display: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Tengahkan vertikal isi hero Admin dan Student */
+
+.dashboard-v2-hero
+.dashboard-v2-hero-content {
+    align-self: center !important;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

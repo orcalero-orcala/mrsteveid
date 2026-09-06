@@ -249,358 +249,513 @@
             </header>
 
 
-            <div class="admin-page-content">
+<div class="
+    admin-page-content
+    student-modern-page
+    admin-exam-modern-page
+">
 
-                <!-- HERO -->
+    <!-- HERO -->
 
-                <section class="admin-page-hero">
+    <section class="
+        admin-page-hero
+        student-data-hero
+        exam-data-hero
+    ">
 
-                    <div>
+        <div class="student-data-hero-content">
 
-                        <small class="eyebrow">
-                            EXAM SCORES
-                        </small>
+            <small class="eyebrow">
+                ACADEMIC MANAGEMENT
+            </small>
 
-                        <h1>
-                            Nilai Ujian Siswa
-                        </h1>
+            <h1>
+                Nilai Ujian Siswa
+            </h1>
 
-                        <p>
-                            Masukkan nilai ujian siswa dan
-                            tinjau seluruh hasil berdasarkan
-                            siswa yang dipilih.
-                        </p>
+            <p>
+                Kelola mata pelajaran, tambahkan nilai,
+                dan pantau hasil akademik siswa dari satu ruang kerja.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- WORKSPACE -->
+
+    <div class="admin-exam-workspace">
+
+        <!-- MASTER MAPEL -->
+
+        <section class="
+            student-modern-panel
+            exam-subject-panel
+        ">
+
+            <div class="
+                student-modern-heading
+                exam-panel-heading
+            ">
+
+                <div class="student-modern-heading-icon">
+                    M
+                </div>
+
+                <div class="exam-heading-copy">
+
+                    <small>
+                        SUBJECT MANAGEMENT
+                    </small>
+
+                    <h2>
+                        Master Mapel
+                    </h2>
+
+                    <p>
+                        Tambahkan dan kelola mata pelajaran.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="subjectForm"
+                class="exam-subject-form-modern"
+            >
+
+                <div class="student-modern-field">
+
+                    <label for="newSubjectName">
+                        Nama Mapel
+                    </label>
+
+                    <input
+                        type="text"
+                        id="newSubjectName"
+                        maxlength="80"
+                        placeholder="Contoh: Matematika"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="
+                        student-modern-primary-button
+                        exam-subject-submit
+                    "
+                >
+                    + Tambah Mapel
+                </button>
+
+            </form>
+
+
+            <p
+                id="subjectMessage"
+                class="admin-form-message"
+            ></p>
+
+
+            <div
+                id="subjectTablePanel"
+                class="exam-subject-list-panel"
+            >
+
+                <div
+                    id="subjectList"
+                    class="exam-subject-list"
+                >
+
+                    <div class="
+                        quiz-dashboard-loading
+                        exam-panel-state
+                    ">
+                        Memuat daftar mapel...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TAMBAH NILAI -->
+
+        <section class="
+            student-modern-panel
+            exam-create-panel
+        ">
+
+            <div class="student-modern-heading">
+
+                <div class="
+                    student-modern-heading-icon
+                    student-modern-heading-icon-purple
+                ">
+                    N
+                </div>
+
+                <div>
+
+                    <small>
+                        NEW EXAM SCORE
+                    </small>
+
+                    <h2>
+                        Tambah Nilai
+                    </h2>
+
+                    <p>
+                        Masukkan hasil ujian siswa.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                id="examScoreForm"
+                class="exam-score-form-modern"
+            >
+
+                <div class="student-modern-field">
+
+                    <label for="studentSelect">
+                        Siswa
+                    </label>
+
+                    <div class="student-class-select">
+
+                        <select
+                            id="studentSelect"
+                            required
+                        >
+                            <option value="">
+                                Pilih siswa
+                            </option>
+                        </select>
 
                     </div>
 
-                </section>
+                </div>
 
-<!-- KELOLA MAPEL -->
 
-<section class="admin-form-section admin-subject-section">
+                <div class="student-modern-field">
 
-    <div class="section-heading admin-subject-heading">
+                    <label for="subject">
+                        Mapel
+                    </label>
 
-        <div>
+                    <div class="student-class-select">
 
-            <h2>
-                Kelola Mapel
-            </h2>
+                        <select
+                            id="subject"
+                            required
+                        >
+                            <option value="">
+                                Pilih mapel
+                            </option>
+                        </select>
 
-            <p>
-                Tambahkan mata pelajaran yang dapat digunakan saat memberi nilai.
+                    </div>
+
+                </div>
+
+
+                <div class="
+                    student-modern-field
+                    exam-material-field
+                ">
+
+                    <label for="material">
+                        Materi
+                    </label>
+
+                    <input
+                        type="text"
+                        id="material"
+                        placeholder="Contoh: Persamaan Linear"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="student-modern-field">
+
+                    <label for="score">
+                        Nilai
+                    </label>
+
+                    <input
+                        type="number"
+                        id="score"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        placeholder="0 - 100"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="
+                        student-modern-primary-button
+                        exam-score-submit
+                    "
+                >
+                    Simpan Nilai
+                </button>
+
+            </form>
+
+
+            <p
+                id="message"
+                class="admin-form-message"
+            ></p>
+
+        </section>
+
+    </div>
+
+
+    <!-- RIWAYAT NILAI -->
+
+    <section class="
+        student-modern-panel
+        exam-score-directory
+    ">
+
+        <div class="
+            student-modern-heading
+            student-directory-heading
+            exam-score-directory-heading
+        ">
+
+            <div>
+
+                <small>
+                    ACADEMIC RECORD
+                </small>
+
+                <h2>
+                    Daftar Nilai Siswa
+                </h2>
+
+                <p>
+                    Cari dan tinjau seluruh hasil ujian siswa.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="examScoreRefreshButton"
+                class="student-directory-refresh"
+                onclick="loadExamScores()"
+                disabled
+            >
+
+                <span class="student-refresh-icon">
+                    ↻
+                </span>
+
+                <span class="student-refresh-label">
+                    Refresh
+                </span>
+
+            </button>
+
+        </div>
+
+
+        <div class="
+            student-directory-controls
+            exam-score-controls
+        ">
+
+            <div class="
+                student-filter-control
+                exam-student-control
+            ">
+
+                <label for="scoreStudentSelect">
+                    Siswa
+                </label>
+
+                <select id="scoreStudentSelect">
+
+                    <option value="">
+                        Pilih siswa
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="
+                student-search-control
+                exam-score-search-control
+            ">
+
+                <label for="examScoreSearch">
+                    Cari nilai
+                </label>
+
+                <input
+                    type="search"
+                    id="examScoreSearch"
+                    placeholder="Cari mapel atau materi"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="student-filter-control">
+
+                <label for="examSubjectFilter">
+                    Mapel
+                </label>
+
+                <select id="examSubjectFilter">
+
+                    <option value="all">
+                        Semua mapel
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="student-filter-control">
+
+                <label for="examLevelFilter">
+                    Kategori
+                </label>
+
+                <select id="examLevelFilter">
+
+                    <option value="all">
+                        Semua nilai
+                    </option>
+
+                    <option value="high">
+                        Tinggi · 85–100
+                    </option>
+
+                    <option value="medium">
+                        Sedang · 70–84
+                    </option>
+
+                    <option value="low">
+                        Di bawah 70
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="student-filter-control">
+
+                <label for="examSortFilter">
+                    Urutkan
+                </label>
+
+                <select id="examSortFilter">
+
+                    <option value="newest">
+                        Terbaru
+                    </option>
+
+                    <option value="oldest">
+                        Terlama
+                    </option>
+
+                    <option value="highest">
+                        Nilai tertinggi
+                    </option>
+
+                    <option value="lowest">
+                        Nilai terendah
+                    </option>
+
+                    <option value="az">
+                        Mapel A–Z
+                    </option>
+
+                    <option value="za">
+                        Mapel Z–A
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="student-filter-reset-button"
+                onclick="resetExamScoreFilters()"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="student-directory-result-bar">
+
+            <p
+                id="examScoreSummary"
+                class="student-filter-summary"
+            >
+                Pilih siswa untuk melihat nilai.
             </p>
 
         </div>
 
 
-        <button
-            type="button"
-            id="toggleSubjectTableButton"
-            class="secondary-button"
-            onclick="toggleSubjectTable()"
+        <div
+            id="examScoreTableContainer"
+            class="exam-score-card-list"
         >
-            Sembunyikan Daftar
-        </button>
 
-    </div>
+            <div class="student-modern-empty">
 
+                <strong>
+                    Belum ada siswa dipilih
+                </strong>
 
-    <form
-        id="subjectForm"
-        class="admin-subject-form"
-    >
-
-        <div class="admin-form-field">
-
-            <label for="newSubjectName">
-                Nama Mapel
-            </label>
-
-            <input
-                type="text"
-                id="newSubjectName"
-                maxlength="80"
-                placeholder="Contoh: Matematika"
-                autocomplete="off"
-                required
-            >
-
-        </div>
-
-
-        <div class="admin-form-action">
-
-            <button
-                type="submit"
-                class="admin-primary-button"
-            >
-                + Tambah Mapel
-            </button>
-
-        </div>
-
-    </form>
-
-
-    <p
-        id="subjectMessage"
-        class="admin-form-message"
-    ></p>
-
-
-    <div
-        id="subjectTablePanel"
-        class="admin-subject-table-panel"
-    >
-
-        <div class="admin-subject-table-wrapper">
-
-            <table class="admin-subject-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            No
-                        </th>
-
-                        <th>
-                            Nama Mapel
-                        </th>
-
-                        <th>
-                            Dibuat
-                        </th>
-
-                        <th>
-                            Aksi
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody id="subjectList">
-
-                    <tr>
-
-                        <td colspan="4">
-                            Memuat daftar mapel...
-                        </td>
-
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-                <!-- TAMBAH NILAI -->
-
-                <section class="admin-form-section">
-
-                    <div class="section-heading">
-
-                        <div>
-
-                            <h2>
-                                Tambah Nilai
-                            </h2>
-
-                            <p>
-                                Masukkan data ujian dan nilai siswa.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <form
-                        id="examScoreForm"
-                        class="admin-score-form"
-                    >
-
-                        <div class="admin-form-field">
-
-                            <label for="studentSelect">
-                                Siswa
-                            </label>
-
-                            <select
-                                id="studentSelect"
-                                required
-                            >
-                                <option value="">
-                                    Pilih siswa
-                                </option>
-                            </select>
-
-                        </div>
-
-
-<div class="admin-form-field">
-
-    <label for="subject">
-        Mapel
-    </label>
-
-<select
-    id="subject"
-    required
->
-
-    <option value="">
-        Pilih mapel
-    </option>
-
-</select>
-
-</div>
-
-
-                        <div class="admin-form-field">
-
-                            <label for="material">
-                                Materi
-                            </label>
-
-                            <input
-                                type="text"
-                                id="material"
-                                placeholder="Contoh: Persamaan Linear"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="admin-form-field">
-
-                            <label for="score">
-                                Nilai
-                            </label>
-
-                            <input
-                                type="number"
-                                id="score"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                placeholder="0 - 100"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="admin-form-action">
-
-                            <button
-                                type="submit"
-                                class="admin-primary-button"
-                            >
-                                Simpan Nilai
-                            </button>
-
-                        </div>
-
-                    </form>
-
-
-                    <p
-                        id="message"
-                        class="admin-form-message"
-                    ></p>
-
-                </section>
-
-
-                <!-- DAFTAR NILAI -->
-
-                <section class="admin-table-section">
-
-<div class="
-    section-heading
-    admin-score-list-heading
-">
-
-    <div>
-
-        <h2>
-            Daftar Nilai Siswa
-        </h2>
-
-        <p>
-            Pilih siswa untuk melihat semua nilai.
-        </p>
-
-    </div>
-
-
-<button
-    type="button"
-    class="admin-score-refresh-button"
-    onclick="loadExamScores()"
->
-    ↻ Refresh
-</button>
-
-</div>
-
-
-                    <div class="admin-score-filter">
-
-                        <div class="admin-form-field">
-
-                            <label for="scoreStudentSelect">
-                                Pilih Siswa
-                            </label>
-
-                            <select id="scoreStudentSelect">
-
-                                <option value="">
-                                    Pilih siswa
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        id="examScoreTableContainer"
-                        class="admin-score-table-container"
-                    >
-
-                        <div class="empty-state">
-
-                            <strong>
-                                Belum ada siswa dipilih
-                            </strong>
-
-                            <span>
-                                Pilih siswa untuk melihat nilai.
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </section>
+                <span>
+                    Pilih siswa untuk melihat nilai ujian.
+                </span>
 
             </div>
+
+        </div>
+
+    </section>
+
+</div>
 
         </main>
 
@@ -755,13 +910,45 @@ const subjectTablePanel =
     );
 
 
-const toggleSubjectTableButton =
+const examScoreRefreshButton =
     document.getElementById(
-        "toggleSubjectTableButton"
+        "examScoreRefreshButton"
+    );
+
+
+const examScoreSearch =
+    document.getElementById(
+        "examScoreSearch"
+    );
+
+
+const examSubjectFilter =
+    document.getElementById(
+        "examSubjectFilter"
+    );
+
+
+const examLevelFilter =
+    document.getElementById(
+        "examLevelFilter"
+    );
+
+
+const examSortFilter =
+    document.getElementById(
+        "examSortFilter"
+    );
+
+
+const examScoreSummary =
+    document.getElementById(
+        "examScoreSummary"
     );
 
 
 let allSubjects = [];
+
+let currentExamScores = [];
 
 
 // =====================================
@@ -781,51 +968,6 @@ function escapeHtml(text) {
 
 
     return div.innerHTML;
-
-}
-
-// =====================================
-// HIDE / SHOW DAFTAR MAPEL
-// =====================================
-
-function updateSubjectTableButton() {
-
-    toggleSubjectTableButton.textContent =
-        subjectTablePanel.hidden
-            ? "Tampilkan Daftar"
-            : "Sembunyikan Daftar";
-
-}
-
-
-function toggleSubjectTable() {
-
-    subjectTablePanel.hidden =
-        !subjectTablePanel.hidden;
-
-
-    localStorage.setItem(
-        "adminSubjectTableHidden",
-        subjectTablePanel.hidden
-            ? "true"
-            : "false"
-    );
-
-
-    updateSubjectTableButton();
-
-}
-
-
-function restoreSubjectTableState() {
-
-    subjectTablePanel.hidden =
-        localStorage.getItem(
-            "adminSubjectTableHidden"
-        ) === "true";
-
-
-    updateSubjectTableButton();
 
 }
 
@@ -925,6 +1067,61 @@ function renderSubjectDropdown(
 
 }
 
+function renderExamSubjectFilter() {
+
+    const previousValue =
+        examSubjectFilter.value;
+
+
+    examSubjectFilter.innerHTML = `
+
+        <option value="all">
+            Semua mapel
+        </option>
+
+    `;
+
+
+    allSubjects.forEach(
+        subject => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                subject.name;
+
+
+            option.textContent =
+                subject.name;
+
+
+            examSubjectFilter.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    const valueStillExists =
+        allSubjects.some(
+            subject =>
+                subject.name ===
+                previousValue
+        );
+
+
+    examSubjectFilter.value =
+        valueStillExists
+            ? previousValue
+            : "all";
+
+}
+
 
 // =====================================
 // RENDER TABEL MAPEL
@@ -936,24 +1133,20 @@ function renderSubjectTable() {
 
         subjectList.innerHTML = `
 
-            <tr>
+            <div class="
+                student-modern-empty
+                exam-panel-state
+            ">
 
-                <td
-                    colspan="4"
-                    class="admin-subject-empty-cell"
-                >
+                <strong>
+                    Belum ada mapel
+                </strong>
 
-                    <strong>
-                        Belum ada mapel
-                    </strong>
+                <span>
+                    Tambahkan mata pelajaran melalui form di atas.
+                </span>
 
-                    <span>
-                        Tambahkan mapel melalui form di atas.
-                    </span>
-
-                </td>
-
-            </tr>
+            </div>
 
         `;
 
@@ -966,35 +1159,59 @@ function renderSubjectTable() {
 
 
     allSubjects.forEach(
-        (subject, index) => {
+        subject => {
 
-            const row =
+            const subjectCard =
                 document.createElement(
-                    "tr"
+                    "article"
                 );
 
 
-            row.innerHTML = `
-
-                <td>
-                    ${index + 1}
-                </td>
+            subjectCard.className =
+                "exam-subject-card";
 
 
-                <td>
+            subjectCard.innerHTML = `
 
-                    <strong class="admin-subject-name">
+                <div class="exam-subject-card-main">
+
+                    <div class="exam-subject-avatar">
+
                         ${escapeHtml(
-                            subject.name
+                            String(
+                                subject.name ||
+                                "M"
+                            )
+                                .trim()
+                                .charAt(0)
+                                .toUpperCase() ||
+                            "M"
                         )}
-                    </strong>
 
-                </td>
+                    </div>
 
 
-                <td>
+                    <div>
 
-                    <span class="admin-subject-date">
+                        <strong>
+                            ${escapeHtml(
+                                subject.name
+                            )}
+                        </strong>
+
+                        <span>
+                            Mata pelajaran aktif
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="exam-subject-card-footer">
+
+                    <span>
+                        Dibuat
                         ${escapeHtml(
                             formatDeviceDateTime(
                                 subject.created_at
@@ -1002,10 +1219,6 @@ function renderSubjectTable() {
                         )}
                     </span>
 
-                </td>
-
-
-                <td>
 
                     <button
                         type="button"
@@ -1017,13 +1230,13 @@ function renderSubjectTable() {
                         Hapus
                     </button>
 
-                </td>
+                </div>
 
             `;
 
 
             subjectList.appendChild(
-                row
+                subjectCard
             );
 
         }
@@ -1042,13 +1255,12 @@ async function loadSubjects(
 
     subjectList.innerHTML = `
 
-        <tr>
-
-            <td colspan="4">
-                Memuat daftar mapel...
-            </td>
-
-        </tr>
+        <div class="
+            quiz-dashboard-loading
+            exam-panel-state
+        ">
+            Memuat daftar mapel...
+        </div>
 
     `;
 
@@ -1065,30 +1277,23 @@ async function loadSubjects(
             await response.json();
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            subjectList.innerHTML = `
-
-                <tr>
-
-                    <td colspan="4">
-                        ${escapeHtml(
-                            data.message ||
-                            "Gagal mengambil daftar mapel."
-                        )}
-                    </td>
-
-                </tr>
-
-            `;
-
-            return;
+            throw new Error(
+                data.message ||
+                "Gagal mengambil daftar mapel."
+            );
 
         }
 
 
         allSubjects =
-            Array.isArray(data.subjects)
+            Array.isArray(
+                data.subjects
+            )
                 ? data.subjects
                 : [];
 
@@ -1101,6 +1306,9 @@ async function loadSubjects(
         );
 
 
+        renderExamSubjectFilter();
+
+
     } catch (error) {
 
         console.error(
@@ -1111,13 +1319,20 @@ async function loadSubjects(
 
         subjectList.innerHTML = `
 
-            <tr>
+            <div class="
+                student-modern-empty
+                exam-panel-state
+            ">
 
-                <td colspan="4">
-                    Tidak dapat terhubung ke server.
-                </td>
+                <strong>
+                    Gagal memuat mapel
+                </strong>
 
-            </tr>
+                <span>
+                    Tidak dapat mengambil daftar mapel dari server.
+                </span>
+
+            </div>
 
         `;
 
@@ -1442,7 +1657,7 @@ async function deleteSubject(
 
 
                 scoreOption.textContent =
-                    `${student.name} — ${student.class_name}`;
+                    `${student.name} - ${student.class_name}`;
 
 
                 scoreStudentSelect.appendChild(
@@ -1522,7 +1737,47 @@ async function deleteSubject(
 
 }
 
-       async function loadExamScores() {
+function getExamScoreLevel(
+    score
+) {
+
+    const numericScore =
+        Number(score);
+
+
+    if (numericScore >= 85) {
+        return "high";
+    }
+
+
+    if (numericScore < 70) {
+        return "low";
+    }
+
+
+    return "medium";
+
+}
+
+
+function getExamScoreTimestamp(
+    examScore
+) {
+
+    const timestamp =
+        new Date(
+            examScore.created_at
+        ).getTime();
+
+
+    return Number.isFinite(timestamp)
+        ? timestamp
+        : 0;
+
+}
+
+
+function renderExamScores() {
 
     const selectedStudentId =
         Number(
@@ -1530,31 +1785,400 @@ async function deleteSubject(
         );
 
 
-if (!selectedStudentId) {
+    if (!selectedStudentId) {
 
-    examScoreTableContainer.innerHTML = `
+        examScoreSummary.textContent =
+            "Pilih siswa untuk melihat nilai.";
 
-        <div class="empty-state">
 
-            <strong>
-                Belum ada siswa dipilih
-            </strong>
+        examScoreTableContainer.innerHTML = `
 
-            <span>
-                Pilih siswa untuk melihat nilai.
-            </span>
+            <div class="student-modern-empty">
 
-        </div>
+                <strong>
+                    Belum ada siswa dipilih
+                </strong>
 
-    `;
+                <span>
+                    Pilih siswa untuk melihat nilai ujian.
+                </span>
 
-    return;
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    const searchValue =
+        String(
+            examScoreSearch.value ||
+            ""
+        )
+            .trim()
+            .toLocaleLowerCase(
+                "id-ID"
+            );
+
+
+    const selectedSubject =
+        examSubjectFilter.value;
+
+
+    const selectedLevel =
+        examLevelFilter.value;
+
+
+    const selectedSort =
+        examSortFilter.value;
+
+
+    let filteredScores =
+        currentExamScores.filter(
+            examScore => {
+
+                const subject =
+                    String(
+                        examScore.subject ||
+                        ""
+                    );
+
+
+                const material =
+                    String(
+                        examScore.material ||
+                        ""
+                    );
+
+
+                const searchableText =
+                    `${subject} ${material}`
+                        .toLocaleLowerCase(
+                            "id-ID"
+                        );
+
+
+                const matchesSearch =
+                    !searchValue ||
+                    searchableText.includes(
+                        searchValue
+                    );
+
+
+                const matchesSubject =
+                    selectedSubject ===
+                        "all" ||
+                    subject ===
+                        selectedSubject;
+
+
+                const matchesLevel =
+                    selectedLevel ===
+                        "all" ||
+                    getExamScoreLevel(
+                        examScore.score
+                    ) ===
+                        selectedLevel;
+
+
+                return (
+                    matchesSearch &&
+                    matchesSubject &&
+                    matchesLevel
+                );
+
+            }
+        );
+
+
+    filteredScores.sort(
+        (scoreA, scoreB) => {
+
+            if (
+                selectedSort ===
+                "oldest"
+            ) {
+
+                return (
+                    getExamScoreTimestamp(
+                        scoreA
+                    ) -
+                    getExamScoreTimestamp(
+                        scoreB
+                    )
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "highest"
+            ) {
+
+                return (
+                    Number(scoreB.score) -
+                    Number(scoreA.score)
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "lowest"
+            ) {
+
+                return (
+                    Number(scoreA.score) -
+                    Number(scoreB.score)
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "az"
+            ) {
+
+                return String(
+                    scoreA.subject || ""
+                ).localeCompare(
+                    String(
+                        scoreB.subject || ""
+                    ),
+                    "id"
+                );
+
+            }
+
+
+            if (
+                selectedSort ===
+                "za"
+            ) {
+
+                return String(
+                    scoreB.subject || ""
+                ).localeCompare(
+                    String(
+                        scoreA.subject || ""
+                    ),
+                    "id"
+                );
+
+            }
+
+
+            return (
+                getExamScoreTimestamp(
+                    scoreB
+                ) -
+                getExamScoreTimestamp(
+                    scoreA
+                )
+            );
+
+        }
+    );
+
+
+    examScoreSummary.textContent =
+        `${filteredScores.length} dari ${currentExamScores.length} nilai ditampilkan`;
+
+
+    if (
+        currentExamScores.length ===
+        0
+    ) {
+
+        examScoreTableContainer.innerHTML = `
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Belum ada nilai
+                </strong>
+
+                <span>
+                    Siswa ini belum memiliki nilai ujian.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    if (
+        filteredScores.length ===
+        0
+    ) {
+
+        examScoreTableContainer.innerHTML = `
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Nilai tidak ditemukan
+                </strong>
+
+                <span>
+                    Coba ubah pencarian atau filter nilai.
+                </span>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    examScoreTableContainer.innerHTML =
+        "";
+
+
+    filteredScores.forEach(
+        examScore => {
+
+            const numericScore =
+                Number(
+                    examScore.score
+                );
+
+
+            const scoreLevel =
+                getExamScoreLevel(
+                    numericScore
+                );
+
+
+            const scoreCard =
+                document.createElement(
+                    "article"
+                );
+
+
+            scoreCard.className =
+                `exam-score-card ${scoreLevel}`;
+
+
+            scoreCard.innerHTML = `
+
+                <div class="exam-score-value">
+
+                    <small>
+                        NILAI
+                    </small>
+
+                    <strong>
+                        ${numericScore}
+                    </strong>
+
+                </div>
+
+
+                <div class="exam-score-card-content">
+
+                    <span>
+                        ${escapeHtml(
+                            examScore.subject
+                        )}
+                    </span>
+
+                    <h3>
+                        ${escapeHtml(
+                            examScore.material
+                        )}
+                    </h3>
+
+                    <p>
+                        ${escapeHtml(
+                            formatDeviceDateTime(
+                                examScore.created_at
+                            )
+                        )}
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="
+                        admin-delete-button
+                        exam-score-delete
+                    "
+                    onclick="deleteExamScore(
+                        ${Number(
+                            examScore.id
+                        )}
+                    )"
+                >
+                    Hapus
+                </button>
+
+            `;
+
+
+            examScoreTableContainer.appendChild(
+                scoreCard
+            );
+
+        }
+    );
 
 }
 
 
-    examScoreTableContainer.innerHTML =
-        "Memuat nilai...";
+async function loadExamScores() {
+
+    const selectedStudentId =
+        Number(
+            scoreStudentSelect.value
+        );
+
+
+    if (!selectedStudentId) {
+
+        currentExamScores = [];
+
+        examScoreRefreshButton.disabled =
+            true;
+
+        renderExamScores();
+
+        return;
+
+    }
+
+
+    examScoreRefreshButton.disabled =
+        true;
+
+
+    examScoreSummary.textContent =
+        "Memuat nilai siswa...";
+
+
+    examScoreTableContainer.innerHTML = `
+
+        <div class="
+            quiz-dashboard-loading
+            exam-score-loading
+        ">
+            Memuat nilai siswa...
+        </div>
+
+    `;
 
 
     try {
@@ -1569,19 +2193,30 @@ if (!selectedStudentId) {
             await response.json();
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            examScoreTableContainer.innerHTML =
-                "Gagal mengambil nilai.";
-
-            return;
+            throw new Error(
+                data.message ||
+                "Gagal mengambil nilai."
+            );
 
         }
 
 
-        const studentScores =
-            data.examScores.filter(
-                (examScore) =>
+        const allExamScores =
+            Array.isArray(
+                data.examScores
+            )
+                ? data.examScores
+                : [];
+
+
+        currentExamScores =
+            allExamScores.filter(
+                examScore =>
                     Number(
                         examScore.student_id
                     ) ===
@@ -1589,186 +2224,41 @@ if (!selectedStudentId) {
             );
 
 
-if (
-    studentScores.length === 0
-) {
-
-    examScoreTableContainer.innerHTML = `
-
-        <div class="empty-state">
-
-            <strong>
-                Belum ada nilai
-            </strong>
-
-            <span>
-                Siswa ini belum memiliki nilai ujian.
-            </span>
-
-        </div>
-
-    `;
-
-    return;
-
-}
-
-
- let tableHtml = `
-
-    <div class="admin-table-wrapper">
-
-        <table class="admin-data-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Mapel
-                    </th>
-
-                    <th>
-                        Materi
-                    </th>
-
-                    <th>
-                        Nilai
-                    </th>
-
-                    <th>
-                        Tanggal
-                    </th>
-
-                    <th>
-                        Aksi
-                    </th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-`;
-
-
-studentScores.forEach(
-    (examScore) => {
-
-        const numericScore =
-            Number(
-                examScore.score
-            );
-
-
-        let scoreLevel =
-            "medium";
-
-
-        if (numericScore >= 85) {
-
-            scoreLevel =
-                "high";
-
-        } else if (
-            numericScore < 70
-        ) {
-
-            scoreLevel =
-                "low";
-
-        }
-
-
-        tableHtml += `
-
-            <tr>
-
-                <td>
-
-                    <strong class="admin-score-subject">
-                        ${escapeHtml(
-                            examScore.subject
-                        )}
-                    </strong>
-
-                </td>
-
-
-                <td>
-                    ${escapeHtml(
-                        examScore.material
-                    )}
-                </td>
-
-
-                <td>
-
-                    <span
-                        class="
-                            admin-score-badge
-                            ${scoreLevel}
-                        "
-                    >
-                        ${numericScore}
-                    </span>
-
-                </td>
-
-
-                <td>
-${formatDeviceDateTime(
-    examScore.created_at
-)}
-                </td>
-
-
-                <td>
-
-                    <button
-                        type="button"
-                        class="admin-delete-button"
-                        onclick="
-                            deleteExamScore(
-                                ${examScore.id}
-                            )
-                        "
-                    >
-                        Hapus
-                    </button>
-
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-);
-
-
-tableHtml += `
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-`;
-
-
-examScoreTableContainer.innerHTML =
-    tableHtml;
+        renderExamScores();
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Gagal memuat nilai:",
+            error
+        );
 
-        examScoreTableContainer.innerHTML =
-            "Tidak dapat terhubung ke server.";
+
+        examScoreSummary.textContent =
+            "Gagal memuat nilai.";
+
+
+        examScoreTableContainer.innerHTML = `
+
+            <div class="student-modern-empty">
+
+                <strong>
+                    Gagal memuat nilai
+                </strong>
+
+                <span>
+                    Tidak dapat mengambil nilai dari server.
+                </span>
+
+            </div>
+
+        `;
+
+    } finally {
+
+        examScoreRefreshButton.disabled =
+            false;
 
     }
 
@@ -1890,10 +2380,15 @@ examScoreTableContainer.innerHTML =
                     }
 
 
-                    message.textContent =
-                        "Nilai berhasil disimpan.";
+message.textContent =
+    "Nilai berhasil disimpan.";
 
-                        loadExamScores();
+
+scoreStudentSelect.value =
+    String(studentId);
+
+
+await loadExamScores();
 
 
                     subjectInput.value =
@@ -1918,9 +2413,70 @@ examScoreTableContainer.innerHTML =
             }
         );
 
-        scoreStudentSelect.addEventListener(
+function resetExamScoreFilters() {
+
+    examScoreSearch.value =
+        "";
+
+    examSubjectFilter.value =
+        "all";
+
+    examLevelFilter.value =
+        "all";
+
+    examSortFilter.value =
+        "newest";
+
+
+    renderExamScores();
+
+}
+
+
+scoreStudentSelect.addEventListener(
     "change",
-    loadExamScores
+    () => {
+
+        examScoreSearch.value =
+            "";
+
+        examSubjectFilter.value =
+            "all";
+
+        examLevelFilter.value =
+            "all";
+
+        examSortFilter.value =
+            "newest";
+
+
+        loadExamScores();
+
+    }
+);
+
+
+examScoreSearch.addEventListener(
+    "input",
+    renderExamScores
+);
+
+
+examSubjectFilter.addEventListener(
+    "change",
+    renderExamScores
+);
+
+
+examLevelFilter.addEventListener(
+    "change",
+    renderExamScores
+);
+
+
+examSortFilter.addEventListener(
+    "change",
+    renderExamScores
 );
 
 function goToDashboard() {
@@ -2002,8 +2558,6 @@ async function logout() {
         "/admin-login.html";
 }
 
-
-restoreSubjectTableState();
 loadSubjects();
 loadStudents();
 loadExamScores();
