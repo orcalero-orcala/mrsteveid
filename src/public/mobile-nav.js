@@ -227,6 +227,23 @@ const ADMIN_SIDEBAR_ICONS = {
         </svg>
     `,
 
+        profileadmin: `
+        <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+        >
+            <circle
+                cx="12"
+                cy="8"
+                r="4"
+            ></circle>
+
+            <path
+                d="M4.5 21a7.5 7.5 0 0 1 15 0"
+            ></path>
+        </svg>
+    `,
+
     students: `
         <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="9" cy="8" r="3.5"></circle>
@@ -319,16 +336,17 @@ function getAdminSidebarIcon(
         Kelola Siswa.
     */
 
-    if (
-        text.includes(
-            "student search"
-        )
-    ) {
-
-        return ADMIN_SIDEBAR_ICONS
-            .search;
-
-    }
+if (
+    text.includes(
+        "student search"
+    ) ||
+    text.includes(
+        "directory"
+    )
+) {
+    return ADMIN_SIDEBAR_ICONS
+        .search;
+}
 
 
     if (
@@ -339,6 +357,17 @@ function getAdminSidebarIcon(
 
         return ADMIN_SIDEBAR_ICONS
             .dashboard;
+
+    }
+
+        if (
+        text.includes(
+            "profile"
+        )
+    ) {
+
+        return ADMIN_SIDEBAR_ICONS
+            .profileadmin;
 
     }
 
@@ -470,10 +499,28 @@ function applyAdminSidebarIcons() {
         .querySelectorAll(
             ".sidebar-nav .nav-item"
         )
-        .forEach(
-            navigationItem => {
+.forEach(
+    navigationItem => {
 
-                const iconElement =
+                const navigationText =
+            navigationItem
+                .textContent
+                .trim()
+                .toLowerCase();
+
+        if (
+            navigationText.includes(
+                "profile"
+            )
+        ) {
+            navigationItem.classList.add(
+                "sidebar-profile-nav-item"
+            );
+        }
+
+
+
+        const iconElement =
                     navigationItem
                         .querySelector(
                             ".nav-icon"
@@ -497,8 +544,17 @@ function applyAdminSidebarIcons() {
                 }
 
 
-                iconElement.innerHTML =
-                    iconSvg;
+if (
+    iconElement.dataset
+        .sidebarIconReady !== "true"
+) {
+    iconElement.innerHTML =
+        iconSvg;
+
+    iconElement.dataset
+        .sidebarIconReady =
+        "true";
+}
 
             }
         );

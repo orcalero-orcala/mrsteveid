@@ -980,3 +980,136 @@ svg[hidden] {
 .student-directory-privacy-note.is-visible {
     display: none !important;
 }
+
+/* ========================================
+   SCHOOL DIRECTORY — ACCOUNT TYPE
+======================================== */
+
+.student-directory-result-heading {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.student-directory-result-heading > strong {
+    min-width: 0;
+    flex: 0 1 auto;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-directory-result-type {
+    width: auto !important;
+    min-width: max-content;
+
+    margin: 0 !important;
+    padding: 3px 7px;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible !important;
+
+    border: 1px solid;
+    border-radius: 999px;
+
+    font-size: 8px !important;
+    font-weight: 800;
+    line-height: 1 !important;
+    letter-spacing: 0.08em;
+}
+
+
+/* BADGE SISWA */
+
+.student-directory-result[
+    data-account-type="student"
+]
+.student-directory-result-type {
+    border-color:
+        rgba(59, 130, 246, 0.38);
+
+    color: #60a5fa;
+
+    background:
+        rgba(37, 99, 235, 0.12);
+}
+
+
+/* BADGE GURU */
+
+.student-directory-result[
+    data-account-type="teacher"
+]
+.student-directory-result-type {
+    border-color:
+        rgba(167, 139, 250, 0.4);
+
+    color: #c4b5fd;
+
+    background:
+        rgba(124, 58, 237, 0.13);
+}
+
+
+/* AVATAR GURU SAAT BELUM ADA FOTO */
+
+.student-directory-result[
+    data-account-type="teacher"
+]
+.student-directory-result-avatar {
+    background:
+        linear-gradient(
+            135deg,
+            #8b5cf6,
+            #6d28d9
+        );
+}
+
+
+/* HOVER GURU */
+
+.student-directory-result[
+    data-account-type="teacher"
+]:hover {
+    border-color:
+        rgba(167, 139, 250, 0.68);
+
+    background:
+        rgba(76, 29, 149, 0.14);
+}
+
+
+/* PROFILE GURU HANYA 3 METRIC */
+
+.student-directory-profile[
+    data-account-type="teacher"
+]
+.student-directory-profile-grid {
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+}
+
+
+@media (max-width: 760px) {
+    .student-directory-result-heading {
+        gap: 6px;
+    }
+
+    .student-directory-profile[
+        data-account-type="teacher"
+    ]
+    .student-directory-profile-grid {
+        grid-template-columns:
+            1fr;
+    }
+}

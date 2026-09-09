@@ -36,6 +36,18 @@
         <rect x="14" y="14" width="7" height="7" rx="2"></rect>
     </symbol>
 
+    <symbol id="icon-adminprofile" viewBox="0 0 24 24">
+            <circle
+                cx="12"
+                cy="8"
+                r="4"
+            ></circle>
+
+            <path
+                d="M4.5 21a7.5 7.5 0 0 1 15 0"
+            ></path>
+    </symbol>
+
     <symbol id="icon-students" viewBox="0 0 24 24">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
         <circle cx="9" cy="7" r="4"></circle>
@@ -149,6 +161,23 @@
         Dashboard
     </button>
 
+                                    <button
+    class="nav-item"
+    type="button"
+    onclick="
+        window.location.href =
+            '/admin-profile.html'
+    "
+>
+        <span class="nav-icon">
+            <svg aria-hidden="true">
+                <use href="#icon-adminprofile"></use>
+            </svg>
+        </span>
+
+    Profile
+</button>
+
 
     <button
         class="nav-item"
@@ -179,7 +208,7 @@
             </svg>
         </span>
 
-        Student Search
+        Directory
     </button>
 
 
@@ -776,7 +805,7 @@
                 <span class="dashboard-v2-tool-text">
 
                     <strong>
-                        Student Search
+                        Directory
                     </strong>
 
                     <small>
@@ -868,88 +897,6 @@
     </section>
 
 </div>
-
-    </div>
-
-    <div
-    id="factoryResetModal"
-    class="admin-reset-modal"
->
-
-    <div class="admin-reset-modal-card">
-
-        <small class="admin-reset-danger-label">
-            DANGER ZONE
-        </small>
-
-        <h2>
-            Factory Reset LMS
-        </h2>
-
-        <p>
-            Semua siswa, poin, nilai, Classroom Feed,
-            Announcement, notifikasi, kode registrasi,
-            dan akun guru akan dihapus.
-        </p>
-
-        <p>
-            Setelah reset, hanya akun awal berikut
-            yang akan tersedia:
-        </p>
-
-        <div class="admin-reset-default-account">
-
-            <span>
-                Username
-                <strong>steven</strong>
-            </span>
-
-            <span>
-                Password
-                <strong>cruise@fl350</strong>
-            </span>
-
-        </div>
-
-
-        <label for="factoryResetConfirm">
-            Ketik
-            <strong>FACTORY RESET</strong>
-            untuk melanjutkan
-        </label>
-
-        <input
-            type="text"
-            id="factoryResetConfirm"
-            autocomplete="off"
-            placeholder="FACTORY RESET"
-        >
-
-
-        <p
-            id="factoryResetMessage"
-            class="admin-form-message"
-        ></p>
-
-
-        <div class="admin-reset-modal-actions">
-
-            <button
-                type="button"
-                onclick="closeFactoryResetModal()"
-            >
-                Batal
-            </button>
-
-            <button
-                type="button"
-                class="admin-danger-reset-button"
-                onclick="runFactoryReset()"
-            >
-                Hapus Semua Data
-            </button>
-
-        </div>
 
     </div>
 

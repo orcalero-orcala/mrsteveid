@@ -59,6 +59,30 @@ const STUDENT_PROFILE_PICTURE_SIZE =
 const STUDENT_PROFILE_PICTURE_MAX_BYTES =
     400 * 1024;
 
+const ADMIN_PROFILE_BIO_MAX_LENGTH =
+    120;
+
+const ADMIN_PROFILE_BIO_MAX_LINES =
+    3;
+
+const ADMIN_PROFILE_MAX_SUBJECTS =
+    10;
+
+const ADMIN_PROFILE_BANNER_COLORS =
+    new Set([
+        "blue",
+        "purple",
+        "green",
+        "orange",
+        "red"
+    ]);
+
+const ADMIN_PROFILE_PICTURE_SIZE =
+    256;
+
+const ADMIN_PROFILE_PICTURE_MAX_BYTES =
+    400 * 1024;
+
 const CLOUDINARY_CLOUD_NAME =
     String(
         process.env
@@ -330,6 +354,180 @@ async function deleteStudentProfilePicture(
 }
 
 // ========================================
+// ADMIN PROFILE - CLOUDINARY HELPERS
+// ========================================
+
+function getAdminProfilePictureAssetFolder(
+    adminId
+) {
+    return (
+        `lms/admins/` +
+        `${adminId}/profile`
+    );
+}
+
+
+function parseAdminProfilePictureBody(
+    req,
+    res,
+    next
+) {
+    express.raw({
+        type:
+            "image/webp",
+
+        limit:
+            ADMIN_PROFILE_PICTURE_MAX_BYTES
+    })(
+        req,
+        res,
+        error => {
+
+            if (!error) {
+                next();
+                return;
+            }
+
+
+            if (
+                error.type ===
+                "entity.too.large"
+            ) {
+                res.status(413).json({
+                    success: false,
+                    message:
+                        "Ukuran foto profil terlalu besar."
+                });
+
+                return;
+            }
+
+
+            next(error);
+        }
+    );
+}
+
+
+function uploadAdminProfilePicture(
+    imageBuffer,
+    adminId
+) {
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            const uniquePublicId =
+                `admin-${adminId}-${Date.now()}-${crypto
+                    .randomBytes(6)
+                    .toString("hex")}`;
+
+
+            const uploadStream =
+                cloudinary.uploader
+                    .upload_stream(
+                        {
+                            resource_type:
+                                "image",
+
+                            asset_folder:
+                                getAdminProfilePictureAssetFolder(
+                                    adminId
+                                ),
+
+                            public_id:
+                                uniquePublicId,
+
+                            overwrite:
+                                false,
+
+                            format:
+                                "webp",
+
+                            transformation: [
+                                {
+                                    width:
+                                        ADMIN_PROFILE_PICTURE_SIZE,
+
+                                    height:
+                                        ADMIN_PROFILE_PICTURE_SIZE,
+
+                                    crop:
+                                        "fill",
+
+                                    gravity:
+                                        "center"
+                                },
+                                {
+                                    quality:
+                                        "auto:good"
+                                }
+                            ]
+                        },
+
+                        (
+                            error,
+                            result
+                        ) => {
+
+                            if (error) {
+                                reject(error);
+                                return;
+                            }
+
+
+                            resolve(result);
+                        }
+                    );
+
+
+            uploadStream.end(
+                imageBuffer
+            );
+        }
+    );
+}
+
+
+async function deleteAdminProfilePicture(
+    publicId
+) {
+    const cleanPublicId =
+        String(
+            publicId || ""
+        ).trim();
+
+
+    if (
+        !cleanPublicId ||
+        !isCloudinaryConfigured()
+    ) {
+        return;
+    }
+
+
+    try {
+        await cloudinary.uploader.destroy(
+            cleanPublicId,
+            {
+                resource_type:
+                    "image",
+
+                invalidate:
+                    true
+            }
+        );
+    } catch (error) {
+        console.error(
+            "Gagal membersihkan foto profil guru:",
+            error
+        );
+    }
+}
+
+// ========================================
 // STUDENT PROFILE - DATABASE MIGRATION
 // ========================================
 
@@ -543,6 +741,229 @@ async function ensureStudentProfileColumns() {
 
     return studentProfileColumnsPromise;
 
+}
+
+// ========================================
+// ADMIN / TEACHER PROFILE - DATABASE
+// ========================================
+
+let adminProfileSchemaPromise =
+    null;
+
+
+async function initializeAdminProfileSchema() {
+
+    const columnRows =
+        await tursoDb.all(`
+            PRAGMA table_info(admins)
+        `);
+
+
+    if (
+        !Array.isArray(columnRows) ||
+        columnRows.length === 0
+    ) {
+        throw new Error(
+            "Tabel admins tidak ditemukan."
+        );
+    }
+
+
+    const columnNames =
+        new Set(
+            columnRows.map(
+                row => String(row.name)
+            )
+        );
+
+
+    const migrations = [
+        {
+            name: "profile_bio",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_bio
+                    TEXT NOT NULL DEFAULT ''
+            `
+        },
+        {
+            name: "profile_banner_color",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_banner_color
+                    TEXT NOT NULL DEFAULT 'blue'
+            `
+        },
+        {
+            name: "profile_picture_url",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_picture_url TEXT
+            `
+        },
+        {
+            name: "profile_picture_public_id",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_picture_public_id TEXT
+            `
+        },
+        {
+            name: "profile_picture_width",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_picture_width INTEGER
+            `
+        },
+        {
+            name: "profile_picture_height",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_picture_height INTEGER
+            `
+        },
+        {
+            name: "profile_picture_bytes",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_picture_bytes INTEGER
+            `
+        },
+        {
+            name: "profile_date_of_birth",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_date_of_birth TEXT
+            `
+        },
+        {
+            name: "profile_is_homeroom_teacher",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_is_homeroom_teacher
+                    INTEGER NOT NULL DEFAULT 0
+            `
+        },
+        {
+            name: "profile_homeroom_class_id",
+            sql: `
+                ALTER TABLE admins
+                ADD COLUMN profile_homeroom_class_id INTEGER
+            `
+        }
+    ];
+
+
+    for (const migration of migrations) {
+
+        if (
+            columnNames.has(
+                migration.name
+            )
+        ) {
+            continue;
+        }
+
+
+        try {
+            await tursoDb.run(
+                migration.sql
+            );
+
+            columnNames.add(
+                migration.name
+            );
+        } catch (error) {
+
+            /*
+             * Dua instance Vercel dapat menjalankan
+             * migrasi pada waktu bersamaan.
+             */
+            if (
+                /duplicate column name/i.test(
+                    String(
+                        error?.message ||
+                        error
+                    )
+                )
+            ) {
+                columnNames.add(
+                    migration.name
+                );
+
+                continue;
+            }
+
+            throw error;
+        }
+    }
+
+
+    /*
+     * Pastikan tabel master sudah tersedia
+     * sebelum membuat relasi profil.
+     */
+    await Promise.all([
+        ensureClassesTable(),
+        ensureSubjectsTable()
+    ]);
+
+
+    /*
+     * Relasi many-to-many:
+     * satu guru dapat mengajar banyak mapel.
+     */
+    await tursoDb.run(`
+        CREATE TABLE IF NOT EXISTS
+            admin_profile_subjects (
+                admin_id INTEGER NOT NULL,
+                subject_id INTEGER NOT NULL,
+
+                created_at DATETIME NOT NULL
+                    DEFAULT CURRENT_TIMESTAMP,
+
+                PRIMARY KEY (
+                    admin_id,
+                    subject_id
+                ),
+
+                FOREIGN KEY (admin_id)
+                    REFERENCES admins(id)
+                    ON DELETE CASCADE,
+
+                FOREIGN KEY (subject_id)
+                    REFERENCES subjects(id)
+                    ON DELETE CASCADE
+            )
+    `);
+
+
+    await tursoDb.run(`
+        CREATE INDEX IF NOT EXISTS
+            idx_admin_profile_subjects_subject
+        ON admin_profile_subjects (
+            subject_id
+        )
+    `);
+}
+
+
+async function ensureAdminProfileSchema() {
+
+    if (!adminProfileSchemaPromise) {
+
+        adminProfileSchemaPromise =
+            initializeAdminProfileSchema()
+                .catch(error => {
+                    adminProfileSchemaPromise =
+                        null;
+
+                    throw error;
+                });
+    }
+
+
+    return adminProfileSchemaPromise;
 }
 
 
@@ -858,6 +1279,7 @@ function requireStudentPage(
 app.use(
     [
         "/admin-dashboard.html",
+        "/admin-profile.html",
         "/admin-students.html",
         "/admin-student-search.html",
         "/admin-points.html",
@@ -871,8 +1293,7 @@ app.use(
             ONLINE QUIZ ADMIN
         */
         "/admin-quizzes.html",
-        "/admin-quiz-editor.html",
-        "/admin-quiz-response.html"
+        "/admin-quiz-editor.html"
     ],
     requireAdminPage
 );
@@ -12133,6 +12554,30 @@ await tursoDb.run(`
     )
 `);
 
+/*
+    Index khusus pencarian event pemulihan
+    yang belum dilihat siswa.
+
+    Query ini dipanggil oleh moderation watcher,
+    jadi harus menghindari scan seluruh histori.
+*/
+await tursoDb.run(`
+    CREATE INDEX IF NOT EXISTS
+        idx_feed_moderation_events_pending_recovery
+
+    ON feed_moderation_events (
+        student_id,
+        id DESC
+    )
+
+    WHERE
+        seen_at IS NULL
+        AND event_type IN (
+            'unmuted',
+            'unbanned'
+        )
+`);
+
 
 /*
     Satu row = satu tindakan moderation.
@@ -12890,13 +13335,304 @@ async function getStudentMuteActions(
 // STATUS MODERATION SISWA
 // ========================================
 
+const STUDENT_FEED_MODERATION_CACHE_TTL_MS =
+    1500;
+
+const studentFeedModerationCache =
+    new Map();
+
+
+function invalidateStudentFeedModerationCache(
+    studentId
+) {
+
+    const normalizedStudentId =
+        Number(studentId);
+
+
+    if (
+        Number.isInteger(
+            normalizedStudentId
+        )
+    ) {
+
+        studentFeedModerationCache.delete(
+            normalizedStudentId
+        );
+
+        studentFeedAccessCache.delete(
+    normalizedStudentId
+);
+
+    }
+
+}
+
+
 async function getStudentFeedModeration(
     studentId
 ) {
 
-    return syncStudentMuteQueue(
-        studentId
+    const normalizedStudentId =
+        Number(studentId);
+
+    const now =
+        Date.now();
+
+    const cached =
+        studentFeedModerationCache.get(
+            normalizedStudentId
+        );
+
+
+    if (
+        cached &&
+        cached.expiresAt > now
+    ) {
+
+        return cached.promise;
+
+    }
+
+
+    if (cached) {
+
+        studentFeedModerationCache.delete(
+            normalizedStudentId
+        );
+
+    }
+
+
+    const cacheEntry = {
+        expiresAt:
+            now +
+            STUDENT_FEED_MODERATION_CACHE_TTL_MS,
+
+        promise:
+            syncStudentMuteQueue(
+                normalizedStudentId
+            )
+    };
+
+
+    studentFeedModerationCache.set(
+        normalizedStudentId,
+        cacheEntry
     );
+
+
+    try {
+
+        return await cacheEntry.promise;
+
+    } catch (error) {
+
+        /*
+            Jangan menyimpan request gagal
+            di dalam cache.
+        */
+        if (
+            studentFeedModerationCache.get(
+                normalizedStudentId
+            ) === cacheEntry
+        ) {
+
+            studentFeedModerationCache.delete(
+                normalizedStudentId
+            );
+
+        }
+
+
+        throw error;
+
+    }
+
+}
+
+const STUDENT_FEED_ACCESS_CACHE_TTL_MS =
+    5000;
+
+const studentFeedAccessCache =
+    new Map();
+
+
+async function getStudentFeedAccessFast(
+    studentId
+) {
+
+    const normalizedStudentId =
+        Number(studentId);
+
+    const now =
+        Date.now();
+
+    const cached =
+        studentFeedAccessCache.get(
+            normalizedStudentId
+        );
+
+
+    if (
+        cached &&
+        cached.expiresAt > now
+    ) {
+
+        return cached.promise;
+
+    }
+
+
+    if (cached) {
+
+        studentFeedAccessCache.delete(
+            normalizedStudentId
+        );
+
+    }
+
+
+    const accessPromise =
+        (async () => {
+
+            await ensureFeedModerationTables();
+
+
+            const moderation =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            student_id,
+                            status,
+                            muted_until,
+                            reason,
+                            moderated_by,
+                            updated_at
+                        FROM feed_moderation
+                        WHERE student_id = ?
+                        LIMIT 1
+                    `,
+                    [
+                        normalizedStudentId
+                    ]
+                );
+
+
+            /*
+                Belum pernah dimoderasi.
+                Berarti akses aktif.
+            */
+            if (!moderation) {
+
+                return {
+                    student_id:
+                        normalizedStudentId,
+
+                    status:
+                        "active",
+
+                    muted_until:
+                        null,
+
+                    reason:
+                        null,
+
+                    moderated_by:
+                        null
+                };
+
+            }
+
+
+            /*
+                Status aktif dan banned tidak
+                memerlukan sinkronisasi antrean.
+            */
+            if (
+                moderation.status !==
+                "muted"
+            ) {
+
+                return moderation;
+
+            }
+
+
+            const mutedUntilMs =
+                moderation.muted_until
+                    ? new Date(
+                        moderation.muted_until
+                    ).getTime()
+                    : NaN;
+
+
+            /*
+                Mute masih berlangsung.
+                Langsung kembalikan statusnya.
+            */
+            if (
+                Number.isFinite(
+                    mutedUntilMs
+                ) &&
+                mutedUntilMs > Date.now()
+            ) {
+
+                return moderation;
+
+            }
+
+
+            /*
+                Hanya mute yang sudah habis yang
+                perlu menjalankan sinkronisasi penuh.
+            */
+            return syncStudentMuteQueue(
+                normalizedStudentId
+            );
+
+        })();
+
+
+    const cacheEntry = {
+
+        expiresAt:
+            now +
+            STUDENT_FEED_ACCESS_CACHE_TTL_MS,
+
+        promise:
+            accessPromise
+
+    };
+
+
+    studentFeedAccessCache.set(
+        normalizedStudentId,
+        cacheEntry
+    );
+
+
+    try {
+
+        return await accessPromise;
+
+    } catch (error) {
+
+        if (
+            studentFeedAccessCache.get(
+                normalizedStudentId
+            ) === cacheEntry
+        ) {
+
+            studentFeedAccessCache.delete(
+                normalizedStudentId
+            );
+
+        }
+
+        throw error;
+
+    }
 
 }
 
@@ -12905,7 +13641,7 @@ async function requireStudentFeedAccess(
 ) {
 
     const moderation =
-        await getStudentFeedModeration(
+        await getStudentFeedAccessFast(
             studentId
         );
 
@@ -14722,6 +15458,1057 @@ className:
 );
 
 // ========================================
+// SCHOOL DIRECTORY
+// SISWA + GURU
+// ========================================
+
+function parseDirectorySubjects(value) {
+    return String(value || "")
+        .split("|||")
+        .map(subject =>
+            subject.trim()
+        )
+        .filter(Boolean);
+}
+
+
+function directorySearchRank(
+    account,
+    query
+) {
+    const name =
+        String(
+            account.fullName ||
+            account.name ||
+            ""
+        ).toLocaleLowerCase("id-ID");
+
+    const normalizedQuery =
+        String(query || "")
+            .toLocaleLowerCase("id-ID");
+
+
+    if (name === normalizedQuery) {
+        return 0;
+    }
+
+
+    if (
+        name.startsWith(
+            normalizedQuery
+        )
+    ) {
+        return 1;
+    }
+
+
+    return 2;
+}
+
+function parseDirectoryCommand(
+    rawQuery
+) {
+    const query =
+        String(rawQuery || "")
+            .trim();
+
+    const lowerQuery =
+        query.toLocaleLowerCase(
+            "id-ID"
+        );
+
+
+    if (lowerQuery === "!all") {
+        return {
+            mode: "all",
+            query
+        };
+    }
+
+
+    if (lowerQuery === "!teacher") {
+        return {
+            mode: "teacher",
+            query
+        };
+    }
+
+
+    if (lowerQuery === "!student") {
+        return {
+            mode: "student",
+            query
+        };
+    }
+
+
+    const classMatch =
+        /^!class\s*=\s*(.+)$/i.exec(
+            query
+        );
+
+
+    if (
+        classMatch &&
+        classMatch[1].trim()
+    ) {
+        return {
+            mode: "class",
+            query,
+            className:
+                classMatch[1].trim()
+        };
+    }
+
+
+    /*
+     * Tanda ! hanya boleh digunakan
+     * sebagai satu command utuh.
+     *
+     * Contoh yang tidak valid:
+     * Budi !all
+     * !teacher Budi
+     * !all !student
+     */
+    if (query.includes("!")) {
+        return {
+            mode: "invalid",
+            query
+        };
+    }
+
+
+    return {
+        mode: "search",
+        query
+    };
+}
+
+// ========================================
+// SEARCH DIRECTORY
+// ========================================
+
+app.get(
+    "/api/directory/search",
+    async (req, res) => {
+
+        const isAdmin =
+            Boolean(
+                req.session.adminId
+            );
+
+        const isStudent =
+            Boolean(
+                req.session.studentId
+            );
+
+
+        if (!isAdmin && !isStudent) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login untuk membuka Directory."
+            });
+        }
+
+
+        const rawQuery =
+            String(
+                req.query.q ||
+                ""
+            ).trim();
+
+
+        if (
+            rawQuery.length < 2 ||
+            rawQuery.length > 80
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Pencarian harus berisi 2 sampai 80 karakter."
+            });
+        }
+
+
+        const command =
+            parseDirectoryCommand(
+                rawQuery
+            );
+
+
+        /*
+         * Command tidak valid tidak diproses
+         * sebagai pencarian biasa.
+         */
+        if (command.mode === "invalid") {
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+                success: true,
+                searchMode:
+                    "invalid",
+                results: []
+            });
+        }
+
+
+        try {
+            await Promise.all([
+                ensureStudentProfileColumns(),
+                ensureAdminProfileSchema()
+            ]);
+
+
+            let masterClass =
+                null;
+
+
+            /*
+             * Nama kelas wajib berasal dari
+             * master kelas.
+             */
+            if (command.mode === "class") {
+                masterClass =
+                    await tursoDb.get(
+                        `
+                            SELECT
+                                id,
+                                name
+
+                            FROM classes
+
+                            WHERE
+                                lower(
+                                    trim(
+                                        COALESCE(
+                                            name,
+                                            ''
+                                        )
+                                    )
+                                ) =
+                                lower(
+                                    trim(?)
+                                )
+
+                            LIMIT 1
+                        `,
+                        [
+                            command.className
+                        ]
+                    );
+
+
+                if (!masterClass) {
+                    res.set(
+                        "Cache-Control",
+                        "private, no-store"
+                    );
+
+
+                    return res.json({
+                        success: true,
+                        searchMode:
+                            "class",
+                        className:
+                            command.className,
+                        results: []
+                    });
+                }
+            }
+
+
+            const includeStudents =
+                command.mode === "search" ||
+                command.mode === "all" ||
+                command.mode === "student" ||
+                command.mode === "class";
+
+
+            const includeTeachers =
+                command.mode === "search" ||
+                command.mode === "all" ||
+                command.mode === "teacher" ||
+                command.mode === "class";
+
+
+            let studentWhere =
+                "";
+
+            let studentParameters =
+                [];
+
+
+            if (
+                command.mode === "all" ||
+                command.mode === "student"
+            ) {
+                studentWhere =
+                    "1 = 1";
+
+            } else if (
+                command.mode === "class"
+            ) {
+                studentWhere = `
+                    lower(
+                        trim(
+                            COALESCE(
+                                class_name,
+                                ''
+                            )
+                        )
+                    ) =
+                    lower(
+                        trim(?)
+                    )
+                `;
+
+                studentParameters = [
+                    masterClass.name
+                ];
+
+            } else {
+                studentWhere = `
+                    (
+                        instr(
+                            lower(
+                                COALESCE(
+                                    full_name,
+                                    ''
+                                )
+                            ),
+                            lower(?)
+                        ) > 0
+
+                        OR instr(
+                            lower(
+                                COALESCE(
+                                    name,
+                                    ''
+                                )
+                            ),
+                            lower(?)
+                        ) > 0
+
+                        OR instr(
+                            lower(
+                                COALESCE(
+                                    class_name,
+                                    ''
+                                )
+                            ),
+                            lower(?)
+                        ) > 0
+
+                        OR (
+                            ? = 1
+
+                            AND instr(
+                                lower(
+                                    COALESCE(
+                                        login_code,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+                        )
+                    )
+                `;
+
+                studentParameters = [
+                    rawQuery,
+                    rawQuery,
+                    rawQuery,
+                    isAdmin ? 1 : 0,
+                    rawQuery
+                ];
+            }
+
+
+            let teacherWhere =
+                "";
+
+            let teacherParameters =
+                [];
+
+
+            if (
+                command.mode === "all" ||
+                command.mode === "teacher"
+            ) {
+                teacherWhere =
+                    "1 = 1";
+
+            } else if (
+                command.mode === "class"
+            ) {
+                teacherWhere = `
+                    admins
+                        .profile_is_homeroom_teacher = 1
+
+                    AND admins
+                        .profile_homeroom_class_id = ?
+                `;
+
+                teacherParameters = [
+                    Number(
+                        masterClass.id
+                    )
+                ];
+
+            } else {
+                teacherWhere = `
+                    (
+                        instr(
+                            lower(
+                                COALESCE(
+                                    admins.name,
+                                    ''
+                                )
+                            ),
+                            lower(?)
+                        ) > 0
+
+                        OR (
+                            ? = 1
+
+                            AND instr(
+                                lower(
+                                    COALESCE(
+                                        admins.username,
+                                        ''
+                                    )
+                                ),
+                                lower(?)
+                            ) > 0
+                        )
+
+                        OR instr(
+                            lower(
+                                COALESCE(
+                                    classes.name,
+                                    ''
+                                )
+                            ),
+                            lower(?)
+                        ) > 0
+
+                        OR EXISTS (
+                            SELECT 1
+
+                            FROM
+                                admin_profile_subjects
+                                    search_relation
+
+                            INNER JOIN subjects
+                                search_subject
+                            ON search_subject.id =
+                                search_relation
+                                    .subject_id
+
+                            WHERE
+                                search_relation
+                                    .admin_id =
+                                    admins.id
+
+                                AND instr(
+                                    lower(
+                                        COALESCE(
+                                            search_subject.name,
+                                            ''
+                                        )
+                                    ),
+                                    lower(?)
+                                ) > 0
+                        )
+                    )
+                `;
+
+                teacherParameters = [
+                    rawQuery,
+                    isAdmin ? 1 : 0,
+                    rawQuery,
+                    rawQuery,
+                    rawQuery
+                ];
+            }
+
+
+            const studentPromise =
+                includeStudents
+                    ? tursoDb.all(
+                        `
+                            SELECT
+                                id,
+                                name,
+                                full_name,
+                                class_name,
+                                profile_bio,
+                                profile_banner_color,
+                                profile_picture_url
+
+                            FROM students
+
+                            WHERE
+                                ${studentWhere}
+
+                            ORDER BY
+                                COALESCE(
+                                    full_name,
+                                    name
+                                ) COLLATE NOCASE ASC,
+
+                                id ASC
+
+                            ${
+                                command.mode === "search"
+                                    ? "LIMIT 12"
+                                    : ""
+                            }
+                        `,
+                        studentParameters
+                    )
+                    : Promise.resolve([]);
+
+
+            const teacherPromise =
+                includeTeachers
+                    ? tursoDb.all(
+                        `
+                            SELECT
+                                admins.id,
+                                admins.name,
+
+                                admins.profile_bio,
+                                admins.profile_banner_color,
+                                admins.profile_picture_url,
+
+                                admins
+                                    .profile_is_homeroom_teacher,
+
+                                classes.name
+                                    AS homeroom_class_name,
+
+                                (
+                                    SELECT
+                                        GROUP_CONCAT(
+                                            subjects.name,
+                                            '|||'
+                                        )
+
+                                    FROM
+                                        admin_profile_subjects
+
+                                    INNER JOIN subjects
+                                    ON subjects.id =
+                                        admin_profile_subjects
+                                            .subject_id
+
+                                    WHERE
+                                        admin_profile_subjects
+                                            .admin_id =
+                                            admins.id
+                                ) AS subject_names
+
+                            FROM admins
+
+                            LEFT JOIN classes
+                            ON classes.id =
+                                admins
+                                    .profile_homeroom_class_id
+
+                            WHERE
+                                lower(
+                                    trim(
+                                        COALESCE(
+                                            admins.role,
+                                            ''
+                                        )
+                                    )
+                                ) = 'teacher'
+
+                                AND (
+                                    ${teacherWhere}
+                                )
+
+                            ORDER BY
+                                admins.name
+                                    COLLATE NOCASE ASC,
+
+                                admins.id ASC
+
+                            ${
+                                command.mode === "search"
+                                    ? "LIMIT 12"
+                                    : ""
+                            }
+                        `,
+                        teacherParameters
+                    )
+                    : Promise.resolve([]);
+
+
+            const [
+                students,
+                teachers
+            ] =
+                await Promise.all([
+                    studentPromise,
+                    teacherPromise
+                ]);
+
+
+            const studentResults =
+                students.map(student => ({
+                    accountType:
+                        "student",
+
+                    id:
+                        Number(student.id),
+
+                    name:
+                        student.name,
+
+                    fullName:
+                        student.full_name ||
+                        student.name,
+
+                    className:
+                        student.class_name,
+
+                    bio:
+                        String(
+                            student.profile_bio ||
+                            ""
+                        ),
+
+                    bannerColor:
+                        String(
+                            student
+                                .profile_banner_color ||
+                            "blue"
+                        ),
+
+                    profilePictureUrl:
+                        student
+                            .profile_picture_url ||
+                        null
+                }));
+
+
+            const teacherResults =
+                teachers.map(teacher => {
+
+                    const subjects =
+                        parseDirectorySubjects(
+                            teacher.subject_names
+                        );
+
+                    const isHomeroomTeacher =
+                        Number(
+                            teacher
+                                .profile_is_homeroom_teacher ||
+                            0
+                        ) === 1;
+
+
+                    return {
+                        accountType:
+                            "teacher",
+
+                        id:
+                            Number(teacher.id),
+
+                        name:
+                            teacher.name,
+
+                        fullName:
+                            teacher.name,
+
+                        bio:
+                            String(
+                                teacher.profile_bio ||
+                                ""
+                            ),
+
+                        bannerColor:
+                            String(
+                                teacher
+                                    .profile_banner_color ||
+                                "blue"
+                            ),
+
+                        profilePictureUrl:
+                            teacher
+                                .profile_picture_url ||
+                            null,
+
+                        subjects,
+
+                        isHomeroomTeacher,
+
+                        homeroomClassName:
+                            isHomeroomTeacher
+                                ? teacher
+                                    .homeroom_class_name ||
+                                    null
+                                : null
+                    };
+                });
+
+
+            const sortedResults =
+                [
+                    ...studentResults,
+                    ...teacherResults
+                ]
+                    .sort((first, second) => {
+
+                        /*
+                         * Ranking relevansi hanya dipakai
+                         * untuk pencarian biasa.
+                         */
+                        if (
+                            command.mode ===
+                            "search"
+                        ) {
+                            const rankDifference =
+                                directorySearchRank(
+                                    first,
+                                    rawQuery
+                                ) -
+                                directorySearchRank(
+                                    second,
+                                    rawQuery
+                                );
+
+
+                            if (
+                                rankDifference !== 0
+                            ) {
+                                return rankDifference;
+                            }
+                        }
+
+
+                        return String(
+                            first.fullName ||
+                            first.name ||
+                            ""
+                        ).localeCompare(
+                            String(
+                                second.fullName ||
+                                second.name ||
+                                ""
+                            ),
+                            "id-ID",
+                            {
+                                sensitivity:
+                                    "base"
+                            }
+                        );
+                    });
+
+
+            const results =
+                command.mode === "search"
+                    ? sortedResults.slice(
+                        0,
+                        20
+                    )
+                    : sortedResults;
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+                success: true,
+
+                searchMode:
+                    command.mode,
+
+                className:
+                    masterClass?.name ||
+                    null,
+
+                results
+            });
+
+        } catch (error) {
+            console.error(
+                "Gagal mencari School Directory:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Directory tidak dapat dimuat."
+            });
+        }
+    }
+);
+
+
+// ========================================
+// DETAIL PROFILE GURU DI DIRECTORY
+// ========================================
+
+app.get(
+    "/api/directory/teachers/:teacherId",
+    async (req, res) => {
+
+        const isAdmin =
+            Boolean(
+                req.session.adminId
+            );
+
+        const isStudent =
+            Boolean(
+                req.session.studentId
+            );
+
+
+        if (!isAdmin && !isStudent) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login untuk membuka Directory."
+            });
+        }
+
+
+        const teacherId =
+            Number(
+                req.params.teacherId
+            );
+
+
+        if (
+            !Number.isInteger(teacherId) ||
+            teacherId <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID guru tidak valid."
+            });
+        }
+
+
+        try {
+            await ensureAdminProfileSchema();
+
+
+            const rows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            admins.id,
+                            admins.name,
+                            admins.role,
+
+                            admins.profile_bio,
+                            admins.profile_banner_color,
+                            admins.profile_picture_url,
+                            admins.profile_date_of_birth,
+
+                            admins
+                                .profile_is_homeroom_teacher,
+
+                            admins
+                                .profile_homeroom_class_id,
+
+                            classes.name
+                                AS homeroom_class_name,
+
+                            subjects.id
+                                AS subject_id,
+
+                            subjects.name
+                                AS subject_name
+
+                        FROM admins
+
+                        LEFT JOIN classes
+                        ON classes.id =
+                            admins
+                                .profile_homeroom_class_id
+
+                        LEFT JOIN admin_profile_subjects
+                        ON admin_profile_subjects.admin_id =
+                            admins.id
+
+                        LEFT JOIN subjects
+                        ON subjects.id =
+                            admin_profile_subjects
+                                .subject_id
+
+                        WHERE
+                            admins.id = ?
+
+                            AND lower(
+                                trim(
+                                    COALESCE(
+                                        admins.role,
+                                        ''
+                                    )
+                                )
+                            ) = 'teacher'
+
+                        ORDER BY
+                            subjects.name
+                                COLLATE NOCASE ASC
+                    `,
+                    [
+                        teacherId
+                    ]
+                );
+
+
+            if (
+                !Array.isArray(rows) ||
+                rows.length === 0
+            ) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Profil guru tidak ditemukan."
+                });
+            }
+
+
+            const teacher =
+                rows[0];
+
+
+            const subjects =
+                rows
+                    .filter(row =>
+                        row.subject_id !== null &&
+                        row.subject_id !== undefined
+                    )
+                    .map(row => ({
+                        id:
+                            Number(
+                                row.subject_id
+                            ),
+
+                        name:
+                            String(
+                                row.subject_name ||
+                                ""
+                            )
+                    }));
+
+
+            const isHomeroomTeacher =
+                Number(
+                    teacher
+                        .profile_is_homeroom_teacher ||
+                    0
+                ) === 1;
+
+
+            res.set(
+                "Cache-Control",
+                "private, no-store"
+            );
+
+
+            return res.json({
+                success: true,
+
+                teacher: {
+                    accountType:
+                        "teacher",
+
+                    id:
+                        Number(teacher.id),
+
+                    name:
+                        teacher.name,
+
+                    fullName:
+                        teacher.name,
+
+                    role:
+                        "Teacher",
+
+                    bio:
+                        String(
+                            teacher.profile_bio ||
+                            ""
+                        ),
+
+                    bannerColor:
+                        String(
+                            teacher
+                                .profile_banner_color ||
+                            "blue"
+                        ),
+
+                    profilePictureUrl:
+                        teacher
+                            .profile_picture_url ||
+                        null,
+
+                    dateOfBirth:
+                        teacher
+                            .profile_date_of_birth ||
+                        null,
+
+                    subjects,
+
+                    isHomeroomTeacher,
+
+                    homeroomClass:
+                        isHomeroomTeacher &&
+                        teacher
+                            .profile_homeroom_class_id
+                            ? {
+                                id:
+                                    Number(
+                                        teacher
+                                            .profile_homeroom_class_id
+                                    ),
+
+                                name:
+                                    teacher
+                                        .homeroom_class_name ||
+                                    "-"
+                            }
+                            : null
+                }
+            });
+
+        } catch (error) {
+            console.error(
+                "Gagal memuat profil guru di Directory:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Profil guru tidak dapat dimuat."
+            });
+        }
+    }
+);
+
+// ========================================
 // DAFTAR SISWA - FEED MODERATION
 // ========================================
 
@@ -15491,6 +17278,12 @@ const moderation = {
         null
 };
 
+
+invalidateStudentFeedModerationCache(
+    studentId
+);
+
+
 return res.json({
     success:
         true,
@@ -15731,7 +17524,13 @@ app.delete(
 
             }
 
-                        /*
+
+            invalidateStudentFeedModerationCache(
+                action.student_id
+            );
+
+
+            /*
                 Menghapus card BAN berarti
                 mencabut larangan sepenuhnya.
 
@@ -16251,29 +18050,50 @@ const banBatchResults =
     "immediate"
 );
 
-const banInsertResult =
-    banBatchResults[2];
+/*
+ * Hasil batch pada driver Turso tidak selalu
+ * menyediakan lastInsertRowid secara langsung.
+ * Ambil card Ban yang baru tersimpan secara pasti.
+ */
+const savedBanAction =
+    await tursoDb.get(
+        `
+            SELECT
+                id
+            FROM feed_moderation_actions
+            WHERE
+                student_id = ?
+                AND action_type = 'ban'
+                AND status = 'active'
+            ORDER BY id DESC
+            LIMIT 1
+        `,
+        [
+            studentId
+        ]
+    );
 
 
 const banActionId =
     Number(
-        banInsertResult &&
-        banInsertResult.lastInsertRowid
+        savedBanAction &&
+        savedBanAction.id
     );
 
 
 if (
-    !Number.isInteger(
-        banActionId
-    ) ||
+    !Number.isInteger(banActionId) ||
     banActionId <= 0
 ) {
-
     throw new Error(
-        "ID card Ban yang baru dibuat tidak ditemukan."
+        "Card Ban yang baru dibuat tidak ditemukan."
     );
-
 }
+
+invalidateStudentFeedModerationCache(
+    studentId
+);
+
 
 return res.json({
     success:
@@ -16589,6 +18409,1035 @@ return res
 
         }
 
+    }
+);
+
+// ========================================
+// PROFILE ADMIN / GURU
+// ========================================
+
+app.get(
+    "/api/admin/profile",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+        }
+
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+
+        if (!Number.isInteger(adminId)) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Session Admin / Guru tidak valid."
+            });
+        }
+
+
+        try {
+            await ensureAdminProfileSchema();
+
+
+            /*
+             * Satu query mengambil profil, kelas,
+             * dan seluruh mapel guru.
+             *
+             * Jika guru belum memilih mapel,
+             * query tetap menghasilkan satu row.
+             */
+            const rows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            admins.id,
+                            admins.username,
+                            admins.name,
+                            admins.role,
+
+                            admins.profile_bio,
+                            admins.profile_banner_color,
+                            admins.profile_picture_url,
+                            admins.profile_picture_width,
+                            admins.profile_picture_height,
+                            admins.profile_picture_bytes,
+                            admins.profile_date_of_birth,
+
+                            admins.profile_is_homeroom_teacher,
+                            admins.profile_homeroom_class_id,
+
+                            classes.name
+                                AS homeroom_class_name,
+
+                            subjects.id
+                                AS subject_id,
+
+                            subjects.name
+                                AS subject_name
+
+                        FROM admins
+
+                        LEFT JOIN classes
+                        ON classes.id =
+                            admins.profile_homeroom_class_id
+
+                        LEFT JOIN admin_profile_subjects
+                        ON admin_profile_subjects.admin_id =
+                            admins.id
+
+                        LEFT JOIN subjects
+                        ON subjects.id =
+                            admin_profile_subjects.subject_id
+
+                        WHERE admins.id = ?
+
+                        ORDER BY
+                            subjects.name
+                            COLLATE NOCASE ASC
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            if (
+                !Array.isArray(rows) ||
+                rows.length === 0
+            ) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Akun Admin / Guru tidak ditemukan."
+                });
+            }
+
+
+            const admin =
+                rows[0];
+
+
+            const subjects =
+                rows
+                    .filter(
+                        row =>
+                            row.subject_id !== null &&
+                            row.subject_id !== undefined
+                    )
+                    .map(row => ({
+                        id:
+                            Number(
+                                row.subject_id
+                            ),
+
+                        name:
+                            String(
+                                row.subject_name ||
+                                ""
+                            )
+                    }));
+
+
+            const isHomeroomTeacher =
+                Number(
+                    admin
+                        .profile_is_homeroom_teacher ||
+                    0
+                ) === 1;
+
+
+            return res.json({
+                success: true,
+
+                admin: {
+                    id:
+                        Number(admin.id),
+
+                    username:
+                        admin.username,
+
+                    name:
+                        admin.name,
+
+                    role:
+                        admin.role,
+
+                    bio:
+                        String(
+                            admin.profile_bio ||
+                            ""
+                        ),
+
+                    bannerColor:
+                        String(
+                            admin
+                                .profile_banner_color ||
+                            "blue"
+                        ),
+
+                    profilePictureUrl:
+                        admin
+                            .profile_picture_url ||
+                        null,
+
+                    profilePictureWidth:
+                        admin.profile_picture_width === null ||
+                        admin.profile_picture_width === undefined
+                            ? null
+                            : Number(
+                                admin.profile_picture_width
+                            ),
+
+                    profilePictureHeight:
+                        admin.profile_picture_height === null ||
+                        admin.profile_picture_height === undefined
+                            ? null
+                            : Number(
+                                admin.profile_picture_height
+                            ),
+
+                    profilePictureBytes:
+                        admin.profile_picture_bytes === null ||
+                        admin.profile_picture_bytes === undefined
+                            ? null
+                            : Number(
+                                admin.profile_picture_bytes
+                            ),
+
+                    dateOfBirth:
+                        admin
+                            .profile_date_of_birth ||
+                        null,
+
+                    subjects,
+
+                    isHomeroomTeacher,
+
+                    homeroomClass:
+                        isHomeroomTeacher &&
+                        admin.profile_homeroom_class_id
+                            ? {
+                                id:
+                                    Number(
+                                        admin
+                                            .profile_homeroom_class_id
+                                    ),
+
+                                name:
+                                    admin
+                                        .homeroom_class_name ||
+                                    "Kelas tidak tersedia"
+                            }
+                            : null
+                }
+            });
+
+        } catch (error) {
+            console.error(
+                "Gagal mengambil profil Admin / Guru:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal mengambil profil Admin / Guru."
+            });
+        }
+    }
+);
+
+app.patch(
+    "/api/admin/profile/customization",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+        }
+
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+
+        const {
+            bio,
+            bannerColor,
+            dateOfBirth,
+            subjectIds,
+            isHomeroomTeacher,
+            homeroomClassId
+        } = req.body || {};
+
+
+        if (
+            typeof bio !== "string" ||
+            typeof bannerColor !== "string" ||
+            typeof dateOfBirth !== "string" ||
+            !Array.isArray(subjectIds) ||
+            typeof isHomeroomTeacher !== "boolean"
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Data kustomisasi profil tidak valid."
+            });
+        }
+
+
+        /*
+         * Jangan menerima ID mapel pecahan,
+         * negatif, teks, atau nilai kosong.
+         */
+        const numericSubjectIds =
+            subjectIds.map(
+                subjectId =>
+                    Number(subjectId)
+            );
+
+
+        if (
+            numericSubjectIds.some(
+                subjectId =>
+                    !Number.isInteger(subjectId) ||
+                    subjectId <= 0
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Pilihan mata pelajaran tidak valid."
+            });
+        }
+
+
+        const uniqueSubjectIds =
+            [
+                ...new Set(
+                    numericSubjectIds
+                )
+            ];
+
+
+        if (
+            uniqueSubjectIds.length >
+            ADMIN_PROFILE_MAX_SUBJECTS
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Maksimal ${ADMIN_PROFILE_MAX_SUBJECTS} mata pelajaran.`
+            });
+        }
+
+
+        const cleanBio =
+            bio
+                .replace(
+                    /\r\n?/g,
+                    "\n"
+                )
+                .trim();
+
+
+        const bioLength =
+            Array.from(
+                cleanBio
+            ).length;
+
+
+        const bioLineCount =
+            cleanBio
+                ? cleanBio.split("\n").length
+                : 0;
+
+
+        if (
+            bioLength >
+            ADMIN_PROFILE_BIO_MAX_LENGTH
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Bio maksimal ${ADMIN_PROFILE_BIO_MAX_LENGTH} karakter.`
+            });
+        }
+
+
+        if (
+            bioLineCount >
+            ADMIN_PROFILE_BIO_MAX_LINES
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Bio maksimal ${ADMIN_PROFILE_BIO_MAX_LINES} baris.`
+            });
+        }
+
+
+        if (
+            /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/u
+                .test(cleanBio)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Bio mengandung karakter yang tidak didukung."
+            });
+        }
+
+
+        const cleanBannerColor =
+            bannerColor
+                .trim()
+                .toLowerCase();
+
+
+        if (
+            !ADMIN_PROFILE_BANNER_COLORS.has(
+                cleanBannerColor
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Warna profil tidak valid."
+            });
+        }
+
+
+        const cleanDateOfBirth =
+            dateOfBirth.trim();
+
+
+        /*
+         * Tanggal boleh kosong.
+         * Jika diisi, wajib berbentuk YYYY-MM-DD
+         * dan harus merupakan tanggal asli.
+         */
+        if (cleanDateOfBirth) {
+
+            if (
+                !/^\d{4}-\d{2}-\d{2}$/
+                    .test(cleanDateOfBirth)
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Format tanggal lahir tidak valid."
+                });
+            }
+
+
+            const parsedDate =
+                new Date(
+                    `${cleanDateOfBirth}T00:00:00.000Z`
+                );
+
+
+            if (
+                Number.isNaN(
+                    parsedDate.getTime()
+                ) ||
+                parsedDate
+                    .toISOString()
+                    .slice(0, 10) !==
+                    cleanDateOfBirth
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Tanggal lahir tidak valid."
+                });
+            }
+
+
+            const year =
+                Number(
+                    cleanDateOfBirth.slice(0, 4)
+                );
+
+
+            const currentYear =
+                new Date().getUTCFullYear();
+
+
+            if (
+                year < 1900 ||
+                year > currentYear
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Tahun lahir tidak valid."
+                });
+            }
+
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .slice(0, 10);
+
+
+            if (
+                cleanDateOfBirth >
+                today
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Tanggal lahir tidak boleh di masa depan."
+                });
+            }
+        }
+
+
+        let numericHomeroomClassId =
+            null;
+
+
+        if (isHomeroomTeacher) {
+
+            numericHomeroomClassId =
+                Number(
+                    homeroomClassId
+                );
+
+
+            if (
+                !Number.isInteger(
+                    numericHomeroomClassId
+                ) ||
+                numericHomeroomClassId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Pilih kelas yang diampu."
+                });
+            }
+        }
+
+
+        try {
+            await ensureAdminProfileSchema();
+
+
+            const subjectPlaceholders =
+                uniqueSubjectIds
+                    .map(() => "?")
+                    .join(", ");
+
+
+            const [
+                existingAdmin,
+                validSubjects,
+                validClass
+            ] =
+                await Promise.all([
+                    tursoDb.get(
+                        `
+                            SELECT id
+                            FROM admins
+                            WHERE id = ?
+                            LIMIT 1
+                        `,
+                        [
+                            adminId
+                        ]
+                    ),
+
+                    uniqueSubjectIds.length > 0
+                        ? tursoDb.all(
+                            `
+                                SELECT
+                                    id,
+                                    name
+                                FROM subjects
+                                WHERE id IN (
+                                    ${subjectPlaceholders}
+                                )
+                                ORDER BY
+                                    name COLLATE NOCASE ASC
+                            `,
+                            uniqueSubjectIds
+                        )
+                        : Promise.resolve([]),
+
+                    isHomeroomTeacher
+                        ? tursoDb.get(
+                            `
+                                SELECT
+                                    id,
+                                    name
+                                FROM classes
+                                WHERE id = ?
+                                LIMIT 1
+                            `,
+                            [
+                                numericHomeroomClassId
+                            ]
+                        )
+                        : Promise.resolve(null)
+                ]);
+
+
+            if (!existingAdmin) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Akun Admin / Guru tidak ditemukan."
+                });
+            }
+
+
+            if (
+                validSubjects.length !==
+                uniqueSubjectIds.length
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Salah satu mata pelajaran tidak tersedia."
+                });
+            }
+
+
+            if (
+                isHomeroomTeacher &&
+                !validClass
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Kelas wali tidak tersedia."
+                });
+            }
+
+
+            const statements = [
+                {
+                    sql: `
+                        UPDATE admins
+
+                        SET
+                            profile_bio = ?,
+                            profile_banner_color = ?,
+                            profile_date_of_birth = ?,
+                            profile_is_homeroom_teacher = ?,
+                            profile_homeroom_class_id = ?
+
+                        WHERE id = ?
+                    `,
+
+                    args: [
+                        cleanBio,
+                        cleanBannerColor,
+                        cleanDateOfBirth || null,
+                        isHomeroomTeacher ? 1 : 0,
+                        isHomeroomTeacher
+                            ? numericHomeroomClassId
+                            : null,
+                        adminId
+                    ]
+                },
+                {
+                    sql: `
+                        DELETE FROM
+                            admin_profile_subjects
+                        WHERE admin_id = ?
+                    `,
+
+                    args: [
+                        adminId
+                    ]
+                }
+            ];
+
+
+            uniqueSubjectIds.forEach(
+                subjectId => {
+                    statements.push({
+                        sql: `
+                            INSERT INTO
+                                admin_profile_subjects (
+                                    admin_id,
+                                    subject_id
+                                )
+                            VALUES (?, ?)
+                        `,
+
+                        args: [
+                            adminId,
+                            subjectId
+                        ]
+                    });
+                }
+            );
+
+
+            /*
+             * Profil dan pilihan mapel disimpan
+             * dalam satu transaksi.
+             */
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            return res.json({
+                success: true,
+
+                message:
+                    "Profil berhasil diperbarui.",
+
+                customization: {
+                    bio:
+                        cleanBio,
+
+                    bannerColor:
+                        cleanBannerColor,
+
+                    dateOfBirth:
+                        cleanDateOfBirth ||
+                        null,
+
+                    subjects:
+                        validSubjects.map(
+                            subject => ({
+                                id:
+                                    Number(
+                                        subject.id
+                                    ),
+
+                                name:
+                                    subject.name
+                            })
+                        ),
+
+                    isHomeroomTeacher,
+
+                    homeroomClass:
+                        isHomeroomTeacher
+                            ? {
+                                id:
+                                    Number(
+                                        validClass.id
+                                    ),
+
+                                name:
+                                    validClass.name
+                            }
+                            : null
+                }
+            });
+
+        } catch (error) {
+            console.error(
+                "Gagal memperbarui profil Admin / Guru:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Gagal memperbarui profil Admin / Guru."
+            });
+        }
+    }
+);
+
+// ========================================
+// UPDATE FOTO PROFILE ADMIN / GURU
+// ========================================
+
+app.put(
+    "/api/admin/profile/picture",
+
+    parseAdminProfilePictureBody,
+
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai Admin / Guru."
+            });
+        }
+
+
+        if (
+            !isCloudinaryConfigured()
+        ) {
+            return res.status(503).json({
+                success: false,
+                message:
+                    "Layanan foto belum tersedia."
+            });
+        }
+
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+
+        if (!Number.isInteger(adminId)) {
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Session Admin / Guru tidak valid."
+            });
+        }
+
+
+        const imageBuffer =
+            req.body;
+
+
+        if (
+            !isValidWebpBuffer(
+                imageBuffer
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Format foto profil tidak valid."
+            });
+        }
+
+
+        if (
+            imageBuffer.length >
+            ADMIN_PROFILE_PICTURE_MAX_BYTES
+        ) {
+            return res.status(413).json({
+                success: false,
+                message:
+                    "Ukuran foto profil terlalu besar."
+            });
+        }
+
+
+        let uploadedPicture =
+            null;
+
+
+        try {
+            await ensureAdminProfileSchema();
+
+
+            const admin =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            profile_picture_public_id
+
+                        FROM admins
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            if (!admin) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Akun Admin / Guru tidak ditemukan."
+                });
+            }
+
+
+            uploadedPicture =
+                await uploadAdminProfilePicture(
+                    imageBuffer,
+                    adminId
+                );
+
+
+            const pictureUrl =
+                String(
+                    uploadedPicture?.secure_url ||
+                    ""
+                ).trim();
+
+
+            const publicId =
+                String(
+                    uploadedPicture?.public_id ||
+                    ""
+                ).trim();
+
+
+            const width =
+                Number(
+                    uploadedPicture?.width
+                );
+
+
+            const height =
+                Number(
+                    uploadedPicture?.height
+                );
+
+
+            const bytes =
+                Number(
+                    uploadedPicture?.bytes ||
+                    imageBuffer.length
+                );
+
+
+            /*
+             * Pastikan Cloudinary benar-benar
+             * menghasilkan file yang sesuai.
+             */
+            if (
+                !pictureUrl ||
+                !publicId ||
+                width !==
+                    ADMIN_PROFILE_PICTURE_SIZE ||
+                height !==
+                    ADMIN_PROFILE_PICTURE_SIZE ||
+                !Number.isFinite(bytes) ||
+                bytes <= 0 ||
+                bytes >
+                    ADMIN_PROFILE_PICTURE_MAX_BYTES
+            ) {
+                await deleteAdminProfilePicture(
+                    publicId
+                );
+
+                uploadedPicture =
+                    null;
+
+
+                return res.status(422).json({
+                    success: false,
+                    message:
+                        "Foto profil tidak dapat diproses."
+                });
+            }
+
+
+            /*
+             * Database diperbarui sebelum foto
+             * lama dihapus. Jika database gagal,
+             * foto lama tetap aman.
+             */
+            await tursoDb.run(
+                `
+                    UPDATE admins
+
+                    SET
+                        profile_picture_url = ?,
+                        profile_picture_public_id = ?,
+                        profile_picture_width = ?,
+                        profile_picture_height = ?,
+                        profile_picture_bytes = ?
+
+                    WHERE id = ?
+                `,
+                [
+                    pictureUrl,
+                    publicId,
+                    width,
+                    height,
+                    bytes,
+                    adminId
+                ]
+            );
+
+
+            const oldPublicId =
+                admin
+                    .profile_picture_public_id;
+
+
+            if (
+                oldPublicId &&
+                oldPublicId !== publicId
+            ) {
+                await deleteAdminProfilePicture(
+                    oldPublicId
+                );
+            }
+
+
+            return res.json({
+                success: true,
+
+                message:
+                    "Foto profil berhasil diperbarui.",
+
+                picture: {
+                    url:
+                        pictureUrl,
+
+                    width,
+
+                    height,
+
+                    bytes
+                }
+            });
+
+        } catch (error) {
+
+            /*
+             * Jika Cloudinary berhasil tetapi
+             * database gagal, hapus upload baru
+             * agar tidak menjadi file yatim.
+             */
+            if (
+                uploadedPicture?.public_id
+            ) {
+                await deleteAdminProfilePicture(
+                    uploadedPicture.public_id
+                );
+            }
+
+
+            console.error(
+                "Gagal memperbarui foto profil Admin / Guru:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Foto profil tidak dapat diunggah."
+            });
+        }
     }
 );
 
@@ -18377,6 +21226,798 @@ app.post(
 );
 
 // ========================================
+// OPTIMASI MENTION CLASSROOM FEED
+// ========================================
+
+function normalizeFeedMentions(
+    mentions
+) {
+
+    if (!Array.isArray(mentions)) {
+        return [];
+    }
+
+    const uniqueMentions = [];
+
+    const processedKeys =
+        new Set();
+
+    mentions.forEach(
+        (mention) => {
+
+            const id =
+                Number(mention?.id);
+
+            const type =
+                mention?.type;
+
+            if (
+                !Number.isInteger(id) ||
+                id <= 0 ||
+                ![
+                    "student",
+                    "admin"
+                ].includes(type)
+            ) {
+                return;
+            }
+
+            const key =
+                `${type}:${id}`;
+
+            if (
+                processedKeys.has(key)
+            ) {
+                return;
+            }
+
+            processedKeys.add(key);
+
+            uniqueMentions.push({
+                id,
+                type
+            });
+
+        }
+    );
+
+    return uniqueMentions;
+
+}
+
+
+async function resolveValidFeedMentions(
+    mentions,
+    className = null
+) {
+
+    const normalizedMentions =
+        normalizeFeedMentions(
+            mentions
+        );
+
+    if (
+        normalizedMentions.length === 0
+    ) {
+        return [];
+    }
+
+    const studentIds =
+        normalizedMentions
+            .filter(
+                (mention) =>
+                    mention.type ===
+                    "student"
+            )
+            .map(
+                (mention) =>
+                    mention.id
+            );
+
+    const adminIds =
+        normalizedMentions
+            .filter(
+                (mention) =>
+                    mention.type ===
+                    "admin"
+            )
+            .map(
+                (mention) =>
+                    mention.id
+            );
+
+    /*
+        Maksimal hanya dua query:
+        satu query seluruh siswa,
+        satu query seluruh guru.
+    */
+    const [
+        students,
+        admins
+    ] =
+        await Promise.all([
+
+            studentIds.length > 0
+                ? tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            class_name
+                        FROM students
+                        WHERE id IN (
+                            ${
+                                studentIds
+                                    .map(
+                                        () => "?"
+                                    )
+                                    .join(", ")
+                            }
+                        )
+                    `,
+                    studentIds
+                )
+                : Promise.resolve([]),
+
+            adminIds.length > 0
+                ? tursoDb.all(
+                    `
+                        SELECT
+                            id,
+                            name
+                        FROM admins
+                        WHERE id IN (
+                            ${
+                                adminIds
+                                    .map(
+                                        () => "?"
+                                    )
+                                    .join(", ")
+                            }
+                        )
+                    `,
+                    adminIds
+                )
+                : Promise.resolve([])
+
+        ]);
+
+    const studentMap =
+        new Map(
+            students.map(
+                (student) => [
+                    Number(student.id),
+                    student
+                ]
+            )
+        );
+
+    const adminMap =
+        new Map(
+            admins.map(
+                (admin) => [
+                    Number(admin.id),
+                    admin
+                ]
+            )
+        );
+
+    const validMentions = [];
+
+    normalizedMentions.forEach(
+        (mention) => {
+
+            if (
+                mention.type ===
+                "student"
+            ) {
+
+                const student =
+                    studentMap.get(
+                        mention.id
+                    );
+
+                if (!student) {
+                    return;
+                }
+
+                /*
+                    Post kelas hanya boleh
+                    mention siswa dari kelas
+                    yang sama.
+                */
+                if (
+                    className !== null &&
+                    student.class_name !==
+                        className
+                ) {
+                    return;
+                }
+
+                validMentions.push({
+                    id:
+                        Number(student.id),
+
+                    type:
+                        "student",
+
+                    name:
+                        student.name
+                });
+
+                return;
+
+            }
+
+            const admin =
+                adminMap.get(
+                    mention.id
+                );
+
+            if (!admin) {
+                return;
+            }
+
+            validMentions.push({
+                id:
+                    Number(admin.id),
+
+                type:
+                    "admin",
+
+                name:
+                    admin.name
+            });
+
+        }
+    );
+
+    return validMentions;
+
+}
+
+
+async function saveFeedMentionsAndNotifications({
+    mentions,
+    announcementId,
+    replyId = null,
+    className = null,
+    senderType,
+    senderId,
+    senderName,
+    ownerStudentId = null,
+    ownerAdminId = null,
+    postMessage = ""
+}) {
+
+    const validMentions =
+        await resolveValidFeedMentions(
+            mentions,
+            className
+        );
+
+    const statements = [];
+
+    const validRecipientKeys =
+        new Set();
+
+    validMentions.forEach(
+        (mention) => {
+
+            const recipientKey =
+                `${mention.type}:${mention.id}`;
+
+            validRecipientKeys.add(
+                recipientKey
+            );
+
+            /*
+                Simpan data mention.
+            */
+            if (
+                mention.type ===
+                "student"
+            ) {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO announcement_mentions (
+                            announcement_id,
+                            reply_id,
+                            mentioned_student_id,
+                            mentioned_admin_id
+                        )
+                        VALUES (?, ?, ?, NULL)
+                    `,
+                    args: [
+                        announcementId,
+                        replyId,
+                        mention.id
+                    ]
+                });
+
+            } else {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO announcement_mentions (
+                            announcement_id,
+                            reply_id,
+                            mentioned_student_id,
+                            mentioned_admin_id
+                        )
+                        VALUES (?, ?, NULL, ?)
+                    `,
+                    args: [
+                        announcementId,
+                        replyId,
+                        mention.id
+                    ]
+                });
+
+            }
+
+            /*
+                Jangan kirim notification
+                mention kepada diri sendiri.
+            */
+            if (
+                mention.type ===
+                    senderType &&
+                Number(mention.id) ===
+                    Number(senderId)
+            ) {
+                return;
+            }
+
+            /*
+                Notifikasi kepada siswa.
+            */
+            if (
+                mention.type ===
+                "student"
+            ) {
+
+                if (
+                    senderType ===
+                    "student"
+                ) {
+
+                    statements.push({
+                        sql: `
+                            INSERT INTO notifications (
+                                recipient_student_id,
+                                sender_student_id,
+                                type,
+                                announcement_id,
+                                reply_id,
+                                message
+                            )
+                            VALUES (
+                                ?,
+                                ?,
+                                'mention',
+                                ?,
+                                ?,
+                                ?
+                            )
+                        `,
+                        args: [
+                            mention.id,
+                            senderId,
+                            announcementId,
+                            replyId,
+                            `${senderName} mention kamu dalam announcement.`
+                        ]
+                    });
+
+                } else {
+
+                    statements.push({
+                        sql: `
+                            INSERT INTO notifications (
+                                recipient_student_id,
+                                sender_admin_id,
+                                type,
+                                announcement_id,
+                                reply_id,
+                                message
+                            )
+                            VALUES (
+                                ?,
+                                ?,
+                                'mention',
+                                ?,
+                                ?,
+                                ?
+                            )
+                        `,
+                        args: [
+                            mention.id,
+                            senderId,
+                            announcementId,
+                            replyId,
+                            `${senderName} mention kamu dalam announcement.`
+                        ]
+                    });
+
+                }
+
+                return;
+
+            }
+
+            /*
+                Notifikasi kepada Admin/Guru.
+            */
+            if (
+                senderType ===
+                "student"
+            ) {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_admin_id,
+                            sender_student_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (
+                            ?,
+                            ?,
+                            'mention',
+                            ?,
+                            ?,
+                            ?
+                        )
+                    `,
+                    args: [
+                        mention.id,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        `${senderName} mention kamu dalam announcement.`
+                    ]
+                });
+
+            } else {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_admin_id,
+                            sender_admin_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (
+                            ?,
+                            ?,
+                            'mention',
+                            ?,
+                            ?,
+                            ?
+                        )
+                    `,
+                    args: [
+                        mention.id,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        `${senderName} mention kamu dalam announcement.`
+                    ]
+                });
+
+            }
+
+        }
+    );
+
+    /*
+        Bagian berikut hanya berlaku
+        ketika membuat reply.
+    */
+    if (replyId !== null) {
+
+const normalizedNotificationSource =
+    String(postMessage || "")
+        /*
+         * Line break asli.
+         */
+        .replace(/\r\n?|\u2028|\u2029/g, "\n")
+        /*
+         * Antisipasi jika tersimpan sebagai karakter
+         * literal "\n", bukan line break asli.
+         */
+        .replace(/\\r\\n|\\n|\\r/g, "\n")
+        /*
+         * Antisipasi data lama dari contenteditable
+         * yang sempat tersimpan sebagai HTML.
+         */
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/(?:div|p|li)>/gi, "\n")
+        .replace(/<(?:div|p|li)(?:\s[^>]*)?>/gi, "");
+
+const postMessageLines =
+    normalizedNotificationSource.split("\n");
+
+/*
+ * Cari baris pertama yang benar-benar berisi teks.
+ */
+const firstContentLineIndex =
+    postMessageLines.findIndex(
+        line => line.trim()
+    );
+
+const firstContentLine =
+    firstContentLineIndex >= 0
+        ? postMessageLines[
+            firstContentLineIndex
+        ].trim()
+        : "";
+
+/*
+ * Apakah masih ada isi setelah baris pertama?
+ * Jika ada, preview harus diakhiri "...".
+ */
+const hasMoreContentLines =
+    firstContentLineIndex >= 0 &&
+    postMessageLines
+        .slice(firstContentLineIndex + 1)
+        .some(line => line.trim());
+
+/*
+ * Bullet editor disimpan sebagai "- ".
+ * Khusus preview notifikasi, tampilkan sebagai "• "
+ * agar tetap satu baris.
+ */
+const notificationFirstLine =
+    firstContentLine.replace(
+        /^-\s+/,
+        "• "
+    );
+
+/*
+ * Pastikan pemotongan tidak membuat marker formatting
+ * terbuka sampai mengenai tanda petik penutup.
+ */
+function closeNotificationPreviewFormatting(value) {
+    let result = value;
+
+    const boldCount =
+        (result.match(/\*\*/g) || []).length;
+
+    const underlineCount =
+        (result.match(/__/g) || []).length;
+
+    if (boldCount % 2 !== 0) {
+        result += "**";
+    }
+
+    if (underlineCount % 2 !== 0) {
+        result += "__";
+    }
+
+    const withoutBold =
+        result.replace(/\*\*/g, "");
+
+    const italicCount =
+        (withoutBold.match(/\*/g) || []).length;
+
+    if (italicCount % 2 !== 0) {
+        result += "*";
+    }
+
+    return result;
+}
+
+const firstLineWasCut =
+    notificationFirstLine.length > 90;
+
+let postMessagePreview =
+    firstLineWasCut
+        ? notificationFirstLine
+            .slice(0, 87)
+            .trimEnd()
+        : notificationFirstLine;
+
+postMessagePreview =
+    closeNotificationPreviewFormatting(
+        postMessagePreview
+    );
+
+if (
+    firstLineWasCut ||
+    hasMoreContentLines
+) {
+    postMessagePreview += "...";
+}
+
+const replyMessage =
+    `Kamu mendapat reply dalam Post: "${postMessagePreview}"`;
+
+
+        const numericOwnerStudentId =
+            Number(ownerStudentId);
+
+        const numericOwnerAdminId =
+            Number(ownerAdminId);
+
+        /*
+            Notifikasi reply kepada
+            siswa pemilik post.
+
+            Tidak dikirim jika:
+            - pemilik membalas post sendiri;
+            - pemilik sudah mendapat notif mention.
+        */
+        if (
+            Number.isInteger(
+                numericOwnerStudentId
+            ) &&
+            numericOwnerStudentId > 0 &&
+            !(
+                senderType === "student" &&
+                numericOwnerStudentId ===
+                    Number(senderId)
+            ) &&
+            !validRecipientKeys.has(
+                `student:${numericOwnerStudentId}`
+            )
+        ) {
+
+            if (
+                senderType ===
+                "student"
+            ) {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_student_id,
+                            sender_student_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (?, ?, 'reply', ?, ?, ?)
+                    `,
+                    args: [
+                        numericOwnerStudentId,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        replyMessage
+                    ]
+                });
+
+            } else {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_student_id,
+                            sender_admin_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (?, ?, 'reply', ?, ?, ?)
+                    `,
+                    args: [
+                        numericOwnerStudentId,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        replyMessage
+                    ]
+                });
+
+            }
+
+        }
+
+        /*
+            Notifikasi reply kepada
+            Admin/Guru pemilik post.
+        */
+        if (
+            Number.isInteger(
+                numericOwnerAdminId
+            ) &&
+            numericOwnerAdminId > 0 &&
+            !(
+                senderType === "admin" &&
+                numericOwnerAdminId ===
+                    Number(senderId)
+            ) &&
+            !validRecipientKeys.has(
+                `admin:${numericOwnerAdminId}`
+            )
+        ) {
+
+            if (
+                senderType ===
+                "student"
+            ) {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_admin_id,
+                            sender_student_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (?, ?, 'reply', ?, ?, ?)
+                    `,
+                    args: [
+                        numericOwnerAdminId,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        replyMessage
+                    ]
+                });
+
+            } else {
+
+                statements.push({
+                    sql: `
+                        INSERT INTO notifications (
+                            recipient_admin_id,
+                            sender_admin_id,
+                            type,
+                            announcement_id,
+                            reply_id,
+                            message
+                        )
+                        VALUES (?, ?, 'reply', ?, ?, ?)
+                    `,
+                    args: [
+                        numericOwnerAdminId,
+                        senderId,
+                        announcementId,
+                        replyId,
+                        replyMessage
+                    ]
+                });
+
+            }
+
+        }
+
+    }
+
+    /*
+        Seluruh mention dan notification
+        dikirim ke Turso dalam satu batch.
+    */
+    if (
+        statements.length > 0
+    ) {
+
+        await tursoDb.batch(
+            statements,
+            "immediate"
+        );
+
+    }
+
+    return validMentions;
+
+}
+
+// ========================================
 // BUAT ANNOUNCEMENT
 // ========================================
 
@@ -18451,11 +22092,12 @@ app.post(
             const admin =
                 await tursoDb.get(
                     `
-                        SELECT
-                            id,
-                            name,
-                            role
-                        FROM admins
+SELECT
+    id,
+    name,
+    role,
+    profile_picture_url
+FROM admins
                         WHERE id = ?
                     `,
                     [
@@ -18502,268 +22144,37 @@ app.post(
                     result.lastInsertRowid
                 );
 
-
-// =====================================
-// PROSES MENTION
-// =====================================
-
-const processedPostMentions =
-    new Set();
-
-
-for (const mention of mentions) {
-
-const mentionId =
-    Number(mention.id);
-
-
-if (
-    !Number.isInteger(
-        mentionId
-    )
-) {
-
-    continue;
-
-}
-
-
-/*
-    Student dan Admin dapat mempunyai angka ID
-    yang sama, sehingga type harus ikut disimpan.
-*/
-const mentionKey =
-    `${mention.type}:${mentionId}`;
-
-
-/*
-    Mention ini sudah pernah diproses dalam
-    Post yang sama. Jangan simpan atau membuat
-    notifikasi kedua.
-*/
-if (
-    processedPostMentions.has(
-        mentionKey
-    )
-) {
-
-    continue;
-
-}
-
-
-/*
-    Tandai sebelum masuk ke proses siswa/guru.
-*/
-processedPostMentions.add(
-    mentionKey
-);
-
-
-// =================================
-// MENTION SISWA
-// =================================
-                if (
-                    mention.type ===
-                    "student"
-                ) {
-
-                    const mentionedStudent =
-                        await tursoDb.get(
-                            `
-                                SELECT
-                                    id,
-                                    class_name
-                                FROM students
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedStudent) {
-
-                        continue;
-
-                    }
-
-
-                    // Kalau post khusus kelas,
-                    // mention hanya siswa kelas sama.
-                    if (
-                        cleanClass !== null &&
-                        mentionedStudent.class_name !==
-                            cleanClass
-                    ) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, NULL, ?, NULL)
-                        `,
-                        [
-                            announcementId,
-                            mentionId
-                        ]
-                    );
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO notifications (
-                                recipient_student_id,
-                                sender_admin_id,
-                                type,
-                                announcement_id,
-                                reply_id,
-                                message
-                            )
-                            VALUES (
-                                ?,
-                                ?,
-                                'mention',
-                                ?,
-                                NULL,
-                                ?
-                            )
-                        `,
-                        [
-                            mentionId,
-                            numericAdminId,
-                            announcementId,
-                            `${admin.name} mention kamu dalam announcement.`
-                        ]
-                    );
-
-
-                    continue;
-
-                }
-
-
-                // =================================
-                // MENTION GURU
-                // =================================
-
-                if (
-                    mention.type ===
-                    "admin"
-                ) {
-
-                    const mentionedAdmin =
-                        await tursoDb.get(
-                            `
-                                SELECT id
-                                FROM admins
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedAdmin) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, NULL, NULL, ?)
-                        `,
-                        [
-                            announcementId,
-                            mentionId
-                        ]
-                    );
-
-
-                    // Jangan notif diri sendiri
-                    if (
-                        mentionId !==
-                        numericAdminId
-                    ) {
-
-                        await tursoDb.run(
-                            `
-                                INSERT INTO notifications (
-                                    recipient_admin_id,
-                                    sender_admin_id,
-                                    type,
-                                    announcement_id,
-                                    reply_id,
-                                    message
-                                )
-                                VALUES (
-                                    ?,
-                                    ?,
-                                    'mention',
-                                    ?,
-                                    NULL,
-                                    ?
-                                )
-                            `,
-                            [
-                                mentionId,
-                                numericAdminId,
-                                announcementId,
-                                `${admin.name} mention kamu dalam announcement.`
-                            ]
-                        );
-
-                    }
-
-                }
-
-            }
-
 const savedMentions =
-    await getAnnouncementMentions(
-        announcementId
-    );
+    await saveFeedMentionsAndNotifications({
+        mentions,
 
-const createdAnnouncement =
-    await tursoDb.get(
-        `
-            SELECT
-                id,
-                admin_id,
-                class_name,
-                message,
-                created_at
-            FROM announcements
-            WHERE id = ?
-        `,
-        [
-            announcementId
-        ]
-    );
+        announcementId,
+
+        replyId:
+            null,
+
+        className:
+            cleanClass,
+
+        senderType:
+            "admin",
+
+        senderId:
+            numericAdminId,
+
+        senderName:
+            admin.name
+    });
+
+
+const createdAt =
+    new Date().toISOString();
 
 
 return res.json({
 
-    success: true,
+    success:
+        true,
 
     message:
         "Announcement berhasil dibuat.",
@@ -18771,13 +22182,13 @@ return res.json({
     announcement: {
 
         id:
-            createdAnnouncement.id,
+            announcementId,
 
         student_id:
             null,
 
         admin_id:
-            createdAnnouncement.admin_id,
+            numericAdminId,
 
         student_creator_name:
             null,
@@ -18791,17 +22202,22 @@ return res.json({
         admin_creator_role:
             admin.role,
 
+            admin_creator_profile_picture_url:
+    admin.profile_picture_url ||
+    null,
+
         class_name:
-            createdAnnouncement.class_name,
+            cleanClass,
 
         message:
-            createdAnnouncement.message,
+            cleanMessage,
 
         created_at:
-            createdAnnouncement.created_at,
+            createdAt,
 
         mentions:
             savedMentions
+
     }
 
 });
@@ -18976,263 +22392,36 @@ FROM students
     );
 
 
-// =====================================
-// PROSES MENTION
-// =====================================
-
-const processedMentions =
-    new Set();
-
-
-for (const mention of mentions) {
-
-    const mentionId =
-        Number(mention.id);
-
-
-    if (
-        !Number.isInteger(
-            mentionId
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    const mentionKey =
-        `${mention.type}:${mentionId}`;
-
-
-    if (
-        processedMentions.has(
-            mentionKey
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    processedMentions.add(
-        mentionKey
-    );
-
-
-    // =================================
-    // MENTION SISWA
-    // =================================
-
-
-                // =================================
-                // MENTION SISWA
-                // =================================
-
-                if (
-                    mention.type ===
-                    "student"
-                ) {
-
-                    const mentionedStudent =
-                        await tursoDb.get(
-                            `
-                                SELECT
-                                    id,
-                                    class_name
-                                FROM students
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedStudent) {
-
-                        continue;
-
-                    }
-
-
-                    // Kalau post khusus kelas,
-                    // siswa mention harus kelas sama.
-                    if (
-                        className !== null &&
-                        mentionedStudent.class_name !==
-                            className
-                    ) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, NULL, ?, NULL)
-                        `,
-                        [
-                            announcementId,
-                            mentionId
-                        ]
-                    );
-
-
-                    // Jangan notif diri sendiri
-                    if (
-                        mentionId !==
-                        studentId
-                    ) {
-
-                        await tursoDb.run(
-                            `
-                                INSERT INTO notifications (
-                                    recipient_student_id,
-                                    sender_student_id,
-                                    type,
-                                    announcement_id,
-                                    reply_id,
-                                    message
-                                )
-                                VALUES (
-                                    ?,
-                                    ?,
-                                    'mention',
-                                    ?,
-                                    NULL,
-                                    ?
-                                )
-                            `,
-                            [
-                                mentionId,
-                                studentId,
-                                announcementId,
-                                `${student.name} mention kamu dalam announcement.`
-                            ]
-                        );
-
-                    }
-
-
-                    continue;
-
-                }
-
-
-                // =================================
-                // MENTION GURU
-                // =================================
-
-                if (
-                    mention.type ===
-                    "admin"
-                ) {
-
-                    const mentionedAdmin =
-                        await tursoDb.get(
-                            `
-                                SELECT id
-                                FROM admins
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedAdmin) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, NULL, NULL, ?)
-                        `,
-                        [
-                            announcementId,
-                            mentionId
-                        ]
-                    );
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO notifications (
-                                recipient_admin_id,
-                                sender_student_id,
-                                type,
-                                announcement_id,
-                                reply_id,
-                                message
-                            )
-                            VALUES (
-                                ?,
-                                ?,
-                                'mention',
-                                ?,
-                                NULL,
-                                ?
-                            )
-                        `,
-                        [
-                            mentionId,
-                            studentId,
-                            announcementId,
-                            `${student.name} mention kamu dalam announcement.`
-                        ]
-                    );
-
-                }
-
-            }
-
-
-const createdAnnouncement =
-    await tursoDb.get(
-        `
-            SELECT
-                id,
-                student_id,
-                class_name,
-                message,
-                created_at
-            FROM announcements
-            WHERE id = ?
-        `,
-        [
-            announcementId
-        ]
-    );
-
-
 const savedMentions =
-    await getAnnouncementMentions(
-        announcementId
-    );
+    await saveFeedMentionsAndNotifications({
+        mentions,
+
+        announcementId,
+
+        replyId:
+            null,
+
+        className,
+
+        senderType:
+            "student",
+
+        senderId:
+            studentId,
+
+        senderName:
+            student.name
+    });
+
+
+const createdAt =
+    new Date().toISOString();
 
 
 return res.json({
 
-    success: true,
+    success:
+        true,
 
     message:
         "Announcement berhasil dibuat.",
@@ -19240,10 +22429,10 @@ return res.json({
     announcement: {
 
         id:
-            createdAnnouncement.id,
+            announcementId,
 
         student_id:
-            createdAnnouncement.student_id,
+            studentId,
 
         admin_id:
             null,
@@ -19255,8 +22444,8 @@ return res.json({
             student.class_name,
 
         student_creator_profile_picture_url:
-    student.profile_picture_url ||
-    null,
+            student.profile_picture_url ||
+            null,
 
         admin_creator_name:
             null,
@@ -19265,13 +22454,13 @@ return res.json({
             null,
 
         class_name:
-            createdAnnouncement.class_name,
+            className,
 
         message:
-            createdAnnouncement.message,
+            message.trim(),
 
         created_at:
-            createdAnnouncement.created_at,
+            createdAt,
 
         mentions:
             savedMentions
@@ -19579,6 +22768,17 @@ app.get(
 
             }
 
+                        const pageSize = 5;
+
+            const parsedBeforeId =
+                Number(req.query.beforeId);
+
+            const beforeId =
+                Number.isInteger(parsedBeforeId) &&
+                parsedBeforeId > 0
+                    ? parsedBeforeId
+                    : null;
+
 
             /*
                 Ambil post, reply, dan mention
@@ -19624,7 +22824,10 @@ app.get(
                                     AS admin_creator_name,
 
                                 admins.role
-                                    AS admin_creator_role
+                                    AS admin_creator_role,
+
+                                admins.profile_picture_url
+    AS admin_creator_profile_picture_url
 
                             FROM announcements
 
@@ -19645,11 +22848,24 @@ app.get(
                                 announcements.class_name = ?
                             )
 
+                            AND (
+                                ? IS NULL
+
+                                OR
+
+                                announcements.id < ?
+                            )
+
                             ORDER BY
                                 announcements.id DESC
+
+                            LIMIT ?
                         `,
                         [
-                            student.class_name
+                            student.class_name,
+                            beforeId,
+                            beforeId,
+                            pageSize + 1
                         ]
                     ),
 
@@ -19680,8 +22896,11 @@ students.profile_picture_url
 admins.name
                                     AS admin_name,
 
-                                admins.role
-                                    AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
                             FROM announcement_replies
 
@@ -19697,20 +22916,46 @@ admins.name
                             ON admins.id =
                                 announcement_replies.admin_id
 
-                            WHERE (
-                                announcements.class_name
-                                    IS NULL
+                            WHERE
+                                announcement_replies.announcement_id
+                                IN (
+                                    SELECT
+                                        page_announcements.id
 
-                                OR
+                                    FROM announcements
+                                        AS page_announcements
 
-                                announcements.class_name = ?
-                            )
+                                    WHERE (
+                                        page_announcements.class_name
+                                            IS NULL
+
+                                        OR
+
+                                        page_announcements.class_name = ?
+                                    )
+
+                                    AND (
+                                        ? IS NULL
+
+                                        OR
+
+                                        page_announcements.id < ?
+                                    )
+
+                                    ORDER BY
+                                        page_announcements.id DESC
+
+                                    LIMIT ?
+                                )
 
                             ORDER BY
                                 announcement_replies.id ASC
                         `,
                         [
-                            student.class_name
+                            student.class_name,
+                            beforeId,
+                            beforeId,
+                            pageSize + 1
                         ]
                     ),
 
@@ -19747,21 +22992,63 @@ admins.name
                             ON admins.id =
                                 announcement_mentions.mentioned_admin_id
 
-                            WHERE (
-                                announcements.class_name
-                                    IS NULL
+                            WHERE
+                                announcement_mentions.announcement_id
+                                IN (
+                                    SELECT
+                                        page_announcements.id
 
-                                OR
+                                    FROM announcements
+                                        AS page_announcements
 
-                                announcements.class_name = ?
-                            )
+                                    WHERE (
+                                        page_announcements.class_name
+                                            IS NULL
+
+                                        OR
+
+                                        page_announcements.class_name = ?
+                                    )
+
+                                    AND (
+                                        ? IS NULL
+
+                                        OR
+
+                                        page_announcements.id < ?
+                                    )
+
+                                    ORDER BY
+                                        page_announcements.id DESC
+
+                                    LIMIT ?
+                                )
                         `,
                         [
-                            student.class_name
+                            student.class_name,
+                            beforeId,
+                            beforeId,
+                            pageSize + 1
                         ]
                     )
 
                 ]);
+
+            const hasMore =
+                announcements.length > pageSize;
+
+            if (hasMore) {
+                announcements.pop();
+            }
+
+            const nextBeforeId =
+                hasMore && announcements.length > 0
+                    ? Number(
+                        announcements[
+                            announcements.length - 1
+                        ].id
+                    )
+                    : null;
 
 
             // =============================
@@ -19948,6 +23235,7 @@ class_name:
     null,
 
 profile_picture_url:
+    reply.admin_profile_picture_url ||
     null
                             };
 
@@ -20021,7 +23309,13 @@ profile_picture_url:
                 success: true,
 
                 announcements:
-                    formattedAnnouncements
+                    formattedAnnouncements,
+
+                pagination: {
+                    hasMore,
+                    nextBeforeId,
+                    pageSize
+                }
 
             });
 
@@ -20336,7 +23630,10 @@ students.profile_picture_url
                                 AS admin_creator_name,
 
                             admins.role
-                                AS admin_creator_role
+                                AS admin_creator_role,
+
+                                admins.profile_picture_url
+    AS admin_creator_profile_picture_url
 
                         FROM announcements
 
@@ -20436,7 +23733,10 @@ students.profile_picture_url
     AS student_creator_profile_picture_url,
 
 admins.name AS admin_creator_name,
-                        admins.role AS admin_creator_role
+                        admins.role AS admin_creator_role,
+
+                        admins.profile_picture_url
+    AS admin_creator_profile_picture_url
 
                     FROM announcements
 
@@ -20474,8 +23774,11 @@ students.profile_picture_url
 admins.name
                     AS admin_name,
 
-                admins.role
-                    AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
             FROM announcement_replies
 
@@ -20580,7 +23883,6 @@ profile_picture_url:
 
                     class_name:
                         null
-
                 };
 
             }
@@ -20640,6 +23942,619 @@ const formattedAnnouncements =
                 success: false,
                 message:
                     "Gagal mengambil announcement."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
+// HALAMAN ANNOUNCEMENT ADMIN
+// PAGINATION + TARGET NOTIFIKASI
+// ========================================
+
+app.get(
+    "/api/admin/announcements/page",
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Harus login sebagai guru."
+            });
+
+        }
+
+
+        const pageSize =
+            5;
+
+        const parsedBeforeId =
+            Number(req.query.beforeId);
+
+        const beforeId =
+            Number.isInteger(parsedBeforeId) &&
+            parsedBeforeId > 0
+                ? parsedBeforeId
+                : null;
+
+        const parsedTargetId =
+            Number(req.query.targetId);
+
+        const targetId =
+            Number.isInteger(parsedTargetId) &&
+            parsedTargetId > 0
+                ? parsedTargetId
+                : null;
+
+
+        if (
+            req.query.targetId !== undefined &&
+            targetId === null
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "ID target notifikasi tidak valid."
+            });
+
+        }
+
+
+        try {
+
+            let postCondition =
+                "";
+
+            const postArgs =
+                [];
+
+
+            /*
+                Mode normal:
+                - tanpa cursor = lima post pertama
+                - beforeId = lima post berikutnya
+
+                Mode notifikasi:
+                - targetId = hanya post yang dituju
+            */
+            if (targetId !== null) {
+
+                postCondition =
+                    "WHERE announcements.id = ?";
+
+                postArgs.push(
+                    targetId
+                );
+
+            } else if (beforeId !== null) {
+
+                postCondition =
+                    "WHERE announcements.id < ?";
+
+                postArgs.push(
+                    beforeId
+                );
+
+            }
+
+
+            postArgs.push(
+                targetId !== null
+                    ? 1
+                    : pageSize + 1
+            );
+
+
+            const announcementRows =
+                await tursoDb.all(
+                    `
+                        SELECT
+                            announcements.id,
+                            announcements.student_id,
+                            announcements.admin_id,
+                            announcements.class_name,
+                            announcements.message,
+                            announcements.created_at,
+
+                            students.name
+                                AS student_creator_name,
+
+                            students.class_name
+                                AS student_creator_class,
+
+                            students.profile_picture_url
+                                AS student_creator_profile_picture_url,
+
+                            admins.name
+                                AS admin_creator_name,
+
+                            admins.role
+                                AS admin_creator_role,
+
+                            admins.profile_picture_url
+    AS admin_creator_profile_picture_url
+
+                        FROM announcements
+
+                        LEFT JOIN students
+                        ON students.id =
+                            announcements.student_id
+
+                        LEFT JOIN admins
+                        ON admins.id =
+                            announcements.admin_id
+
+                        ${postCondition}
+
+                        ORDER BY
+                            announcements.id DESC
+
+                        LIMIT ?
+                    `,
+                    postArgs
+                );
+
+
+            const hasMore =
+                targetId === null &&
+                announcementRows.length >
+                    pageSize;
+
+            const announcements =
+                targetId !== null
+                    ? announcementRows
+                    : announcementRows.slice(
+                        0,
+                        pageSize
+                    );
+
+            const nextBeforeId =
+                hasMore &&
+                announcements.length > 0
+                    ? Number(
+                        announcements[
+                            announcements.length - 1
+                        ].id
+                    )
+                    : null;
+
+
+            /*
+                Tidak ada post pada halaman ini,
+                atau target notifikasi sudah dihapus.
+            */
+            if (
+                announcements.length === 0
+            ) {
+
+                return res.json({
+                    success: true,
+
+                    announcements:
+                        [],
+
+                    pagination: {
+                        hasMore:
+                            false,
+
+                        nextBeforeId:
+                            null,
+
+                        pageSize
+                    },
+
+                    targetMode:
+                        targetId !== null,
+
+                    targetFound:
+                        targetId === null
+                });
+
+            }
+
+
+            const announcementIds =
+                announcements.map(
+                    (announcement) =>
+                        Number(
+                            announcement.id
+                        )
+                );
+
+            const placeholders =
+                announcementIds
+                    .map(
+                        () => "?"
+                    )
+                    .join(", ");
+
+
+            /*
+                Reply dan mention hanya untuk
+                maksimal lima post yang dimuat.
+
+                Keduanya dijalankan paralel.
+            */
+            const [
+                replies,
+                mentionRows
+            ] =
+                await Promise.all([
+
+                    tursoDb.all(
+                        `
+                            SELECT
+                                announcement_replies.id,
+                                announcement_replies.announcement_id,
+                                announcement_replies.message,
+                                announcement_replies.created_at,
+                                announcement_replies.student_id,
+                                announcement_replies.admin_id,
+
+                                students.name
+                                    AS student_name,
+
+                                students.class_name
+                                    AS student_class_name,
+
+                                students.profile_picture_url
+                                    AS student_profile_picture_url,
+
+                                admins.name
+                                    AS admin_name,
+
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
+
+                            FROM announcement_replies
+
+                            LEFT JOIN students
+                            ON students.id =
+                                announcement_replies.student_id
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                announcement_replies.admin_id
+
+                            WHERE
+                                announcement_replies.announcement_id
+                                IN (${placeholders})
+
+                            ORDER BY
+                                announcement_replies.id ASC
+                        `,
+                        announcementIds
+                    ),
+
+                    tursoDb.all(
+                        `
+                            SELECT
+                                announcement_mentions.announcement_id,
+                                announcement_mentions.reply_id,
+                                announcement_mentions.mentioned_student_id,
+                                announcement_mentions.mentioned_admin_id,
+
+                                students.name
+                                    AS student_name,
+
+                                admins.name
+                                    AS admin_name
+
+                            FROM announcement_mentions
+
+                            LEFT JOIN students
+                            ON students.id =
+                                announcement_mentions.mentioned_student_id
+
+                            LEFT JOIN admins
+                            ON admins.id =
+                                announcement_mentions.mentioned_admin_id
+
+                            WHERE
+                                announcement_mentions.announcement_id
+                                IN (${placeholders})
+                        `,
+                        announcementIds
+                    )
+
+                ]);
+
+
+            // Kelompokkan mention post dan reply.
+
+            const announcementMentionMap =
+                new Map();
+
+            const replyMentionMap =
+                new Map();
+
+
+            mentionRows.forEach(
+                (row) => {
+
+                    const mention =
+                        row.mentioned_student_id
+                            ? {
+                                id:
+                                    Number(
+                                        row.mentioned_student_id
+                                    ),
+
+                                type:
+                                    "student",
+
+                                name:
+                                    row.student_name
+                            }
+                            : {
+                                id:
+                                    Number(
+                                        row.mentioned_admin_id
+                                    ),
+
+                                type:
+                                    "admin",
+
+                                name:
+                                    row.admin_name
+                            };
+
+
+                    if (row.reply_id) {
+
+                        const replyId =
+                            Number(
+                                row.reply_id
+                            );
+
+
+                        if (
+                            !replyMentionMap.has(
+                                replyId
+                            )
+                        ) {
+
+                            replyMentionMap.set(
+                                replyId,
+                                []
+                            );
+
+                        }
+
+
+                        replyMentionMap
+                            .get(replyId)
+                            .push(mention);
+
+                        return;
+
+                    }
+
+
+                    const announcementId =
+                        Number(
+                            row.announcement_id
+                        );
+
+
+                    if (
+                        !announcementMentionMap.has(
+                            announcementId
+                        )
+                    ) {
+
+                        announcementMentionMap.set(
+                            announcementId,
+                            []
+                        );
+
+                    }
+
+
+                    announcementMentionMap
+                        .get(announcementId)
+                        .push(mention);
+
+                }
+            );
+
+
+            // Format dan kelompokkan reply.
+
+            const repliesByAnnouncement =
+                new Map();
+
+
+            replies.forEach(
+                (reply) => {
+
+                    const formattedReply =
+                        reply.student_id
+                            ? {
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions:
+                                    replyMentionMap.get(
+                                        Number(
+                                            reply.id
+                                        )
+                                    ) || [],
+
+                                sender_id:
+                                    reply.student_id,
+
+                                sender_name:
+                                    reply.student_name ||
+                                    "Siswa",
+
+                                sender_type:
+                                    "student",
+
+                                sender_role:
+                                    "student",
+
+                                class_name:
+                                    reply.student_class_name ||
+                                    null,
+
+                                profile_picture_url:
+                                    reply.student_profile_picture_url ||
+                                    null
+                            }
+                            : {
+                                id:
+                                    reply.id,
+
+                                announcement_id:
+                                    reply.announcement_id,
+
+                                message:
+                                    reply.message,
+
+                                created_at:
+                                    reply.created_at,
+
+                                mentions:
+                                    replyMentionMap.get(
+                                        Number(
+                                            reply.id
+                                        )
+                                    ) || [],
+
+                                sender_id:
+                                    reply.admin_id,
+
+                                sender_name:
+                                    reply.admin_name ||
+                                    "Admin / Guru",
+
+                                sender_type:
+                                    "admin",
+
+sender_role:
+    reply.admin_role ||
+    "admin",
+
+class_name:
+    null,
+
+profile_picture_url:
+    reply.admin_profile_picture_url ||
+    null
+                            };
+
+
+                    const announcementId =
+                        Number(
+                            reply.announcement_id
+                        );
+
+
+                    if (
+                        !repliesByAnnouncement.has(
+                            announcementId
+                        )
+                    ) {
+
+                        repliesByAnnouncement.set(
+                            announcementId,
+                            []
+                        );
+
+                    }
+
+
+                    repliesByAnnouncement
+                        .get(announcementId)
+                        .push(
+                            formattedReply
+                        );
+
+                }
+            );
+
+
+            const formattedAnnouncements =
+                announcements.map(
+                    (announcement) => {
+
+                        const announcementId =
+                            Number(
+                                announcement.id
+                            );
+
+
+                        return {
+                            ...announcement,
+
+                            mentions:
+                                announcementMentionMap.get(
+                                    announcementId
+                                ) || [],
+
+                            replies:
+                                repliesByAnnouncement.get(
+                                    announcementId
+                                ) || []
+                        };
+
+                    }
+                );
+
+
+            return res.json({
+                success:
+                    true,
+
+                announcements:
+                    formattedAnnouncements,
+
+                pagination: {
+                    hasMore,
+                    nextBeforeId,
+                    pageSize
+                },
+
+                targetMode:
+                    targetId !== null,
+
+                targetFound:
+                    true
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error mengambil halaman announcement admin:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Gagal mengambil halaman announcement."
             });
 
         }
@@ -20923,7 +24838,11 @@ students.profile_picture_url
     AS student_profile_picture_url,
 
                             admins.name AS admin_name,
-                            admins.role AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
                         FROM announcement_replies
 
@@ -21024,6 +24943,7 @@ sender_role:
     "admin",
 
 profile_picture_url:
+    reply.admin_profile_picture_url ||
     null
                             };
 
@@ -21253,434 +25173,87 @@ if (!student) {
                 );
 
 
-// =====================================
-// PROSES MENTION
-// =====================================
-
-const processedMentions =
-    new Set();
-
-/*
-    Digunakan untuk memberikan prioritas
-    notifikasi Mention dibanding Reply.
-*/
-const validMentionRecipients =
-    new Set();
-
-
-for (const mention of mentions) {
-
-    const mentionId =
-        Number(mention.id);
-
-
-    if (
-        !Number.isInteger(
-            mentionId
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    const mentionKey =
-        `${mention.type}:${mentionId}`;
-
-
-    if (
-        processedMentions.has(
-            mentionKey
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    processedMentions.add(
-        mentionKey
-    );
-
-
-                // =================================
-                // MENTION SISWA
-                // =================================
-
-                if (
-                    mention.type ===
-                    "student"
-                ) {
-
-                    const mentionedStudent =
-                        await tursoDb.get(
-                            `
-                                SELECT
-                                    id,
-                                    class_name
-                                FROM students
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedStudent) {
-
-                        continue;
-
-                    }
-
-
-                    // Kalau post khusus kelas,
-                    // mention siswa harus kelas sama.
-                    if (
-                        announcement.class_name !== null &&
-                        mentionedStudent.class_name !==
-                            announcement.class_name
-                    ) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, ?, ?, NULL)
-                        `,
-                        [
-                            announcementId,
-                            replyId,
-                            mentionId
-                        ]
-                    );
-
-validMentionRecipients.add(
-    `student:${mentionId}`
-);
-
-
-if (
-    mentionId !== numericStudentId
-) {
-
-                        await tursoDb.run(
-                            `
-                                INSERT INTO notifications (
-                                    recipient_student_id,
-                                    sender_student_id,
-                                    type,
-                                    announcement_id,
-                                    reply_id,
-                                    message
-                                )
-                                VALUES (
-                                    ?,
-                                    ?,
-                                    'mention',
-                                    ?,
-                                    ?,
-                                    ?
-                                )
-                            `,
-                            [
-                                mentionId,
-                                numericStudentId,
-                                announcementId,
-                                replyId,
-                                `${student.name} mention kamu dalam announcement.`
-                            ]
-                        );
-
-                    }
-
-
-                    continue;
-
-                }
-
-
- // =================================
-// MENTION GURU
-// =================================
-
-if (
-    mention.type ===
-    "admin"
-) {
-
-    const mentionedAdmin =
-        await tursoDb.get(
-            `
-                SELECT id
-                FROM admins
-                WHERE id = ?
-            `,
-            [
-                mentionId
-            ]
-        );
-
-
-    if (!mentionedAdmin) {
-
-        continue;
-
-    }
-
-
-    await tursoDb.run(
-        `
-            INSERT INTO announcement_mentions (
-                announcement_id,
-                reply_id,
-                mentioned_student_id,
-                mentioned_admin_id
-            )
-            VALUES (?, ?, NULL, ?)
-        `,
-        [
-            announcementId,
-            replyId,
-            mentionId
-        ]
-    );
-
-
-    /*
-        Catat bahwa guru ini benar-benar
-        menerima Mention.
-    */
-    validMentionRecipients.add(
-        `admin:${mentionId}`
-    );
-
-
-    /*
-        Mention memiliki prioritas dibanding
-        notifikasi Reply.
-    */
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_admin_id,
-                sender_student_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (
-                ?,
-                ?,
-                'mention',
-                ?,
-                ?,
-                ?
-            )
-        `,
-        [
-            mentionId,
-            numericStudentId,
-            announcementId,
-            replyId,
-            `${student.name} mention kamu dalam announcement.`
-        ]
-    );
-
-                }
-
-            }
-
-// =====================================
-// NOTIFIKASI KEPADA PEMILIK POST
-// =====================================
-
-const normalizedPostMessage =
-    String(
-        announcement.message ||
-        ""
-    )
-        .replace(
-            /\s+/g,
-            " "
-        )
-        .trim();
-
-
-const postMessagePreview =
-    normalizedPostMessage.length > 90
-        ? `${
-            normalizedPostMessage.slice(
-                0,
-                87
-            )
-        }...`
-        : normalizedPostMessage;
-
-
-const replyNotificationMessage =
-    `Kamu mendapat reply dalam Post: "${postMessagePreview}"`;
-
-
-// Post dibuat oleh siswa lain.
-if (
-    announcement.student_id &&
-    Number(
-        announcement.student_id
-    ) !== numericStudentId &&
-    !validMentionRecipients.has(
-        `student:${
-            Number(
-                announcement.student_id
-            )
-        }`
-    )
-) {
-
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_student_id,
-                sender_student_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (?, ?, 'reply', ?, ?, ?)
-        `,
-        [
-            Number(
-                announcement.student_id
-            ),
-            numericStudentId,
-            announcementId,
-            replyId,
-            replyNotificationMessage
-        ]
-    );
-
-}
-
-
-// Post dibuat oleh Admin/Guru.
-if (
-    announcement.admin_id &&
-    !validMentionRecipients.has(
-        `admin:${
-            Number(
-                announcement.admin_id
-            )
-        }`
-    )
-) {
-
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_admin_id,
-                sender_student_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (?, ?, 'reply', ?, ?, ?)
-        `,
-        [
-            Number(
-                announcement.admin_id
-            ),
-            numericStudentId,
-            announcementId,
-            replyId,
-            replyNotificationMessage
-        ]
-    );
-
-}
-
-const createdReply =
-    await tursoDb.get(
-        `
-            SELECT
-                id,
-                announcement_id,
-                message,
-                created_at
-            FROM announcement_replies
-            WHERE id = ?
-        `,
-        [
-            replyId
-        ]
-    );
-
-
 const savedMentions =
-    await getReplyMentions(
-        replyId
-    );
+    await saveFeedMentionsAndNotifications({
+        mentions,
+
+        announcementId,
+
+        replyId,
+
+        className:
+            announcement.class_name,
+
+        senderType:
+            "student",
+
+        senderId:
+            numericStudentId,
+
+        senderName:
+            student.name,
+
+        ownerStudentId:
+            announcement.student_id,
+
+        ownerAdminId:
+            announcement.admin_id,
+
+        postMessage:
+            announcement.message
+    });
+
+const createdAt =
+    new Date().toISOString();
 
 
-            return res.json({
+return res.json({
 
-                success: true,
+    success:
+        true,
 
-                message:
-                    "Reply berhasil dikirim.",
+    message:
+        "Reply berhasil dikirim.",
 
-reply: {
+    reply: {
 
-    id:
-        createdReply.id,
+        id:
+            replyId,
 
-    announcement_id:
-        createdReply.announcement_id,
+        announcement_id:
+            announcementId,
 
-    sender_type:
-        "student",
+        sender_type:
+            "student",
 
-    sender_id:
-        numericStudentId,
+        sender_id:
+            numericStudentId,
 
-    sender_name:
-        student.name,
+        sender_name:
+            student.name,
 
-    sender_role:
-        "student",
+        sender_role:
+            "student",
 
-class_name:
-    student.class_name,
+        class_name:
+            student.class_name,
 
-profile_picture_url:
-    student.profile_picture_url ||
-    null,
+        profile_picture_url:
+            student.profile_picture_url ||
+            null,
 
-message:
-    createdReply.message,
+        message:
+            message.trim(),
 
-    created_at:
-        createdReply.created_at,
+        created_at:
+            createdAt,
 
-    mentions:
-        savedMentions
+        mentions:
+            savedMentions
 
-}
+    }
 
-            });
+});
 
 
         } catch (error) {
@@ -21883,8 +25456,11 @@ app.get(
                             admins.name
                                 AS admin_name,
 
-                            admins.role
-                                AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
                         FROM announcement_replies
 
@@ -21991,12 +25567,16 @@ profile_picture_url:
                                 sender_type:
                                     "admin",
 
-                                sender_role:
-                                    reply.admin_role ||
-                                    "admin",
+sender_role:
+    reply.admin_role ||
+    "admin",
 
-                                class_name:
-                                    null
+class_name:
+    null,
+
+profile_picture_url:
+    reply.admin_profile_picture_url ||
+    null
                             };
 
                         }
@@ -22075,7 +25655,11 @@ students.profile_picture_url
     AS student_profile_picture_url,
 
 admins.name AS admin_name,
-                            admins.role AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
                         FROM announcement_replies
 
@@ -22317,11 +25901,12 @@ WHERE id = ?
 
         tursoDb.get(
             `
-                SELECT
-                    id,
-                    name,
-                    role
-                FROM admins
+SELECT
+    id,
+    name,
+    role,
+    profile_picture_url
+FROM admins
                 WHERE id = ?
             `,
             [
@@ -22383,384 +25968,45 @@ if (!currentAdmin) {
                 );
 
 
-// =====================================
-// PROSES MENTION
-// =====================================
+const savedMentions =
+    await saveFeedMentionsAndNotifications({
+        mentions,
 
-const processedMentions =
-    new Set();
+        announcementId,
 
-/*
-    Digunakan untuk memberikan prioritas
-    notifikasi Mention dibanding Reply.
-*/
-const validMentionRecipients =
-    new Set();
+        replyId,
 
+        className:
+            announcement.class_name,
 
-for (const mention of mentions) {
+        senderType:
+            "admin",
 
-    const mentionId =
-        Number(mention.id);
-
-
-    if (
-        !Number.isInteger(
-            mentionId
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    const mentionKey =
-        `${mention.type}:${mentionId}`;
-
-
-    if (
-        processedMentions.has(
-            mentionKey
-        )
-    ) {
-
-        continue;
-
-    }
-
-
-    processedMentions.add(
-        mentionKey
-    );
-
-
- // =================================
-// MENTION SISWA
-// =================================
-
-if (
-    mention.type ===
-    "student"
-) {
-
-    const mentionedStudent =
-        await tursoDb.get(
-            `
-                SELECT
-                    id,
-                    class_name
-                FROM students
-                WHERE id = ?
-            `,
-            [
-                mentionId
-            ]
-        );
-
-
-    if (!mentionedStudent) {
-
-        continue;
-
-    }
-
-
-    if (
-        announcement.class_name !== null &&
-        mentionedStudent.class_name !==
-            announcement.class_name
-    ) {
-
-        continue;
-
-    }
-
-
-    await tursoDb.run(
-        `
-            INSERT INTO announcement_mentions (
-                announcement_id,
-                reply_id,
-                mentioned_student_id,
-                mentioned_admin_id
-            )
-            VALUES (?, ?, ?, NULL)
-        `,
-        [
-            announcementId,
-            replyId,
-            mentionId
-        ]
-    );
-
-
-    /*
-        Siswa ini menerima Mention yang valid.
-    */
-    validMentionRecipients.add(
-        `student:${mentionId}`
-    );
-
-
-    /*
-        Kirim notifikasi Mention meskipun siswa
-        tersebut adalah pemilik post.
-
-        Mention mempunyai prioritas atas Reply.
-    */
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_student_id,
-                sender_admin_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (
-                ?,
-                ?,
-                'mention',
-                ?,
-                ?,
-                ?
-            )
-        `,
-        [
-            mentionId,
+        senderId:
             numericAdminId,
-            announcementId,
-            replyId,
-            `${currentAdmin.name} mention kamu dalam announcement.`
-        ]
-    );
+
+        senderName:
+            currentAdmin.name,
+
+        ownerStudentId:
+            announcement.student_id,
+
+        ownerAdminId:
+            announcement.admin_id,
+
+        postMessage:
+            announcement.message
+    });
 
 
-    continue;
-
-}
-
-
-                // =================================
-                // MENTION GURU
-                // =================================
-
-                if (
-                    mention.type ===
-                    "admin"
-                ) {
-
-                    const mentionedAdmin =
-                        await tursoDb.get(
-                            `
-                                SELECT id
-                                FROM admins
-                                WHERE id = ?
-                            `,
-                            [
-                                mentionId
-                            ]
-                        );
-
-
-                    if (!mentionedAdmin) {
-
-                        continue;
-
-                    }
-
-
-                    await tursoDb.run(
-                        `
-                            INSERT INTO announcement_mentions (
-                                announcement_id,
-                                reply_id,
-                                mentioned_student_id,
-                                mentioned_admin_id
-                            )
-                            VALUES (?, ?, NULL, ?)
-                        `,
-                        [
-                            announcementId,
-                            replyId,
-                            mentionId
-                        ]
-                    );
-
-
-if (
-    mentionId !== numericAdminId &&
-    mentionId !== Number(
-        announcement.admin_id
-    )
-) {
-
-                        await tursoDb.run(
-                            `
-                                INSERT INTO notifications (
-                                    recipient_admin_id,
-                                    sender_admin_id,
-                                    type,
-                                    announcement_id,
-                                    reply_id,
-                                    message
-                                )
-                                VALUES (
-                                    ?,
-                                    ?,
-                                    'mention',
-                                    ?,
-                                    ?,
-                                    ?
-                                )
-                            `,
-                            [
-                                mentionId,
-                                numericAdminId,
-                                announcementId,
-                                replyId,
-                                `${currentAdmin.name} mention kamu dalam announcement.`
-                            ]
-                        );
-
-                    }
-
-                }
-
-            }
-
-// =====================================
-// NOTIFIKASI KEPADA PEMILIK POST
-// =====================================
-
-const normalizedPostMessage =
-    String(
-        announcement.message ||
-        ""
-    )
-        .replace(
-            /\s+/g,
-            " "
-        )
-        .trim();
-
-
-const postMessagePreview =
-    normalizedPostMessage.length > 90
-        ? `${
-            normalizedPostMessage.slice(
-                0,
-                87
-            )
-        }...`
-        : normalizedPostMessage;
-
-
-const replyNotificationMessage =
-    `Kamu mendapat reply dalam Post: "${postMessagePreview}"`;
-
-
-// Post dibuat oleh siswa.
-if (
-    announcement.student_id &&
-    !validMentionRecipients.has(
-        `student:${
-            Number(
-                announcement.student_id
-            )
-        }`
-    )
-) {
-
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_student_id,
-                sender_admin_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (?, ?, 'reply', ?, ?, ?)
-        `,
-        [
-            Number(
-                announcement.student_id
-            ),
-            numericAdminId,
-            announcementId,
-            replyId,
-            replyNotificationMessage
-        ]
-    );
-
-}
-
-
-// Post dibuat oleh Admin/Guru lain.
-if (
-    announcement.admin_id &&
-    Number(
-        announcement.admin_id
-    ) !== numericAdminId &&
-    !validMentionRecipients.has(
-        `admin:${
-            Number(
-                announcement.admin_id
-            )
-        }`
-    )
-) {
-
-    await tursoDb.run(
-        `
-            INSERT INTO notifications (
-                recipient_admin_id,
-                sender_admin_id,
-                type,
-                announcement_id,
-                reply_id,
-                message
-            )
-            VALUES (?, ?, 'reply', ?, ?, ?)
-        `,
-        [
-            Number(
-                announcement.admin_id
-            ),
-            numericAdminId,
-            announcementId,
-            replyId,
-            replyNotificationMessage
-        ]
-    );
-
-}
-
-
-const createdReply =
-    await tursoDb.get(
-        `
-            SELECT
-                id,
-                announcement_id,
-                message,
-                created_at
-            FROM announcement_replies
-            WHERE id = ?
-        `,
-        [
-            replyId
-        ]
-    );
+const createdAt =
+    new Date().toISOString();
 
 
 return res.json({
 
-    success: true,
+    success:
+        true,
 
     message:
         "Reply berhasil dikirim.",
@@ -22768,10 +26014,10 @@ return res.json({
     reply: {
 
         id:
-            createdReply.id,
+            replyId,
 
         announcement_id:
-            createdReply.announcement_id,
+            announcementId,
 
         sender_type:
             "admin",
@@ -22788,14 +26034,18 @@ return res.json({
         class_name:
             null,
 
+profile_picture_url:
+    currentAdmin.profile_picture_url ||
+    null,
+
         message:
-            createdReply.message,
+            message.trim(),
 
         created_at:
-            createdReply.created_at,
+            createdAt,
 
         mentions:
-            mentions
+            savedMentions
 
     }
 
@@ -27041,7 +30291,10 @@ app.get(
                                 AS admin_creator_name,
 
                             admins.role
-                                AS admin_creator_role
+                                AS admin_creator_role,
+
+                            admins.profile_picture_url
+    AS admin_creator_profile_picture_url
 
                         FROM announcements
 
@@ -27233,8 +30486,11 @@ app.get(
                             admins.name
                                 AS admin_name,
 
-                            admins.role
-                                AS admin_role
+admins.role
+    AS admin_role,
+
+admins.profile_picture_url
+    AS admin_profile_picture_url
 
                         FROM announcement_replies
 
@@ -27359,6 +30615,7 @@ class_name:
     null,
 
 profile_picture_url:
+    reply.admin_profile_picture_url ||
     null
                             };
 

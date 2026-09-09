@@ -2509,9 +2509,9 @@ font-size: 47px;
         </svg>
 
 
-        <span id="studentSearchTopbarLabel">
-            Student Search
-        </span>
+<span id="studentSearchTopbarLabel">
+    Directory
+</span>
 
     </button>
 
@@ -2863,17 +2863,18 @@ font-size: 47px;
 
         <div class="student-directory-search-area">
 
-            <span class="student-directory-label">
-                STUDENT DIRECTORY
-            </span>
+<span class="student-directory-label">
+    SCHOOL DIRECTORY
+</span>
 
-            <h1 class="student-directory-heading">
-                Cari teman sekolahmu
-            </h1>
+<h1 class="student-directory-heading">
+    Cari siswa dan guru sekolahmu
+</h1>
 
-            <p class="student-directory-description">
-                Cari siswa berdasarkan nama atau kelas.
-            </p>
+<p class="student-directory-description">
+    Cari siswa atau guru berdasarkan nama,
+    kelas, atau mata pelajaran.
+</p>
 
 
             <form
@@ -2904,7 +2905,7 @@ font-size: 47px;
                         data-directory-input
                         maxlength="80"
                         autocomplete="off"
-                        placeholder="Cari nama atau kelas..."
+                        placeholder="Cari nama, kelas, atau mata pelajaran..."
                     >
 
                 </div>
@@ -3617,8 +3618,7 @@ function updateProfileBioCount() {
     document.getElementById(
         "profileCustomizationBioCount"
     ).textContent =
-        `${characterCount} / 120 · ` +
-        `${lineCount} / 3 baris`;
+        `${characterCount} / 120`
 
 
     input.classList.toggle(
@@ -4790,16 +4790,16 @@ const backIcon =
         !isStudentDirectoryOpen;
 
 
-    topbarTitle.textContent =
-        isStudentDirectoryOpen
-            ? "Student Search"
-            : "Profile";
+topbarTitle.textContent =
+    isStudentDirectoryOpen
+        ? "Directory"
+        : "Profile";
 
 
-    topbarDescription.textContent =
-        isStudentDirectoryOpen
-            ? "Cari dan lihat profil siswa"
-            : "Informasi akun dan ringkasan akademik";
+topbarDescription.textContent =
+    isStudentDirectoryOpen
+        ? "Cari dan lihat profil siswa atau guru"
+        : "Informasi akun dan ringkasan akademik";
 
 /*
     Student Search selalu menggunakan
@@ -4825,7 +4825,7 @@ if (isStudentDirectoryOpen) {
 buttonLabel.textContent =
     isStudentDirectoryOpen
         ? "Kembali ke Profile"
-        : "Student Search";
+        : "Directory";
 
 
 searchIcon.hidden =

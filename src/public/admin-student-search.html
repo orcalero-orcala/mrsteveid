@@ -9,7 +9,7 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <title>Student Search</title>
+    <title>Directory</title>
 
     <link
         rel="icon"
@@ -26,6 +26,8 @@
     rel="stylesheet"
     href="/student-directory.css"
 >
+
+<script src="/admin-profile-initial.js"></script>
 </head>
 
 <body class="admin-student-search-page">
@@ -57,6 +59,21 @@
                 Dashboard
             </button>
 
+                                            <button
+    class="nav-item"
+    type="button"
+    onclick="
+        window.location.href =
+            '/admin-profile.html'
+    "
+>
+    <span class="nav-icon">
+        A
+    </span>
+
+    Profile
+</button>
+
             <button
                 class="nav-item"
                 onclick="
@@ -70,7 +87,7 @@
 
             <button class="nav-item active">
                 <span class="nav-icon">⌕</span>
-                Student Search
+                Directory
             </button>
 
             <button
@@ -193,15 +210,15 @@
         <header class="topbar admin-topbar">
 
             <div>
-                <small class="admin-top-label">
-                    STUDENT DIRECTORY
-                </small>
+<small class="admin-top-label">
+    SCHOOL DIRECTORY
+</small>
 
-                <h2>Student Search</h2>
+<h2>Directory</h2>
 
-                <p>
-                    Cari dan buka profil lengkap siswa
-                </p>
+<p>
+    Cari dan buka profil siswa atau guru
+</p>
             </div>
 
             <div class="topbar-user">
@@ -240,18 +257,18 @@
 
             <div class="student-directory-search-area">
 
-                <span class="student-directory-label">
-                    STUDENT DIRECTORY
-                </span>
+<span class="student-directory-label">
+    SCHOOL DIRECTORY
+</span>
 
-                <h1 class="student-directory-heading">
-                    Cari siswa
-                </h1>
+<h1 class="student-directory-heading">
+    Cari siswa dan guru sekolah
+</h1>
 
-                <p class="student-directory-description">
-                    Cari berdasarkan nama, kelas,
-                    atau kode siswa.
-                </p>
+<p class="student-directory-description">
+    Cari siswa atau guru berdasarkan nama,
+    kelas, mata pelajaran, atau kode siswa.
+</p>
 
 
                 <form
@@ -282,7 +299,7 @@
                             data-directory-input
                             maxlength="80"
                             autocomplete="off"
-                            placeholder="Cari nama, kelas, atau kode..."
+                            placeholder="Cari nama, kelas, mapel, atau kode..."
                         >
 
                     </div>
@@ -376,240 +393,42 @@
 <script src="/student-directory.js"></script>
 
 <script>
- function getTeacherInitial(
-    name,
-    username
-) {
+async function logout() {
 
-    const words =
-        String(
-            name ||
-            ""
-        )
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean)
-            .filter(
-                word =>
-                    ![
-                        "mr",
-                        "mrs",
-                        "ms",
-                        "pak",
-                        "bu"
-                    ].includes(
-                        word
-                            .replace(
-                                /\./g,
-                                ""
-                            )
-                            .toLowerCase()
-                    )
-            );
-
-
-    const source =
-        words.join(" ") ||
-        String(
-            username ||
-            "A"
-        );
-
-
-    return (
-        source
-            .trim()
-            .charAt(0) ||
-        "A"
-    ).toUpperCase();
-
-}
-
-
-    async function loadAdminIdentity() {
-
-        try {
-
-            const response =
-                await fetch(
-                    "/api/admin/me",
-                    {
-                        credentials:
-                            "same-origin"
-                    }
-                );
-
-
-            const data =
-                await response
-                    .json()
-                    .catch(() => ({}));
-
-
-            if (response.status === 401) {
-
-                window.location.href =
-                    "/admin-login.html";
-
-                return;
-
+    try {
+        await fetch(
+            "/api/logout",
+            {
+                method: "POST",
+                credentials: "same-origin"
             }
-
-
-            if (
-                !response.ok ||
-                !data.success ||
-                !data.admin
-            ) {
-
-                throw new Error(
-                    data.message ||
-                    "Identitas guru tidak dapat dimuat."
-                );
-
-            }
-
-
-            const admin =
-                data.admin;
-
-
-            const adminName =
-                String(
-                    admin.name ||
-                    admin.username ||
-                    "Admin"
-                ).trim();
-
-
-            const displayRole =
-                String(
-                    admin.role ||
-                    ""
-                ).toLowerCase() ===
-                "teacher"
-                    ? "Teacher"
-                    : "Administrator";
-
-
-const initial =
-    getTeacherInitial(
-        adminName,
-        admin.username
-    );
-
-
-            document.getElementById(
-                "sidebarAdminName"
-            ).textContent =
-                adminName;
-
-
-            document.getElementById(
-                "sidebarAdminRole"
-            ).textContent =
-                displayRole;
-
-
-            document.getElementById(
-                "topAdminName"
-            ).textContent =
-                adminName;
-
-
-            document.getElementById(
-                "topAdminRole"
-            ).textContent =
-                displayRole;
-
-
-            document.getElementById(
-                "sidebarAdminAvatar"
-            ).textContent =
-                initial;
-
-
-            document.getElementById(
-                "topAdminAvatar"
-            ).textContent =
-                initial;
-
-
-            localStorage.setItem(
-                "adminName",
-                adminName
-            );
-
-
-            localStorage.setItem(
-                "adminRole",
-                admin.role
-            );
-
-
-            localStorage.setItem(
-                "adminUsername",
-                admin.username
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Gagal memuat identitas guru:",
-                error
-            );
-
-        }
-
-    }
-
-
-    async function logout() {
-
-        try {
-
-            await fetch(
-                "/api/logout",
-                {
-                    method:
-                        "POST",
-
-                    credentials:
-                        "same-origin"
-                }
-            );
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
-
-        localStorage.removeItem(
-            "adminId"
         );
-
-        localStorage.removeItem(
-            "adminName"
+    } catch (error) {
+        console.error(
+            "Logout gagal:",
+            error
         );
-
-        localStorage.removeItem(
-            "adminRole"
-        );
-
-        localStorage.removeItem(
+    } finally {
+        [
+            "adminId",
+            "adminName",
+            "adminRole",
             "adminUsername"
+        ].forEach(key => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
+
+
+        sessionStorage.removeItem(
+            "adminProfileAppearance"
         );
 
 
         window.location.href =
             "/admin-login.html";
-
     }
-
-
-    loadAdminIdentity();
+}
 </script>
 
 <script src="/mobile-nav.js"></script>

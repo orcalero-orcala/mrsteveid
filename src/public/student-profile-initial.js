@@ -7,9 +7,6 @@
         "student-profile-global:";
 
 
-    const PROFILE_CACHE_DURATION =
-        5 * 60 * 1000;
-
 
     let currentStudentProfile =
         null;
@@ -197,14 +194,29 @@ function installGlobalProfileStyles() {
                 );
         }
 
-    `;
+        #sidebarStudentName:not([data-student-identity-ready]),
+#sidebarStudentClass:not([data-student-identity-ready]),
+#topStudentName:not([data-student-identity-ready]),
+.sidebar .profile-avatar:not([data-student-profile-render]),
+.topbar .top-avatar:not([data-student-profile-render]),
+.sidebar .nav-icon:not([data-sidebar-icon-ready]) {
+    visibility: hidden;
+}
 
+    `;
 
     document.head.appendChild(
         style
     );
-
 }
+
+/*
+ * Pasang sebelum elemen halaman dirender agar
+ * placeholder tidak sempat terlihat.
+ *
+ * WAJIB berada di luar fungsi.
+ */
+installGlobalProfileStyles();
 
 document.documentElement
     .removeAttribute(
@@ -276,6 +288,64 @@ document.documentElement.style
         );
 
     }
+
+function updateCurrentStudentIdentity() {
+    const studentName =
+        String(
+            currentStudentProfile?.name ||
+            getStoredStudentName() ||
+            "Siswa"
+        ).trim();
+
+    const studentClass =
+        String(
+            currentStudentProfile?.className ||
+            localStorage.getItem("studentClass") ||
+            sessionStorage.getItem("studentClass") ||
+            "Siswa"
+        ).trim();
+
+    const identityElements = [
+        [
+            document.getElementById(
+                "sidebarStudentName"
+            ),
+            studentName
+        ],
+        [
+            document.getElementById(
+                "sidebarStudentClass"
+            ),
+            studentClass
+        ],
+        [
+            document.getElementById(
+                "topStudentName"
+            ),
+            studentName
+        ]
+    ];
+
+    identityElements.forEach(
+        ([element, value]) => {
+            if (!element) {
+                return;
+            }
+
+            if (
+                element.textContent.trim() !==
+                value
+            ) {
+                element.textContent =
+                    value;
+            }
+
+            element.dataset
+                .studentIdentityReady =
+                "true";
+        }
+    );
+}
 
 
     function getStudentAvatarElements() {
@@ -440,72 +510,97 @@ document.documentElement.style
     }
 
 
-    function applyStudentProfile(
-        profile,
-        saveCache = true
-    ) {
-
-        if (!profile) {
-            return;
-        }
-
-
-        const normalizedProfile = {
-
-            studentId:
-                String(
-                    profile.studentId ||
-                    localStorage.getItem(
-                        "studentId"
-                    ) ||
-                    ""
-                ),
-
-            name:
-                String(
-                    profile.name ||
-                    getStoredStudentName()
-                ),
-
-            profilePictureUrl:
-                String(
-                    profile.profilePictureUrl ||
-                    ""
-                ),
-
-            cachedAt:
-                Date.now()
-
-        };
-
-
-        currentStudentProfile =
-            normalizedProfile;
-
-
-        updateCurrentStudentInitials();
-
-
-        if (saveCache) {
-
-            writeProfileCache(
-                normalizedProfile
-            );
-
-        }
-
-
-        window.dispatchEvent(
-            new CustomEvent(
-                "student-profile-global-ready",
-                {
-                    detail:
-                        normalizedProfile
-                }
-            )
-        );
-
+function applyStudentProfile(
+    profile,
+    saveCache = true
+) {
+    if (!profile) {
+        return;
     }
+
+    const normalizedProfile = {
+        studentId:
+            String(
+                profile.studentId ||
+                localStorage.getItem(
+                    "studentId"
+                ) ||
+                ""
+            ),
+
+        name:
+            String(
+                profile.name ||
+                getStoredStudentName()
+            ).trim(),
+
+        className:
+            String(
+                profile.className ||
+                localStorage.getItem(
+                    "studentClass"
+                ) ||
+                "Siswa"
+            ).trim(),
+
+        profilePictureUrl:
+            String(
+                profile.profilePictureUrl ||
+                ""
+            ).trim(),
+
+        bannerColor:
+            normalizeTheme(
+                profile.bannerColor
+            ),
+
+        cachedAt:
+            Date.now()
+    };
+
+    currentStudentProfile =
+        normalizedProfile;
+
+    /*
+     * Simpan identitas terbaru agar halaman lain
+     * dapat menampilkannya tanpa menunggu API.
+     */
+    if (normalizedProfile.name) {
+        localStorage.setItem(
+            "studentName",
+            normalizedProfile.name
+        );
+    }
+
+    if (
+        normalizedProfile.className &&
+        normalizedProfile.className !== "Siswa"
+    ) {
+        localStorage.setItem(
+            "studentClass",
+            normalizedProfile.className
+        );
+    }
+
+    updateCurrentStudentIdentity();
+    updateCurrentStudentInitials();
+
+    if (saveCache) {
+        writeProfileCache(
+            normalizedProfile
+        );
+    }
+
+    window.dispatchEvent(
+        new CustomEvent(
+            "student-profile-global-ready",
+            {
+                detail:
+                    normalizedProfile
+            }
+        )
+    );
+}
 
 
     function getProfileCacheKey() {
@@ -526,60 +621,52 @@ document.documentElement.style
     }
 
 
-    function readProfileCache() {
+function readProfileCache() {
+    const cacheKey =
+        getProfileCacheKey();
 
-        const cacheKey =
-            getProfileCacheKey();
+    if (!cacheKey) {
+        return null;
+    }
 
-
-        if (!cacheKey) {
-            return null;
-        }
-
-
-        try {
-
-            const cachedProfile =
-                JSON.parse(
-                    sessionStorage.getItem(
-                        cacheKey
-                    ) ||
-                    "null"
-                );
-
-
-            if (
-                !cachedProfile ||
-                Date.now() -
-                    Number(
-                        cachedProfile.cachedAt ||
-                        0
-                    ) >
-                    PROFILE_CACHE_DURATION
-            ) {
-
-                sessionStorage.removeItem(
+    try {
+        const cachedProfile =
+            JSON.parse(
+                sessionStorage.getItem(
                     cacheKey
-                );
+                ) ||
+                "null"
+            );
 
-                return null;
-
-            }
-
-
-            return cachedProfile;
-
-        } catch (error) {
-
+        if (
+            !cachedProfile ||
+            String(
+                cachedProfile.studentId ||
+                ""
+            ) !==
+                String(
+                    localStorage.getItem(
+                        "studentId"
+                    ) ||
+                    ""
+                )
+        ) {
             sessionStorage.removeItem(
                 cacheKey
             );
 
             return null;
-
         }
 
+        return cachedProfile;
+    } catch (error) {
+        sessionStorage.removeItem(
+            cacheKey
+        );
+
+        return null;
     }
+}
 
 
     function writeProfileCache(
@@ -714,26 +801,32 @@ document.documentElement.style
                     }
 
 
-                    const profile = {
+const profile = {
+    studentId:
+        data.student.id,
 
-                        studentId:
-                            data.student.id,
+    name:
+        data.student.name ||
+        data.student.fullName,
 
-                        name:
-                            data.student.name ||
-                            data.student.fullName,
+    className:
+        data.student.className ||
+        data.student.class_name ||
+        localStorage.getItem(
+            "studentClass"
+        ) ||
+        "Siswa",
 
-                        profilePictureUrl:
-                            data.student
-                                .profilePictureUrl ||
-                            "",
+    profilePictureUrl:
+        data.student
+            .profilePictureUrl ||
+        "",
 
-                        bannerColor:
-                            data.student
-                                .bannerColor ||
-                            "blue"
-
-                    };
+    bannerColor:
+        data.student
+            .bannerColor ||
+        "blue"
+};
 
 
                     applyStudentProfile(
@@ -842,15 +935,14 @@ document.documentElement.style
                 false
             );
 
-        } else {
-
-            /*
-                Tampilkan inisial sambil menunggu
-                profil dari backend.
-            */
-            updateCurrentStudentInitials();
-
-        }
+} else {
+    /*
+     * Nama dan kelas tersedia dari session login,
+     * meskipun cache foto belum pernah dibuat.
+     */
+    updateCurrentStudentIdentity();
+    updateCurrentStudentInitials();
+}
 
 
         refreshStudentProfileIdentity();
@@ -860,6 +952,48 @@ document.documentElement.style
 
     }
 
+function startStudentPrepaintHydration() {
+    const cachedProfile =
+        readProfileCache();
+
+    if (cachedProfile) {
+        currentStudentProfile =
+            cachedProfile;
+    }
+
+    const hydrateIdentity = () => {
+        updateCurrentStudentIdentity();
+        updateCurrentStudentInitials();
+    };
+
+    const prepaintObserver =
+        new MutationObserver(
+            hydrateIdentity
+        );
+
+    prepaintObserver.observe(
+        document.documentElement,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+    hydrateIdentity();
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+            hydrateIdentity();
+            prepaintObserver.disconnect();
+        },
+        {
+            once: true
+        }
+    );
+}
+
+startStudentPrepaintHydration();
 
     /*
         Kompatibilitas dengan renderer Feed lama.

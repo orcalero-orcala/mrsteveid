@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Profil Guru</title>
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/favicon.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/styles.css"
+    >
+
+    <script src="/admin-profile-initial.js"></script>
+</head>
+
+<body
+    class="admin-profile-page"
+    data-profile-theme="blue"
+>
+
+    <div class="app-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar admin-sidebar">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    LMS
+                </div>
+
+                <div>
+                    <strong>
+                        mrsteve.my.id
+                    </strong>
+
+                    <small>
+                        Admin Portal
+                    </small>
+                </div>
+
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToDashboard()"
+                >
+                    <span class="nav-icon">
+                        ◫
+                    </span>
+
+                    Dashboard
+                </button>
+
+
+                <button
+                    class="nav-item active"
+                    type="button"
+                >
+                    <span class="nav-icon">
+                        A
+                    </span>
+
+                    Profile
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToStudents()"
+                >
+                    <span class="nav-icon">
+                        S
+                    </span>
+
+                    Kelola Siswa
+                </button>
+
+                    <button
+        class="nav-item"
+        type="button"
+        onclick="
+            window.location.href =
+                '/admin-student-search.html'
+        "
+    >
+        <span class="nav-icon">
+            <svg aria-hidden="true">
+                <use href="#icon-search"></use>
+            </svg>
+        </span>
+
+        Directory
+    </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPoints()"
+                >
+                    <span class="nav-icon">
+                        ★
+                    </span>
+
+                    Kelola Poin
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToExamScores()"
+                >
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    Kelola Nilai
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToQuizzes()"
+                >
+                    <span class="nav-icon">
+                        ?
+                    </span>
+
+                    Quiz
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToClassroomFeed()"
+                >
+                    <span class="nav-icon">
+                        ◉
+                    </span>
+
+                    Classroom Feed
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToPublicAnnouncement()"
+                >
+                    <span class="nav-icon">
+                        i
+                    </span>
+
+                    Information Board
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToTeachers()"
+                >
+                    <span class="nav-icon">
+                        T
+                    </span>
+
+                    Kelola Guru
+                </button>
+
+
+                <button
+                    class="nav-item"
+                    type="button"
+                    onclick="goToSystemReset()"
+                >
+                    <span class="nav-icon">
+                        ⚙
+                    </span>
+
+                    System & Reset
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-profile">
+
+                    <div
+                        class="profile-avatar admin-profile-avatar"
+                        id="sidebarAdminAvatar"
+                    >
+                        A
+                    </div>
+
+                    <div>
+                        <strong id="sidebarAdminName">
+                            Admin
+                        </strong>
+
+                        <small id="sidebarAdminRole">
+                            Administrator
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="logout-button"
+                    type="button"
+                    onclick="logout()"
+                >
+                    Keluar
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+<header class="topbar admin-topbar">
+
+    <div>
+        <small class="admin-top-label">
+            ACCOUNT MANAGEMENT
+        </small>
+
+        <h2 id="adminProfileTopbarTitle">
+            Teacher Profile
+        </h2>
+
+        <p>
+            Kelola informasi dan tampilan profil
+        </p>
+    </div>
+
+
+                <div class="topbar-user">
+
+                    <div
+                        class="top-avatar admin-top-avatar"
+                        id="topAdminAvatar"
+                    >
+                        A
+                    </div>
+
+                    <div class="admin-top-user-text">
+                        <strong id="topAdminName">
+                            Admin
+                        </strong>
+
+                        <span id="topAdminRole">
+                            Administrator
+                        </span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="admin-profile-content">
+
+                <!-- PROFILE CARD -->
+
+                <section class="admin-social-profile">
+
+                    <div
+                        class="admin-profile-cover"
+                        id="adminProfileCover"
+                    >
+                        <span class="admin-profile-cover-label">
+                            TEACHER PROFILE
+                        </span>
+                    </div>
+
+
+                    <div class="admin-profile-main">
+
+                        <div class="admin-profile-identity-row">
+
+                            <div
+                                class="admin-profile-main-avatar"
+                                id="adminProfileMainAvatar"
+                            >
+                                A
+                            </div>
+
+
+                            <div class="admin-profile-identity">
+
+                                <h1 id="adminProfileName">
+                                    Memuat profil...
+                                </h1>
+
+                                <p id="adminProfileIdentityMeta">
+                                    Akun Guru
+                                </p>
+
+                                <p
+                                    class="admin-profile-bio is-loading"
+                                    id="adminProfileBio"
+                                ></p>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="admin-profile-customize-button"
+                                onclick="openAdminProfileCustomization()"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M4 7h10"></path>
+                                    <path d="M18 7h2"></path>
+                                    <circle cx="16" cy="7" r="2"></circle>
+
+                                    <path d="M4 17h2"></path>
+                                    <path d="M10 17h10"></path>
+                                    <circle cx="8" cy="17" r="2"></circle>
+                                </svg>
+
+                                Sesuaikan Profil
+                            </button>
+
+                        </div>
+
+
+                        <!-- TEACHER METRICS -->
+
+                        <div class="admin-profile-stats">
+
+                            <article class="admin-profile-stat">
+
+                                <span class="admin-profile-stat-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M4 5h16v14H4z"></path>
+                                        <path d="M8 9h8"></path>
+                                        <path d="M8 13h5"></path>
+                                    </svg>
+                                </span>
+
+                                <div>
+                                    <span>
+                                        Mata Pelajaran
+                                    </span>
+
+                                    <strong id="adminProfileSubjects">
+                                        -
+                                    </strong>
+                                </div>
+
+                            </article>
+
+
+                            <article class="admin-profile-stat">
+
+                                <span class="admin-profile-stat-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <rect
+                                            x="3"
+                                            y="5"
+                                            width="18"
+                                            height="16"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path d="M16 3v4"></path>
+                                        <path d="M8 3v4"></path>
+                                        <path d="M3 10h18"></path>
+                                    </svg>
+                                </span>
+
+                                <div>
+                                    <span>
+                                        Tanggal Lahir
+                                    </span>
+
+                                    <strong id="adminProfileDateOfBirth">
+                                        -
+                                    </strong>
+                                </div>
+
+                            </article>
+
+
+                            <article class="admin-profile-stat">
+
+                                <span class="admin-profile-stat-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M3 10 12 4l9 6"></path>
+                                        <path d="M5 9v10h14V9"></path>
+                                        <path d="M9 19v-6h6v6"></path>
+                                    </svg>
+                                </span>
+
+                                <div>
+                                    <span>
+                                        Peran Kelas
+                                    </span>
+
+                                    <strong id="adminProfileClassRole">
+                                        -
+                                    </strong>
+                                </div>
+
+                            </article>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ACCOUNT INFORMATION -->
+
+                <section class="admin-profile-information">
+
+                    <div class="admin-profile-section-header">
+
+                        <div>
+                            <h2>
+                                Informasi Akun
+                            </h2>
+
+                            <p>
+                                Data identitas yang terhubung dengan akun.
+                            </p>
+                        </div>
+
+                        <span
+                            class="admin-profile-account-badge"
+                            id="adminProfileAccountBadge"
+                        >
+                            AKUN GURU
+                        </span>
+
+                    </div>
+
+
+<div class="admin-profile-details">
+
+    <!-- NAMA -->
+
+    <article class="admin-profile-detail">
+
+        <div>
+            <span>
+                Nama
+            </span>
+
+            <strong id="adminProfileAccountName">
+                -
+            </strong>
+        </div>
+
+
+        <span class="admin-profile-detail-marker">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle
+                    cx="12"
+                    cy="8"
+                    r="4"
+                ></circle>
+
+                <path
+                    d="M4.5 21a7.5 7.5 0 0 1 15 0"
+                ></path>
+            </svg>
+
+        </span>
+
+    </article>
+
+
+    <!-- ROLE -->
+
+    <article class="admin-profile-detail">
+
+        <div>
+            <span>
+                Role
+            </span>
+
+            <strong id="adminProfileRole">
+                -
+            </strong>
+        </div>
+
+
+        <span class="admin-profile-detail-marker">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                    d="M12 3 19 6v5c0 4.6-2.8 8-7 10-4.2-2-7-5.4-7-10V6l7-3Z"
+                ></path>
+
+                <path
+                    d="m9 12 2 2 4-4"
+                ></path>
+            </svg>
+
+        </span>
+
+    </article>
+
+</div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- CUSTOMIZATION MODAL -->
+
+    <div
+        class="admin-profile-modal"
+        id="adminProfileCustomizationModal"
+        hidden
+    >
+
+        <section
+            class="admin-profile-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="adminProfileCustomizationTitle"
+        >
+
+            <header class="admin-profile-modal-header">
+
+                <div>
+                    <small>
+                        PROFILE SETTINGS
+                    </small>
+
+                    <h2 id="adminProfileCustomizationTitle">
+                        Sesuaikan Profil
+                    </h2>
+
+                    <p>
+                        Atur identitas pengajar dan tampilan profil.
+                    </p>
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-profile-modal-close"
+                    aria-label="Tutup"
+                    onclick="closeAdminProfileCustomization()"
+                >
+                    ×
+                </button>
+
+            </header>
+
+
+            <!-- PREVIEW -->
+
+<div class="admin-profile-preview">
+
+    <div
+        class="admin-profile-preview-banner"
+        id="adminProfilePreviewBanner"
+    ></div>
+
+    <div
+        class="admin-profile-preview-avatar"
+        id="adminProfilePreviewAvatar"
+    >
+        A
+    </div>
+
+</div>
+
+
+            <!-- PROFILE PICTURE -->
+
+            <div class="admin-profile-field">
+
+                <div class="admin-profile-field-heading">
+                    <div>
+                        <strong>
+                            Foto Profil
+                        </strong>
+
+                        <span>
+                            JPEG, PNG, atau WebP.
+                        </span>
+                    </div>
+                </div>
+
+
+                <input
+                    type="file"
+                    id="adminProfilePictureInput"
+                    accept="image/jpeg,image/png,image/webp"
+                    hidden
+                >
+
+
+                <div class="admin-profile-picture-actions">
+
+                    <button
+                        type="button"
+                        class="admin-profile-secondary-button"
+                        onclick="openAdminProfilePicturePicker()"
+                    >
+                        Pilih Foto
+                    </button>
+
+                    <span>
+                        Maksimal 2 MB.
+                    </span>
+
+                </div>
+
+
+<div
+    class="admin-profile-crop-editor"
+    id="adminProfileCropEditor"
+    hidden
+>
+
+    <div class="admin-profile-crop-stage">
+
+        <canvas
+            id="adminProfileCropCanvas"
+            width="320"
+            height="320"
+            aria-label="Area crop foto profil"
+        ></canvas>
+
+    </div>
+
+
+    <div class="admin-profile-zoom-row">
+
+        <span>
+            Zoom
+        </span>
+
+        <input
+            type="range"
+            id="adminProfilePictureZoom"
+            min="1"
+            max="3"
+            step="0.01"
+            value="1"
+            aria-label="Zoom foto profil"
+        >
+
+        <button
+            type="button"
+            class="admin-profile-crop-reset-button"
+            onclick="resetAdminProfilePictureCrop()"
+        >
+            Reset
+        </button>
+
+    </div>
+
+
+    <small class="admin-profile-crop-hint">
+        Geser foto untuk mengatur bagian yang ditampilkan.
+    </small>
+
+</div>
+
+</div>
+
+
+            <!-- BIO -->
+
+            <div class="admin-profile-field">
+
+                <div class="admin-profile-field-heading">
+
+                    <div>
+                        <strong>
+                            Bio
+                        </strong>
+
+                        <span>
+                            Maksimal 120 karakter dan 3 baris.
+                        </span>
+                    </div>
+
+                    <span
+                        class="admin-profile-character-count"
+                        id="adminProfileBioCount"
+                    >
+                        0/120
+                    </span>
+
+                </div>
+
+
+                <textarea
+                    id="adminProfileBioInput"
+                    maxlength="120"
+                    rows="3"
+                    placeholder="Tuliskan bio singkat..."
+                ></textarea>
+
+            </div>
+
+
+            <!-- THEME -->
+
+            <div class="admin-profile-field">
+
+                <div class="admin-profile-field-heading">
+                    <div>
+                        <strong>
+                            Warna Profil
+                        </strong>
+
+                        <span>
+                            Pilih tema halaman profil.
+                        </span>
+                    </div>
+                </div>
+
+
+                <div class="admin-profile-color-list">
+
+                    <button
+                        type="button"
+                        class="admin-profile-color blue selected"
+                        data-profile-color="blue"
+                        aria-label="Biru"
+                        aria-pressed="true"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="admin-profile-color purple"
+                        data-profile-color="purple"
+                        aria-label="Ungu"
+                        aria-pressed="false"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="admin-profile-color green"
+                        data-profile-color="green"
+                        aria-label="Hijau"
+                        aria-pressed="false"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="admin-profile-color orange"
+                        data-profile-color="orange"
+                        aria-label="Oranye"
+                        aria-pressed="false"
+                    ></button>
+
+                    <button
+                        type="button"
+                        class="admin-profile-color red"
+                        data-profile-color="red"
+                        aria-label="Merah"
+                        aria-pressed="false"
+                    ></button>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUBJECTS -->
+
+            <div class="admin-profile-field">
+
+                <div class="admin-profile-field-heading">
+                    <div>
+                        <strong>
+                            Mata Pelajaran
+                        </strong>
+
+                        <span>
+                            Pilih maksimal 10 mapel yang diajar.
+                        </span>
+                    </div>
+                </div>
+
+
+                <div
+                    class="admin-profile-subject-list"
+                    id="adminProfileSubjectList"
+                >
+                    <span class="admin-profile-field-loading">
+                        Memuat mata pelajaran...
+                    </span>
+                </div>
+
+            </div>
+
+
+            <!-- DATE OF BIRTH -->
+
+            <div class="admin-profile-field">
+
+                <label
+                    class="admin-profile-input-label"
+                    for="adminProfileDateOfBirthInput"
+                >
+                    <strong>
+                        Tanggal Lahir
+                    </strong>
+                </label>
+
+
+                <input
+                    type="date"
+                    id="adminProfileDateOfBirthInput"
+                >
+
+            </div>
+
+
+            <!-- HOMEROOM STATUS -->
+
+            <div class="admin-profile-field">
+
+                <div class="admin-profile-field-heading">
+                    <div>
+                        <strong>
+                            Peran Kelas
+                        </strong>
+
+                        <span>
+                            Pilih wali kelas atau guru spesialis.
+                        </span>
+                    </div>
+                </div>
+
+
+                <div class="admin-profile-role-options">
+
+                    <label class="admin-profile-role-option">
+
+                        <input
+                            type="radio"
+                            name="adminProfileHomeroomStatus"
+                            value="yes"
+                        >
+
+                        <span>
+                            Ya, saya wali kelas
+                        </span>
+
+                    </label>
+
+
+                    <label class="admin-profile-role-option">
+
+                        <input
+                            type="radio"
+                            name="adminProfileHomeroomStatus"
+                            value="no"
+                            checked
+                        >
+
+                        <span>
+                            Tidak, saya guru spesialis
+                        </span>
+
+                    </label>
+
+                </div>
+
+                <div
+    class="admin-profile-homeroom-class"
+    id="adminProfileHomeroomClass"
+    hidden
+>
+    <label for="adminProfileHomeroomClassSelect">
+        Kelas yang diampu
+    </label>
+
+    <select id="adminProfileHomeroomClassSelect">
+        <option value="">
+            Pilih kelas
+        </option>
+    </select>
+</div>
+
+            </div>
+
+
+ <p
+    class="admin-profile-customization-message"
+    id="adminProfileCustomizationMessage"
+    aria-live="polite"
+></p>
+
+<footer class="admin-profile-modal-footer">
+    <button
+        type="button"
+        class="admin-profile-cancel-button"
+        onclick="closeAdminProfileCustomization()"
+    >
+        Batal
+    </button>
+
+    <button
+        type="button"
+        class="admin-profile-save-button"
+        id="adminProfileSaveButton"
+        onclick="saveAdminProfileCustomization()"
+    >
+        Simpan Perubahan
+    </button>
+</footer>
+</section>
+
+    </div>
+
+
+<script src="/time.js"></script>
+
+<script>
+(() => {
+    "use strict";
+
+    const $ =
+        selector =>
+            document.querySelector(selector);
+
+    const $$ =
+        selector =>
+            [...document.querySelectorAll(selector)];
+
+
+    const PROFILE_COLORS =
+        new Set([
+            "blue",
+            "purple",
+            "green",
+            "orange",
+            "red"
+        ]);
+
+
+    const PICTURE_INPUT_MAX_BYTES =
+        2 * 1024 * 1024;
+
+    const PICTURE_CROP_SIZE =
+        320;
+
+    const PICTURE_OUTPUT_SIZE =
+        256;
+
+    const PICTURE_ALLOWED_TYPES =
+        new Set([
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ]);
+
+
+    const state = {
+        profile: null,
+
+        subjects: [],
+        classes: [],
+        optionsLoaded: false,
+        optionsLoading: false,
+
+        selectedColor: "blue",
+
+        sourceImage: null,
+        sourceUrl: "",
+
+        minimumScale: 1,
+        zoom: 1,
+
+        offsetX: 0,
+        offsetY: 0,
+
+        dragging: false,
+        lastPointerX: 0,
+        lastPointerY: 0,
+
+        saving: false
+    };
+
+
+    async function request(
+        url,
+        options = {}
+    ) {
+        const response =
+            await fetch(
+                url,
+                {
+                    cache: "no-store",
+                    ...options
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        if (response.status === 401) {
+            window.location.href =
+                "/admin-login.html";
+
+            throw new Error(
+                "Sesi Admin / Guru berakhir."
+            );
+        }
+
+
+        if (
+            !response.ok ||
+            data.success === false
+        ) {
+            throw new Error(
+                data.message ||
+                `Request gagal (${response.status}).`
+            );
+        }
+
+
+        return data;
+    }
+
+
+    function displayRole(role) {
+        const cleanRole =
+            String(role || "")
+                .trim()
+                .toLowerCase();
+
+
+        if (cleanRole === "teacher") {
+            return "Teacher";
+        }
+
+
+        if (cleanRole === "admin") {
+            return "Administrator";
+        }
+
+
+        return role || "Administrator";
+    }
+
+
+    function teacherInitial(name) {
+        if (
+            typeof window.getTeacherInitial ===
+            "function"
+        ) {
+            return window.getTeacherInitial(
+                name
+            );
+        }
+
+
+        const parts =
+            String(name || "Admin")
+                .trim()
+                .split(/\s+/);
+
+
+        if (
+            parts.length > 1 &&
+            /^(mr|mrs|ms)\.?$/i.test(
+                parts[0]
+            )
+        ) {
+            parts.shift();
+        }
+
+
+        return Array.from(
+            parts.join(" ") || "A"
+        )[0].toLocaleUpperCase(
+            "id-ID"
+        );
+    }
+
+
+    function formatDate(dateValue) {
+        if (!dateValue) {
+            return "Belum diatur";
+        }
+
+
+        const date =
+            new Date(
+                `${dateValue}T00:00:00`
+            );
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return "Belum diatur";
+        }
+
+
+        return new Intl.DateTimeFormat(
+            "id-ID",
+            {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            }
+        ).format(date);
+    }
+
+
+    function normalizeColor(color) {
+        return PROFILE_COLORS.has(color)
+            ? color
+            : "blue";
+    }
+
+
+    function applyTheme(color) {
+        const normalized =
+            normalizeColor(color);
+
+
+        state.selectedColor =
+            normalized;
+
+
+        document.body.dataset.profileTheme =
+            normalized;
+
+
+        $$(".admin-profile-color")
+            .forEach(button => {
+                const selected =
+                    button.dataset.profileColor ===
+                    normalized;
+
+
+                button.classList.toggle(
+                    "selected",
+                    selected
+                );
+
+
+                button.setAttribute(
+                    "aria-pressed",
+                    String(selected)
+                );
+            });
+    }
+
+
+    function setAvatar(
+        element,
+        pictureUrl,
+        initial
+    ) {
+        if (!element) {
+            return;
+        }
+
+
+        element.innerHTML = "";
+
+
+        if (!pictureUrl) {
+            element.textContent =
+                initial;
+
+            return;
+        }
+
+
+        const image =
+            document.createElement("img");
+
+
+        image.className =
+            "admin-profile-avatar-image";
+
+        image.src =
+            pictureUrl;
+
+        image.alt =
+            "";
+
+        image.decoding =
+            "async";
+
+
+        image.addEventListener(
+            "error",
+            () => {
+                element.innerHTML = "";
+                element.textContent =
+                    initial;
+            },
+            {
+                once: true
+            }
+        );
+
+
+        element.appendChild(
+            image
+        );
+    }
+
+
+    function renderAllAvatars(
+        pictureUrl,
+        initial
+    ) {
+        [
+            $("#sidebarAdminAvatar"),
+            $("#topAdminAvatar"),
+            $("#adminProfileMainAvatar"),
+            $("#adminProfilePreviewAvatar")
+        ].forEach(element => {
+            setAvatar(
+                element,
+                pictureUrl,
+                initial
+            );
+        });
+    }
+
+
+function updatePreview() {
+    const bioInput =
+        $("#adminProfileBioInput");
+
+    const count =
+        Array.from(
+            bioInput?.value || ""
+        ).length;
+
+    const countElement =
+        $("#adminProfileBioCount");
+
+    if (countElement) {
+        countElement.textContent =
+            `${count}/120`;
+    }
+}
+
+
+    function cacheAppearance(profile) {
+        try {
+            sessionStorage.setItem(
+                "adminProfileAppearance",
+                JSON.stringify({
+                    adminId:
+                        profile.id,
+
+                    name:
+                        profile.name,
+
+                    role:
+                        profile.role,
+
+                    pictureUrl:
+                        profile.profilePictureUrl ||
+                        "",
+
+                    bannerColor:
+                        profile.bannerColor ||
+                        "blue"
+                })
+            );
+        } catch (error) {
+            console.warn(
+                "Cache profil tidak dapat disimpan:",
+                error
+            );
+        }
+    }
+
+
+    function renderProfile(profile) {
+        state.profile =
+            profile;
+
+
+        const name =
+            profile.name ||
+            "Admin";
+
+        const role =
+            displayRole(
+                profile.role
+            );
+
+        const initial =
+            teacherInitial(name);
+
+        const pictureUrl =
+            String(
+                profile.profilePictureUrl ||
+                ""
+            ).trim();
+
+
+        localStorage.setItem(
+            "adminName",
+            name
+        );
+
+        localStorage.setItem(
+            "adminRole",
+            profile.role ||
+            "admin"
+        );
+
+
+        $("#sidebarAdminName")
+            .textContent =
+                name;
+
+        $("#sidebarAdminRole")
+            .textContent =
+                role;
+
+        $("#topAdminName")
+            .textContent =
+                name;
+
+        $("#topAdminRole")
+            .textContent =
+                role;
+
+
+        $("#adminProfileName")
+            .textContent =
+                name;
+
+        $("#adminProfileIdentityMeta")
+            .textContent =
+                `${role} · Akun pengajar`;
+
+
+        const bio =
+            String(
+                profile.bio ||
+                ""
+            ).trim();
+
+
+        const bioElement =
+            $("#adminProfileBio");
+
+
+        bioElement.classList.remove(
+            "is-loading"
+        );
+
+        bioElement.classList.toggle(
+            "is-empty",
+            !bio
+        );
+
+        bioElement.textContent =
+            bio ||
+            "Belum ada bio.";
+
+
+        const subjectNames =
+            (profile.subjects || [])
+                .map(subject => subject.name)
+                .filter(Boolean);
+
+
+        const subjectText =
+            subjectNames.length > 0
+                ? subjectNames.join(", ")
+                : "Belum diatur";
+
+
+        const subjectElement =
+            $("#adminProfileSubjects");
+
+
+        subjectElement.textContent =
+            subjectText;
+
+        subjectElement.title =
+            subjectText;
+
+
+        $("#adminProfileDateOfBirth")
+            .textContent =
+                formatDate(
+                    profile.dateOfBirth
+                );
+
+
+        const classRole =
+            profile.isHomeroomTeacher
+                ? profile.homeroomClass?.name
+                    ? `Wali Kelas ${profile.homeroomClass.name}`
+                    : "Wali Kelas"
+                : "Guru Spesialis";
+
+
+        $("#adminProfileClassRole")
+            .textContent =
+                classRole;
+
+
+        $("#adminProfileAccountName")
+            .textContent =
+                name;
+
+        $("#adminProfileRole")
+            .textContent =
+                role;
+
+
+        const isTeacher =
+            String(profile.role)
+                .toLowerCase() ===
+            "teacher";
+
+
+        $("#adminProfileTopbarTitle")
+            .textContent =
+                isTeacher
+                    ? "Teacher Profile"
+                    : "Admin Profile";
+
+
+        $(".admin-profile-cover-label")
+            .textContent =
+                isTeacher
+                    ? "TEACHER PROFILE"
+                    : "ADMIN PROFILE";
+
+
+        $("#adminProfileAccountBadge")
+            .textContent =
+                isTeacher
+                    ? "AKUN GURU"
+                    : "AKUN ADMIN";
+
+
+        document.title =
+            isTeacher
+                ? "Profil Guru"
+                : "Profil Admin";
+
+
+        applyTheme(
+            normalizeColor(
+                profile.bannerColor
+            )
+        );
+
+
+        renderAllAvatars(
+            pictureUrl,
+            initial
+        );
+
+
+        cacheAppearance(
+            profile
+        );
+    }
+
+
+    async function loadProfile() {
+        try {
+            const data =
+                await request(
+                    "/api/admin/profile"
+                );
+
+
+            renderProfile(
+                data.admin
+            );
+
+
+            return data.admin;
+        } catch (error) {
+            console.error(
+                "Gagal mengambil profil:",
+                error
+            );
+
+
+            $("#adminProfileName")
+                .textContent =
+                    "Profil tidak dapat dimuat";
+
+            $("#adminProfileBio")
+                .textContent =
+                    error.message;
+        }
+    }
+
+
+    function renderSubjectOptions(
+        selectedIds = []
+    ) {
+        const container =
+            $("#adminProfileSubjectList");
+
+
+        const selected =
+            new Set(
+                selectedIds.map(Number)
+            );
+
+
+        container.innerHTML =
+            "";
+
+
+        if (
+            state.subjects.length === 0
+        ) {
+            const empty =
+                document.createElement("span");
+
+            empty.className =
+                "admin-profile-field-loading";
+
+            empty.textContent =
+                "Belum ada mata pelajaran.";
+
+            container.appendChild(
+                empty
+            );
+
+            return;
+        }
+
+
+        state.subjects.forEach(subject => {
+            const label =
+                document.createElement("label");
+
+            label.className =
+                "admin-profile-subject-option";
+
+
+            const input =
+                document.createElement("input");
+
+            input.type =
+                "checkbox";
+
+            input.value =
+                String(subject.id);
+
+            input.checked =
+                selected.has(
+                    Number(subject.id)
+                );
+
+
+            const text =
+                document.createElement("span");
+
+            text.textContent =
+                subject.name;
+
+
+            label.append(
+                input,
+                text
+            );
+
+
+            container.appendChild(
+                label
+            );
+        });
+    }
+
+
+    function renderClassOptions(
+        selectedClassId = null
+    ) {
+        const select =
+            $("#adminProfileHomeroomClassSelect");
+
+
+        select.innerHTML =
+            '<option value="">Pilih kelas</option>';
+
+
+        state.classes.forEach(classData => {
+            const option =
+                new Option(
+                    classData.name,
+                    classData.id
+                );
+
+
+            select.add(
+                option
+            );
+        });
+
+
+        select.value =
+            selectedClassId
+                ? String(selectedClassId)
+                : "";
+    }
+
+
+    async function loadCustomizationOptions() {
+        if (
+            state.optionsLoaded ||
+            state.optionsLoading
+        ) {
+            return;
+        }
+
+
+        state.optionsLoading =
+            true;
+
+
+        try {
+            const [
+                subjectData,
+                classData
+            ] =
+                await Promise.all([
+                    request(
+                        "/api/admin/subjects"
+                    ),
+
+                    request(
+                        "/api/admin/classes"
+                    )
+                ]);
+
+
+            state.subjects =
+                subjectData.subjects ||
+                [];
+
+            state.classes =
+                classData.classes ||
+                [];
+
+            state.optionsLoaded =
+                true;
+        } finally {
+            state.optionsLoading =
+                false;
+        }
+    }
+
+
+    function toggleHomeroomClass() {
+        const isHomeroom =
+            $(
+                "input[name='adminProfileHomeroomStatus']:checked"
+            )?.value === "yes";
+
+
+        $("#adminProfileHomeroomClass")
+            .hidden =
+                !isHomeroom;
+
+
+        $("#adminProfileHomeroomClassSelect")
+            .required =
+                isHomeroom;
+    }
+
+
+    function resetPictureSelection() {
+        if (state.sourceUrl) {
+            URL.revokeObjectURL(
+                state.sourceUrl
+            );
+        }
+
+
+        state.sourceImage =
+            null;
+
+        state.sourceUrl =
+            "";
+
+        state.minimumScale =
+            1;
+
+        state.zoom =
+            1;
+
+        state.offsetX =
+            0;
+
+        state.offsetY =
+            0;
+
+        state.dragging =
+            false;
+
+
+        $("#adminProfilePictureInput")
+            .value =
+                "";
+
+        $("#adminProfilePictureZoom")
+            .value =
+                "1";
+
+        $("#adminProfileCropEditor")
+            .hidden =
+                true;
+
+
+        if (state.profile) {
+            setAvatar(
+                $("#adminProfilePreviewAvatar"),
+                state.profile.profilePictureUrl,
+                teacherInitial(
+                    state.profile.name
+                )
+            );
+        }
+    }
+
+
+    async function openAdminProfileCustomization() {
+        if (!state.profile) {
+            return;
+        }
+
+
+        const modal =
+            $("#adminProfileCustomizationModal");
+
+
+        modal.hidden =
+            false;
+
+        document.body.classList.add(
+            "is-profile-modal-open"
+        );
+
+
+        $("#adminProfileBioInput")
+            .value =
+                state.profile.bio ||
+                "";
+
+        $("#adminProfileDateOfBirthInput")
+            .value =
+                state.profile.dateOfBirth ||
+                "";
+
+
+        const homeroomValue =
+            state.profile.isHomeroomTeacher
+                ? "yes"
+                : "no";
+
+
+        const radio =
+            $(
+                `input[name="adminProfileHomeroomStatus"][value="${homeroomValue}"]`
+            );
+
+
+        if (radio) {
+            radio.checked =
+                true;
+        }
+
+
+        applyTheme(
+            state.profile.bannerColor
+        );
+
+
+        resetPictureSelection();
+        updatePreview();
+        toggleHomeroomClass();
+
+
+        $("#adminProfileCustomizationMessage")
+            .textContent =
+                "";
+
+        $("#adminProfileCustomizationMessage")
+            .className =
+                "admin-profile-customization-message";
+
+
+        $("#adminProfileSubjectList")
+            .innerHTML =
+                '<span class="admin-profile-field-loading">Memuat mata pelajaran...</span>';
+
+
+        try {
+            await loadCustomizationOptions();
+
+
+            renderSubjectOptions(
+                (state.profile.subjects || [])
+                    .map(subject => subject.id)
+            );
+
+
+            renderClassOptions(
+                state.profile
+                    .homeroomClass
+                    ?.id ||
+                null
+            );
+        } catch (error) {
+            showMessage(
+                error.message,
+                "error"
+            );
+        }
+    }
+
+
+    function closeAdminProfileCustomization() {
+        if (state.saving) {
+            return;
+        }
+
+
+        $("#adminProfileCustomizationModal")
+            .hidden =
+                true;
+
+        document.body.classList.remove(
+            "is-profile-modal-open"
+        );
+
+
+        resetPictureSelection();
+
+
+        if (state.profile) {
+            applyTheme(
+                state.profile.bannerColor
+            );
+        }
+
+
+        showMessage("");
+    }
+
+
+    function showMessage(
+        text,
+        type = ""
+    ) {
+        const element =
+            $("#adminProfileCustomizationMessage");
+
+
+        element.textContent =
+            text || "";
+
+        element.className =
+            "admin-profile-customization-message";
+
+
+        if (type) {
+            element.classList.add(
+                type
+            );
+        }
+    }
+
+
+    function openAdminProfilePicturePicker() {
+        $("#adminProfilePictureInput")
+            .click();
+    }
+
+
+    function clampOffsets() {
+        if (!state.sourceImage) {
+            return;
+        }
+
+
+        const width =
+            state.sourceImage.width *
+            state.minimumScale *
+            state.zoom;
+
+        const height =
+            state.sourceImage.height *
+            state.minimumScale *
+            state.zoom;
+
+
+        const maximumX =
+            Math.max(
+                0,
+                (
+                    width -
+                    PICTURE_CROP_SIZE
+                ) / 2
+            );
+
+        const maximumY =
+            Math.max(
+                0,
+                (
+                    height -
+                    PICTURE_CROP_SIZE
+                ) / 2
+            );
+
+
+        state.offsetX =
+            Math.max(
+                -maximumX,
+                Math.min(
+                    maximumX,
+                    state.offsetX
+                )
+            );
+
+        state.offsetY =
+            Math.max(
+                -maximumY,
+                Math.min(
+                    maximumY,
+                    state.offsetY
+                )
+            );
+    }
+
+
+    function drawCrop(
+        updateAvatar = true
+    ) {
+        if (!state.sourceImage) {
+            return;
+        }
+
+
+        const canvas =
+            $("#adminProfileCropCanvas");
+
+        const context =
+            canvas.getContext("2d");
+
+
+        clampOffsets();
+
+
+        const width =
+            state.sourceImage.width *
+            state.minimumScale *
+            state.zoom;
+
+        const height =
+            state.sourceImage.height *
+            state.minimumScale *
+            state.zoom;
+
+
+        const x =
+            (
+                PICTURE_CROP_SIZE -
+                width
+            ) / 2 +
+            state.offsetX;
+
+        const y =
+            (
+                PICTURE_CROP_SIZE -
+                height
+            ) / 2 +
+            state.offsetY;
+
+
+        context.clearRect(
+            0,
+            0,
+            PICTURE_CROP_SIZE,
+            PICTURE_CROP_SIZE
+        );
+
+
+        context.imageSmoothingEnabled =
+            true;
+
+        context.imageSmoothingQuality =
+            "high";
+
+
+        context.drawImage(
+            state.sourceImage,
+            x,
+            y,
+            width,
+            height
+        );
+
+
+        if (updateAvatar) {
+            const previewUrl =
+                canvas.toDataURL(
+                    "image/webp",
+                    0.82
+                );
+
+
+            setAvatar(
+                $("#adminProfilePreviewAvatar"),
+                previewUrl,
+                teacherInitial(
+                    state.profile?.name
+                )
+            );
+        }
+    }
+
+
+    function resetAdminProfilePictureCrop() {
+        if (!state.sourceImage) {
+            return;
+        }
+
+
+        state.zoom =
+            1;
+
+        state.offsetX =
+            0;
+
+        state.offsetY =
+            0;
+
+
+        $("#adminProfilePictureZoom")
+            .value =
+                "1";
+
+
+        drawCrop();
+    }
+
+
+    function handlePictureSelection(event) {
+        const file =
+            event.target.files?.[0];
+
+
+        if (!file) {
+            return;
+        }
+
+
+        if (
+            !PICTURE_ALLOWED_TYPES.has(
+                file.type
+            )
+        ) {
+            showMessage(
+                "Gunakan file JPEG, PNG, atau WebP.",
+                "error"
+            );
+
+            resetPictureSelection();
+            return;
+        }
+
+
+        if (
+            file.size >
+            PICTURE_INPUT_MAX_BYTES
+        ) {
+            showMessage(
+                "File awal maksimal 2 MB.",
+                "error"
+            );
+
+            resetPictureSelection();
+            return;
+        }
+
+
+        if (state.sourceUrl) {
+            URL.revokeObjectURL(
+                state.sourceUrl
+            );
+        }
+
+
+        state.sourceUrl =
+            URL.createObjectURL(
+                file
+            );
+
+
+        const image =
+            new Image();
+
+
+        image.addEventListener(
+            "load",
+            () => {
+                state.sourceImage =
+                    image;
+
+
+                state.minimumScale =
+                    Math.max(
+                        PICTURE_CROP_SIZE /
+                            image.width,
+
+                        PICTURE_CROP_SIZE /
+                            image.height
+                    );
+
+
+                state.zoom =
+                    1;
+
+                state.offsetX =
+                    0;
+
+                state.offsetY =
+                    0;
+
+
+                $("#adminProfilePictureZoom")
+                    .value =
+                        "1";
+
+                $("#adminProfileCropEditor")
+                    .hidden =
+                        false;
+
+
+                drawCrop();
+
+                showMessage("");
+            },
+            {
+                once: true
+            }
+        );
+
+
+        image.addEventListener(
+            "error",
+            () => {
+                showMessage(
+                    "Foto tidak dapat dibaca.",
+                    "error"
+                );
+
+                resetPictureSelection();
+            },
+            {
+                once: true
+            }
+        );
+
+
+        image.src =
+            state.sourceUrl;
+    }
+
+
+    function createPictureBlob() {
+        return new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+                if (!state.sourceImage) {
+                    resolve(null);
+                    return;
+                }
+
+
+                drawCrop(false);
+
+
+                const cropCanvas =
+                    $("#adminProfileCropCanvas");
+
+                const outputCanvas =
+                    document.createElement(
+                        "canvas"
+                    );
+
+
+                outputCanvas.width =
+                    PICTURE_OUTPUT_SIZE;
+
+                outputCanvas.height =
+                    PICTURE_OUTPUT_SIZE;
+
+
+                const outputContext =
+                    outputCanvas.getContext(
+                        "2d"
+                    );
+
+
+                outputContext.imageSmoothingEnabled =
+                    true;
+
+                outputContext.imageSmoothingQuality =
+                    "high";
+
+
+                outputContext.drawImage(
+                    cropCanvas,
+                    0,
+                    0,
+                    PICTURE_OUTPUT_SIZE,
+                    PICTURE_OUTPUT_SIZE
+                );
+
+
+                outputCanvas.toBlob(
+                    blob => {
+                        if (!blob) {
+                            reject(
+                                new Error(
+                                    "Foto tidak dapat diproses."
+                                )
+                            );
+
+                            return;
+                        }
+
+
+                        if (
+                            blob.size >
+                            400 * 1024
+                        ) {
+                            reject(
+                                new Error(
+                                    "Hasil foto terlalu besar."
+                                )
+                            );
+
+                            return;
+                        }
+
+
+                        resolve(blob);
+                    },
+
+                    "image/webp",
+                    0.82
+                );
+            }
+        );
+    }
+
+
+    async function uploadPicture(blob) {
+        if (!blob) {
+            return null;
+        }
+
+
+        return request(
+            "/api/admin/profile/picture",
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type":
+                        "image/webp"
+                },
+
+                body:
+                    blob
+            }
+        );
+    }
+
+
+    async function saveAdminProfileCustomization() {
+        if (
+            state.saving ||
+            !state.profile
+        ) {
+            return;
+        }
+
+
+        const selectedSubjectIds =
+            $$("#adminProfileSubjectList input:checked")
+                .map(input =>
+                    Number(input.value)
+                );
+
+
+        if (
+            selectedSubjectIds.length >
+            10
+        ) {
+            showMessage(
+                "Maksimal 10 mata pelajaran.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const bio =
+            $("#adminProfileBioInput")
+                .value
+                .replace(
+                    /\r\n?/g,
+                    "\n"
+                )
+                .trim();
+
+
+        if (
+            bio.split("\n").length >
+            3
+        ) {
+            showMessage(
+                "Bio maksimal 3 baris.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const isHomeroomTeacher =
+            $(
+                "input[name='adminProfileHomeroomStatus']:checked"
+            )?.value === "yes";
+
+
+        const homeroomClassId =
+            isHomeroomTeacher
+                ? Number(
+                    $("#adminProfileHomeroomClassSelect")
+                        .value
+                )
+                : null;
+
+
+        if (
+            isHomeroomTeacher &&
+            !Number.isInteger(
+                homeroomClassId
+            )
+        ) {
+            showMessage(
+                "Pilih kelas yang diampu.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const button =
+            $("#adminProfileSaveButton");
+
+
+        state.saving =
+            true;
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Menyimpan...";
+
+
+        try {
+            const pictureBlob =
+                await createPictureBlob();
+
+
+            await request(
+                "/api/admin/profile/customization",
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            bio,
+
+                            bannerColor:
+                                state.selectedColor,
+
+                            dateOfBirth:
+                                $("#adminProfileDateOfBirthInput")
+                                    .value,
+
+                            subjectIds:
+                                selectedSubjectIds,
+
+                            isHomeroomTeacher,
+
+                            homeroomClassId
+                        })
+                }
+            );
+
+
+            if (pictureBlob) {
+                await uploadPicture(
+                    pictureBlob
+                );
+            }
+
+
+            await loadProfile();
+
+
+            showMessage(
+                "Profil berhasil diperbarui.",
+                "success"
+            );
+
+
+            setTimeout(
+                () => {
+                    state.saving =
+                        false;
+
+                    closeAdminProfileCustomization();
+                },
+                600
+            );
+
+        } catch (error) {
+            showMessage(
+                error.message ||
+                "Profil tidak dapat diperbarui.",
+                "error"
+            );
+
+            state.saving =
+                false;
+
+        } finally {
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Simpan Perubahan";
+        }
+    }
+
+
+    function navigate(path) {
+        window.location.href =
+            path;
+    }
+
+
+    async function logout() {
+        try {
+            await fetch(
+                "/api/logout",
+                {
+                    method: "POST"
+                }
+            );
+        } finally {
+            [
+                "adminId",
+                "adminName",
+                "adminRole",
+                "adminUsername"
+            ].forEach(key =>
+                localStorage.removeItem(key)
+            );
+
+
+            sessionStorage.removeItem(
+                "adminProfileAppearance"
+            );
+
+
+            window.location.href =
+                "/admin-login.html";
+        }
+    }
+
+
+    Object.assign(
+        window,
+        {
+            openAdminProfileCustomization,
+            closeAdminProfileCustomization,
+            openAdminProfilePicturePicker,
+            resetAdminProfilePictureCrop,
+            saveAdminProfileCustomization,
+
+            goToDashboard:
+                () => navigate(
+                    "/admin-dashboard.html"
+                ),
+
+            goToStudents:
+                () => navigate(
+                    "/admin-students.html"
+                ),
+
+            goToPoints:
+                () => navigate(
+                    "/admin-points.html"
+                ),
+
+            goToExamScores:
+                () => navigate(
+                    "/admin-exam-scores.html"
+                ),
+
+            goToQuizzes:
+                () => navigate(
+                    "/admin-quizzes.html"
+                ),
+
+            goToClassroomFeed:
+                () => navigate(
+                    "/admin-announcements.html"
+                ),
+
+            goToPublicAnnouncement:
+                () => navigate(
+                    "/admin-public-announcements.html"
+                ),
+
+            goToTeachers:
+                () => navigate(
+                    "/admin-users.html"
+                ),
+
+            goToSystemReset:
+                () => navigate(
+                    "/admin-system-reset.html"
+                ),
+
+            logout
+        }
+    );
+
+
+function enforceAdminProfileBioLimit(event) {
+    const input =
+        event.currentTarget;
+
+    const normalizedValue =
+        input.value.replace(
+            /\r\n?/g,
+            "\n"
+        );
+
+    const lines =
+        normalizedValue.split("\n");
+
+    let limitedValue =
+        normalizedValue;
+
+
+    if (lines.length > 3) {
+        limitedValue = [
+            lines[0],
+            lines[1],
+            lines
+                .slice(2)
+                .join(" ")
+        ].join("\n");
+    }
+
+
+    limitedValue =
+        Array.from(limitedValue)
+            .slice(0, 120)
+            .join("");
+
+
+    if (input.value !== limitedValue) {
+        input.value =
+            limitedValue;
+
+        input.setSelectionRange(
+            limitedValue.length,
+            limitedValue.length
+        );
+    }
+
+
+    updatePreview();
+}
+
+
+const adminProfileBioInput =
+    $("#adminProfileBioInput");
+
+
+adminProfileBioInput.addEventListener(
+    "beforeinput",
+    event => {
+        const isNewLine =
+            event.inputType ===
+                "insertLineBreak" ||
+            event.inputType ===
+                "insertParagraph";
+
+        const currentLineCount =
+            adminProfileBioInput
+                .value
+                .replace(/\r\n?/g, "\n")
+                .split("\n")
+                .length;
+
+        if (
+            isNewLine &&
+            currentLineCount >= 3
+        ) {
+            event.preventDefault();
+        }
+    }
+);
+
+
+adminProfileBioInput.addEventListener(
+    "input",
+    enforceAdminProfileBioLimit
+);
+
+
+    $$(".admin-profile-color")
+        .forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
+                    applyTheme(
+                        button.dataset.profileColor
+                    );
+                }
+            );
+        });
+
+
+    $$(
+        "input[name='adminProfileHomeroomStatus']"
+    ).forEach(radio => {
+        radio.addEventListener(
+            "change",
+            toggleHomeroomClass
+        );
+    });
+
+
+    $("#adminProfilePictureInput")
+        .addEventListener(
+            "change",
+            handlePictureSelection
+        );
+
+
+    $("#adminProfilePictureZoom")
+        .addEventListener(
+            "input",
+            event => {
+                state.zoom =
+                    Number(
+                        event.target.value
+                    ) || 1;
+
+                drawCrop();
+            }
+        );
+
+
+    const cropCanvas =
+        $("#adminProfileCropCanvas");
+
+
+    cropCanvas.addEventListener(
+        "pointerdown",
+        event => {
+            if (!state.sourceImage) {
+                return;
+            }
+
+
+            state.dragging =
+                true;
+
+            state.lastPointerX =
+                event.clientX;
+
+            state.lastPointerY =
+                event.clientY;
+
+
+            cropCanvas.classList.add(
+                "is-dragging"
+            );
+
+
+            cropCanvas.setPointerCapture(
+                event.pointerId
+            );
+        }
+    );
+
+
+    cropCanvas.addEventListener(
+        "pointermove",
+        event => {
+            if (
+                !state.dragging ||
+                !state.sourceImage
+            ) {
+                return;
+            }
+
+
+            const rect =
+                cropCanvas
+                    .getBoundingClientRect();
+
+
+            const scale =
+                PICTURE_CROP_SIZE /
+                rect.width;
+
+
+            state.offsetX +=
+                (
+                    event.clientX -
+                    state.lastPointerX
+                ) * scale;
+
+            state.offsetY +=
+                (
+                    event.clientY -
+                    state.lastPointerY
+                ) * scale;
+
+
+            state.lastPointerX =
+                event.clientX;
+
+            state.lastPointerY =
+                event.clientY;
+
+
+            drawCrop();
+        }
+    );
+
+
+    function stopDragging(event) {
+        if (!state.dragging) {
+            return;
+        }
+
+
+        state.dragging =
+            false;
+
+
+        cropCanvas.classList.remove(
+            "is-dragging"
+        );
+
+
+        if (
+            cropCanvas.hasPointerCapture(
+                event.pointerId
+            )
+        ) {
+            cropCanvas.releasePointerCapture(
+                event.pointerId
+            );
+        }
+    }
+
+
+    cropCanvas.addEventListener(
+        "pointerup",
+        stopDragging
+    );
+
+    cropCanvas.addEventListener(
+        "pointercancel",
+        stopDragging
+    );
+
+
+    $("#adminProfileCustomizationModal")
+        .addEventListener(
+            "click",
+            event => {
+                if (
+                    event.target ===
+                    event.currentTarget
+                ) {
+                    closeAdminProfileCustomization();
+                }
+            }
+        );
+
+
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key === "Escape" &&
+                !$("#adminProfileCustomizationModal")
+                    .hidden
+            ) {
+                closeAdminProfileCustomization();
+            }
+        }
+    );
+
+
+    loadProfile();
+})();
+</script>
+
+<script src="/mobile-nav.js"></script>
+
+</body>
+</html>

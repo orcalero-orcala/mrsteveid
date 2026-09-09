@@ -596,6 +596,23 @@ function applyStudentSidebarIcons() {
         .forEach(
             navigationItem => {
 
+                        const navigationText =
+            navigationItem
+                .textContent
+                .trim()
+                .toLowerCase();
+
+        if (
+            navigationText.includes(
+                "profile"
+            )
+        ) {
+            navigationItem.classList.add(
+                "sidebar-profile-nav-item"
+            );
+        }
+
+
                 const iconElement =
                     navigationItem
                         .querySelector(
@@ -620,8 +637,17 @@ function applyStudentSidebarIcons() {
                 }
 
 
-                iconElement.innerHTML =
-                    iconSvg;
+if (
+    iconElement.dataset
+        .sidebarIconReady !== "true"
+) {
+    iconElement.innerHTML =
+        iconSvg;
+
+    iconElement.dataset
+        .sidebarIconReady =
+        "true";
+}
 
             }
         );

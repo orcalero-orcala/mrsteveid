@@ -13,9 +13,30 @@ hapus guru
 Permudah penggantian Env variabels misal mau ditukar ke env lain buat owner lain
 ---
 
-Load class feed post reply notif cek dan notif angka hilang lama bgt
-di admin kecepatan aman sih
-
-Aktivasi admin my profile
-
 Changelog feature Index html
+
+Logout siswa admin langsung ke index html
+
+Bug siswa dashboard panel dekorasi student profile di hero, kalau diperbesar menggunakan devtool jadi ngebug kotak saja, baru dipencet muncul
+
+Attendance system
+
+Format date time jadi
+
+Date time actual + berapa jam lalu singkat aja
+
+Just now, 1m 5h 1d 1w 1m 1y
+
+Tambah banner color yellow siswa amdin
+
+Tambah site Maintenance page, bisa dinyalakin di Super admin settings, Exclude localhost
+
+Fix system reset
+ok
+Change language dan retro UI and modenr ui defdault
+
+Settings bisa ganti username, dan Nama guru dan PW
+
+Polling feature
+
+Tambah tombol read all (gak perlu scroll to mention cuma hilangkan badge dan biru highlight)
