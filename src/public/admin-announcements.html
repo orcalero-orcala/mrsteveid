@@ -30,7 +30,12 @@
 </head>
 
 
-<body>
+<body
+    class="
+        classroom-feed-redesign
+        admin-classroom-feed
+    "
+>
 
     <div class="app-layout admin-layout">
 
@@ -229,9 +234,9 @@
 
         <main class="main-content">
 
-            <header class="topbar admin-topbar">
+<header class="topbar admin-topbar">
 
-                <div>
+    <div class="admin-feed-topbar-heading">
 
                     <small class="admin-top-label">
                         COMMUNICATION
@@ -253,7 +258,9 @@
                     <button
     type="button"
     class="feed-moderation-button"
-    onclick="openFeedModeration()"
+onclick="openFeedModeration()"
+title="Moderasi"
+aria-label="Moderasi"
 >
     Moderasi
 </button>
@@ -294,21 +301,33 @@
             </header>
 
 
-            <div class="feed-page-content admin-feed-page">
+            <div
+    class="
+        feed-page-content
+        admin-feed-page
+        classroom-feed-surface
+    "
+>
 
 
                 <!-- INTRO -->
 
-<section class="feed-intro admin-feed-intro">
+<section
+    class="
+        feed-intro
+        admin-feed-intro
+        classroom-feed-hero
+    "
+>
 
     <div class="admin-feed-intro-content">
 
                         <small class="eyebrow">
-                            CLASSROOM FEED
+                            CLASSROOM
                         </small>
 
                         <h1>
-                            Komunikasi Kelas
+                            Classroom Feed
                         </h1>
 
                         <p>
@@ -419,85 +438,229 @@
                         </div>
 
 
-                        <div class="composer-input-area">
+<div class="composer-input-area">
+
+    <div
+        id="announcementMessage"
+        class="feed-rich-editor"
+        contenteditable="true"
+        role="textbox"
+        aria-multiline="true"
+        data-placeholder="Mulai diskusi atau bagikan informasi kepada siswa..."
+        spellcheck="true"
+    ></div>
+
+    <div
+        id="adminAnnouncementMentionSuggestions"
+        class="feed-mention-suggestions"
+        style="display: none;"
+    ></div>
+
+</div>
+
 
 <div
-    id="announcementMessage"
-    class="feed-rich-editor"
-    contenteditable="true"
-    role="textbox"
-    aria-multiline="true"
-    data-placeholder="Tulis pesan Classroom Feed... gunakan @ untuk mention"
-    spellcheck="true"
-></div>
-
-                            <div class="feed-format-toolbar" aria-label="Format teks">
-    <button type="button" class="feed-format-button" data-format="bold" title="Bold">
-        <strong>B</strong>
-    </button>
-
-    <button type="button" class="feed-format-button" data-format="italic" title="Italic">
-        <em>I</em>
-    </button>
-
-    <button type="button" class="feed-format-button" data-format="underline" title="Underline">
-        <u>U</u>
-    </button>
-
-<button
-    type="button"
-    class="feed-format-button feed-format-clear-button"
-    data-format="clear"
-    title="Hapus formatting"
-    aria-label="Hapus formatting"
+    id="feedPostImageAttachment"
+    class="feed-post-image-attachment"
+    hidden
 >
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 19L11 5H13L19 19"></path>
-        <path d="M7.5 14H16.5"></path>
-        <path d="M4 4L20 20"></path>
-    </svg>
-</button>
+    <img
+        id="feedPostImageAttachmentPreview"
+        alt="Preview gambar post"
+        referrerpolicy="no-referrer"
+    >
 
-    <button type="button" class="feed-format-button feed-format-list-button" data-format="bullet" title="Daftar poin">
-        • List
+    <div class="feed-post-image-attachment-info">
+        <strong>
+            Gambar post
+        </strong>
+
+        <span id="feedPostImageAttachmentSource">
+            Siap ditambahkan
+        </span>
+    </div>
+
+    <button
+        id="feedPostImageRemoveButton"
+        type="button"
+        class="feed-post-image-remove-button"
+        aria-label="Hapus gambar dari post"
+        title="Hapus gambar"
+    >
+        ×
     </button>
 </div>
 
 
-                            <div
-                                id="adminAnnouncementMentionSuggestions"
-                                class="feed-mention-suggestions"
-                                style="display: none;"
-                            ></div>
+<div class="feed-composer-action-row">
 
-                        </div>
+    <div
+        class="feed-format-toolbar"
+        aria-label="Format dan lampiran posting"
+    >
+
+        <button
+            type="button"
+            class="feed-format-button"
+            data-format="bold"
+            title="Bold"
+            aria-label="Bold"
+        >
+            <strong>B</strong>
+        </button>
+
+        <button
+            type="button"
+            class="feed-format-button"
+            data-format="italic"
+            title="Italic"
+            aria-label="Italic"
+        >
+            <em>I</em>
+        </button>
+
+        <button
+            type="button"
+            class="feed-format-button"
+            data-format="underline"
+            title="Underline"
+            aria-label="Underline"
+        >
+            <u>U</u>
+        </button>
+
+        <button
+            type="button"
+            class="
+                feed-format-button
+                feed-format-clear-button
+            "
+            data-format="clear"
+            title="Hapus formatting"
+            aria-label="Hapus formatting"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path d="M5 19L11 5H13L19 19"></path>
+                <path d="M7.5 14H16.5"></path>
+                <path d="M4 4L20 20"></path>
+            </svg>
+        </button>
+
+<button
+    type="button"
+    class="
+        feed-format-button
+        feed-format-list-button
+    "
+    data-format="bullet"
+    title="Daftar poin"
+    aria-label="Daftar poin"
+>
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="M4 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM8 4.75h12v1.5H8v-1.5ZM4 13.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM8 11.5h12V13H8v-1.5ZM4 20a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 4 20ZM8 18.25h12v1.5H8v-1.5Z"
+        ></path>
+    </svg>
+</button>
 
 
-                        <div class="composer-footer">
-
-                            <p
-                                id="message"
-                                class="feed-status"
-                            ></p>
+        <span
+            class="feed-toolbar-divider"
+            aria-hidden="true"
+        ></span>
 
 
-                            <button
-                                type="submit"
-                                class="feed-post-button student-modern-primary-button"
-                            >
-                                Posting
-                            </button>
+        <button
+            id="feedPostImageButton"
+            type="button"
+            class="
+                feed-format-button
+                feed-post-image-button
+                feed-composer-feature-button
+            "
+            title="Tambahkan gambar"
+            aria-label="Tambahkan gambar"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                    d="M5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4Zm.5 2v10.9l3.7-4.1a1 1 0 0 1 1.5 0l1.8 2 2.2-2.6a1 1 0 0 1 1.5 0l1.3 1.5V6H6Zm9.2 5a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4Z"
+                ></path>
+            </svg>
 
-                        </div>
+        </button>
+
+
+        <button
+            type="button"
+            class="
+                feed-format-button
+                feed-composer-feature-button
+                feed-upcoming-button
+                feed-poll-button
+            "
+            disabled
+            aria-disabled="true"
+            title="Poll segera hadir"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                    d="M4 13h3v7H4v-7Zm6-5h3v12h-3V8Zm6-4h3v16h-3V4Z"
+                ></path>
+            </svg>
+
+            <span class="feed-upcoming-tooltip">
+                Segera hadir
+            </span>
+        </button>
+
+    </div>
+
+
+    <div class="feed-composer-submit-group">
+
+        <button
+            type="submit"
+            class="feed-post-button student-modern-primary-button"
+            style="position: relative; top: 4px;"
+        >
+            Posting
+        </button>
+
+    </div>
+
+</div>
 
                     </form>
+
+                    <p
+                        id="message"
+                        class="feed-status"
+                        role="status"
+                    ></p>
 
                 </section>
 
 
                 <!-- LIST -->
 
-                <section class="feed-list-section">
+                <section
+    class="
+        feed-list-section
+        classroom-feed-timeline
+    "
+>
 
  <div class="section-heading">
 
@@ -1139,6 +1302,185 @@
 
     </section>
 
+</div>
+
+<!-- ======================================
+     CLASSROOM FEED IMAGE DIALOG
+======================================= -->
+
+<div
+    id="feedImageDialogOverlay"
+    class="feed-image-dialog-overlay"
+    hidden
+>
+    <section
+        class="feed-image-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feedImageDialogTitle"
+    >
+        <div class="feed-image-dialog-header">
+
+            <div>
+                <small class="eyebrow">
+                    GAMBAR POST
+                </small>
+
+                <h2 id="feedImageDialogTitle">
+                    Tambahkan Gambar
+                </h2>
+
+                <p>
+                    Pilih satu file atau gunakan URL gambar.
+                </p>
+            </div>
+
+            <button
+                id="feedImageDialogCloseButton"
+                type="button"
+                class="feed-image-dialog-close"
+                aria-label="Tutup dialog gambar"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="feed-image-dialog-preview">
+
+            <div
+                id="feedImageDialogEmpty"
+                class="feed-image-dialog-empty"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4Zm.5 2v10.9l3.7-4.1a1 1 0 0 1 1.5 0l1.8 2 2.2-2.6a1 1 0 0 1 1.5 0l1.3 1.5V6H6Zm9.2 5a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4Z"
+                    ></path>
+                </svg>
+
+                <strong>
+                    Preview Gambar
+                </strong>
+
+                <span>
+                    Pilih file atau periksa URL gambar.
+                </span>
+            </div>
+
+            <img
+                id="feedImageDialogPreview"
+                alt="Preview gambar post"
+                referrerpolicy="no-referrer"
+                hidden
+            >
+
+        </div>
+
+
+        <p
+            id="feedImageDialogStatus"
+            class="feed-image-dialog-status"
+            aria-live="polite"
+        ></p>
+
+
+        <div class="feed-image-dialog-upload">
+
+            <label class="feed-image-dialog-file-button">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M12 3a1 1 0 0 1 1 1v7.6l2.3-2.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4l2.3 2.3V4a1 1 0 0 1 1-1Zm-7 13a1 1 0 0 1 1 1v2h12v-2a1 1 0 1 1 2 0v2.5A1.5 1.5 0 0 1 18.5 21h-13A1.5 1.5 0 0 1 4 19.5V17a1 1 0 0 1 1-1Z"
+                    ></path>
+                </svg>
+
+                <span>
+                    Pilih File
+                </span>
+
+                <input
+                    id="feedImageDialogFile"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+
+            </label>
+
+            <small>
+                JPEG, PNG, atau WebP. Maksimal 2 MB.
+            </small>
+
+        </div>
+
+
+        <div class="feed-image-dialog-divider">
+            <span>
+                ATAU
+            </span>
+        </div>
+
+
+        <div class="feed-image-dialog-url">
+
+            <input
+                id="feedImageDialogUrl"
+                type="url"
+                inputmode="url"
+                autocomplete="off"
+                placeholder="Tempel URL gambar HTTPS..."
+            >
+
+            <button
+                id="feedImageDialogCheckUrlButton"
+                type="button"
+                class="secondary-button"
+            >
+                Cek Gambar
+            </button>
+
+        </div>
+
+
+        <div class="feed-image-dialog-actions">
+
+            <button
+                id="feedImageDialogClearButton"
+                type="button"
+                class="danger-button"
+                hidden
+            >
+                Hapus Gambar
+            </button>
+
+            <span class="feed-image-dialog-action-spacer"></span>
+
+            <button
+                id="feedImageDialogCancelButton"
+                type="button"
+                class="secondary-button"
+            >
+                Batal
+            </button>
+
+            <button
+                id="feedImageDialogConfirmButton"
+                type="button"
+                class="feed-post-button"
+                disabled
+            >
+                Tambahkan
+            </button>
+
+        </div>
+
+    </section>
 </div>
 
 <script src="/time.js"></script>

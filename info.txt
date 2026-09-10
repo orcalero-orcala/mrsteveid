@@ -1,12 +1,3 @@
-Upload image feature via googleusercontent Class feed
-
-Tombol show replies (xx)
-
-Notif panel gunakan animasi kek view all infor board
-
-Link click di feed announcement sama info board
-
-Tambahkan formatting di feed dan info board, Bold underline strikethrough, point dotted, italic
 ---
 settings panel tambah password buat ada adminjstartor settings
 hapus guru
@@ -33,10 +24,65 @@ Tambah site Maintenance page, bisa dinyalakin di Super admin settings, Exclude l
 
 Fix system reset
 ok
-Change language dan retro UI and modenr ui defdault
+Bahasa Id dan Enus
 
 Settings bisa ganti username, dan Nama guru dan PW
 
 Polling feature
 
 Tambah tombol read all (gak perlu scroll to mention cuma hilangkan badge dan biru highlight)
+
+Bug: Guru tidak load pfp saat login, kecuali load di profile
+
+memuat profile di teacher placeholderny A, harusnya T
+
+Search guru di directory, placeholder profil kosong itu sesuai banner di teach profile, harusya tetap biru, sama dgn siswa jg
+
+Kenapa website lebih lambat jika di publish di vercel. Apakah ada solusi biar mempercepat jadi kecepatan hampir sama dgn menggunakan localhost
+
+Ubah notif "Nama guru" mention kamu dalam announcement, announcement menjadi post/reply
+
+Bug hover sesuai warna banner di siswa
+
+Ubah semua logo "LMS" menjadi sesuai faviicon
+
+Kalau sering eror atau lag coba bisa gak migrasi ke firebase
+
+----------------------------------------------------
+MAJOR ADMIN Redesign Part 2 based
+
+Dashboard: Ada summary total student, teacher, Best student (by poin dan score), sama Worst student, Info board posted berapa, quiz buat berapa
+Exam score: pertama kamu pilih kelas, subject, dan isi materi, baru akan muncul roster yg isi data siswa, sebelahnya input nilai saja. Baru bisa pencet submit
+View score: Pertama isi subject, kelas, materi apa yg ada di database, dan sort order AZ ZA, highest, lowest, Baru view table. Dan bisa di download xlsx
+New Feature assignment reminder: Akan muncul diatas info board siswa, bisa pili subject, kelas, tulis assignment apa, due date, dan notes
+Setelah kamu pilih kelas akan muncul panel select students, untuk memilih siswa via checkbox. Di tombol submit, ada arrow sebelahnya bisa pilih
+beberapa opsi. Seperti select all, clear, dan submit entire class, dan submit selected
+Dibawahnya ada active remindernya bisa di cek di tabel atau card, terserah, bisa cek due kapan, overdue kah, atau gimana, dan ada aksi seperti mark as done, dan hapus
+
+Student point: Aman ajam, namun view student poin di rework hingga kita bisa lihat seluruh siswa berdasarkan tabel. Bisa di sortir juga, dan ada action yaitu view historynya
+
+Admin students: Penambahan siswa lama aman aja, serta master kelasnya, namun ada tab baru yaitu batch student, ada tombol download template excel, dan kamu bisa download
+dan ditugaskan isi excelnya lalu upload balik ke site, nanti dia otomatis ditambahkan ke databasenya dengan kode nya
+Di
+
+Information Board: Skrg bisa edit info yg lama, dan Archive artinya bisa dilihat guru tapi tidak dilihat siswa
+
+Admin register rework: Regiter bukan di page lama yg bisa dilihat semua orang, melainkan tetap di dashboard admin, pindahkan disitu
+Artinya hapus fungsional yg kode guru.
+
+Maintenance: Tab baru dimana kamu bisa nyalakan mode maintenance untuk website yg udh di vercel, yg localhost tidak kena maintenance
+Bisa disetting alasan maintenancenya input text area, setting estimasi maintenance selesai
+Kalau semisal gak bisa yg vercel kena maintenance tapi localhost tidak, berarti tambah fungsi dimana teacher tetap bisa login, siswa tidak
+
+Sidebar rework, Daripada ada tab individual banyak bisa jadi dropdown segitiga bawah jadi misalnya ada Tab management, dibuka nah misal ada teacher register, system maintenance dll
+
+Untuk rework admin ini, tidak perlu fokus banyak ke Css mobile, jadi tambahkan saat login admin jika di hp/tablet kasih warning bahwa
+admin dashboard tidak dibuat utk hp atau tablet jadi bisa ada bug, dgn bahwanya tombol ok
+
+Update tab: Mirip information board tapi ini viewnya di index html ada tombol di footer, basic aja, cuma heading dan isi text areanya
+----
+Percepat perpindahan pages. Lumayan lambat saat login, Referensi lms aku itu ternyata admin digabung jadi 1 file, tapi ini sulit diubah, jadi mungkin ada cara lain
+
+Pastikan banyak aksi menggunakan kebab icon
+
+Image preview di info board dan feed, akan muncul gambarnya lebih besar mengisi layar bg gelap terus bisa di zoom dan geser kek google gitu

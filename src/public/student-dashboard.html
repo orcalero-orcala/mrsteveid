@@ -460,13 +460,36 @@
                         </div>
 
 
-                        <button
-                            type="button"
-                            class="student-announcement-view-all-button"
-                            onclick="openAnnouncementViewAll()"
-                        >
-                            View All
-                        </button>
+<div class="student-announcement-heading-actions">
+
+<button
+    id="refreshPublicAnnouncementButton"
+    type="button"
+    class="
+        student-announcement-view-all-button
+        student-announcement-refresh-button
+    "
+    onclick="refreshPublicAnnouncements()"
+>
+    <span
+        class="student-announcement-refresh-icon"
+        aria-hidden="true"
+    >↻</span>
+
+    <span
+        id="refreshPublicAnnouncementText"
+    >Refresh</span>
+</button>
+
+    <button
+        type="button"
+        class="student-announcement-view-all-button"
+        onclick="openAnnouncementViewAll()"
+    >
+        View All
+    </button>
+
+</div>
 
                     </div>
 
@@ -693,6 +716,183 @@ loadPublicAnnouncements();
 startPublicAnnouncementLive();
 
 // =====================================
+// FORMAT ISI INFORMATION BOARD
+// =====================================
+
+function formatInformationInlineText(value) {
+    const protectedParts = [];
+    let source = String(value ?? "");
+
+    function protect(html) {
+        const token =
+            `\uE000${protectedParts.length}\uE001`;
+
+        protectedParts.push(html);
+
+        return token;
+    }
+
+    // Lindungi URL agar karakter formatting
+    // di dalam URL tidak ikut diproses.
+    source = source.replace(
+        /\bhttps?:\/\/[^\s<>"']+/gi,
+        matchedUrl => {
+            let url = matchedUrl;
+            let trailing = "";
+
+            while (/[.,!?;:]$/.test(url)) {
+                trailing =
+                    url.slice(-1) + trailing;
+
+                url = url.slice(0, -1);
+            }
+
+            const safeUrl =
+                escapeHtml(url);
+
+            return (
+                protect(`
+                    <a
+                        class="information-content-link"
+                        href="${safeUrl}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >${safeUrl}</a>
+                `) +
+                escapeHtml(trailing)
+            );
+        }
+    );
+
+    let safe =
+        escapeHtml(source);
+
+    safe = safe.replace(
+        /\*\*([^*\n]+)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+    safe = safe.replace(
+        /__([^_\n]+)__/g,
+        "<u>$1</u>"
+    );
+
+    safe = safe.replace(
+        /(^|[^*])\*([^*\n]+)\*(?!\*)/g,
+        "$1<em>$2</em>"
+    );
+
+    protectedParts.forEach(
+        (html, index) => {
+            safe = safe
+                .split(
+                    `\uE000${index}\uE001`
+                )
+                .join(html);
+        }
+    );
+
+    return safe;
+}
+
+
+function formatInformationMessage(value) {
+    const lines =
+        String(value ?? "")
+            .replace(/\r\n?/g, "\n")
+            .split("\n");
+
+    const output = [];
+    let listOpen = false;
+
+    lines.forEach(
+        (line, index) => {
+            const bulletMatch =
+                line.match(
+                    /^\s*-\s+(.+)$/
+                );
+
+            if (bulletMatch) {
+                if (!listOpen) {
+                    output.push(
+                        '<ul class="information-content-list">'
+                    );
+
+                    listOpen = true;
+                }
+
+                output.push(
+                    `<li>${formatInformationInlineText(
+                        bulletMatch[1]
+                    )}</li>`
+                );
+
+                return;
+            }
+
+            if (listOpen) {
+                output.push("</ul>");
+                listOpen = false;
+            }
+
+            output.push(
+                formatInformationInlineText(
+                    line
+                )
+            );
+
+            if (
+                index <
+                lines.length - 1
+            ) {
+                output.push("<br>");
+            }
+        }
+    );
+
+    if (listOpen) {
+        output.push("</ul>");
+    }
+
+    return output.join("");
+}
+
+
+function informationAnnouncementImageMarkup(
+    announcement
+) {
+    const imageUrl =
+        String(
+            announcement?.image_url ||
+            ""
+        ).trim();
+
+    if (!imageUrl) {
+        return "";
+    }
+
+    const title =
+        String(
+            announcement?.title ||
+            "Gambar announcement"
+        ).trim();
+
+    return `
+        <div
+            class="information-board-image-frame"
+        >
+            <img
+                class="information-board-image"
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(title)}"
+                loading="lazy"
+                decoding="async"
+            >
+        </div>
+    `;
+}
+
+// =====================================
 // FORMAT TARGET ANNOUNCEMENT
 // =====================================
 
@@ -818,11 +1018,15 @@ function createPublicAnnouncementCard(
         </div>
 
 
-<div class="student-public-announcement-message">${escapeHtml(
+<div class="student-public-announcement-message">${formatInformationMessage(
     String(
         announcement.message || ""
     ).trim()
 )}</div>
+
+${informationAnnouncementImageMarkup(
+    announcement
+)}
 
 
         <div class="student-public-announcement-meta">
@@ -856,6 +1060,37 @@ function createPublicAnnouncementCard(
         </div>
 
     `;
+
+    const announcementImage =
+        card.querySelector(
+            ".information-board-image"
+        );
+
+    if (announcementImage) {
+        announcementImage.addEventListener(
+            "load",
+            () => {
+                announcementImage
+                    .closest(
+                        ".information-board-image-frame"
+                    )
+                    ?.classList.add(
+                        "is-loaded"
+                    );
+            }
+        );
+
+        announcementImage.addEventListener(
+            "error",
+            () => {
+                announcementImage
+                    .closest(
+                        ".information-board-image-frame"
+                    )
+                    ?.remove();
+            }
+        );
+    }
 
 
     return card;
@@ -1063,6 +1298,43 @@ document.addEventListener(
     }
 );
 
+async function refreshPublicAnnouncements() {
+    const refreshButton =
+        document.getElementById(
+            "refreshPublicAnnouncementButton"
+        );
+
+    if (
+        !refreshButton ||
+        refreshButton.disabled
+    ) {
+        return;
+    }
+
+    refreshButton.disabled = true;
+
+    refreshButton.setAttribute(
+        "aria-busy",
+        "true"
+    );
+
+    try {
+        /*
+         * true = tampilkan loading panel yang sama
+         * seperti ketika pertama membuka halaman.
+         */
+        await loadPublicAnnouncements(
+            true
+        );
+    } finally {
+        refreshButton.disabled = false;
+
+        refreshButton.removeAttribute(
+            "aria-busy"
+        );
+    }
+}
+
 
 // =====================================
 // LOAD PUBLIC ANNOUNCEMENT
@@ -1150,9 +1422,14 @@ const response =
                         [
                             announcement.id,
                             announcement.title,
-                            announcement.message,
-                            announcement.created_at,
-                            announcement.target_type,
+announcement.message,
+announcement.image_url,
+announcement.image_public_id,
+announcement.image_width,
+announcement.image_height,
+announcement.image_bytes,
+announcement.created_at,
+announcement.target_type,
 
                             JSON.stringify(
                                 announcement

@@ -37,6 +37,21 @@ const QUIZ_IMAGE_UPLOAD_TRANSFORMATION =
 const QUIZ_IMAGE_ALLOWED_FORMATS =
     "jpg,jpeg,png,webp";
 
+const CLASS_FEED_IMAGE_MAX_BYTES =
+    2 * 1024 * 1024;
+
+const CLASS_FEED_IMAGE_UPLOAD_TRANSFORMATION =
+    "c_limit,w_1600,h_1600/q_auto:good/f_webp";
+
+const CLASS_FEED_IMAGE_ALLOWED_FORMATS =
+    "jpg,jpeg,png,webp";
+
+const CLASS_FEED_IMAGE_ACCEPTED_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+];
+
 const STUDENT_PROFILE_BIO_MAX_LENGTH =
     120;
 
@@ -1575,6 +1590,856 @@ app.get(
                 success: false,
                 message:
                     "Identitas Admin tidak dapat dimuat."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
+// MEDIA GAMBAR - CLASSROOM FEED
+// ========================================
+
+let classFeedImageColumnsPromise =
+    null;
+
+
+function getClassFeedActor(req) {
+
+    const adminId =
+        Number(req.session?.adminId);
+
+    if (
+        Number.isInteger(adminId) &&
+        adminId > 0
+    ) {
+        return {
+            type:
+                "admin",
+
+            id:
+                adminId
+        };
+    }
+
+
+    const studentId =
+        Number(req.session?.studentId);
+
+    if (
+        Number.isInteger(studentId) &&
+        studentId > 0
+    ) {
+        return {
+            type:
+                "student",
+
+            id:
+                studentId
+        };
+    }
+
+
+    return null;
+
+}
+
+
+function getClassFeedImageAssetFolder(
+    actorType,
+    actorId
+) {
+
+    return (
+        `lms/class-feed/` +
+        `${actorType}/${actorId}`
+    );
+
+}
+
+
+function getClassFeedImagePublicIdPrefix(
+    actorType,
+    actorId
+) {
+
+    return (
+        `feed-${actorType}-` +
+        `${actorId}-`
+    );
+
+}
+
+
+function createClassFeedImagePublicId(
+    actorType,
+    actorId
+) {
+
+    return (
+        getClassFeedImagePublicIdPrefix(
+            actorType,
+            actorId
+        ) +
+        `${Date.now()}-` +
+        crypto
+            .randomBytes(8)
+            .toString("hex")
+    );
+
+}
+
+
+async function initializeClassFeedImageColumns() {
+
+    const columnRows =
+        await tursoDb.all(`
+            PRAGMA table_info(announcements)
+        `);
+
+
+    if (
+        !Array.isArray(columnRows) ||
+        columnRows.length === 0
+    ) {
+        throw new Error(
+            "Tabel announcements tidak ditemukan."
+        );
+    }
+
+
+    const columnNames =
+        new Set(
+            columnRows.map(
+                row =>
+                    String(row.name)
+            )
+        );
+
+
+    const migrations = [
+        {
+            name:
+                "image_url",
+
+            sql: `
+                ALTER TABLE announcements
+                ADD COLUMN image_url TEXT
+            `
+        },
+
+        {
+            name:
+                "image_public_id",
+
+            sql: `
+                ALTER TABLE announcements
+                ADD COLUMN image_public_id TEXT
+            `
+        },
+
+        {
+            name:
+                "image_width",
+
+            sql: `
+                ALTER TABLE announcements
+                ADD COLUMN image_width INTEGER
+            `
+        },
+
+        {
+            name:
+                "image_height",
+
+            sql: `
+                ALTER TABLE announcements
+                ADD COLUMN image_height INTEGER
+            `
+        },
+
+        {
+            name:
+                "image_bytes",
+
+            sql: `
+                ALTER TABLE announcements
+                ADD COLUMN image_bytes INTEGER
+            `
+        }
+    ];
+
+
+    for (
+        const migration
+        of migrations
+    ) {
+
+        if (
+            columnNames.has(
+                migration.name
+            )
+        ) {
+            continue;
+        }
+
+
+        try {
+
+            await tursoDb.run(
+                migration.sql
+            );
+
+            columnNames.add(
+                migration.name
+            );
+
+        } catch (error) {
+
+            /*
+                Aman ketika dua instance Vercel
+                menjalankan migrasi bersamaan.
+            */
+            if (
+                /duplicate column name/i.test(
+                    String(
+                        error?.message ||
+                        error
+                    )
+                )
+            ) {
+                columnNames.add(
+                    migration.name
+                );
+
+                continue;
+            }
+
+
+            throw error;
+
+        }
+
+    }
+
+}
+
+
+async function ensureClassFeedImageColumns() {
+
+    if (!classFeedImageColumnsPromise) {
+
+        classFeedImageColumnsPromise =
+            initializeClassFeedImageColumns()
+                .catch(error => {
+
+                    classFeedImageColumnsPromise =
+                        null;
+
+                    throw error;
+
+                });
+
+    }
+
+
+    return classFeedImageColumnsPromise;
+
+}
+
+
+function cleanClassFeedImageDimension(
+    rawValue
+) {
+
+    const numericValue =
+        Number(rawValue);
+
+    if (
+        !Number.isFinite(numericValue) ||
+        numericValue <= 0
+    ) {
+        return null;
+    }
+
+
+    return Math.round(
+        numericValue
+    );
+
+}
+
+
+function cleanClassFeedPostImage(
+    rawBody,
+    actorType,
+    actorId
+) {
+
+    const imageUrl =
+        String(
+            rawBody?.imageUrl ||
+            ""
+        ).trim();
+
+    const imagePublicId =
+        String(
+            rawBody?.imagePublicId ||
+            ""
+        ).trim();
+
+
+    if (!imageUrl) {
+
+        if (imagePublicId) {
+            throw new Error(
+                "Data gambar Classroom Feed tidak lengkap."
+            );
+        }
+
+
+        return {
+            imageUrl:
+                null,
+
+            imagePublicId:
+                null,
+
+            imageWidth:
+                null,
+
+            imageHeight:
+                null,
+
+            imageBytes:
+                null
+        };
+
+    }
+
+
+    if (imageUrl.length > 3000) {
+        throw new Error(
+            "URL gambar Classroom Feed terlalu panjang."
+        );
+    }
+
+
+    if (imagePublicId.length > 255) {
+        throw new Error(
+            "Identitas gambar Classroom Feed tidak valid."
+        );
+    }
+
+
+    let parsedImageUrl;
+
+    try {
+
+        parsedImageUrl =
+            new URL(imageUrl);
+
+    } catch {
+
+        throw new Error(
+            "URL gambar Classroom Feed tidak valid."
+        );
+
+    }
+
+
+    if (
+        parsedImageUrl.protocol !==
+        "https:"
+    ) {
+        throw new Error(
+            "URL gambar Classroom Feed harus menggunakan HTTPS."
+        );
+    }
+
+
+    const imageWidth =
+        cleanClassFeedImageDimension(
+            rawBody?.imageWidth
+        );
+
+    const imageHeight =
+        cleanClassFeedImageDimension(
+            rawBody?.imageHeight
+        );
+
+    const rawImageBytes =
+        Number(
+            rawBody?.imageBytes
+        );
+
+
+    /*
+        Gambar upload Cloudinary wajib membawa:
+        - public ID milik akun yang sedang login;
+        - URL Cloudinary;
+        - dimensi;
+        - ukuran hasil upload.
+    */
+    if (imagePublicId) {
+
+        const expectedPublicIdPrefix =
+            getClassFeedImagePublicIdPrefix(
+                actorType,
+                actorId
+            );
+
+        const expectedUrlPath =
+            `/${CLOUDINARY_CLOUD_NAME}/image/upload/`;
+
+
+        if (
+            !imagePublicId.startsWith(
+                expectedPublicIdPrefix
+            ) ||
+            parsedImageUrl.hostname !==
+                "res.cloudinary.com" ||
+            !parsedImageUrl.pathname.startsWith(
+                expectedUrlPath
+            )
+        ) {
+            throw new Error(
+                "Gambar upload Classroom Feed tidak valid."
+            );
+        }
+
+
+        if (
+            !Number.isFinite(rawImageBytes) ||
+            rawImageBytes <= 0
+        ) {
+            throw new Error(
+                "Ukuran gambar Classroom Feed tidak valid."
+            );
+        }
+
+
+        const imageBytes =
+            Math.round(
+                rawImageBytes
+            );
+
+
+        if (
+            imageBytes >
+            CLASS_FEED_IMAGE_MAX_BYTES
+        ) {
+            throw new Error(
+                "Ukuran gambar maksimal 2 MB."
+            );
+        }
+
+
+        if (
+            imageWidth === null ||
+            imageHeight === null
+        ) {
+            throw new Error(
+                "Dimensi gambar Classroom Feed tidak valid."
+            );
+        }
+
+
+        return {
+            imageUrl,
+            imagePublicId,
+            imageWidth,
+            imageHeight,
+            imageBytes
+        };
+
+    }
+
+
+    /*
+        URL eksternal tidak mempunyai public ID,
+        sehingga tidak boleh dihapus dari Cloudinary.
+    */
+    return {
+        imageUrl,
+        imagePublicId:
+            null,
+
+        imageWidth,
+        imageHeight,
+        imageBytes:
+            null
+    };
+
+}
+
+
+async function deleteClassFeedImage(
+    publicId
+) {
+
+    const cleanPublicId =
+        String(
+            publicId ||
+            ""
+        ).trim();
+
+
+    if (
+        !cleanPublicId ||
+        !isCloudinaryConfigured()
+    ) {
+        return;
+    }
+
+
+    try {
+
+        await cloudinary.uploader.destroy(
+            cleanPublicId,
+            {
+                resource_type:
+                    "image",
+
+                invalidate:
+                    true
+            }
+        );
+
+    } catch (error) {
+
+        /*
+            Kegagalan cleanup Cloudinary tidak boleh
+            membatalkan penghapusan post dari database.
+        */
+        console.error(
+            "Gagal membersihkan gambar Classroom Feed:",
+            error
+        );
+
+    }
+
+}
+
+
+function isClassFeedApiPath(
+    requestPath
+) {
+
+    return (
+        requestPath ===
+            "/api/classroom-feed/image-upload-signature" ||
+
+        requestPath ===
+            "/api/classroom-feed/image" ||
+
+        requestPath.startsWith(
+            "/api/admin/announcements"
+        ) ||
+
+        /^\/api\/student\/\d+\/announcements(?:\/|$)/
+            .test(requestPath) ||
+
+        /^\/api\/announcements\/\d+\/replies(?:\/|$)/
+            .test(requestPath)
+    );
+
+}
+
+
+/*
+    Semua endpoint Classroom Feed menunggu migrasi
+    selesai sebelum mengakses kolom gambar.
+*/
+app.use(
+    async (
+        req,
+        res,
+        next
+    ) => {
+
+        if (
+            !isClassFeedApiPath(
+                req.path
+            )
+        ) {
+            next();
+            return;
+        }
+
+
+        try {
+
+            await ensureClassFeedImageColumns();
+            next();
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menyiapkan kolom gambar Classroom Feed:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Penyimpanan gambar Classroom Feed tidak dapat disiapkan."
+            });
+
+        }
+
+    }
+);
+
+
+/*
+    Signature dapat diminta oleh siswa maupun
+    Admin/Guru yang sedang login.
+*/
+app.post(
+    "/api/classroom-feed/image-upload-signature",
+    async (
+        req,
+        res
+    ) => {
+
+        const actor =
+            getClassFeedActor(req);
+
+
+        if (!actor) {
+            return res.status(401).json({
+                success:
+                    false,
+
+                message:
+                    "Harus login untuk mengunggah gambar."
+            });
+        }
+
+
+        if (!isCloudinaryConfigured()) {
+            return res.status(503).json({
+                success:
+                    false,
+
+                message:
+                    "Layanan gambar belum dikonfigurasi."
+            });
+        }
+
+
+        try {
+
+            const timestamp =
+                Math.floor(
+                    Date.now() / 1000
+                );
+
+            const publicId =
+                createClassFeedImagePublicId(
+                    actor.type,
+                    actor.id
+                );
+
+
+            const parametersToUpload = {
+                timestamp,
+
+                asset_folder:
+                    getClassFeedImageAssetFolder(
+                        actor.type,
+                        actor.id
+                    ),
+
+                public_id:
+                    publicId,
+
+                upload_preset:
+                    CLOUDINARY_UPLOAD_PRESET,
+
+                allowed_formats:
+                    CLASS_FEED_IMAGE_ALLOWED_FORMATS,
+
+                transformation:
+                    CLASS_FEED_IMAGE_UPLOAD_TRANSFORMATION
+            };
+
+
+            const signature =
+                cloudinary.utils
+                    .api_sign_request(
+                        parametersToUpload,
+
+                        process.env
+                            .CLOUDINARY_API_SECRET
+                    );
+
+
+            return res.json({
+                success:
+                    true,
+
+                uploadUrl:
+                    `https://api.cloudinary.com/v1_1/${
+                        encodeURIComponent(
+                            CLOUDINARY_CLOUD_NAME
+                        )
+                    }/image/upload`,
+
+                apiKey:
+                    process.env
+                        .CLOUDINARY_API_KEY,
+
+                signature,
+
+                parameters:
+                    parametersToUpload,
+
+                maxBytes:
+                    CLASS_FEED_IMAGE_MAX_BYTES,
+
+                acceptedTypes:
+                    CLASS_FEED_IMAGE_ACCEPTED_TYPES
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menyiapkan upload gambar Classroom Feed:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Upload gambar tidak dapat disiapkan."
+            });
+
+        }
+
+    }
+);
+
+
+/*
+    Dipakai frontend jika upload berhasil tetapi
+    pembuatan post gagal, supaya tidak ada file yatim.
+*/
+app.delete(
+    "/api/classroom-feed/image",
+    async (
+        req,
+        res
+    ) => {
+
+        const actor =
+            getClassFeedActor(req);
+
+
+        if (!actor) {
+            return res.status(401).json({
+                success:
+                    false,
+
+                message:
+                    "Harus login untuk menghapus gambar."
+            });
+        }
+
+
+        const publicId =
+            String(
+                req.body?.publicId ||
+                ""
+            ).trim();
+
+        const expectedPrefix =
+            getClassFeedImagePublicIdPrefix(
+                actor.type,
+                actor.id
+            );
+
+
+        if (
+            !publicId ||
+            publicId.length > 255 ||
+            !publicId.startsWith(
+                expectedPrefix
+            )
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Identitas gambar tidak valid."
+            });
+        }
+
+
+        try {
+
+            /*
+                Jangan izinkan endpoint cleanup menghapus
+                gambar yang sudah dipakai oleh sebuah post.
+            */
+            const savedImage =
+                await tursoDb.get(
+                    `
+                        SELECT id
+                        FROM announcements
+                        WHERE image_public_id = ?
+                        LIMIT 1
+                    `,
+                    [
+                        publicId
+                    ]
+                );
+
+
+            if (savedImage) {
+                return res.status(409).json({
+                    success:
+                        false,
+
+                    message:
+                        "Gambar sudah digunakan oleh sebuah post."
+                });
+            }
+
+
+            await deleteClassFeedImage(
+                publicId
+            );
+
+
+            return res.json({
+                success:
+                    true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menghapus upload Classroom Feed:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Gambar tidak dapat dibersihkan."
             });
 
         }
@@ -22040,47 +22905,74 @@ app.post(
             Number(req.session.adminId);
 
 
+         const requestBody =
+            req.body || {};
+
         const {
             message,
             className,
             mentions = []
-        } = req.body;
-
-
-        if (
-            !message ||
-            message.trim().length === 0
-        ) {
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Isi announcement wajib diisi."
-            });
-
-        }
+        } = requestBody;
 
 
         if (!Array.isArray(mentions)) {
-
             return res.status(400).json({
-                success: false,
+                success:
+                    false,
+
                 message:
                     "Data mention tidak valid."
             });
-
         }
 
 
         const cleanMessage =
-            message.trim();
-
+            String(
+                message || ""
+            ).trim();
 
         const cleanClass =
-            className &&
-            className.trim().length > 0
-                ? className.trim()
-                : null;
+            String(
+                className || ""
+            ).trim() || null;
+
+
+        let cleanImage;
+
+        try {
+
+            cleanImage =
+                cleanClassFeedPostImage(
+                    requestBody,
+                    "admin",
+                    numericAdminId
+                );
+
+        } catch (validationError) {
+
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    validationError.message
+            });
+
+        }
+
+
+        if (
+            !cleanMessage &&
+            !cleanImage.imageUrl
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Isi post atau gambar wajib diisi."
+            });
+        }
 
 
         try {
@@ -22127,14 +23019,24 @@ FROM admins
                         INSERT INTO announcements (
                             admin_id,
                             class_name,
-                            message
+                            message,
+                            image_url,
+                            image_public_id,
+                            image_width,
+                            image_height,
+                            image_bytes
                         )
-                        VALUES (?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     `,
                     [
                         numericAdminId,
                         cleanClass,
-                        cleanMessage
+                        cleanMessage,
+                        cleanImage.imageUrl,
+                        cleanImage.imagePublicId,
+                        cleanImage.imageWidth,
+                        cleanImage.imageHeight,
+                        cleanImage.imageBytes
                     ]
                 );
 
@@ -22212,6 +23114,21 @@ return res.json({
         message:
             cleanMessage,
 
+        image_url:
+            cleanImage.imageUrl,
+
+        image_public_id:
+            cleanImage.imagePublicId,
+
+        image_width:
+            cleanImage.imageWidth,
+
+        image_height:
+            cleanImage.imageHeight,
+
+        image_bytes:
+            cleanImage.imageBytes,
+
         created_at:
             createdAt,
 
@@ -22278,35 +23195,24 @@ app.post(
         }
 
 
+        const requestBody =
+            req.body || {};
+
         const {
             message,
             target = "class",
             mentions = []
-        } = req.body;
+        } = requestBody;
 
 
         if (!Array.isArray(mentions)) {
-
             return res.status(400).json({
-                success: false,
+                success:
+                    false,
+
                 message:
                     "Data mention tidak valid."
             });
-
-        }
-
-
-        if (
-            !message ||
-            message.trim().length === 0
-        ) {
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Isi announcement wajib diisi."
-            });
-
         }
 
 
@@ -22314,13 +23220,57 @@ app.post(
             target !== "class" &&
             target !== "global"
         ) {
-
             return res.status(400).json({
-                success: false,
+                success:
+                    false,
+
                 message:
                     "Target announcement tidak valid."
             });
+        }
 
+
+        const cleanMessage =
+            String(
+                message || ""
+            ).trim();
+
+
+        let cleanImage;
+
+        try {
+
+            cleanImage =
+                cleanClassFeedPostImage(
+                    requestBody,
+                    "student",
+                    studentId
+                );
+
+        } catch (validationError) {
+
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    validationError.message
+            });
+
+        }
+
+
+        if (
+            !cleanMessage &&
+            !cleanImage.imageUrl
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Isi post atau gambar wajib diisi."
+            });
         }
 
 
@@ -22374,14 +23324,24 @@ FROM students
                         INSERT INTO announcements (
                             student_id,
                             class_name,
-                            message
+                            message,
+                            image_url,
+                            image_public_id,
+                            image_width,
+                            image_height,
+                            image_bytes
                         )
-                        VALUES (?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     `,
                     [
                         studentId,
                         className,
-                        message.trim()
+                        cleanMessage,
+                        cleanImage.imageUrl,
+                        cleanImage.imagePublicId,
+                        cleanImage.imageWidth,
+                        cleanImage.imageHeight,
+                        cleanImage.imageBytes
                     ]
                 );
 
@@ -22457,7 +23417,22 @@ return res.json({
             className,
 
         message:
-            message.trim(),
+            cleanMessage,
+
+        image_url:
+            cleanImage.imageUrl,
+
+        image_public_id:
+            cleanImage.imagePublicId,
+
+        image_width:
+            cleanImage.imageWidth,
+
+        image_height:
+            cleanImage.imageHeight,
+
+        image_bytes:
+            cleanImage.imageBytes,
 
         created_at:
             createdAt,
@@ -22492,6 +23467,21 @@ return res.json({
 async function deleteAnnouncementFeedData(
     announcementId
 ) {
+
+    const announcement =
+        await tursoDb.get(
+            `
+                SELECT
+                    id,
+                    image_public_id
+                FROM announcements
+                WHERE id = ?
+            `,
+            [
+                announcementId
+            ]
+        );
+
 
     await tursoDb.batch(
         [
@@ -22537,6 +23527,19 @@ async function deleteAnnouncementFeedData(
         ],
         "immediate"
     );
+
+
+    /*
+        External URL tidak mempunyai public ID.
+        Hanya upload Cloudinary yang dibersihkan.
+    */
+    if (announcement?.image_public_id) {
+
+        await deleteClassFeedImage(
+            announcement.image_public_id
+        );
+
+    }
 
 }
 
@@ -22808,7 +23811,12 @@ app.get(
                                 announcements.student_id,
                                 announcements.admin_id,
                                 announcements.class_name,
-                                announcements.message,
+announcements.message,
+                                announcements.image_url,
+                                announcements.image_public_id,
+                                announcements.image_width,
+                                announcements.image_height,
+                                announcements.image_bytes,
                                 announcements.created_at,
 
                                 students.name
@@ -23616,6 +24624,11 @@ app.get(
                             announcements.class_name,
                             announcements.message,
                             announcements.created_at,
+                            announcements.image_url,
+announcements.image_public_id,
+announcements.image_width,
+announcements.image_height,
+announcements.image_bytes,
 
                             students.name
                                 AS student_creator_name,
@@ -23725,6 +24738,11 @@ app.get(
                         announcements.class_name,
                         announcements.message,
                         announcements.created_at,
+                        announcements.image_url,
+announcements.image_public_id,
+announcements.image_width,
+announcements.image_height,
+announcements.image_bytes,
 
 students.name AS student_creator_name,
 students.class_name AS student_creator_class,
@@ -24060,6 +25078,11 @@ app.get(
                             announcements.class_name,
                             announcements.message,
                             announcements.created_at,
+                            announcements.image_url,
+announcements.image_public_id,
+announcements.image_width,
+announcements.image_height,
+announcements.image_bytes,
 
                             students.name
                                 AS student_creator_name,
@@ -25077,7 +26100,8 @@ SELECT
     student_id,
     admin_id,
     class_name,
-    message
+    message,
+    image_url
 FROM announcements
 WHERE id = ?
             `,
@@ -25200,7 +26224,12 @@ const savedMentions =
             announcement.admin_id,
 
         postMessage:
-            announcement.message
+            announcement.message ||
+            (
+                announcement.image_url
+                    ? "📷 Gambar"
+                    : ""
+            )
     });
 
 const createdAt =
@@ -25890,7 +26919,8 @@ SELECT
     student_id,
     admin_id,
     class_name,
-    message
+    message,
+    image_url
 FROM announcements
 WHERE id = ?
             `,
@@ -25995,7 +27025,12 @@ const savedMentions =
             announcement.admin_id,
 
         postMessage:
-            announcement.message
+            announcement.message ||
+            (
+                announcement.image_url
+                    ? "📷 Gambar"
+                    : ""
+            )
     });
 
 
@@ -27546,6 +28581,126 @@ async function initializePublicAnnouncementTargets() {
 
     }
 
+        /*
+        Kolom gambar Information Board.
+        Announcement lama otomatis tetap tanpa gambar.
+    */
+    const announcementColumnNames =
+        new Set(
+            announcementColumns.map(
+                column =>
+                    String(
+                        column.name
+                    )
+            )
+        );
+
+
+    const imageColumnMigrations = [
+        {
+            name:
+                "image_url",
+
+            sql: `
+                ALTER TABLE public_announcements
+                ADD COLUMN image_url TEXT
+            `
+        },
+
+        {
+            name:
+                "image_public_id",
+
+            sql: `
+                ALTER TABLE public_announcements
+                ADD COLUMN image_public_id TEXT
+            `
+        },
+
+        {
+            name:
+                "image_width",
+
+            sql: `
+                ALTER TABLE public_announcements
+                ADD COLUMN image_width INTEGER
+            `
+        },
+
+        {
+            name:
+                "image_height",
+
+            sql: `
+                ALTER TABLE public_announcements
+                ADD COLUMN image_height INTEGER
+            `
+        },
+
+        {
+            name:
+                "image_bytes",
+
+            sql: `
+                ALTER TABLE public_announcements
+                ADD COLUMN image_bytes INTEGER
+            `
+        }
+    ];
+
+
+    for (
+        const migration
+        of imageColumnMigrations
+    ) {
+
+        if (
+            announcementColumnNames.has(
+                migration.name
+            )
+        ) {
+            continue;
+        }
+
+
+        try {
+
+            await tursoDb.run(
+                migration.sql
+            );
+
+            announcementColumnNames.add(
+                migration.name
+            );
+
+        } catch (error) {
+
+            /*
+                Aman ketika dua instance Vercel
+                menjalankan migrasi bersamaan.
+            */
+            if (
+                /duplicate column name/i.test(
+                    String(
+                        error?.message ||
+                        error
+                    )
+                )
+            ) {
+                announcementColumnNames.add(
+                    migration.name
+                );
+
+                continue;
+            }
+
+
+            throw error;
+
+        }
+
+    }
+
 
     /*
         Tabel penghubung Announcement
@@ -27820,6 +28975,558 @@ async function attachPublicAnnouncementTargets(
 }
 
 // ========================================
+// INFORMATION BOARD IMAGE
+// ========================================
+
+function getInformationBoardImageAssetFolder(
+    adminId
+) {
+
+    return (
+        `lms/information-board/` +
+        `admin/${adminId}`
+    );
+
+}
+
+
+function getInformationBoardImagePublicIdPrefix(
+    adminId
+) {
+
+    return (
+        `information-admin-` +
+        `${adminId}-`
+    );
+
+}
+
+
+function createInformationBoardImagePublicId(
+    adminId
+) {
+
+    return (
+        getInformationBoardImagePublicIdPrefix(
+            adminId
+        ) +
+        `${Date.now()}-` +
+        crypto
+            .randomBytes(8)
+            .toString("hex")
+    );
+
+}
+
+
+function cleanInformationBoardImage(
+    rawBody,
+    adminId
+) {
+
+    const imageUrl =
+        String(
+            rawBody?.imageUrl ||
+            ""
+        ).trim();
+
+    const imagePublicId =
+        String(
+            rawBody?.imagePublicId ||
+            ""
+        ).trim();
+
+
+    if (!imageUrl) {
+
+        if (imagePublicId) {
+            throw new Error(
+                "Data gambar Information Board tidak lengkap."
+            );
+        }
+
+
+        return {
+            imageUrl:
+                null,
+
+            imagePublicId:
+                null,
+
+            imageWidth:
+                null,
+
+            imageHeight:
+                null,
+
+            imageBytes:
+                null
+        };
+
+    }
+
+
+    if (imageUrl.length > 3000) {
+        throw new Error(
+            "URL gambar Information Board terlalu panjang."
+        );
+    }
+
+
+    if (imagePublicId.length > 255) {
+        throw new Error(
+            "Identitas gambar Information Board tidak valid."
+        );
+    }
+
+
+    let parsedImageUrl;
+
+    try {
+
+        parsedImageUrl =
+            new URL(
+                imageUrl
+            );
+
+    } catch {
+
+        throw new Error(
+            "URL gambar Information Board tidak valid."
+        );
+
+    }
+
+
+    if (
+        parsedImageUrl.protocol !==
+        "https:"
+    ) {
+        throw new Error(
+            "URL gambar Information Board harus menggunakan HTTPS."
+        );
+    }
+
+
+    const imageWidth =
+        cleanClassFeedImageDimension(
+            rawBody?.imageWidth
+        );
+
+    const imageHeight =
+        cleanClassFeedImageDimension(
+            rawBody?.imageHeight
+        );
+
+    const rawImageBytes =
+        Number(
+            rawBody?.imageBytes
+        );
+
+
+    if (imagePublicId) {
+
+        const expectedPublicIdPrefix =
+            getInformationBoardImagePublicIdPrefix(
+                adminId
+            );
+
+        const expectedUrlPath =
+            `/${CLOUDINARY_CLOUD_NAME}/image/upload/`;
+
+
+        if (
+            !imagePublicId.startsWith(
+                expectedPublicIdPrefix
+            ) ||
+            parsedImageUrl.hostname !==
+                "res.cloudinary.com" ||
+            !parsedImageUrl.pathname.startsWith(
+                expectedUrlPath
+            )
+        ) {
+            throw new Error(
+                "Gambar upload Information Board tidak valid."
+            );
+        }
+
+
+        if (
+            !Number.isFinite(rawImageBytes) ||
+            rawImageBytes <= 0
+        ) {
+            throw new Error(
+                "Ukuran gambar Information Board tidak valid."
+            );
+        }
+
+
+        const imageBytes =
+            Math.round(
+                rawImageBytes
+            );
+
+
+        if (
+            imageBytes >
+            CLASS_FEED_IMAGE_MAX_BYTES
+        ) {
+            throw new Error(
+                "Ukuran gambar maksimal 2 MB."
+            );
+        }
+
+
+        if (
+            imageWidth === null ||
+            imageHeight === null
+        ) {
+            throw new Error(
+                "Dimensi gambar Information Board tidak valid."
+            );
+        }
+
+
+        return {
+            imageUrl,
+            imagePublicId,
+            imageWidth,
+            imageHeight,
+            imageBytes
+        };
+
+    }
+
+
+    /*
+        URL eksternal tidak mempunyai public ID
+        dan tidak boleh dihapus melalui Cloudinary.
+    */
+    return {
+        imageUrl,
+        imagePublicId:
+            null,
+
+        imageWidth,
+        imageHeight,
+        imageBytes:
+            null
+    };
+
+}
+
+
+async function deleteInformationBoardImage(
+    publicId
+) {
+
+    const cleanPublicId =
+        String(
+            publicId ||
+            ""
+        ).trim();
+
+
+    if (
+        !cleanPublicId ||
+        !isCloudinaryConfigured()
+    ) {
+        return;
+    }
+
+
+    try {
+
+        await cloudinary.uploader.destroy(
+            cleanPublicId,
+            {
+                resource_type:
+                    "image",
+
+                invalidate:
+                    true
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Gagal membersihkan gambar Information Board:",
+            error
+        );
+
+    }
+
+}
+
+
+/*
+    Signature upload khusus Information Board.
+*/
+app.post(
+    "/api/admin/public-announcements/image-upload-signature",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.adminId) {
+            return res.status(401).json({
+                success:
+                    false,
+
+                message:
+                    "Harus login sebagai guru."
+            });
+        }
+
+
+        if (!isCloudinaryConfigured()) {
+            return res.status(503).json({
+                success:
+                    false,
+
+                message:
+                    "Layanan gambar belum dikonfigurasi."
+            });
+        }
+
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+
+        if (
+            !Number.isInteger(adminId) ||
+            adminId <= 0
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Identitas Admin/Guru tidak valid."
+            });
+        }
+
+
+        try {
+
+            await ensurePublicAnnouncementTargets();
+
+
+            const timestamp =
+                Math.floor(
+                    Date.now() / 1000
+                );
+
+            const publicId =
+                createInformationBoardImagePublicId(
+                    adminId
+                );
+
+
+            const parametersToUpload = {
+                timestamp,
+
+                asset_folder:
+                    getInformationBoardImageAssetFolder(
+                        adminId
+                    ),
+
+                public_id:
+                    publicId,
+
+                upload_preset:
+                    CLOUDINARY_UPLOAD_PRESET,
+
+                allowed_formats:
+                    CLASS_FEED_IMAGE_ALLOWED_FORMATS,
+
+                transformation:
+                    CLASS_FEED_IMAGE_UPLOAD_TRANSFORMATION
+            };
+
+
+            const signature =
+                cloudinary.utils
+                    .api_sign_request(
+                        parametersToUpload,
+
+                        process.env
+                            .CLOUDINARY_API_SECRET
+                    );
+
+
+            return res.json({
+                success:
+                    true,
+
+                uploadUrl:
+                    `https://api.cloudinary.com/v1_1/${
+                        encodeURIComponent(
+                            CLOUDINARY_CLOUD_NAME
+                        )
+                    }/image/upload`,
+
+                apiKey:
+                    process.env
+                        .CLOUDINARY_API_KEY,
+
+                signature,
+
+                parameters:
+                    parametersToUpload,
+
+                maxBytes:
+                    CLASS_FEED_IMAGE_MAX_BYTES,
+
+                acceptedTypes:
+                    CLASS_FEED_IMAGE_ACCEPTED_TYPES
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menyiapkan upload gambar Information Board:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Upload gambar tidak dapat disiapkan."
+            });
+
+        }
+
+    }
+);
+
+
+/*
+    Cleanup upload jika Cloudinary berhasil,
+    tetapi penyimpanan announcement gagal.
+*/
+app.delete(
+    "/api/admin/public-announcements/image",
+    async (
+        req,
+        res
+    ) => {
+
+        if (!req.session.adminId) {
+            return res.status(401).json({
+                success:
+                    false,
+
+                message:
+                    "Harus login sebagai guru."
+            });
+        }
+
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+        const publicId =
+            String(
+                req.body?.publicId ||
+                ""
+            ).trim();
+
+        const expectedPrefix =
+            getInformationBoardImagePublicIdPrefix(
+                adminId
+            );
+
+
+        if (
+            !publicId ||
+            publicId.length > 255 ||
+            !publicId.startsWith(
+                expectedPrefix
+            )
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Identitas gambar tidak valid."
+            });
+        }
+
+
+        try {
+
+            await ensurePublicAnnouncementTargets();
+
+
+            const savedImage =
+                await tursoDb.get(
+                    `
+                        SELECT id
+                        FROM public_announcements
+                        WHERE image_public_id = ?
+                        LIMIT 1
+                    `,
+                    [
+                        publicId
+                    ]
+                );
+
+
+            if (savedImage) {
+                return res.status(409).json({
+                    success:
+                        false,
+
+                    message:
+                        "Gambar sudah digunakan oleh sebuah announcement."
+                });
+            }
+
+
+            await deleteInformationBoardImage(
+                publicId
+            );
+
+
+            return res.json({
+                success:
+                    true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membersihkan upload Information Board:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success:
+                    false,
+
+                message:
+                    "Gambar tidak dapat dibersihkan."
+            });
+
+        }
+
+    }
+);
+
+// ========================================
 // ADMIN BUAT ANNOUNCEMENT
 // ========================================
 
@@ -27844,49 +29551,83 @@ app.post(
             );
 
 
+         const requestBody =
+            req.body || {};
+
         const {
             title,
             message,
             classIds = []
-        } = req.body;
+        } = requestBody;
 
 
-        if (
-            typeof title !== "string" ||
-            title.trim().length === 0
-        ) {
+        const cleanTitle =
+            String(
+                title || ""
+            ).trim();
 
+        const cleanMessage =
+            String(
+                message || ""
+            ).trim();
+
+
+        if (!cleanTitle) {
             return res.status(400).json({
-                success: false,
+                success:
+                    false,
+
                 message:
                     "Judul wajib diisi."
             });
-
-        }
-
-
-        if (
-            typeof message !== "string" ||
-            message.trim().length === 0
-        ) {
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Isi announcement wajib diisi."
-            });
-
         }
 
 
         if (!Array.isArray(classIds)) {
-
             return res.status(400).json({
-                success: false,
+                success:
+                    false,
+
                 message:
                     "Daftar kelas tidak valid."
             });
+        }
 
+
+        let cleanImage;
+
+        try {
+
+            cleanImage =
+                cleanInformationBoardImage(
+                    requestBody,
+                    adminId
+                );
+
+        } catch (validationError) {
+
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    validationError.message
+            });
+
+        }
+
+
+        if (
+            !cleanMessage &&
+            !cleanImage.imageUrl
+        ) {
+            return res.status(400).json({
+                success:
+                    false,
+
+                message:
+                    "Isi announcement atau gambar wajib ditambahkan."
+            });
         }
 
 
@@ -28025,15 +29766,25 @@ app.post(
                             admin_id,
                             title,
                             message,
-                            target_type
+                            target_type,
+                            image_url,
+                            image_public_id,
+                            image_width,
+                            image_height,
+                            image_bytes
                         )
-                        VALUES (?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `,
                     [
                         adminId,
-                        title.trim(),
-                        message.trim(),
-                        resolvedTargetType
+                        cleanTitle,
+                        cleanMessage,
+                        resolvedTargetType,
+                        cleanImage.imageUrl,
+                        cleanImage.imagePublicId,
+                        cleanImage.imageWidth,
+                        cleanImage.imageHeight,
+                        cleanImage.imageBytes
                     ]
                 );
 
@@ -28106,10 +29857,25 @@ app.post(
                         admin.name,
 
                     title:
-                        title.trim(),
+                        cleanTitle,
 
                     message:
-                        message.trim(),
+                        cleanMessage,
+
+                    image_url:
+                        cleanImage.imageUrl,
+
+                    image_public_id:
+                        cleanImage.imagePublicId,
+
+                    image_width:
+                        cleanImage.imageWidth,
+
+                    image_height:
+                        cleanImage.imageHeight,
+
+                    image_bytes:
+                        cleanImage.imageBytes,
 
                     target_type:
                         resolvedTargetType,
@@ -28195,6 +29961,18 @@ app.post(
 
             }
 
+                        /*
+                Bersihkan upload jika announcement
+                gagal diselesaikan.
+            */
+            if (cleanImage?.imagePublicId) {
+
+                await deleteInformationBoardImage(
+                    cleanImage.imagePublicId
+                );
+
+            }
+
 
             return res.status(500).json({
                 success: false,
@@ -28259,9 +30037,16 @@ app.get(
                         SELECT
                             public_announcements.id,
                             public_announcements.title,
-                            public_announcements.message,
-                            public_announcements.created_at,
-                            public_announcements.target_type,
+
+
+public_announcements.message,
+public_announcements.image_url,
+public_announcements.image_public_id,
+public_announcements.image_width,
+public_announcements.image_height,
+public_announcements.image_bytes,
+public_announcements.created_at,
+public_announcements.target_type,
 
                             admins.id
                                 AS admin_id,
@@ -28324,9 +30109,15 @@ app.get(
                             SELECT
                                 public_announcements.id,
                                 public_announcements.title,
-                                public_announcements.message,
-                                public_announcements.created_at,
-                                public_announcements.target_type,
+
+public_announcements.message,
+public_announcements.image_url,
+public_announcements.image_public_id,
+public_announcements.image_width,
+public_announcements.image_height,
+public_announcements.image_bytes,
+public_announcements.created_at,
+public_announcements.target_type,
 
                                 admins.id
                                     AS admin_id,
@@ -28395,9 +30186,15 @@ AND
                         SELECT
                             public_announcements.id,
                             public_announcements.title,
-                            public_announcements.message,
-                            public_announcements.created_at,
-                            public_announcements.target_type,
+
+public_announcements.message,
+public_announcements.image_url,
+public_announcements.image_public_id,
+public_announcements.image_width,
+public_announcements.image_height,
+public_announcements.image_bytes,
+public_announcements.created_at,
+public_announcements.target_type,
 
                             admins.id
                                 AS admin_id,
@@ -28508,7 +30305,9 @@ app.delete(
             const announcement =
                 await tursoDb.get(
                     `
-                        SELECT id
+                        SELECT
+                            id,
+                            image_public_id
                         FROM public_announcements
                         WHERE id = ?
                     `,
@@ -28558,6 +30357,17 @@ app.delete(
                 ],
                 "immediate"
             );
+
+
+            if (
+                announcement.image_public_id
+            ) {
+
+                await deleteInformationBoardImage(
+                    announcement.image_public_id
+                );
+
+            }
 
 
             return res.json({
@@ -30279,6 +32089,11 @@ app.get(
                             announcements.admin_id,
                             announcements.class_name,
                             announcements.message,
+                            announcements.image_url,
+                            announcements.image_public_id,
+                            announcements.image_width,
+                            announcements.image_height,
+                            announcements.image_bytes,
                             announcements.created_at,
 
                             students.name

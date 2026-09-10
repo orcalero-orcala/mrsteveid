@@ -32,7 +32,54 @@
         notificationList: $("#studentNotificationList"),
         blocker: $("#studentFeedModerationBlocker"),
         feedContent: $(".feed-page-content"),
-        recoveryOverlay: $("#studentFeedRecoveryOverlay")
+        recoveryOverlay: $("#studentFeedRecoveryOverlay"),
+                imageButton:
+            $("#feedPostImageButton"),
+
+        imageAttachment:
+            $("#feedPostImageAttachment"),
+
+        imageAttachmentPreview:
+            $("#feedPostImageAttachmentPreview"),
+
+        imageAttachmentSource:
+            $("#feedPostImageAttachmentSource"),
+
+        imageRemoveButton:
+            $("#feedPostImageRemoveButton"),
+
+        imageDialogOverlay:
+            $("#feedImageDialogOverlay"),
+
+        imageDialogPreview:
+            $("#feedImageDialogPreview"),
+
+        imageDialogEmpty:
+            $("#feedImageDialogEmpty"),
+
+        imageDialogStatus:
+            $("#feedImageDialogStatus"),
+
+        imageDialogFile:
+            $("#feedImageDialogFile"),
+
+        imageDialogUrl:
+            $("#feedImageDialogUrl"),
+
+        imageDialogCheckUrl:
+            $("#feedImageDialogCheckUrlButton"),
+
+        imageDialogClear:
+            $("#feedImageDialogClearButton"),
+
+        imageDialogCancel:
+            $("#feedImageDialogCancelButton"),
+
+        imageDialogClose:
+            $("#feedImageDialogCloseButton"),
+
+        imageDialogConfirm:
+            $("#feedImageDialogConfirmButton")
     };
 
     const state = {
@@ -52,7 +99,18 @@
         pollCycle: 0,
         feedController: null,
         notificationController: null,
-        targetLoading: false
+        targetLoading: false,
+                postImage:
+            null,
+
+        dialogPostImage:
+            null,
+
+        dialogImageObjectUrl:
+            null,
+
+        imageDialogBusy:
+            false
     };
 
     const moderation = {
@@ -95,12 +153,84 @@
 
 function formatToolbarMarkup() {
     return `
-        <div class="feed-format-toolbar feed-reply-format-toolbar" aria-label="Format teks">
-            <button type="button" class="feed-format-button" data-format="bold" title="Bold"><strong>B</strong></button>
-            <button type="button" class="feed-format-button" data-format="italic" title="Italic"><em>I</em></button>
-            <button type="button" class="feed-format-button" data-format="underline" title="Underline"><u>U</u></button>
-            <button type="button" class="feed-format-button feed-format-clear-button" data-format="clear" title="Hapus formatting" aria-label="Hapus formatting"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L11 5H13L19 19"></path><path d="M7.5 14H16.5"></path><path d="M4 4L20 20"></path></svg></button>
-            <button type="button" class="feed-format-button feed-format-list-button" data-format="bullet" title="Daftar poin">• List</button>
+        <div
+            class="
+                feed-format-toolbar
+                feed-reply-format-toolbar
+            "
+            aria-label="Format teks reply"
+        >
+
+            <button
+                type="button"
+                class="feed-format-button"
+                data-format="bold"
+                title="Bold"
+                aria-label="Bold"
+            >
+                <strong>B</strong>
+            </button>
+
+            <button
+                type="button"
+                class="feed-format-button"
+                data-format="italic"
+                title="Italic"
+                aria-label="Italic"
+            >
+                <em>I</em>
+            </button>
+
+            <button
+                type="button"
+                class="feed-format-button"
+                data-format="underline"
+                title="Underline"
+                aria-label="Underline"
+            >
+                <u>U</u>
+            </button>
+
+            <button
+                type="button"
+                class="
+                    feed-format-button
+                    feed-format-clear-button
+                "
+                data-format="clear"
+                title="Hapus formatting"
+                aria-label="Hapus formatting"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path d="M5 19L11 5H13L19 19"></path>
+                    <path d="M7.5 14H16.5"></path>
+                    <path d="M4 4L20 20"></path>
+                </svg>
+            </button>
+
+            <button
+                type="button"
+                class="
+                    feed-format-button
+                    feed-format-list-button
+                "
+                data-format="bullet"
+                title="Daftar poin"
+                aria-label="Daftar poin"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M4 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM8 4.75h12v1.5H8v-1.5ZM4 13.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5ZM8 11.5h12V13H8v-1.5ZM4 20a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 4 20ZM8 18.25h12v1.5H8v-1.5Z"
+                    ></path>
+                </svg>
+            </button>
+
         </div>
     `;
 }
@@ -279,6 +409,22 @@ function editorPlainText(editor) {
         .replace(/\u00a0/g, " ");
 }
 
+function syncRichEditorEmptyState(editor) {
+    if (!editor) {
+        return;
+    }
+
+    const plainText =
+        editorPlainText(editor)
+            .replace(/\u200B/g, "")
+            .trim();
+
+    editor.classList.toggle(
+        "is-visually-empty",
+        plainText.length === 0
+    );
+}
+
 function serializeEditorChildren(element) {
     let result = "";
 
@@ -402,8 +548,9 @@ function serializeEditorNode(node) {
 function editorToMarkup(editor) {
     if (!editor) return "";
 
-    return serializeEditorChildren(editor)
-        .replace(/[ \t]+\n/g, "\n")
+return serializeEditorChildren(editor)
+    .replace(/\u200B/g, "")
+    .replace(/[ \t]+\n/g, "\n")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
 }
@@ -498,13 +645,40 @@ function selectEditorText(editor, start, end) {
 }
 
 function editorFromToolbar(button) {
-    const scope = button?.closest(
-        ".reply-editor, .composer-input-area"
-    );
+    if (!button) {
+        return null;
+    }
 
-    return scope?.querySelector(
-        ".feed-rich-editor"
-    ) || null;
+    /*
+     * Toolbar reply masih berada di reply-editor.
+     */
+    const replyEditor =
+        button.closest(
+            ".reply-editor"
+        );
+
+    if (replyEditor) {
+        return replyEditor.querySelector(
+            ".feed-rich-editor"
+        );
+    }
+
+    /*
+     * Toolbar post sekarang berada di action row.
+     * Cari editor dari form composer yang sama.
+     */
+    const composerForm =
+        button.closest(
+            ".feed-composer form"
+        );
+
+    if (composerForm) {
+        return composerForm.querySelector(
+            ".composer-input-area .feed-rich-editor"
+        );
+    }
+
+    return null;
 }
 
 function ensureEditorSelection(editor) {
@@ -529,8 +703,59 @@ function ensureEditorSelection(editor) {
     return selection;
 }
 
-function setFormatButtonState(button, active) {
-    if (!button || button.dataset.format === "clear") {
+/*
+ * State ini hanya mengatur visual tombol ketika mengetik.
+ * Formatting teks tetap sepenuhnya dijalankan browser.
+ */
+const editorFormatStates =
+    new WeakMap();
+
+function getEditorFormatStates(editor) {
+    if (!editorFormatStates.has(editor)) {
+        editorFormatStates.set(
+            editor,
+            new Map()
+        );
+    }
+
+    return editorFormatStates.get(
+        editor
+    );
+}
+
+function getFormatCommand(format) {
+    return {
+        bold: "bold",
+        italic: "italic",
+        underline: "underline",
+        bullet: "insertUnorderedList"
+    }[format] || null;
+}
+
+function readFormatCommandState(command) {
+    if (!command) {
+        return false;
+    }
+
+    try {
+        return Boolean(
+            document.queryCommandState(
+                command
+            )
+        );
+    } catch {
+        return false;
+    }
+}
+
+function setFormatButtonState(
+    button,
+    active
+) {
+    if (
+        !button ||
+        button.dataset.format === "clear"
+    ) {
         return;
     }
 
@@ -545,64 +770,228 @@ function setFormatButtonState(button, active) {
     );
 }
 
-function clearToolbarButtonStates() {
-    $$(".feed-format-button[data-format]").forEach(
-        button => setFormatButtonState(button, false)
-    );
+function toolbarFromEditor(editor) {
+    if (!editor) {
+        return null;
+    }
+
+    const replyEditor =
+        editor.closest(
+            ".reply-editor"
+        );
+
+    if (replyEditor) {
+        return replyEditor.querySelector(
+            ".feed-format-toolbar"
+        );
+    }
+
+    const composerForm =
+        editor.closest(
+            ".feed-composer form"
+        );
+
+    return composerForm?.querySelector(
+        ".feed-composer-action-row .feed-format-toolbar"
+    ) || null;
 }
 
-function syncFormatToolbar(editor) {
+function clearEditorTypingFormats(editor) {
     if (!editor) {
-        clearToolbarButtonStates();
         return;
     }
 
-    const scope = editor.closest(
-        ".reply-editor, .composer-input-area"
-    );
+    getEditorFormatStates(
+        editor
+    ).clear();
 
-    const toolbar = scope?.querySelector(
-        ".feed-format-toolbar"
-    );
+    const toolbar =
+        toolbarFromEditor(editor);
 
-    if (!toolbar) return;
-
-    const commandByFormat = {
-        bold: "bold",
-        italic: "italic",
-        underline: "underline",
-        bullet: "insertUnorderedList"
-    };
+    if (!toolbar) {
+        return;
+    }
 
     $$(
         ".feed-format-button[data-format]",
         toolbar
     ).forEach(button => {
-        const command =
-            commandByFormat[button.dataset.format];
-
-        if (!command) {
-            setFormatButtonState(button, false);
-            return;
-        }
-
-        let active = false;
-
-        try {
-            active = document.queryCommandState(command);
-        } catch {
-            active = false;
-        }
-
-        setFormatButtonState(button, active);
+        setFormatButtonState(
+            button,
+            false
+        );
     });
 }
 
-function activeRichEditor() {
-    const selection = window.getSelection();
-    const node = selection?.anchorNode;
+function clearToolbarButtonStates() {
+    $$(".feed-format-button[data-format]")
+        .forEach(button => {
+            setFormatButtonState(
+                button,
+                false
+            );
+        });
+}
 
-    if (!node) return null;
+function editorCaretElement(editor) {
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        !selection.anchorNode ||
+        !editor.contains(selection.anchorNode)
+    ) {
+        return null;
+    }
+
+    let node =
+        selection.anchorNode;
+
+    /*
+     * Jika caret berada langsung pada root editor,
+     * ambil elemen tepat sebelum caret.
+     */
+    if (
+        node === editor &&
+        selection.anchorOffset > 0
+    ) {
+        node =
+            editor.childNodes[
+                selection.anchorOffset - 1
+            ] || editor;
+
+        while (
+            node &&
+            node.lastChild
+        ) {
+            node =
+                node.lastChild;
+        }
+    }
+
+    return node?.nodeType ===
+        Node.ELEMENT_NODE
+            ? node
+            : node?.parentElement;
+}
+
+function readRenderedFormatState(
+    editor,
+    format
+) {
+    const element =
+        editorCaretElement(editor);
+
+    const command =
+        getFormatCommand(format);
+
+    if (
+        !element ||
+        element === editor
+    ) {
+        return readFormatCommandState(
+            command
+        );
+    }
+
+    const style =
+        window.getComputedStyle(element);
+
+    if (format === "bold") {
+        const numericWeight =
+            Number.parseInt(
+                style.fontWeight,
+                10
+            );
+
+        return (
+            style.fontWeight === "bold" ||
+            (
+                Number.isFinite(
+                    numericWeight
+                ) &&
+                numericWeight >= 600
+            )
+        );
+    }
+
+    if (format === "italic") {
+        return (
+            style.fontStyle === "italic" ||
+            style.fontStyle.startsWith(
+                "oblique"
+            ) ||
+            Boolean(
+                element.closest("em, i")
+            )
+        );
+    }
+
+    if (format === "underline") {
+        return (
+            String(
+                style.textDecorationLine ||
+                style.textDecoration
+            ).includes("underline") ||
+            Boolean(
+                element.closest("u")
+            )
+        );
+    }
+
+    if (format === "bullet") {
+        return Boolean(
+            element.closest("ul, ol")
+        );
+    }
+
+    return readFormatCommandState(
+        command
+    );
+}
+
+function syncFormatToolbar(editor) {
+    const toolbar = toolbarFromEditor(editor);
+    if (!toolbar) return;
+
+    const selection = window.getSelection();
+
+    // Jangan membaca format dari editor lain.
+    if (
+        !selection ||
+        !selection.rangeCount ||
+        !editor.contains(selection.anchorNode) ||
+        !editor.contains(selection.focusNode)
+    ) {
+        return;
+    }
+
+    $$(".feed-format-button[data-format]", toolbar)
+        .forEach(button => {
+            const command =
+                getFormatCommand(button.dataset.format);
+
+            setFormatButtonState(
+                button,
+                command
+                    ? readFormatCommandState(command)
+                    : false
+            );
+        });
+}
+
+function activeRichEditor() {
+    const selection =
+        window.getSelection();
+
+    const node =
+        selection?.anchorNode;
+
+    if (!node) {
+        return null;
+    }
 
     const element =
         node.nodeType === Node.ELEMENT_NODE
@@ -618,75 +1007,30 @@ function applyFeedFormatting(editor, format) {
     if (!editor) return;
 
     editor.focus();
-
     const selection = ensureEditorSelection(editor);
 
-    document.execCommand(
-        "styleWithCSS",
-        false,
-        false
-    );
+    document.execCommand("styleWithCSS", false, false);
 
     if (format === "clear") {
-        const collapsed =
-            !selection ||
-            selection.isCollapsed;
-
-        if (collapsed) {
-            /*
-             * Jika tidak ada teks yang diblok, matikan
-             * mode Bold, Italic dan Underline yang aktif.
-             */
-            ["bold", "italic", "underline"].forEach(
-                command => {
-                    try {
-                        if (
-                            document.queryCommandState(command)
-                        ) {
-                            document.execCommand(
-                                command,
-                                false,
-                                null
-                            );
-                        }
-                    } catch {
-                        // Abaikan browser yang tidak mendukung.
-                    }
+        if (selection?.isCollapsed) {
+            ["bold", "italic", "underline"].forEach(command => {
+                if (readFormatCommandState(command)) {
+                    document.execCommand(command, false, null);
                 }
-            );
+            });
         } else {
-            /*
-             * Jika ada selection, bersihkan format
-             * dari teks yang dipilih.
-             */
-            document.execCommand(
-                "removeFormat",
-                false,
-                null
-            );
+            document.execCommand("removeFormat", false, null);
         }
     } else {
-        const commands = {
-            bold: "bold",
-            italic: "italic",
-            underline: "underline",
-            bullet: "insertUnorderedList"
-        };
-
-        const command = commands[format];
-
+        const command = getFormatCommand(format);
         if (!command) return;
 
-        document.execCommand(
-            command,
-            false,
-            null
-        );
+        document.execCommand(command, false, null);
     }
 
-    editor.dispatchEvent(
-        new Event("input", { bubbles: true })
-    );
+    // Tidak membuat event input palsu atau membalik state sendiri.
+    syncRichEditorEmptyState(editor);
+    syncFormatToolbar(editor);
 
     requestAnimationFrame(() => {
         syncFormatToolbar(editor);
@@ -771,15 +1115,107 @@ function setRepliesOpen(card, open) {
 
     const panel = $(".reply-collapsible", card);
     const button = $(".reply-toggle-button", card);
+
+    if (!panel || !button) return;
+
+    open = Boolean(open);
+
+    const wasOpen =
+        button.getAttribute("aria-expanded") === "true";
+
+    if (wasOpen === open) return;
+
+    button.setAttribute("aria-expanded", String(open));
+
     const label = $("[data-reply-label]", button);
 
-    if (!panel || !button || !label) return;
+    if (label) {
+        label.textContent = open
+            ? "Sembunyikan replies"
+            : "Tampilkan replies";
+    }
 
-    panel.hidden = !open;
-    button.setAttribute("aria-expanded", String(open));
-    label.textContent = open
-        ? "Sembunyikan replies"
-        : "Tampilkan replies";
+    // Simpan kondisi visual saat ini, termasuk jika diklik cepat.
+    const currentStyle = getComputedStyle(panel);
+
+    const start = {
+        height: panel.hidden
+            ? 0
+            : panel.getBoundingClientRect().height,
+        opacity: panel.hidden
+            ? 0
+            : Number.parseFloat(currentStyle.opacity),
+        paddingTop: panel.hidden
+            ? "0px"
+            : currentStyle.paddingTop,
+        paddingBottom: panel.hidden
+            ? "0px"
+            : currentStyle.paddingBottom
+    };
+
+    if (panel._replyAnimation) {
+        panel._replyAnimation.cancel();
+        panel._replyAnimation = null;
+    }
+
+    const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (reduceMotion || typeof panel.animate !== "function") {
+        panel.hidden = !open;
+        return;
+    }
+
+    panel.hidden = false;
+
+    // Ukur ukuran dan padding asli setelah animasi lama dibatalkan.
+    const naturalStyle = getComputedStyle(panel);
+
+    const natural = {
+        height: panel.getBoundingClientRect().height,
+        opacity: Number.parseFloat(naturalStyle.opacity),
+        paddingTop: naturalStyle.paddingTop,
+        paddingBottom: naturalStyle.paddingBottom
+    };
+
+    const animation = panel.animate(
+        [
+            {
+                boxSizing: "border-box",
+                height: `${start.height}px`,
+                opacity: start.opacity,
+                paddingTop: start.paddingTop,
+                paddingBottom: start.paddingBottom,
+                minHeight: "0",
+                overflow: "hidden"
+            },
+            {
+                boxSizing: "border-box",
+                height: open ? `${natural.height}px` : "0px",
+                opacity: open ? natural.opacity : 0,
+                paddingTop: open ? natural.paddingTop : "0px",
+                paddingBottom: open ? natural.paddingBottom : "0px",
+                minHeight: "0",
+                overflow: "hidden"
+            }
+        ],
+        {
+            duration: 220,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "both"
+        }
+    );
+
+    panel._replyAnimation = animation;
+
+    animation.onfinish = () => {
+        if (panel._replyAnimation !== animation) return;
+
+        panel.hidden = !open;
+        panel._replyAnimation = null;
+        animation.cancel();
+    };
 }
 
     function applyFilter() {
@@ -800,106 +1236,2044 @@ function setRepliesOpen(card, open) {
         }
     }
 
-    function createReplyItem(postId, reply) {
-        const type = reply.sender_type || (reply.admin_id ? "admin" : "student");
-        const senderId = reply.sender_id ?? reply.student_id ?? reply.studentId ?? null;
-        const name = reply.sender_name || reply.student_name || (type === "admin" ? "Admin / Guru" : "Siswa");
-        const detail = type === "admin" ? "Admin / Guru" : (reply.class_name || "Siswa");
-        const picture = reply.profile_picture_url || reply.student_profile_picture_url || "";
-        const owner = type === "student" && Number(senderId) === studentId;
-        const item = document.createElement("div");
-        item.id = `reply-${reply.id}`;
-        item.className = "reply-item";
-        item.innerHTML = `
-            <div class="reply-author-row"><div class="reply-avatar">${type === "admin" ? teacherInitial(name) : profileInitial(name)}</div>
-            <div class="reply-author-info"><strong>${escapeHtml(name)} ${type === "admin" ? teacherBadge() : ""}</strong><span>${escapeHtml(detail)}</span></div></div>
-            <div class="reply-message">${formatMessage(reply.message, reply.mentions)}</div>
-            <div class="reply-footer"><span>${escapeHtml(dateTime(reply.created_at))}</span>
-            ${owner ? `<button type="button" class="reply-delete-button" data-action="delete-reply" data-post-id="${Number(postId)}" data-reply-id="${Number(reply.id)}">Hapus</button>` : ""}</div>`;
-        renderAvatar($(".reply-avatar", item), type, name, picture);
-        return item;
+        // =====================================
+    // CLASSROOM FEED POST IMAGE
+    // =====================================
+
+    const FEED_IMAGE_MAX_BYTES =
+        2 * 1024 * 1024;
+
+    const FEED_IMAGE_ACCEPTED_TYPES =
+        new Set([
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ]);
+
+
+    function setFeedImageDialogStatus(
+        message = "",
+        type = ""
+    ) {
+
+        ui.imageDialogStatus.textContent =
+            message;
+
+        ui.imageDialogStatus.classList.remove(
+            "is-error",
+            "is-success"
+        );
+
+        if (type) {
+            ui.imageDialogStatus.classList.add(
+                `is-${type}`
+            );
+        }
+
     }
 
-    function createPostCard(post) {
-        const isStudent = Number(post.student_id ?? post.studentId ?? 0) > 0;
-        const className = post.class_name ?? post.className ?? null;
-        const name = isStudent ? (post.student_creator_name || post.studentName || "Siswa") : (post.admin_creator_name || "Admin / Guru");
-        const detail = isStudent ? (post.student_creator_class || className || "Siswa") : "Admin / Guru";
-const picture =
-    isStudent
-        ? (
-            post.student_creator_profile_picture_url ||
-            post.student_profile_picture_url ||
-            post.studentProfilePictureUrl ||
-            ""
-        )
-        : (
-            post.admin_creator_profile_picture_url ||
-            post.admin_profile_picture_url ||
-            post.adminProfilePictureUrl ||
-            ""
+
+    function releaseFeedDialogObjectUrl() {
+
+        if (!state.dialogImageObjectUrl) {
+            return;
+        }
+
+
+        URL.revokeObjectURL(
+            state.dialogImageObjectUrl
         );
-        const owner = Number(post.student_id ?? post.studentId) === studentId;
-        const card = document.createElement("div");
-        card.id = `announcement-${post.id}`;
-        card.className = "feed-card";
-        card.dataset.feedClass = className || "";
-        card.innerHTML = `
-            <div class="feed-card-header"><div class="feed-author"><div class="feed-avatar">${isStudent ? profileInitial(name) : teacherInitial(name)}</div>
-            <div><strong>${escapeHtml(name)} ${isStudent ? "" : teacherBadge()}</strong><span>${escapeHtml(detail)} · ${escapeHtml(dateTime(post.created_at))}</span></div></div>
-            <span class="feed-scope-badge ${className ? "class" : "global"}">${className ? escapeHtml(className) : "Global"}</span></div>
-            <div class="feed-message">${formatMessage(post.message, post.mentions)}</div>
-            ${owner ? `<div class="feed-owner-actions"><button type="button" class="feed-delete-button" data-action="delete-post" data-post-id="${Number(post.id)}">Hapus</button></div>` : ""}
-<div class="feed-divider"></div>
 
-<div class="reply-section">
-    <button
-        type="button"
-        class="reply-toggle-button"
-        data-action="toggle-replies"
-        aria-expanded="false"
-    >
-        <span data-reply-label>Tampilkan replies</span>
-        (<span data-reply-count>0</span>)
-    </button>
+        state.dialogImageObjectUrl =
+            null;
 
-    <div class="reply-collapsible" hidden>
-        <div id="replies-${post.id}" class="reply-list">
-            <small>Belum ada reply.</small>
-        </div>
+    }
 
-        <form
-            class="reply-form reply-composer"
-            data-id="${Number(post.id)}"
-        >
-            <div class="reply-editor">
-<div
-    class="reply-input feed-rich-editor"
-    contenteditable="true"
-    role="textbox"
-    aria-multiline="true"
-    data-placeholder="Tulis reply... gunakan @ untuk mention"
-    spellcheck="true"
-></div>
 
-                ${formatToolbarMarkup()}
+    function releaseAttachedFeedImageObjectUrl() {
 
-                <div
-                    class="mention-suggestions"
-                    style="display:none;"
-                ></div>
+        if (
+            state.postImage?.type !== "file" ||
+            !state.postImage.previewUrl
+        ) {
+            return;
+        }
+
+
+        URL.revokeObjectURL(
+            state.postImage.previewUrl
+        );
+
+    }
+
+
+    function loadFeedImageSource(
+        source
+    ) {
+
+        return new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                const image =
+                    new Image();
+
+                let finished =
+                    false;
+
+
+                const timeout =
+                    window.setTimeout(
+                        () => {
+
+                            if (finished) return;
+
+                            finished =
+                                true;
+
+                            reject(
+                                new Error(
+                                    "Gambar terlalu lama dimuat."
+                                )
+                            );
+
+                        },
+                        15000
+                    );
+
+
+                image.referrerPolicy =
+                    "no-referrer";
+
+
+                image.onload =
+                    () => {
+
+                        if (finished) return;
+
+                        finished =
+                            true;
+
+                        window.clearTimeout(
+                            timeout
+                        );
+
+                        const width =
+                            Number(
+                                image.naturalWidth
+                            );
+
+                        const height =
+                            Number(
+                                image.naturalHeight
+                            );
+
+
+                        if (
+                            width <= 0 ||
+                            height <= 0
+                        ) {
+                            reject(
+                                new Error(
+                                    "Dimensi gambar tidak valid."
+                                )
+                            );
+
+                            return;
+                        }
+
+
+                        resolve({
+                            image,
+                            width,
+                            height
+                        });
+
+                    };
+
+
+                image.onerror =
+                    () => {
+
+                        if (finished) return;
+
+                        finished =
+                            true;
+
+                        window.clearTimeout(
+                            timeout
+                        );
+
+                        reject(
+                            new Error(
+                                "Gambar tidak dapat dimuat."
+                            )
+                        );
+
+                    };
+
+
+                image.src =
+                    source;
+
+            }
+        );
+
+    }
+
+
+    function validateFeedImageFile(
+        file
+    ) {
+
+        if (
+            !file ||
+            !FEED_IMAGE_ACCEPTED_TYPES.has(
+                file.type
+            )
+        ) {
+            throw new Error(
+                "Gunakan gambar JPEG, PNG, atau WebP."
+            );
+        }
+
+
+        if (
+            file.size >
+            FEED_IMAGE_MAX_BYTES
+        ) {
+            throw new Error(
+                "Ukuran gambar maksimal 2 MB."
+            );
+        }
+
+    }
+
+
+    function loadFeedImageFile(
+        file
+    ) {
+
+        return new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                const objectUrl =
+                    URL.createObjectURL(
+                        file
+                    );
+
+                const image =
+                    new Image();
+
+
+                image.onload =
+                    () => {
+
+                        URL.revokeObjectURL(
+                            objectUrl
+                        );
+
+                        resolve(
+                            image
+                        );
+
+                    };
+
+
+                image.onerror =
+                    () => {
+
+                        URL.revokeObjectURL(
+                            objectUrl
+                        );
+
+                        reject(
+                            new Error(
+                                "File gambar tidak dapat dibaca."
+                            )
+                        );
+
+                    };
+
+
+                image.src =
+                    objectUrl;
+
+            }
+        );
+
+    }
+
+
+    function convertFeedCanvasToWebp(
+        canvas,
+        quality
+    ) {
+
+        return new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                canvas.toBlob(
+                    blob => {
+
+                        if (!blob) {
+                            reject(
+                                new Error(
+                                    "Gambar tidak dapat dikompres."
+                                )
+                            );
+
+                            return;
+                        }
+
+
+                        resolve(
+                            blob
+                        );
+
+                    },
+                    "image/webp",
+                    quality
+                );
+
+            }
+        );
+
+    }
+
+
+    async function compressFeedImageFile(
+        file
+    ) {
+
+        validateFeedImageFile(
+            file
+        );
+
+
+        const sourceImage =
+            await loadFeedImageFile(
+                file
+            );
+
+        const originalWidth =
+            Number(
+                sourceImage.naturalWidth ||
+                sourceImage.width
+            );
+
+        const originalHeight =
+            Number(
+                sourceImage.naturalHeight ||
+                sourceImage.height
+            );
+
+
+        if (
+            originalWidth <= 0 ||
+            originalHeight <= 0
+        ) {
+            throw new Error(
+                "Dimensi gambar tidak valid."
+            );
+        }
+
+
+        const maximumDimension =
+            1600;
+
+        const scale =
+            Math.min(
+                1,
+                maximumDimension /
+                    Math.max(
+                        originalWidth,
+                        originalHeight
+                    )
+            );
+
+        const outputWidth =
+            Math.max(
+                1,
+                Math.round(
+                    originalWidth *
+                    scale
+                )
+            );
+
+        const outputHeight =
+            Math.max(
+                1,
+                Math.round(
+                    originalHeight *
+                    scale
+                )
+            );
+
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+        canvas.width =
+            outputWidth;
+
+        canvas.height =
+            outputHeight;
+
+
+        const context =
+            canvas.getContext(
+                "2d",
+                {
+                    alpha:
+                        true
+                }
+            );
+
+
+        if (!context) {
+            throw new Error(
+                "Gambar tidak dapat diproses."
+            );
+        }
+
+
+        context.imageSmoothingEnabled =
+            true;
+
+        context.imageSmoothingQuality =
+            "high";
+
+        context.drawImage(
+            sourceImage,
+            0,
+            0,
+            outputWidth,
+            outputHeight
+        );
+
+
+        let compressedBlob =
+            await convertFeedCanvasToWebp(
+                canvas,
+                0.82
+            );
+
+
+        if (
+            compressedBlob.size >
+            FEED_IMAGE_MAX_BYTES
+        ) {
+            compressedBlob =
+                await convertFeedCanvasToWebp(
+                    canvas,
+                    0.7
+                );
+        }
+
+
+        if (
+            compressedBlob.size >
+            FEED_IMAGE_MAX_BYTES
+        ) {
+            throw new Error(
+                "Gambar tetap melebihi 2 MB setelah dikompres."
+            );
+        }
+
+
+        return compressedBlob;
+
+    }
+
+
+    function buildFeedImageDisplayUrl(
+        originalUrl
+    ) {
+
+        const safeUrl =
+            String(
+                originalUrl || ""
+            );
+
+
+        if (
+            !safeUrl.includes(
+                "/image/upload/"
+            ) ||
+            safeUrl.includes(
+                "/image/upload/c_limit,w_1200/"
+            )
+        ) {
+            return safeUrl;
+        }
+
+
+        return safeUrl.replace(
+            "/image/upload/",
+            "/image/upload/c_limit,w_1200/q_auto:good/f_auto/"
+        );
+
+    }
+
+
+    function normalizeUploadedFeedImage(
+        rawImage
+    ) {
+
+        const originalUrl =
+            String(
+                rawImage?.secure_url ||
+                rawImage?.url ||
+                ""
+            ).trim();
+
+        const publicId =
+            String(
+                rawImage?.public_id ||
+                rawImage?.publicId ||
+                ""
+            ).trim();
+
+        const width =
+            Math.trunc(
+                Number(
+                    rawImage?.width
+                )
+            );
+
+        const height =
+            Math.trunc(
+                Number(
+                    rawImage?.height
+                )
+            );
+
+        const bytes =
+            Math.trunc(
+                Number(
+                    rawImage?.bytes
+                )
+            );
+
+
+        if (
+            !originalUrl ||
+            !publicId ||
+            !Number.isFinite(width) ||
+            !Number.isFinite(height) ||
+            !Number.isFinite(bytes) ||
+            width <= 0 ||
+            height <= 0 ||
+            bytes <= 0
+        ) {
+            throw new Error(
+                "Data gambar hasil upload tidak valid."
+            );
+        }
+
+
+        if (
+            bytes >
+            FEED_IMAGE_MAX_BYTES
+        ) {
+            throw new Error(
+                "Ukuran gambar maksimal 2 MB."
+            );
+        }
+
+
+        return {
+            imageUrl:
+                buildFeedImageDisplayUrl(
+                    originalUrl
+                ),
+
+            imagePublicId:
+                publicId,
+
+            imageWidth:
+                width,
+
+            imageHeight:
+                height,
+
+            imageBytes:
+                bytes
+        };
+
+    }
+
+
+    async function uploadFeedImageFile(
+        file
+    ) {
+
+        const compressedBlob =
+            await compressFeedImageFile(
+                file
+            );
+
+
+        const signatureData =
+            await request(
+                "/api/classroom-feed/image-upload-signature",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({})
+                }
+            );
+
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            "file",
+            compressedBlob,
+            "class-feed-image.webp"
+        );
+
+
+        Object.entries(
+            signatureData.parameters ||
+            {}
+        ).forEach(
+            ([
+                parameterName,
+                parameterValue
+            ]) => {
+
+                formData.append(
+                    parameterName,
+                    String(
+                        parameterValue
+                    )
+                );
+
+            }
+        );
+
+
+        formData.append(
+            "api_key",
+            signatureData.apiKey
+        );
+
+        formData.append(
+            "signature",
+            signatureData.signature
+        );
+
+
+        const uploadResponse =
+            await fetch(
+                signatureData.uploadUrl,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        formData
+                }
+            );
+
+
+        if (!uploadResponse.ok) {
+            throw new Error(
+                "Gambar tidak dapat diunggah."
+            );
+        }
+
+
+        const uploadResult =
+            await uploadResponse.json();
+
+
+        return normalizeUploadedFeedImage(
+            uploadResult
+        );
+
+    }
+
+
+    async function deleteUploadedFeedImage(
+        publicId
+    ) {
+
+        if (!publicId) {
+            return true;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/classroom-feed/image",
+                    {
+                        method:
+                            "DELETE",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                publicId
+                            })
+                    }
+                );
+
+
+            return response.ok;
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membersihkan upload gambar:",
+                error
+            );
+
+            return false;
+
+        }
+
+    }
+
+
+    function renderAttachedFeedPostImage() {
+
+        const selected =
+            state.postImage;
+
+
+        if (!selected) {
+
+            ui.imageAttachment.hidden =
+                true;
+
+            ui.imageAttachmentPreview
+                .removeAttribute("src");
+
+            ui.imageAttachmentSource
+                .textContent =
+                "Siap ditambahkan";
+
+            ui.imageButton.classList.remove(
+                "is-active"
+            );
+
+            ui.imageButton.setAttribute(
+                "aria-pressed",
+                "false"
+            );
+
+            return;
+
+        }
+
+
+        ui.imageAttachmentPreview.src =
+            selected.previewUrl ||
+            selected.url;
+
+        ui.imageAttachmentSource.textContent =
+            selected.type === "file"
+                ? selected.file.name
+                : "URL eksternal";
+
+        ui.imageAttachment.hidden =
+            false;
+
+        ui.imageButton.classList.add(
+            "is-active"
+        );
+
+        ui.imageButton.setAttribute(
+            "aria-pressed",
+            "true"
+        );
+
+    }
+
+
+    function clearAttachedFeedPostImage() {
+
+        releaseAttachedFeedImageObjectUrl();
+
+        state.postImage =
+            null;
+
+        renderAttachedFeedPostImage();
+
+    }
+
+
+    function renderFeedImageDialogCandidate() {
+
+        const selected =
+            state.dialogPostImage;
+
+
+        if (!selected) {
+
+            ui.imageDialogPreview.hidden =
+                true;
+
+            ui.imageDialogPreview
+                .removeAttribute("src");
+
+            ui.imageDialogEmpty.hidden =
+                false;
+
+            ui.imageDialogClear.hidden =
+                true;
+
+            ui.imageDialogConfirm.disabled =
+                true;
+
+            return;
+
+        }
+
+
+        ui.imageDialogPreview.src =
+            selected.previewUrl ||
+            selected.url;
+
+        ui.imageDialogPreview.hidden =
+            false;
+
+        ui.imageDialogEmpty.hidden =
+            true;
+
+        ui.imageDialogClear.hidden =
+            false;
+
+        ui.imageDialogConfirm.disabled =
+            false;
+
+    }
+
+
+    function setFeedImageDialogBusy(
+        busy
+    ) {
+
+        state.imageDialogBusy =
+            busy;
+
+        ui.imageDialogFile.disabled =
+            busy;
+
+        ui.imageDialogUrl.disabled =
+            busy;
+
+        ui.imageDialogCheckUrl.disabled =
+            busy;
+
+        ui.imageDialogClear.disabled =
+            busy;
+
+        ui.imageDialogCancel.disabled =
+            busy;
+
+        ui.imageDialogClose.disabled =
+            busy;
+
+        ui.imageDialogConfirm.disabled =
+            busy ||
+            !state.dialogPostImage;
+
+    }
+
+
+    function openFeedImageDialog() {
+
+        releaseFeedDialogObjectUrl();
+
+        state.dialogPostImage =
+            state.postImage
+                ? {
+                    ...state.postImage
+                }
+                : null;
+
+        ui.imageDialogFile.value =
+            "";
+
+        ui.imageDialogUrl.value =
+            state.postImage?.type === "url"
+                ? state.postImage.url
+                : "";
+
+        setFeedImageDialogStatus();
+        renderFeedImageDialogCandidate();
+        setFeedImageDialogBusy(false);
+
+        ui.imageDialogOverlay.hidden =
+            false;
+
+        document.body.classList.add(
+            "feed-image-dialog-open"
+        );
+
+    }
+
+
+    function closeFeedImageDialog() {
+
+        if (state.imageDialogBusy) {
+            return;
+        }
+
+
+        releaseFeedDialogObjectUrl();
+
+        state.dialogPostImage =
+            null;
+
+        ui.imageDialogOverlay.hidden =
+            true;
+
+        document.body.classList.remove(
+            "feed-image-dialog-open"
+        );
+
+        ui.imageDialogFile.value =
+            "";
+
+        setFeedImageDialogStatus();
+
+    }
+
+
+    async function selectFeedImageDialogFile() {
+
+        const file =
+            ui.imageDialogFile.files?.[0];
+
+
+        if (!file) {
+            return;
+        }
+
+
+        try {
+
+            validateFeedImageFile(
+                file
+            );
+
+            setFeedImageDialogBusy(
+                true
+            );
+
+            setFeedImageDialogStatus(
+                "Membaca gambar..."
+            );
+
+            releaseFeedDialogObjectUrl();
+
+
+            const objectUrl =
+                URL.createObjectURL(
+                    file
+                );
+
+            state.dialogImageObjectUrl =
+                objectUrl;
+
+
+            const imageInformation =
+                await loadFeedImageSource(
+                    objectUrl
+                );
+
+
+            state.dialogPostImage = {
+                type:
+                    "file",
+
+                file,
+
+                url:
+                    null,
+
+                previewUrl:
+                    objectUrl,
+
+                width:
+                    imageInformation.width,
+
+                height:
+                    imageInformation.height
+            };
+
+
+            ui.imageDialogUrl.value =
+                "";
+
+            renderFeedImageDialogCandidate();
+
+            setFeedImageDialogStatus(
+                "Gambar siap ditambahkan.",
+                "success"
+            );
+
+        } catch (error) {
+
+            releaseFeedDialogObjectUrl();
+
+            state.dialogPostImage =
+                null;
+
+            ui.imageDialogFile.value =
+                "";
+
+            renderFeedImageDialogCandidate();
+
+            setFeedImageDialogStatus(
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            setFeedImageDialogBusy(
+                false
+            );
+
+        }
+
+    }
+
+
+    async function checkFeedImageDialogUrl() {
+
+        const rawUrl =
+            ui.imageDialogUrl.value.trim();
+
+
+        let parsedUrl;
+
+        try {
+
+            parsedUrl =
+                new URL(rawUrl);
+
+        } catch {
+
+            setFeedImageDialogStatus(
+                "URL gambar tidak valid.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (
+            parsedUrl.protocol !==
+            "https:"
+        ) {
+            setFeedImageDialogStatus(
+                "URL gambar harus menggunakan HTTPS.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setFeedImageDialogBusy(
+                true
+            );
+
+            setFeedImageDialogStatus(
+                "Memeriksa gambar..."
+            );
+
+
+            const imageInformation =
+                await loadFeedImageSource(
+                    parsedUrl.href
+                );
+
+
+            releaseFeedDialogObjectUrl();
+
+            ui.imageDialogFile.value =
+                "";
+
+            state.dialogPostImage = {
+                type:
+                    "url",
+
+                file:
+                    null,
+
+                url:
+                    parsedUrl.href,
+
+                previewUrl:
+                    parsedUrl.href,
+
+                width:
+                    imageInformation.width,
+
+                height:
+                    imageInformation.height
+            };
+
+
+            renderFeedImageDialogCandidate();
+
+            setFeedImageDialogStatus(
+                "URL gambar berhasil diperiksa.",
+                "success"
+            );
+
+        } catch (error) {
+
+            state.dialogPostImage =
+                null;
+
+            renderFeedImageDialogCandidate();
+
+            setFeedImageDialogStatus(
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            setFeedImageDialogBusy(
+                false
+            );
+
+        }
+
+    }
+
+
+    function clearFeedImageDialogCandidate() {
+
+        if (state.imageDialogBusy) {
+            return;
+        }
+
+
+        releaseFeedDialogObjectUrl();
+
+        state.dialogPostImage =
+            null;
+
+        ui.imageDialogFile.value =
+            "";
+
+        ui.imageDialogUrl.value =
+            "";
+
+        setFeedImageDialogStatus();
+        renderFeedImageDialogCandidate();
+
+    }
+
+
+    function confirmFeedImageDialog() {
+
+        if (
+            state.imageDialogBusy ||
+            !state.dialogPostImage
+        ) {
+            return;
+        }
+
+
+        const previousImage =
+            state.postImage;
+
+        const nextImage =
+            state.dialogPostImage;
+
+
+        if (
+            previousImage?.type === "file" &&
+            previousImage.previewUrl &&
+            previousImage.previewUrl !==
+                nextImage.previewUrl
+        ) {
+            URL.revokeObjectURL(
+                previousImage.previewUrl
+            );
+        }
+
+
+        state.postImage = {
+            ...nextImage
+        };
+
+
+        /*
+            Object URL sekarang dimiliki attachment,
+            sehingga jangan dihapus saat dialog ditutup.
+        */
+        if (
+            state.dialogImageObjectUrl ===
+            state.postImage.previewUrl
+        ) {
+            state.dialogImageObjectUrl =
+                null;
+        }
+
+
+        state.dialogPostImage =
+            null;
+
+        renderAttachedFeedPostImage();
+        closeFeedImageDialog();
+
+    }
+
+
+    async function prepareFeedPostImage() {
+
+        const selected =
+            state.postImage;
+
+
+        if (!selected) {
+            return {
+                imageUrl:
+                    null,
+
+                imagePublicId:
+                    null,
+
+                imageWidth:
+                    null,
+
+                imageHeight:
+                    null,
+
+                imageBytes:
+                    null
+            };
+        }
+
+
+        if (selected.type === "url") {
+            return {
+                imageUrl:
+                    selected.url,
+
+                imagePublicId:
+                    null,
+
+                imageWidth:
+                    selected.width,
+
+                imageHeight:
+                    selected.height,
+
+                imageBytes:
+                    null
+            };
+        }
+
+
+        return uploadFeedImageFile(
+            selected.file
+        );
+
+    }
+
+
+    function feedPostImageMarkup(
+        post
+    ) {
+
+        const imageUrl =
+            String(
+                post?.image_url ||
+                post?.imageUrl ||
+                ""
+            ).trim();
+
+
+        if (!imageUrl) {
+            return "";
+        }
+
+
+        const width =
+            Number(
+                post?.image_width ||
+                post?.imageWidth
+            );
+
+        const height =
+            Number(
+                post?.image_height ||
+                post?.imageHeight
+            );
+
+
+        const widthAttribute =
+            Number.isFinite(width) &&
+            width > 0
+                ? ` width="${Math.round(width)}"`
+                : "";
+
+        const heightAttribute =
+            Number.isFinite(height) &&
+            height > 0
+                ? ` height="${Math.round(height)}"`
+                : "";
+
+
+        return `
+            <div class="feed-post-image-frame is-loading">
+                <img
+                    class="feed-post-image"
+                    src="${escapeHtml(imageUrl)}"
+                    alt="Gambar post"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    ${widthAttribute}
+                    ${heightAttribute}
+                >
+            </div>
+        `;
+
+    }
+
+
+    function initializeFeedPostImageControls() {
+
+        ui.imageButton.addEventListener(
+            "click",
+            openFeedImageDialog
+        );
+
+        ui.imageRemoveButton.addEventListener(
+            "click",
+            clearAttachedFeedPostImage
+        );
+
+        ui.imageDialogFile.addEventListener(
+            "change",
+            selectFeedImageDialogFile
+        );
+
+        ui.imageDialogCheckUrl.addEventListener(
+            "click",
+            checkFeedImageDialogUrl
+        );
+
+        ui.imageDialogClear.addEventListener(
+            "click",
+            clearFeedImageDialogCandidate
+        );
+
+        ui.imageDialogCancel.addEventListener(
+            "click",
+            closeFeedImageDialog
+        );
+
+        ui.imageDialogClose.addEventListener(
+            "click",
+            closeFeedImageDialog
+        );
+
+        ui.imageDialogConfirm.addEventListener(
+            "click",
+            confirmFeedImageDialog
+        );
+
+
+        ui.imageDialogUrl.addEventListener(
+            "input",
+            () => {
+
+                if (
+                    state.dialogPostImage?.type ===
+                    "url"
+                ) {
+                    state.dialogPostImage =
+                        null;
+
+                    renderFeedImageDialogCandidate();
+                }
+
+
+                setFeedImageDialogStatus();
+
+            }
+        );
+
+
+        ui.imageDialogUrl.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key !== "Enter") {
+                    return;
+                }
+
+                event.preventDefault();
+                checkFeedImageDialogUrl();
+
+            }
+        );
+
+
+        ui.imageDialogOverlay.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    ui.imageDialogOverlay
+                ) {
+                    closeFeedImageDialog();
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "Escape" &&
+                    !ui.imageDialogOverlay.hidden
+                ) {
+                    closeFeedImageDialog();
+                }
+
+            }
+        );
+
+
+        renderAttachedFeedPostImage();
+
+    }
+
+function createReplyItem(
+    postId,
+    reply
+) {
+    const type =
+        reply.sender_type ||
+        (
+            reply.admin_id
+                ? "admin"
+                : "student"
+        );
+
+    const senderId =
+        reply.sender_id ??
+        reply.student_id ??
+        reply.studentId ??
+        null;
+
+    const name =
+        reply.sender_name ||
+        reply.student_name ||
+        (
+            type === "admin"
+                ? "Admin / Guru"
+                : "Siswa"
+        );
+
+    const studentClassName =
+        String(
+            reply.class_name || ""
+        ).trim();
+
+    const detail =
+        type === "admin"
+            ? "Teacher"
+            : studentClassName
+                ? `Student · ${studentClassName}`
+                : "Student";
+
+    const picture =
+        reply.profile_picture_url ||
+        reply.student_profile_picture_url ||
+        "";
+
+    const owner =
+        type === "student" &&
+        Number(senderId) === studentId;
+
+    const item =
+        document.createElement(
+            "article"
+        );
+
+    item.id =
+        `reply-${reply.id}`;
+
+    item.className =
+        "reply-item feed-thread-reply";
+
+    item.innerHTML = `
+        <div class="reply-thread-layout">
+
+            <div class="reply-avatar">
+                ${
+                    type === "admin"
+                        ? teacherInitial(name)
+                        : profileInitial(name)
+                }
             </div>
 
-            <button
-                type="submit"
-                class="reply-send-button"
+
+            <div class="reply-thread-content">
+
+                <div class="reply-thread-header">
+
+                    <div class="reply-author-info">
+
+                        <strong>
+                            ${escapeHtml(name)}
+                            ${
+                                type === "admin"
+                                    ? teacherBadge()
+                                    : ""
+                            }
+                        </strong>
+
+                        <span>
+                            ${escapeHtml(detail)}
+                        </span>
+
+                    </div>
+
+
+                    <time
+                        class="reply-created-time"
+                        datetime="${escapeHtml(
+                            reply.created_at || ""
+                        )}"
+                    >
+                        ${escapeHtml(
+                            dateTime(
+                                reply.created_at
+                            )
+                        )}
+                    </time>
+
+                </div>
+
+
+                <div class="reply-message">
+                    ${formatMessage(
+                        reply.message,
+                        reply.mentions
+                    )}
+                </div>
+
+
+                ${
+                    owner
+                        ? `
+                            <div class="reply-footer">
+
+                                <button
+                                    type="button"
+                                    class="reply-delete-button"
+                                    data-action="delete-reply"
+                                    data-post-id="${Number(
+                                        postId
+                                    )}"
+                                    data-reply-id="${Number(
+                                        reply.id
+                                    )}"
+                                >
+                                    Hapus
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+
+        </div>
+    `;
+
+    renderAvatar(
+        $(".reply-avatar", item),
+        type,
+        name,
+        picture
+    );
+
+    return item;
+}
+
+function createPostCard(post) {
+    const isStudent =
+        Number(
+            post.student_id ??
+            post.studentId ??
+            0
+        ) > 0;
+
+    const className =
+        post.class_name ??
+        post.className ??
+        null;
+
+    const cleanClassName =
+        String(
+            className || ""
+        ).trim();
+
+    const hasPostText =
+    Boolean(
+        String(
+            post.message || ""
+        ).trim()
+    );
+
+const hasPostImage =
+    Boolean(
+        String(
+            post.image_url ||
+            post.imageUrl ||
+            ""
+        ).trim()
+    );
+
+    const name =
+        isStudent
+            ? (
+                post.student_creator_name ||
+                post.studentName ||
+                "Siswa"
+            )
+            : (
+                post.admin_creator_name ||
+                "Admin / Guru"
+            );
+
+    const detail =
+        isStudent
+            ? cleanClassName
+                ? `Student · ${cleanClassName}`
+                : "Student"
+            : "Teacher";
+
+    const picture =
+        isStudent
+            ? (
+                post.student_creator_profile_picture_url ||
+                post.student_profile_picture_url ||
+                post.studentProfilePictureUrl ||
+                ""
+            )
+            : (
+                post.admin_creator_profile_picture_url ||
+                post.admin_profile_picture_url ||
+                post.adminProfilePictureUrl ||
+                ""
+            );
+
+    const owner =
+        Number(
+            post.student_id ??
+            post.studentId
+        ) === studentId;
+
+    const card =
+        document.createElement(
+            "article"
+        );
+
+    card.id =
+        `announcement-${post.id}`;
+
+card.className = [
+    "feed-card",
+    "classroom-feed-post",
+
+    hasPostText
+        ? "has-feed-text"
+        : "without-feed-text",
+
+    hasPostImage
+        ? "has-feed-image"
+        : "without-feed-image"
+
+].join(" ");
+
+    card.dataset.feedClass =
+        cleanClassName;
+
+    card.innerHTML = `
+        <header class="feed-card-header">
+
+            <div class="feed-author">
+
+                <div class="feed-avatar">
+                    ${
+                        isStudent
+                            ? profileInitial(name)
+                            : teacherInitial(name)
+                    }
+                </div>
+
+
+                <div class="feed-author-copy">
+
+                    <div class="feed-author-name">
+
+                        <strong>
+                            ${escapeHtml(name)}
+                        </strong>
+
+                        ${
+                            isStudent
+                                ? ""
+                                : teacherBadge()
+                        }
+
+                    </div>
+
+
+                    <div class="feed-author-meta">
+
+                        <span>
+                            ${escapeHtml(detail)}
+                        </span>
+
+                        <span
+                            class="feed-meta-separator"
+                            aria-hidden="true"
+                        >
+                            •
+                        </span>
+
+                        <time
+                            datetime="${escapeHtml(
+                                post.created_at || ""
+                            )}"
+                        >
+                            ${escapeHtml(
+                                dateTime(
+                                    post.created_at
+                                )
+                            )}
+                        </time>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <span
+                class="
+                    feed-scope-badge
+                    ${
+                        cleanClassName
+                            ? "class"
+                            : "global"
+                    }
+                "
+                title="${
+                    cleanClassName
+                        ? escapeHtml(
+                            cleanClassName
+                        )
+                        : "Global"
+                }"
             >
-                Kirim
-            </button>
-        </form>
-    </div>
-</div>`;
+                ${
+                    cleanClassName
+                        ? escapeHtml(
+                            cleanClassName
+                        )
+                        : "GLOBAL"
+                }
+            </span>
+
+        </header>
+
+
+        <div class="feed-card-body">
+
+            <div class="feed-message">
+                ${formatMessage(
+                    post.message,
+                    post.mentions
+                )}
+            </div>
+
+            ${feedPostImageMarkup(post)}
+
+        </div>
+
+
+        <div class="feed-card-actions">
+
+            <div class="feed-card-primary-actions">
+
+                <button
+                    type="button"
+                    class="
+                        feed-card-action-button
+                        feed-like-button
+                        feed-upcoming-action
+                    "
+                    disabled
+                    aria-disabled="true"
+                    title="Like segera hadir"
+                >
+                    <span
+                        class="feed-like-icon"
+                        aria-hidden="true"
+                    >
+                        ♡
+                    </span>
+
+                    <span data-like-count>
+                        0
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="
+                        feed-card-action-button
+                        reply-toggle-button
+                    "
+                    data-action="toggle-replies"
+                    aria-expanded="false"
+                >
+<svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+>
+    <path
+        d="M5 5.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-4.5 3v-3H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
+    ></path>
+</svg>
+
+<span
+    data-reply-label
+    class="feed-visually-hidden"
+>
+    Tampilkan replies
+</span>
+
+<span data-reply-count>
+    0
+</span>
+                </button>
+
+            </div>
+
+
+            ${
+                owner
+                    ? `
+                        <button
+                            type="button"
+                            class="
+                                feed-card-action-button
+                                feed-delete-button
+                            "
+                            data-action="delete-post"
+                            data-post-id="${Number(
+                                post.id
+                            )}"
+                        >
+                            Hapus
+                        </button>
+                    `
+                    : ""
+            }
+
+        </div>
+
+
+        <div class="reply-section">
+
+            <div
+                class="reply-collapsible"
+                hidden
+            >
+
+                <div class="reply-thread-heading">
+
+                </div>
+
+
+                <div
+                    id="replies-${post.id}"
+                    class="reply-list"
+                >
+                    <small>
+                        Belum ada reply.
+                    </small>
+                </div>
+
+
+                <form
+                    class="
+                        reply-form
+                        reply-composer
+                    "
+                    data-id="${Number(
+                        post.id
+                    )}"
+                >
+
+                    <div class="reply-editor">
+
+                        <div
+                            class="
+                                reply-input
+                                feed-rich-editor
+                            "
+                            contenteditable="true"
+                            role="textbox"
+                            aria-multiline="true"
+                            data-placeholder="Tulis balasan..."
+                            spellcheck="true"
+                        ></div>
+
+                        ${formatToolbarMarkup()}
+
+                        <div
+                            class="mention-suggestions"
+                            style="display:none;"
+                        ></div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="reply-send-button"
+                    >
+                        Balas
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    `;
         renderAvatar($(".feed-avatar", card), isStudent ? "student" : "admin", name, picture);
+                const postImage =
+            $(".feed-post-image", card);
+
+        if (postImage) {
+
+            const imageFrame =
+                postImage.closest(
+                    ".feed-post-image-frame"
+                );
+
+
+            const markImageLoaded =
+                () => {
+
+                    imageFrame?.classList.remove(
+                        "is-loading",
+                        "is-error"
+                    );
+
+                };
+
+
+            const markImageFailed =
+                () => {
+
+                    imageFrame?.classList.remove(
+                        "is-loading"
+                    );
+
+                    imageFrame?.classList.add(
+                        "is-error"
+                    );
+
+                };
+
+
+            postImage.addEventListener(
+                "load",
+                markImageLoaded,
+                {
+                    once:
+                        true
+                }
+            );
+
+            postImage.addEventListener(
+                "error",
+                markImageFailed,
+                {
+                    once:
+                        true
+                }
+            );
+
+
+            /*
+                Gambar cache mungkin sudah selesai dimuat
+                sebelum event listener dipasang.
+            */
+            if (postImage.complete) {
+
+                if (
+                    postImage.naturalWidth > 0
+                ) {
+                    markImageLoaded();
+                } else {
+                    markImageFailed();
+                }
+
+            }
+
+        }
         const container = $(`#replies-${post.id}`, card);
         const replies = Array.isArray(post.replies) ? post.replies : [];
         if (replies.length) {
@@ -935,7 +3309,26 @@ if (
             state.beforeId = null;
             state.latestPostId = 0;
             state.latestReplyId = 0;
-ui.list.textContent = "Memuat feed...";
+ui.list.innerHTML = `
+    <div
+        class="classroom-feed-loading-panel"
+        role="status"
+        aria-live="polite"
+    >
+        <span
+            class="classroom-feed-loading-spinner"
+            aria-hidden="true"
+        ></span>
+
+        <div class="classroom-feed-loading-copy">
+
+            <strong>
+                Memuat feed
+            </strong>
+
+        </div>
+    </div>
+`;
         } else {
             ui.loadMoreStatus.hidden = false;
         }
@@ -993,33 +3386,199 @@ if (
     }
 
     async function submitPost(event) {
+
         event.preventDefault();
-        const text = editorToMarkup(ui.message);
-        if (!text || moderation.status !== "active") return;
-        const button = $("button[type='submit']", ui.form);
-        const target = $("input[name='studentAnnouncementTarget']:checked")?.value || "class";
-        button.disabled = true;
-        button.textContent = "Memposting...";
-        ui.status.textContent = "Membuat announcement...";
-        beginForeground();
-        try {
-            const mentions = mergeTypedMentions(text, state.postMentions, state.postMentionUsers);
-            const data = await request(`/api/student/${studentId}/announcements`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text, target, mentions })
-            });
-            addPost(data.announcement);
-            ui.message.replaceChildren();
-            state.postMentions = [];
-            hideSuggestions(ui.mentionBox);
-            ui.status.textContent = "Announcement berhasil dibuat.";
-        } catch (error) {
-            ui.status.textContent = `Post gagal dipublikasikan: ${error.message}`;
-        } finally {
-            endForeground();
-            button.disabled = false;
-            button.textContent = "Posting";
+
+
+        const text =
+            editorToMarkup(
+                ui.message
+            );
+
+
+        if (
+            moderation.status !==
+            "active"
+        ) {
+            return;
         }
+
+
+        if (
+            !text &&
+            !state.postImage
+        ) {
+            ui.status.textContent =
+                "Isi post atau tambahkan satu gambar.";
+
+            return;
+        }
+
+
+        const button =
+            $(
+                "button[type='submit']",
+                ui.form
+            );
+
+        const target =
+            $(
+                "input[name='studentAnnouncementTarget']:checked"
+            )?.value ||
+            "class";
+
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Memposting...";
+
+        ui.imageButton.disabled =
+            true;
+
+        ui.imageRemoveButton.disabled =
+            true;
+
+        ui.status.textContent =
+            state.postImage?.type === "file"
+                ? "Mengunggah gambar..."
+                : "Membuat announcement...";
+
+
+        beginForeground();
+
+
+        let uploadedImage =
+            null;
+
+
+        try {
+
+            const imageData =
+                await prepareFeedPostImage();
+
+
+            if (imageData.imagePublicId) {
+                uploadedImage =
+                    imageData;
+            }
+
+
+            if (uploadedImage) {
+                ui.status.textContent =
+                    "Menyimpan post...";
+            }
+
+
+            const mentions =
+                mergeTypedMentions(
+                    text,
+                    state.postMentions,
+                    state.postMentionUsers
+                );
+
+
+            const data =
+                await request(
+                    `/api/student/${studentId}/announcements`,
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                message:
+                                    text,
+
+                                target,
+
+                                mentions,
+
+                                ...imageData
+                            })
+                    }
+                );
+
+
+            /*
+                Post sudah tersimpan. Jangan jalankan
+                cleanup orphan setelah titik ini.
+            */
+            uploadedImage =
+                null;
+
+
+            addPost(
+                data.announcement
+            );
+
+            ui.message.replaceChildren();
+
+            clearEditorTypingFormats(
+    ui.message
+);
+
+syncFormatToolbar(
+    ui.message
+);
+
+            clearAttachedFeedPostImage();
+
+            state.postMentions =
+                [];
+
+            hideSuggestions(
+                ui.mentionBox
+            );
+
+            ui.status.textContent =
+                "Announcement berhasil dibuat.";
+
+        } catch (error) {
+
+            /*
+                Jika Cloudinary berhasil tetapi API post
+                gagal, hapus upload yang belum digunakan.
+            */
+            if (uploadedImage?.imagePublicId) {
+
+                await deleteUploadedFeedImage(
+                    uploadedImage.imagePublicId
+                );
+
+            }
+
+
+            ui.status.textContent =
+                `Post gagal dipublikasikan: ${
+                    error.message ||
+                    "Terjadi kesalahan."
+                }`;
+
+        } finally {
+
+            endForeground();
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Posting";
+
+            ui.imageButton.disabled =
+                false;
+
+            ui.imageRemoveButton.disabled =
+                false;
+
+        }
+
     }
 
     async function submitReply(event) {
@@ -1051,6 +3610,14 @@ updateReplyCount(container);
                 state.latestReplyId = Math.max(state.latestReplyId, Number(data.reply.id));
             }
             input.replaceChildren();
+
+            clearEditorTypingFormats(
+    input
+);
+
+syncFormatToolbar(
+    input
+);
             form._selectedMentions = [];
 } catch (error) {
     const message = error.message || "Gagal mengirim reply.";
@@ -1211,23 +3778,147 @@ function insertMention(input, user, selected) {
     );
 }
 
-    function renderSuggestions(input, box, users, selected) {
-        const query = activeMentionQuery(input);
-        if (query === null) return hideSuggestions(box);
-        const matches = [...users].filter(user => String(user.name || "").toLowerCase().includes(query))
-            .sort((a, b) => a.name.localeCompare(b.name, "id", { sensitivity: "base" })).slice(0, 20);
+function renderSuggestions(
+    input,
+    box,
+    users,
+    selected
+) {
+    const query =
+        activeMentionQuery(input);
+
+    if (query === null) {
         hideSuggestions(box);
-        matches.forEach(user => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.style.cssText = "display:block;width:100%;text-align:left";
-            const detail = user.type === "student" ? `Student — ${user.className || "-"}` : (user.role || "Admin / Guru");
-            button.textContent = `${user.name} (${detail})`;
-            button.addEventListener("click", () => { insertMention(input, user, selected); hideSuggestions(box); });
-            box.appendChild(button);
-        });
-        box.style.display = matches.length ? "block" : "none";
+        return;
     }
+
+    const matches =
+        [...users]
+            .filter(user =>
+                String(
+                    user.name || ""
+                )
+                    .toLowerCase()
+                    .includes(query)
+            )
+            .sort((a, b) =>
+                String(a.name || "")
+                    .localeCompare(
+                        String(
+                            b.name || ""
+                        ),
+                        "id",
+                        {
+                            sensitivity:
+                                "base"
+                        }
+                    )
+            )
+            .slice(0, 12);
+
+    hideSuggestions(box);
+
+    matches.forEach(user => {
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        const name =
+            String(
+                user.name ||
+                "Pengguna"
+            ).trim();
+
+        const className =
+            String(
+                user.className ||
+                user.class_name ||
+                ""
+            ).trim();
+
+        const isStudent =
+            user.type === "student";
+
+        const detail =
+            isStudent
+                ? className
+                    ? `Student · ${className}`
+                    : "Student"
+                : (
+                    user.role ||
+                    "Teacher"
+                );
+
+        const picture =
+            user.profile_picture_url ||
+            user.profilePictureUrl ||
+            "";
+
+        button.type = "button";
+
+        button.className =
+            "feed-mention-option";
+
+        button.innerHTML = `
+            <span class="feed-mention-avatar">
+                ${
+                    isStudent
+                        ? profileInitial(name)
+                        : teacherInitial(name)
+                }
+            </span>
+
+            <span class="feed-mention-option-copy">
+
+                <strong>
+                    ${escapeHtml(name)}
+                </strong>
+
+                <small>
+                    ${escapeHtml(detail)}
+                </small>
+
+            </span>
+
+            <span
+                class="feed-mention-insert-icon"
+                aria-hidden="true"
+            >
+                ↵
+            </span>
+        `;
+
+        renderAvatar(
+            $(".feed-mention-avatar", button),
+            isStudent
+                ? "student"
+                : "admin",
+            name,
+            picture
+        );
+
+        button.addEventListener(
+            "click",
+            () => {
+                insertMention(
+                    input,
+                    user,
+                    selected
+                );
+
+                hideSuggestions(box);
+            }
+        );
+
+        box.appendChild(button);
+    });
+
+    box.style.display =
+        matches.length
+            ? "block"
+            : "none";
+}
 
     async function loadPostMentionUsers() {
         const target = $("input[name='studentAnnouncementTarget']:checked")?.value || "class";
@@ -1668,65 +4359,227 @@ function scrollToStoredTarget() {
         logout, goToNotifications, closeStudentNotifications, acknowledgeStudentFeedRecovery
     });
 
-document.addEventListener("mousedown", event => {
-    const button = event.target.closest(
-        ".feed-format-button[data-format]"
-    );
+/*
+ * Pertahankan selection editor ketika toolbar diklik.
+ */
+document.addEventListener(
+    "mousedown",
+    event => {
+        const button =
+            event.target.closest(
+                ".feed-format-button[data-format]"
+            );
 
-    /*
-     * Selection pada rich editor tidak boleh hilang
-     * ketika tombol toolbar ditekan.
-     */
-    if (button) {
+        if (button) {
+            event.preventDefault();
+        }
+    }
+);
+
+
+/*
+ * Formatting melalui tombol toolbar.
+ */
+document.addEventListener(
+    "click",
+    event => {
+        const button =
+            event.target.closest(
+                ".feed-format-button[data-format]"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        const editor =
+            editorFromToolbar(button);
+
+        applyFeedFormatting(
+            editor,
+            button.dataset.format
+        );
+    }
+);
+
+
+/*
+ * Shortcut menggunakan fungsi yang sama
+ * dengan tombol toolbar.
+ */
+document.addEventListener(
+    "keydown",
+    event => {
+        const editor =
+            event.target.closest?.(
+                ".feed-rich-editor"
+            );
+
+        if (!editor) {
+            return;
+        }
+
+        const navigationKeys = [
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+            "Home",
+            "End",
+            "PageUp",
+            "PageDown"
+        ];
+
+        /*
+         * Jika caret dipindahkan memakai keyboard,
+         * status berikutnya mengikuti posisi caret baru.
+         */
+        if (
+            navigationKeys.includes(
+                event.key
+            )
+        ) {
+            getEditorFormatStates(
+                editor
+            ).clear();
+
+            return;
+        }
+
+        if (
+            event.repeat ||
+            event.altKey ||
+            (!event.ctrlKey && !event.metaKey)
+        ) {
+            return;
+        }
+
+        const formatByKey = {
+            b: "bold",
+            i: "italic",
+            u: "underline"
+        };
+
+        const format =
+            formatByKey[
+                String(event.key)
+                    .toLowerCase()
+            ];
+
+        if (!format) {
+            return;
+        }
+
         event.preventDefault();
+
+        applyFeedFormatting(
+            editor,
+            format
+        );
     }
-});
+);
 
-document.addEventListener("click", event => {
-    const button = event.target.closest(
-        ".feed-format-button[data-format]"
-    );
 
-    if (!button) return;
+/*
+ * Hanya satu listener input.
+ * File sebelumnya memiliki dua listener identik.
+ */
+document.addEventListener(
+    "input",
+    event => {
+        const editor =
+            event.target.closest?.(
+                ".feed-rich-editor"
+            );
 
-    const editor = editorFromToolbar(button);
+        if (!editor) {
+            return;
+        }
 
-    applyFeedFormatting(
-        editor,
-        button.dataset.format
-    );
-});
+        syncRichEditorEmptyState(
+            editor
+        );
 
-document.addEventListener("selectionchange", () => {
-    const editor = activeRichEditor();
-
-    if (!editor) {
-        clearToolbarButtonStates();
-        return;
+        requestAnimationFrame(() => {
+            syncFormatToolbar(
+                editor
+            );
+        });
     }
+);
 
-    syncFormatToolbar(editor);
-});
+$$(".feed-rich-editor").forEach(
+    syncRichEditorEmptyState
+);
 
-document.addEventListener("keyup", event => {
-    const editor = event.target.closest?.(
-        ".feed-rich-editor"
-    );
 
-    if (editor) {
-        syncFormatToolbar(editor);
+/*
+ * Selection change memperbarui toolbar,
+ * tetapi state kombinasi saat mengetik tetap dipertahankan.
+ */
+document.addEventListener(
+    "selectionchange",
+    () => {
+        const editor =
+            activeRichEditor();
+
+        if (!editor) {
+            clearToolbarButtonStates();
+            return;
+        }
+
+        syncFormatToolbar(
+            editor
+        );
     }
-});
+);
 
-document.addEventListener("mouseup", event => {
-    const editor = event.target.closest?.(
-        ".feed-rich-editor"
-    );
 
-    if (editor) {
-        syncFormatToolbar(editor);
+/*
+ * Keyup biasa tidak menghapus state kombinasi.
+ */
+document.addEventListener(
+    "keyup",
+    event => {
+        const editor =
+            event.target.closest?.(
+                ".feed-rich-editor"
+            );
+
+        if (editor) {
+            syncFormatToolbar(
+                editor
+            );
+        }
     }
-});
+);
+
+
+/*
+ * Klik langsung pada editor berarti pengguna
+ * memindahkan caret ke posisi lain.
+ */
+document.addEventListener(
+    "mouseup",
+    event => {
+        const editor =
+            event.target.closest?.(
+                ".feed-rich-editor"
+            );
+
+        if (!editor) {
+            return;
+        }
+
+        getEditorFormatStates(
+            editor
+        ).clear();
+
+        syncFormatToolbar(
+            editor
+        );
+    }
+);
 
 document.addEventListener("paste", event => {
     const editor = event.target.closest(
@@ -1750,6 +4603,8 @@ document.addEventListener("paste", event => {
         text
     );
 });
+
+initializeFeedPostImageControls();
 
 ui.form.addEventListener("submit", submitPost);
 ui.refresh.addEventListener("click", hardRefresh);

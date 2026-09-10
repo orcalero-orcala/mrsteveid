@@ -46365,10 +46365,26 @@ select {
     outline: none;
 }
 
-.feed-rich-editor:empty::before {
+.feed-rich-editor {
+    position: relative;
+}
+
+.feed-rich-editor:empty::before,
+.feed-rich-editor.is-visually-empty::before {
     content: attr(data-placeholder);
+
+    position: absolute;
+    inset: 0;
+
+    display: block;
+    padding: inherit;
+
     color: #64748b;
+    line-height: inherit;
+    white-space: pre-wrap;
+
     pointer-events: none;
+    user-select: none;
 }
 
 .feed-rich-editor ul {
@@ -46523,4 +46539,4041 @@ select {
 .notification-post-preview
 .feed-content-list li::before {
     content: "• ";
+}
+
+/* =========================================
+   CLASSROOM FEED POST IMAGE
+   ========================================= */
+
+.feed-post-image-button {
+    width: auto;
+    min-width: 76px;
+    padding: 0 9px;
+    gap: 6px;
+}
+
+.feed-post-image-button svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    fill: currentColor;
+}
+
+.feed-post-image-button span {
+    line-height: 1;
+}
+
+
+/* ATTACHMENT PREVIEW DI COMPOSER */
+
+.feed-post-image-attachment {
+    position: relative;
+    min-height: 76px;
+    margin-top: 10px;
+    padding: 8px 40px 8px 8px;
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    background: #0b1724;
+    border: 1px solid #2b4057;
+    border-radius: 10px;
+}
+
+.feed-post-image-attachment[hidden] {
+    display: none !important;
+}
+
+.feed-post-image-attachment img {
+    display: block;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    background: #07111c;
+    border: 1px solid #30465f;
+    border-radius: 8px;
+}
+
+.feed-post-image-attachment-info {
+    min-width: 0;
+}
+
+.feed-post-image-attachment-info strong,
+.feed-post-image-attachment-info span {
+    display: block;
+}
+
+.feed-post-image-attachment-info strong {
+    color: #e2e8f0;
+    font-size: 11px;
+}
+
+.feed-post-image-attachment-info span {
+    margin-top: 4px;
+    overflow: hidden;
+    color: #71859c;
+    font-size: 10px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.feed-post-image-remove-button {
+    position: absolute;
+    top: 50%;
+    right: 9px;
+    width: 27px;
+    min-width: 27px;
+    height: 27px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 1px solid #3b4b5f;
+    border-radius: 7px;
+    color: #94a3b8;
+    box-shadow: none;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.feed-post-image-remove-button:hover {
+    transform: translateY(-50%);
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #f87171;
+    box-shadow: none;
+}
+
+
+/* GAMBAR YANG SUDAH DIPOSTING */
+
+.feed-message:empty {
+    display: none;
+}
+
+.feed-post-image-frame {
+    width: auto;
+    max-width: min(100%, 360px);
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.feed-post-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 340px;
+    object-fit: contain;
+    background: #07111c;
+    border: 1px solid #293b50;
+    border-radius: 10px;
+    color: #71859c;
+}
+
+.feed-post-image-frame.is-loading {
+    min-width: 0;
+    min-height: 0;
+}
+
+.feed-post-image-frame.is-error {
+    display: none;
+}
+
+
+/* =========================================
+   CLASSROOM FEED IMAGE DIALOG
+   ========================================= */
+
+body.feed-image-dialog-open {
+    overflow: hidden;
+}
+
+.feed-image-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 8, 18, 0.78);
+    backdrop-filter: blur(5px);
+}
+
+.feed-image-dialog-overlay[hidden] {
+    display: none !important;
+}
+
+.feed-image-dialog {
+    width: min(560px, 100%);
+    max-height: calc(100vh - 40px);
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #0d1825;
+    border: 1px solid #293f58;
+    border-radius: 15px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    animation: feedImageDialogIn 0.18s ease-out;
+}
+
+@keyframes feedImageDialogIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.feed-image-dialog-header {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.feed-image-dialog-header h2 {
+    margin: 3px 0 4px;
+    color: #f1f5f9;
+    font-size: 18px;
+}
+
+.feed-image-dialog-header p {
+    margin: 0;
+    color: #7890ab;
+    font-size: 11px;
+}
+
+.feed-image-dialog-close {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #29394d;
+    border-radius: 8px;
+    color: #94a3b8;
+    box-shadow: none;
+    font-size: 21px;
+    line-height: 1;
+}
+
+.feed-image-dialog-close:hover {
+    background: rgba(59, 130, 246, 0.09);
+    border-color: #3b82f6;
+    color: #ffffff;
+    box-shadow: none;
+    transform: none;
+}
+
+.feed-image-dialog-preview {
+    min-height: 190px;
+    max-height: 340px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #071321;
+    border: 1px solid #29394d;
+    border-radius: 11px;
+    color: #64748b;
+}
+
+.feed-image-dialog-preview > img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 318px;
+    object-fit: contain;
+    border-radius: 7px;
+}
+
+.feed-image-dialog-preview > img[hidden],
+.feed-image-dialog-empty[hidden] {
+    display: none !important;
+}
+
+.feed-image-dialog-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+}
+
+.feed-image-dialog-empty svg {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 2px;
+    fill: #49627d;
+}
+
+.feed-image-dialog-empty strong {
+    color: #91a4ba;
+    font-size: 12px;
+}
+
+.feed-image-dialog-empty span {
+    color: #60758d;
+    font-size: 10px;
+}
+
+.feed-image-dialog-status {
+    min-height: 17px;
+    margin: 8px 0;
+    color: #60a5fa;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.feed-image-dialog-status:empty {
+    display: none;
+}
+
+.feed-image-dialog-status.is-error {
+    color: #f87171;
+}
+
+.feed-image-dialog-status.is-success {
+    color: #34d399;
+}
+
+.feed-image-dialog-upload {
+    min-height: 38px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feed-image-dialog-upload > small {
+    color: #71859c;
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.feed-image-dialog-file-button {
+    min-height: 38px;
+    padding: 9px 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: 0 0 auto;
+    background: #101d2c;
+    border: 1px solid #30445b;
+    border-radius: 9px;
+    color: #cbd5e1;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.feed-image-dialog-file-button:hover {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.feed-image-dialog-file-button svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+    fill: currentColor;
+}
+
+.feed-image-dialog-file-button input {
+    display: none !important;
+}
+
+.feed-image-dialog-divider {
+    margin: 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #64748b;
+    font-size: 9px;
+}
+
+.feed-image-dialog-divider::before,
+.feed-image-dialog-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #26384c;
+}
+
+.feed-image-dialog-url {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.feed-image-dialog-url input {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 11px;
+    outline: none;
+    background: #091625;
+    border: 1px solid #29394d;
+    border-radius: 9px;
+    color: #e2e8f0;
+}
+
+.feed-image-dialog-url input:focus {
+    border-color: #3b82f6;
+}
+
+.feed-image-dialog-actions {
+    margin-top: 18px;
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid #26384c;
+}
+
+.feed-image-dialog-action-spacer {
+    flex: 1;
+}
+
+.feed-image-dialog-actions button:disabled,
+.feed-image-dialog-file-button:has(input:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.feed-image-dialog-actions button:disabled:hover {
+    transform: none;
+}
+
+
+@media (max-width: 600px) {
+
+    .feed-image-dialog-overlay {
+        padding: 10px;
+        align-items: flex-end;
+    }
+
+    .feed-image-dialog {
+        max-height: calc(100vh - 20px);
+        padding: 15px;
+    }
+
+    .feed-image-dialog-url {
+        grid-template-columns: 1fr;
+    }
+
+    .feed-image-dialog-url button {
+        width: 100%;
+    }
+
+    .feed-image-dialog-actions {
+        flex-wrap: wrap;
+    }
+
+    .feed-post-image-frame {
+        max-width: min(100%, 340px);
+    }
+
+    .feed-post-image {
+        width: auto;
+        max-width: 100%;
+        max-height: 320px;
+    }
+
+}
+
+
+@media (max-width: 420px) {
+
+    .feed-post-image-button {
+        min-width: 30px;
+        padding: 0 7px;
+    }
+
+    .feed-post-image-button span {
+        display: none;
+    }
+
+    .feed-image-dialog-upload {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .feed-image-dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .feed-image-dialog-action-spacer {
+        display: none;
+    }
+
+    #feedImageDialogClearButton {
+        grid-column: 1 / -1;
+    }
+
+}
+
+/* =========================================
+   INFORMATION BOARD — RICH TEXT
+   ========================================= */
+
+.information-rich-editor {
+    width: 100%;
+    min-height: 130px;
+    max-height: 260px;
+    padding: 13px 14px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background: #0d1520;
+    border: 1px solid #2b3d52;
+    border-radius: 9px;
+
+    color: #dce6f2;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.65;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    cursor: text;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.information-rich-editor:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.1);
+}
+
+.information-rich-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #64748b;
+    pointer-events: none;
+}
+
+.information-rich-editor ul {
+    margin: 5px 0;
+    padding-left: 21px;
+    list-style: disc;
+}
+
+.information-rich-editor li {
+    margin: 2px 0;
+}
+
+.information-rich-editor strong,
+.information-rich-editor b {
+    font-weight: 800;
+}
+
+.information-rich-editor em,
+.information-rich-editor i {
+    font-style: italic;
+}
+
+.information-rich-editor u {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+
+/* =========================================
+   INFORMATION BOARD — FORMATTED CONTENT
+   ========================================= */
+
+.information-content-list {
+    margin: 5px 0;
+    padding-left: 21px;
+    list-style: disc;
+}
+
+.information-content-list li {
+    margin: 2px 0;
+    padding-left: 2px;
+}
+
+.information-content-link {
+    color: #38bdf8;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.information-content-link:hover {
+    color: #7dd3fc;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.information-content-link:focus-visible {
+    outline: 2px solid
+        rgba(56, 189, 248, 0.7);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+.official-announcement-message,
+.student-public-announcement-message {
+    overflow-wrap: anywhere;
+}
+
+.official-announcement-message:empty,
+.student-public-announcement-message:empty {
+    display: none;
+}
+
+
+/* =========================================
+   INFORMATION BOARD — POSTED IMAGE
+   ========================================= */
+
+.information-board-image-frame {
+    width: auto;
+    max-width: min(100%, 360px);
+    margin: 2px 0 14px;
+
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.information-board-image {
+    display: block;
+
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 340px;
+
+    object-fit: contain;
+
+    background: #07111c;
+    border: 1px solid #293b50;
+    border-radius: 10px;
+
+    color: #71859c;
+}
+
+.information-board-image-frame:not(
+    .is-loaded
+) {
+    min-width: 0;
+    min-height: 0;
+}
+
+.information-board-image-frame.is-error {
+    display: none;
+}
+
+
+/* Jika isi announcement hanya gambar */
+
+.official-announcement-message:empty
++ .information-board-image-frame,
+.student-public-announcement-message:empty
++ .information-board-image-frame {
+    margin-top: 0;
+}
+
+
+/* =========================================
+   INFORMATION BOARD — MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+    .information-rich-editor {
+        min-height: 110px;
+        max-height: 220px;
+        padding: 12px;
+
+        font-size: 12px;
+    }
+
+    .information-board-image-frame {
+        max-width: min(100%, 320px);
+        margin-bottom: 12px;
+    }
+
+    .information-board-image {
+        max-height: 300px;
+        border-radius: 9px;
+    }
+
+    .information-content-list {
+        padding-left: 19px;
+    }
+}
+
+/* FIX INFORMATION BOARD EDITOR */
+
+#message.information-rich-editor {
+    min-height: 155px;
+    max-height: 300px;
+
+    color: #e2e8f0 !important;
+    caret-color: #e2e8f0;
+
+    white-space: pre-wrap;
+}
+
+#message.information-rich-editor:empty::before {
+    color: #64748b !important;
+}
+
+#message.information-rich-editor:focus {
+    color: #ffffff !important;
+}
+
+
+/* Hasil formatting memakai BR,
+   jadi whitespace HTML tidak perlu dipertahankan */
+
+.student-public-announcement-message,
+.official-announcement-message {
+    white-space: normal !important;
+}
+
+.admin-delete-button.is-deleting,
+.admin-delete-button:disabled {
+    cursor: wait;
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.admin-delete-button.is-deleting {
+    min-width: 88px;
+}
+
+/* INFORMATION BOARD HEADING BUTTONS */
+
+.student-information-board-heading
+.student-announcement-heading-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.student-information-board-heading
+.student-announcement-heading-actions
+.student-announcement-view-all-button {
+    width: 70px;
+    min-width: 70px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.student-information-board-heading
+.student-announcement-view-all-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+@media (max-width: 600px) {
+    .student-information-board-heading
+    .student-announcement-heading-actions {
+        gap: 6px;
+    }
+
+    .student-information-board-heading
+    .student-announcement-heading-actions
+    .student-announcement-view-all-button {
+        width: 64px;
+        min-width: 64px;
+        height: 32px;
+        min-height: 32px;
+        padding: 0 6px;
+    }
+}
+
+/* =========================================
+   INFORMATION BOARD REFRESH BUTTON
+   ========================================= */
+
+.student-announcement-refresh-button {
+    gap: 5px;
+}
+
+.student-announcement-refresh-icon {
+    width: 13px;
+    height: 13px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 13px;
+
+    font-family:
+        Arial,
+        sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+
+    transform-origin: center;
+}
+
+.student-announcement-refresh-button.is-refreshing
+.student-announcement-refresh-icon {
+    animation:
+        information-refresh-spin
+        700ms linear infinite;
+}
+
+
+/* =========================================
+   INFORMATION BOARD ACTIONS
+   ========================================= */
+
+.student-information-board-heading
+.student-announcement-heading-actions {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+
+    gap: 8px;
+}
+
+
+/* Kedua tombol memiliki ukuran persis sama */
+
+.student-information-board-heading
+.student-announcement-heading-actions
+.student-announcement-view-all-button {
+    width: 76px;
+    min-width: 76px;
+    height: 34px;
+    min-height: 34px;
+
+    padding: 0 7px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+    .student-information-board-heading
+    .student-announcement-heading-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: flex-end;
+
+        width: auto;
+        gap: 6px;
+    }
+
+    .student-information-board-heading
+    .student-announcement-heading-actions
+    .student-announcement-view-all-button {
+        width: 72px;
+        min-width: 72px;
+        height: 32px;
+        min-height: 32px;
+
+        margin: 0;
+        padding: 0 6px;
+    }
+
+    .student-announcement-refresh-button {
+        order: 1;
+    }
+
+    .student-announcement-heading-actions
+    .student-announcement-view-all-button:not(
+        .student-announcement-refresh-button
+    ) {
+        order: 2;
+    }
+}
+
+.student-announcement-refresh-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+/* HP sangat kecil, termasuk cover screen Z Fold */
+
+@media (max-width: 470px) {
+    .student-information-board-heading {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px;
+    }
+
+    .student-information-board-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .student-information-board-title {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .student-information-board-title h2 {
+        margin: 0;
+    }
+
+    .student-information-board-heading
+    .student-announcement-heading-actions {
+        width: 100%;
+
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: flex-start;
+
+        gap: 7px;
+    }
+
+    .student-information-board-heading
+    .student-announcement-heading-actions
+    .student-announcement-view-all-button {
+        width: 76px;
+        min-width: 76px;
+        height: 32px;
+        min-height: 32px;
+
+        margin: 0;
+    }
+}
+
+/* =========================================================
+   CLASSROOM FEED REDESIGN — FOUNDATION
+   Sidebar dan topbar tidak termasuk dalam scope ini.
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface {
+    width: 100%;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 24px 30px 64px;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    min-height: 148px;
+    margin: 0 0 20px;
+    padding: 27px 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    background:
+        linear-gradient(
+            115deg,
+            rgba(26, 72, 111, 0.96),
+            rgba(17, 32, 57, 0.98) 60%,
+            rgba(20, 29, 54, 0.98)
+        );
+
+    border:
+        1px solid
+        rgba(61, 123, 180, 0.58);
+
+    border-radius: 20px;
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero::before {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    top: -115px;
+    right: 80px;
+
+    width: 270px;
+    height: 270px;
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.1);
+
+    border-radius: 50%;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero::after {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    top: -70px;
+    right: -45px;
+
+    width: 240px;
+    height: 240px;
+
+    background:
+        rgba(70, 83, 160, 0.07);
+
+    border-radius: 50%;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero > div:first-child {
+    position: relative;
+    z-index: 1;
+
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero .eyebrow {
+    display: block;
+
+    margin: 0 0 10px;
+
+    color: #62a9ff;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.35px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero h1 {
+    margin: 0;
+
+    color: #f8fafc;
+
+    font-size: clamp(
+        27px,
+        3vw,
+        34px
+    );
+
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.7px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero p {
+    max-width: 680px;
+
+    margin: 9px 0 0;
+
+    color: #92acc8;
+
+;
+
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.classroom-feed-redesign
+.classroom-feed-hero
+.feed-live-status {
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+
+    align-self: center !important;
+    flex-shrink: 0;
+
+    margin: 0 !important;
+    transform: none !important;
+
+    background:
+        rgba(127, 29, 29, 0.2);
+
+    border-color:
+        rgba(248, 113, 113, 0.42);
+}
+
+
+/* =========================================================
+   COMPOSER CARD
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer {
+    position: relative;
+
+    margin: 0 0 24px;
+    padding: 20px;
+
+    background: #101b29;
+
+    border:
+        1px solid #2a3e55;
+
+    border-radius: 17px;
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-header {
+    margin: 0 0 15px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-avatar {
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    border:
+        2px solid
+        rgba(96, 165, 250, 0.25);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(15, 23, 42, 0.38);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-header strong {
+    color: #f1f5f9;
+
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-header span {
+    margin-top: 3px;
+
+    color: #7189a5;
+
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   TARGET OPTIONS
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-target-row {
+    margin: 0 0 11px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-field-label,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-target-label {
+    width: auto;
+    margin: 0 5px 0 0;
+
+    color: #8ba0ba;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.admin-feed-composer
+.target-option {
+    width: auto !important;
+    min-width: 0 !important;
+
+    margin: 0 !important;
+    padding: 7px 10px !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    background: #0c1623;
+
+    border:
+        1px solid #2b4058;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option:hover {
+    background: #122238;
+    border-color: #3b82f6;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option input {
+    width: 14px;
+    height: 14px;
+
+    flex: 0 0 14px;
+    margin: 0;
+
+    accent-color: #3b82f6;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option span {
+    color: #b5c5d8;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option:has(input:checked) {
+    background:
+        rgba(37, 99, 235, 0.16);
+
+    border-color:
+        rgba(96, 165, 250, 0.72);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.target-option:has(input:checked)
+span {
+    color: #dbeafe;
+}
+
+
+/* ADMIN CLASS SELECT */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.admin-feed-class-field {
+    margin: 0 0 11px;
+    padding: 11px 12px;
+
+    background:
+        rgba(8, 17, 29, 0.55);
+
+    border:
+        1px solid #263b52;
+
+    border-radius: 10px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.admin-feed-class-field label {
+    display: block;
+    margin: 0 0 6px;
+
+    color: #8ba0ba;
+
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.admin-feed-class-field select {
+    width: 100%;
+    min-height: 38px;
+
+    background: #0b1521;
+    border-color: #2b4058;
+}
+
+
+/* =========================================================
+   EDITOR
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-input-area {
+    position: relative;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-input-area
+> .feed-rich-editor {
+    width: 100%;
+    min-height: 104px;
+    max-height: 280px;
+
+    padding: 14px 15px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background: #0a1420;
+
+    border:
+        1px solid #293f57;
+
+    border-radius: 11px;
+
+    color: #dce7f4;
+
+    font-size: 13px;
+    line-height: 1.62;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-input-area
+> .feed-rich-editor:hover {
+    border-color: #36516e;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-input-area
+> .feed-rich-editor:focus {
+    outline: none;
+
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.09);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-rich-editor:empty::before {
+    color: #607792;
+}
+
+
+/* =========================================================
+   COMPOSER ACTION BAR
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-action-row {
+    margin-top: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-toolbar {
+    min-width: 0;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button {
+    position: relative;
+
+    width: 29px;
+    min-width: 29px;
+    height: 29px;
+
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+
+    border:
+        1px solid #2c425a;
+
+    border-radius: 7px;
+
+    color: #8fa8c3;
+
+    font-size: 10px;
+    font-weight: 750;
+
+    box-shadow: none;
+
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        color 140ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button:hover:not(:disabled) {
+    background:
+        rgba(59, 130, 246, 0.1);
+
+    border-color: #4775a5;
+    color: #dbeafe;
+
+    transform: none;
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button.is-active,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button[
+    aria-pressed="true"
+] {
+    background:
+        rgba(37, 99, 235, 0.22);
+
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-list-button {
+    width: auto;
+    min-width: 49px;
+    padding: 0 8px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-toolbar-divider {
+    width: 1px;
+    height: 18px;
+
+    margin: 0 2px;
+
+    flex: 0 0 1px;
+
+    background: #2a3d53;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-feature-button {
+    width: auto;
+    min-width: 61px;
+    padding: 0 9px;
+
+    gap: 5px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-feature-button svg {
+    width: 13px;
+    height: 13px;
+
+    flex: 0 0 13px;
+
+    fill: currentColor;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-feed-format-button svg {
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   UPCOMING POLL
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-upcoming-button:disabled {
+    cursor: not-allowed;
+    pointer-events: auto;
+
+    opacity: 0.48;
+
+    background:
+        rgba(30, 41, 59, 0.36);
+
+    border-style: dashed;
+    border-color: #33465c;
+
+    color: #788ba2;
+
+    box-shadow: none;
+    transform: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-upcoming-button:disabled:hover {
+    background:
+        rgba(30, 41, 59, 0.36);
+
+    border-color: #33465c;
+    color: #788ba2;
+
+    box-shadow: none;
+    transform: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-upcoming-tooltip {
+    display: none;
+}
+
+
+/* =========================================================
+   SUBMIT GROUP
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-submit-group {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 11px;
+
+    flex-shrink: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-submit-group
+.composer-hint {
+    color: #627a96;
+
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-submit-group
+.feed-status {
+    max-width: 220px;
+    min-height: 0;
+
+    margin: 0;
+
+    color: #75aef8;
+
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: right;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-post-button {
+    min-width: 92px;
+    min-height: 38px;
+
+    padding: 0 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 9px;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    box-shadow:
+        0 7px 18px
+        rgba(37, 99, 235, 0.16);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-post-button:disabled {
+    cursor: wait;
+    opacity: 0.68;
+}
+
+
+/* STATUS SISWA DI BAWAH FORM */
+
+.classroom-feed-redesign
+.student-feed-page
+#studentAnnouncementStatus,
+
+.classroom-feed-redesign
+.admin-feed-page
+#message {
+    min-height: 0;
+    margin: 8px 0 0;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   IMAGE ATTACHMENT
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-post-image-attachment {
+    max-width: 420px;
+    margin: 10px 0 0;
+}
+
+
+/* =========================================================
+   TIMELINE HEADING
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-timeline {
+    margin-top: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-timeline
+.section-heading {
+    min-height: 48px;
+    margin: 0 0 10px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-timeline
+.section-heading
+> div:first-child {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-timeline
+.section-heading h2 {
+    margin: 0;
+
+    color: #f1f5f9;
+
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-timeline
+.section-heading p {
+    margin: 4px 0 0;
+
+    color: #627c9c;
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+
+    flex-shrink: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-filter-select {
+    width: 145px;
+    min-width: 145px;
+    height: 38px;
+
+    padding:
+        0 31px
+        0 11px;
+
+    background: #0e1927;
+    border: 1px solid #2c4158;
+    border-radius: 9px;
+
+    color: #c4d2e3;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-filter-actions
+.secondary-button {
+    min-width: 91px;
+    min-height: 38px;
+    height: 38px;
+
+    margin: 0;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #0e1927;
+    border: 1px solid #2c4158;
+    border-radius: 9px;
+
+    color: #a9bdd5;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface {
+        max-width: none;
+        padding: 18px 15px 50px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero {
+        min-height: 126px;
+        padding: 21px 20px;
+        border-radius: 16px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero::before {
+        right: -30px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero::after {
+        display: none;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero h1 {
+        font-size: 25px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero p {
+        max-width: 82%;
+        font-size: 11px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer {
+        padding: 17px;
+        border-radius: 15px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .composer-input-area
+    > .feed-rich-editor {
+        min-height: 100px;
+        padding: 13px;
+
+        font-size: 12px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-action-row {
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-toolbar {
+    width: auto;
+    flex: 1 1 auto;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-submit-group {
+    width: auto;
+    flex: 0 0 auto;
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-submit-group
+    .feed-status {
+        max-width: calc(100% - 105px);
+        text-align: left;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-timeline
+    .section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-actions {
+        display: flex;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-select {
+        width: 105px;
+        min-width: 105px;
+        height: 36px;
+
+        font-size: 10px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-actions
+    .secondary-button {
+        min-width: 82px;
+        min-height: 36px;
+        height: 36px;
+
+        padding: 0 9px;
+        font-size: 10px;
+    }
+}
+
+
+@media (max-width: 470px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface {
+        padding:
+            14px
+            11px
+            44px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero {
+        min-height: 118px;
+        padding: 18px 16px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero h1 {
+        font-size: 22px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero p {
+        max-width: calc(100% - 38px);
+        margin-top: 7px;
+
+        font-size: 10px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-hero
+    .feed-live-status {
+        align-self: flex-start !important;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer {
+        padding: 15px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-toolbar-divider {
+        display: none;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-format-button {
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-format-list-button {
+        width: auto;
+        min-width: 47px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-feature-button {
+        width: auto;
+        min-width: 58px;
+        padding: 0 7px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-timeline
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-select {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-filter-actions
+    .secondary-button {
+        flex: 0 0 auto;
+    }
+}
+
+/* =========================================================
+   CLASSROOM FEED REDESIGN — POST CARD
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-post {
+    position: relative;
+    overflow: hidden;
+
+    padding: 18px 18px 0;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 30, 45, 0.99),
+            rgba(14, 25, 38, 0.99)
+        );
+
+    border:
+        1px solid #2a4058;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.08);
+
+    transition:
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-post:hover {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(18, 33, 49, 0.99),
+            rgba(15, 27, 41, 0.99)
+        );
+
+    border-color: #36516f;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   POST HEADER
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-header {
+    margin: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    max-width: 42px;
+    max-height: 42px;
+
+    flex: 0 0 42px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    border:
+        2px solid
+        rgba(96, 165, 250, 0.3);
+
+    border-radius: 50%;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 850;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(8, 18, 30, 0.45);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-avatar
+.feed-profile-picture {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    border-radius: inherit;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-copy {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-name {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-name strong {
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #f1f5f9;
+
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.25;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-meta {
+    min-width: 0;
+
+    margin-top: 4px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    color: #6f88a5;
+
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-meta span,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-author-meta time {
+    display: inline;
+    margin: 0;
+
+    color: inherit;
+    font-size: inherit;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-meta-separator {
+    color: #3f5873;
+}
+
+
+/* =========================================================
+   POST SCOPE BADGE
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-scope-badge {
+    max-width: 140px;
+
+    padding: 5px 8px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 7px;
+
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: 0.45px;
+    line-height: 1.2;
+
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-scope-badge.global {
+    color: #67e8f9;
+
+    background:
+        rgba(6, 182, 212, 0.1);
+
+    border-color:
+        rgba(34, 211, 238, 0.22);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-scope-badge.class {
+    color: #c4b5fd;
+
+    background:
+        rgba(124, 58, 237, 0.12);
+
+    border-color:
+        rgba(167, 139, 250, 0.24);
+}
+
+
+/* =========================================================
+   POST BODY
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-body {
+    margin-top: 14px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-body
+.feed-message {
+    margin: 0;
+
+    color: #d9e4f0;
+
+    font-size: 14px;
+    line-height: 1.7;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-body
+.feed-message:empty {
+    display: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-body
+.feed-post-image-frame {
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   POST ACTION BAR
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-actions {
+    min-height: 49px;
+
+    margin-top: 16px;
+    padding: 9px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border-top:
+        1px solid #24384d;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-primary-actions {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button {
+    width: auto;
+    min-width: 0;
+    min-height: 31px;
+
+    padding: 0 9px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    background: transparent;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 8px;
+
+    color: #8198b3;
+
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 750;
+
+    box-shadow: none;
+    cursor: pointer;
+
+    transition:
+        color 140ms ease,
+        background 140ms ease,
+        border-color 140ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button:hover:not(
+    :disabled
+) {
+    color: #bfdbfe;
+
+    background:
+        rgba(59, 130, 246, 0.08);
+
+    border-color:
+        rgba(96, 165, 250, 0.23);
+
+    transform: none;
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button svg {
+    width: 14px;
+    height: 14px;
+
+    flex: 0 0 14px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    pointer-events: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feedNamedNodeMap .feed-card-action-button {
+    box-shadow: none;
+}
+
+
+/* LIKE — UPCOMING */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-like-button:disabled {
+    cursor: not-allowed;
+    pointer-events: auto;
+
+    opacity: 0.58;
+
+    color: #74879d;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-like-icon {
+    position: relative;
+    top: -1px;
+
+    color: #899db4;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+
+/* REPLY TOGGLE */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button {
+    width: auto;
+    min-width: 0;
+
+    padding: 0 9px;
+
+    background: transparent;
+    border-color: transparent;
+    border-radius: 8px;
+
+    color: #8198b3;
+
+    font-size: 10px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button:hover {
+    color: #bfdbfe;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button[
+    aria-expanded="true"
+] {
+    color: #93c5fd;
+
+    background:
+        rgba(59, 130, 246, 0.1);
+
+    border-color:
+        rgba(96, 165, 250, 0.24);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-count-wrap {
+    color: #66809e;
+}
+
+
+/* DELETE */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.feed-delete-button {
+    padding: 0 9px;
+
+    color: #e98787;
+
+    background: transparent;
+    border-color: transparent;
+
+    font-size: 9px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.feed-delete-button:hover {
+    color: #fca5a5;
+
+    background:
+        rgba(239, 68, 68, 0.08);
+
+    border-color:
+        rgba(248, 113, 113, 0.2);
+}
+
+
+/* =========================================================
+   REPLY COLLAPSIBLE
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-section {
+    margin: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-collapsible {
+    margin: 0;
+    padding: 15px 0 18px;
+    border-top: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-collapsible[hidden] {
+    display: none !important;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-heading {
+    margin-bottom: 11px;
+
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-heading strong {
+    color: #dce7f3;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-heading span {
+    color: #5f7793;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   REPLY LIST
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-list {
+    margin: 0 0 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    color: #687f9a;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-list > small {
+    padding: 12px;
+
+    background:
+        rgba(8, 17, 29, 0.38);
+
+    border:
+        1px dashed #293e55;
+
+    border-radius: 10px;
+
+    color: #657c97;
+
+    font-size: 10px;
+    text-align: center;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-thread-reply {
+    padding: 11px 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(9, 20, 32, 0.88),
+            rgba(11, 23, 36, 0.88)
+        );
+
+    border:
+        1px solid #23384e;
+
+    border-radius: 11px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-layout {
+    display: grid;
+
+    grid-template-columns:
+        32px
+        minmax(0, 1fr);
+
+    gap: 9px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+
+    flex: 0 0 32px !important;
+
+    overflow: hidden;
+
+    background:
+        rgba(37, 99, 235, 0.18);
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.25);
+
+    border-radius: 50%;
+
+    color: #93c5fd;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-avatar
+.feed-profile-picture {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    border-radius: inherit;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-header {
+    min-width: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info strong {
+    min-width: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    overflow: hidden;
+
+    color: #dce7f3;
+
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.3;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info span {
+    display: block;
+
+    margin: 2px 0 0;
+
+    color: #607894;
+
+    font-size: 8px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-created-time {
+    position: relative;
+    top: 5px;
+
+    flex-shrink: 0;
+    color: #526a84;
+
+    font-size: 8px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content
+.reply-message {
+    margin: 8px 0 0;
+    padding: 0;
+
+    color: #bac9d9;
+
+    font-size: 11px;
+    line-height: 1.62;
+
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-footer {
+    margin-top: 7px;
+    padding: 0;
+
+    display: flex;
+    justify-content: flex-end;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-delete-button {
+    min-height: 26px;
+
+    padding: 0 7px;
+
+    background: transparent;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 6px;
+
+    color: #d77d7d;
+
+    font-size: 8px;
+
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-delete-button:hover {
+    background:
+        rgba(239, 68, 68, 0.07);
+
+    border-color:
+        rgba(248, 113, 113, 0.18);
+
+    color: #fca5a5;
+}
+
+
+/* =========================================================
+   REPLY COMPOSER
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-composer {
+    width: 100%;
+
+    padding: 11px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: end;
+    gap: 8px;
+
+    background:
+        rgba(8, 17, 29, 0.52);
+
+    border:
+        1px solid #23384e;
+
+    border-radius: 11px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-input.feed-rich-editor {
+    min-height: 54px;
+    max-height: 150px;
+
+    padding: 10px 11px;
+
+    background: #09131f;
+    border:
+        1px solid #293e55;
+
+    border-radius: 8px;
+
+    color: #d6e1ed;
+
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-input.feed-rich-editor:focus {
+    outline: none;
+
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.08);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor
+.feed-format-toolbar {
+    margin-top: 6px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor
+.feed-format-button {
+    width: 25px;
+    min-width: 25px;
+    height: 25px;
+
+    font-size: 9px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor
+.feed-format-list-button {
+    width: auto;
+    min-width: 43px;
+    padding: 0 6px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-send-button {
+    min-width: 67px;
+    min-height: 34px;
+
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   MOBILE POST + REPLIES
+   ========================================================= */
+
+@media (max-width: 600px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-post {
+        padding: 15px 14px 0;
+        border-radius: 14px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-avatar {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        max-width: 38px;
+        max-height: 38px;
+
+        flex-basis: 38px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-author-name strong {
+        max-width: 170px;
+
+        font-size: 12px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-author-meta {
+        font-size: 8px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-scope-badge {
+        max-width: 82px;
+
+        padding: 4px 6px;
+
+        font-size: 7px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-body {
+        margin-top: 12px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-body
+    .feed-message {
+        font-size: 12px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-actions {
+        margin-top: 13px;
+        gap: 5px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-action-button {
+        padding: 0 7px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-toggle-button
+    [data-reply-label] {
+        max-width: 112px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-collapsible {
+        padding-bottom: 14px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-thread-heading span {
+        display: none;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-created-time {
+        max-width: 90px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-composer {
+        grid-template-columns: 1fr;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-send-button {
+        justify-self: end;
+    }
+}
+
+
+@media (max-width: 370px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-header {
+        gap: 8px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-author-name strong {
+        max-width: 118px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-card-action-button.reply-toggle-button {
+        padding: 0 5px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-toggle-button
+    [data-reply-label] {
+        max-width: 86px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-created-time {
+        display: none;
+    }
+}
+
+/* CLASS FEED AVATAR TANPA RING BIRU */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.composer-avatar,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-avatar,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-avatar {
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* =========================================================
+   CLASS FEED ICON-ONLY TOOLS
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-list-button,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-feature-button {
+    width: 29px;
+    min-width: 29px;
+    height: 29px;
+
+    padding: 0;
+
+    gap: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-list-button svg,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-feature-button svg {
+    width: 14px;
+    height: 14px;
+
+    display: block;
+
+    fill: currentColor;
+    pointer-events: none;
+}
+
+
+/* REPLIES HANYA IKON + ANGKA */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button {
+    width: auto;
+    min-width: 31px;
+    padding: 0 7px;
+
+    gap: 4px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button
+[data-reply-count] {
+    color: inherit;
+
+    font-size: 10px;
+    font-weight: 750;
+}
+
+
+/* ACCESSIBILITY */
+
+.feed-visually-hidden {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+
+    padding: 0 !important;
+    margin: -1px !important;
+
+    overflow: hidden !important;
+
+    clip: rect(
+        0,
+        0,
+        0,
+        0
+    ) !important;
+
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+
+/* SUBMIT TANPA HINT */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-submit-group {
+    margin-left: auto;
+}
+
+
+/* =========================================================
+   REDESIGN MENTION AUTOFILL
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-suggestions,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.mention-suggestions {
+    z-index: 100;
+
+    width: min(
+        100%,
+        390px
+    );
+
+    max-height: 245px;
+
+    margin-top: 7px;
+    padding: 6px !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    background:
+        rgba(9, 19, 31, 0.98) !important;
+
+    border:
+        1px solid #30475f !important;
+
+    border-radius: 11px !important;
+
+    box-shadow:
+        0 18px 38px
+        rgba(0, 0, 0, 0.32) !important;
+
+    backdrop-filter:
+        blur(12px);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option {
+    width: 100% !important;
+    min-height: 47px;
+
+    margin: 0;
+    padding: 7px 8px !important;
+
+    display: grid !important;
+    grid-template-columns:
+        32px
+        minmax(0, 1fr)
+        20px;
+
+    align-items: center;
+    gap: 9px;
+
+    background:
+        transparent !important;
+
+    border:
+        1px solid
+        transparent !important;
+
+    border-radius:
+        8px !important;
+
+    color: #cbd8e7;
+
+    text-align: left;
+
+    box-shadow: none !important;
+    cursor: pointer;
+
+    transition:
+        background 130ms ease,
+        border-color 130ms ease;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option
++ .feed-mention-option {
+    margin-top: 2px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option:hover,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option:focus-visible {
+    background:
+        rgba(59, 130, 246, 0.11) !important;
+
+    border-color:
+        rgba(96, 165, 250, 0.24) !important;
+
+    color: #ffffff;
+
+    outline: none;
+    transform: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-avatar {
+    width: 32px;
+    height: 32px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        rgba(37, 99, 235, 0.2);
+
+    border: 0;
+    border-radius: 50%;
+
+    color: #bfdbfe;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-avatar
+.feed-profile-picture {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    border-radius: inherit;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option-copy {
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option-copy strong,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option-copy small {
+    display: block;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option-copy strong {
+    overflow: hidden;
+
+    color: #dce8f5;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-option-copy small {
+    margin-top: 3px;
+
+    overflow: hidden;
+
+    color: #667f9b;
+
+    font-size: 8px;
+    font-weight: 600;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-insert-icon {
+    color: #56718f;
+
+    font-size: 12px;
+    text-align: center;
+}
+
+
+/* COMPACT MOBILE MENTION */
+
+@media (max-width: 500px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-mention-suggestions,
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .mention-suggestions {
+        width: 100%;
+        max-height: 210px;
+    }
+}
+
+/*
+ * Gunakan Arial Italic karena lowercase "a"-nya
+ * tetap berbentuk double-storey, bukan seperti alpha.
+ * Tidak memakai transform sehingga toggle Italic
+ * tetap bisa ON/OFF dengan benar.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-rich-editor em,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-rich-editor i,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-message em,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-message i,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-message em,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-message i,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-rich-editor [style*="font-style: italic"],
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-rich-editor [style*="font-style:italic"] {
+    display: inline;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+font-style: italic;
+font-weight: inherit;
+transform: none;
+}
+
+/*
+ * Pertahankan ketebalan Bold saat digabung
+ * dengan Italic, apa pun urutan elemen HTML
+ * yang dibuat oleh contenteditable.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+strong em,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+strong i,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+b em,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+b i,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+em strong,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+em b,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+i strong,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+i b {
+    font-weight: 800 !important;
+}
+
+/* Action post memakai satu sistem alignment tetap */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-actions {
+    min-height: 49px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+
+    display: flex;
+    align-items: center;
+
+    transform: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-primary-actions {
+    min-height: 31px;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button {
+    height: 31px;
+    min-height: 31px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-like-icon {
+    position: static;
+    top: auto;
+
+    width: 15px;
+    height: 15px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 15px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button {
+    height: 31px;
+    min-height: 31px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    line-height: 1;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button
+svg {
+    position: static;
+    top: auto;
+
+    width: 14px;
+    height: 14px;
+
+    display: block;
+    flex: 0 0 14px;
+
+    transform: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card-action-button.reply-toggle-button
+[data-reply-count] {
+    display: inline-block;
+
+    height: auto;
+
+    line-height: 1;
+}
+
+/* =========================================================
+   CLASSROOM FEED LOADING PANEL
+   ========================================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-panel {
+    min-height: 118px;
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(16, 29, 44, 0.98),
+            rgba(12, 23, 36, 0.98)
+        );
+
+    border:
+        1px solid #293f57;
+
+    border-radius: 15px;
+
+    color: #a9bdd3;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-spinner {
+    width: 24px;
+    height: 24px;
+
+    flex: 0 0 24px;
+
+    border:
+        2px solid
+        rgba(96, 165, 250, 0.18);
+
+    border-top-color: #60a5fa;
+
+    border-radius: 50%;
+
+    animation:
+        classroom-feed-loading-spin
+        700ms linear infinite;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-copy strong,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-copy span {
+    display: block;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-copy strong {
+    color: #dce8f5;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-loading-copy span {
+    margin-top: 4px;
+
+    color: #667f9b;
+
+    font-size: 9px;
+}
+
+@keyframes classroom-feed-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 500px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-loading-panel {
+        min-height: 105px;
+        padding: 18px;
+    }
+}
+
+/* Status tombol format: hover dan aktif harus berbeda */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button:not(.is-active):not(
+    [aria-pressed="true"]
+):hover:not(:disabled) {
+    background: rgba(148, 163, 184, 0.08);
+    border-color: #3b5068;
+    color: #c4d1df;
+    box-shadow: none;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button.is-active,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button[aria-pressed="true"] {
+    background: rgba(37, 99, 235, 0.32);
+    border-color: #60a5fa;
+    color: #ffffff;
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(147, 197, 253, 0.18);
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button.is-active:hover:not(:disabled),
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-format-button[aria-pressed="true"]:hover:not(:disabled) {
+    background: rgba(37, 99, 235, 0.32);
+    border-color: #60a5fa;
+    color: #ffffff;
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(147, 197, 253, 0.18);
+}
+
+/* Avatar post dan reply turun 5px — siswa & admin */
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-card .feed-avatar,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-item .reply-avatar {
+    position: relative;
+    top: 5px;
+}
+
+/* HERO — siswa dan admin */
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-hero {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    text-align: left;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-hero > div:first-child {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    text-align: left;
+}
+
+/* Mengalahkan aturan posisi LIVE lama, termasuk selector ID admin */
+.classroom-feed-redesign
+.classroom-feed-surface
+.classroom-feed-hero #feedLiveStatus {
+    position: static !important;
+    inset: auto !important;
+    align-self: center !important;
+    flex: 0 0 auto;
+
+    width: max-content;
+    margin: 0 !important;
+    transform: none !important;
+}
+
+/* Tablet: toolbar kiri, Posting kanan */
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-action-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-action-row > .feed-format-toolbar {
+    width: auto;
+    min-width: 0;
+}
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-composer-action-row > .feed-composer-submit-group {
+    width: auto;
+    margin: 0;
+    justify-self: end;
+    justify-content: flex-end;
+}
+
+/* Hero HP dan tablet kecil */
+@media (max-width: 700px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-hero {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-hero > div:first-child {
+        flex: none;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .classroom-feed-hero p {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* HP sempit: Posting di baris berikutnya, tetap kanan */
+/* Mobile: Posting selebar area composer, siswa dan admin */
+@media (max-width: 470px) {
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-action-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-action-row > .feed-composer-submit-group {
+        width: 100%;
+        justify-self: stretch;
+    }
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-composer-submit-group > .feed-post-button {
+        width: 100%;
+        top: 0 !important;
+    }
+}
+
+/* LIVE siswa di kiri bawah hero */
+@media (max-width: 700px) {
+    .student-classroom-feed
+    .classroom-feed-surface
+    .classroom-feed-hero #feedLiveStatus {
+        align-self: flex-start !important;
+    }
+}
+
+@media (max-width: 470px) {
+    /* Posting memenuhi lebar composer */
+    .admin-classroom-feed
+    #announcementForm .feed-composer-action-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .admin-classroom-feed
+    #announcementForm .feed-composer-submit-group {
+        width: 100% !important;
+        min-width: 0;
+        margin: 0;
+        justify-self: stretch;
+        justify-content: stretch;
+    }
+
+    .admin-classroom-feed
+    #announcementForm .feed-post-button {
+        width: 100% !important;
+        max-width: none;
+        flex: 1 1 auto;
+        top: 0 !important;
+    }
+
+/* Topbar satu baris */
+.admin-classroom-feed .topbar.admin-topbar {
+    flex-wrap: nowrap;
+    height: auto;
+    max-height: none;
+    gap: 8px;
+}
+
+.admin-classroom-feed
+.admin-topbar .admin-feed-topbar-heading {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+}
+
+.admin-classroom-feed
+.admin-feed-topbar-heading h2 {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.admin-classroom-feed
+.admin-feed-topbar-heading .admin-top-label {
+    display: block;
+    margin: 0 0 3px;
+    font-size: 8px;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+}
+
+.admin-classroom-feed
+.admin-feed-topbar-heading p {
+    display: block;
+    margin: 3px 0 0;
+    font-size: 10px;
+    line-height: 1.35;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.admin-classroom-feed
+.admin-topbar .feed-topbar-actions {
+    display: flex;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-classroom-feed
+.feed-topbar-actions .feed-moderation-button {
+    width: 32px;
+    min-width: 32px;
+    height: 34px;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+}
+
+.admin-classroom-feed
+.feed-topbar-actions .feed-moderation-button::before {
+    content: "⚙";
+    position: static;
+    display: inline;
+    background: none;
+    transform: none;
+    font-size: 18px;
+}
+
+.admin-classroom-feed
+.feed-topbar-actions .notification-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
+.admin-classroom-feed
+.feed-topbar-actions .admin-top-user-text {
+    display: none;
+}
+}
+
+@media (max-width: 700px) {
+    .admin-classroom-feed
+    .classroom-feed-surface
+    .classroom-feed-hero #feedLiveStatus {
+        align-self: flex-start !important;
+    }
 }
