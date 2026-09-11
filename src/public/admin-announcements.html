@@ -255,25 +255,33 @@
 
                 <div class="feed-topbar-actions">
 
-                    <button
+<button
     type="button"
     class="feed-moderation-button"
-onclick="openFeedModeration()"
-title="Moderasi"
-aria-label="Moderasi"
+    onclick="openFeedModeration()"
+    title="Moderasi"
+    aria-label="Buka moderasi"
 >
-    Moderasi
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"></path>
+    </svg>
 </button>
 
-                    <button
-                        type="button"
-                        class="notification-button"
-                        onclick="goToNotifications()"
-                    >
-                        🔔
+<button
+    type="button"
+    class="notification-button"
+    onclick="goToNotifications()"
+    title="Notifikasi"
+    aria-label="Buka notifikasi"
+>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+        <path d="M10 21h4"></path>
+    </svg>
 
-                        <span id="notificationBadge"></span>
-                    </button>
+    <span id="notificationBadge"></span>
+</button>
 
 
                     <div class="topbar-user">

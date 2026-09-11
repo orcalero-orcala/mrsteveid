@@ -8,6 +8,23 @@
             : "student";
     }
 
+    function normalizeBannerColor(value) {
+    const color =
+        String(value || "")
+            .trim()
+            .toLowerCase();
+
+    return [
+        "blue",
+        "purple",
+        "green",
+        "orange",
+        "red"
+    ].includes(color)
+        ? color
+        : "blue";
+}
+
 
     function getInitial(
         name,
@@ -328,9 +345,14 @@
 
         function createResultCard(account) {
             const accountType =
-                normalizeAccountType(
-                    account.accountType
-                );
+    normalizeAccountType(
+        account.accountType
+    );
+
+const bannerColor =
+    normalizeBannerColor(
+        account.bannerColor
+    );
 
 
             const button =
@@ -344,8 +366,11 @@
             button.className =
                 "student-directory-result";
 
-            button.dataset.accountType =
-                accountType;
+button.dataset.accountType =
+    accountType;
+
+button.dataset.bannerColor =
+    bannerColor;
 
 
             const avatar =
@@ -918,22 +943,10 @@ async function searchDirectory() {
             profileData,
             accountType
         ) {
-            const allowedColors =
-                new Set([
-                    "blue",
-                    "purple",
-                    "green",
-                    "orange",
-                    "red"
-                ]);
-
-
-            const bannerColor =
-                allowedColors.has(
-                    profileData.bannerColor
-                )
-                    ? profileData.bannerColor
-                    : "blue";
+const bannerColor =
+    normalizeBannerColor(
+        profileData.bannerColor
+    );
 
 
             profileCover.dataset.bannerColor =

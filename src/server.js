@@ -1076,6 +1076,9 @@ async function deleteStoredQuizImages(
 }
 
 const app = express();
+app.use(
+    express.json()
+);
 const PORT = 3000;
 
 const publicDirectory =
@@ -1294,6 +1297,7 @@ function requireStudentPage(
 app.use(
     [
         "/admin-dashboard.html",
+        "/admin-system-reset.html",
         "/admin-profile.html",
         "/admin-students.html",
         "/admin-student-search.html",
@@ -1426,12 +1430,20 @@ const admin =
             res.json({
                 success: true,
 
-                admin: {
-                    id: admin.id,
-                    username: admin.username,
-                    name: admin.name,
-                    role: admin.role
-                }
+admin: {
+    id: admin.id,
+    username: admin.username,
+    name: admin.name,
+    role: admin.role,
+
+    profilePictureUrl:
+        admin.profile_picture_url ||
+        "",
+
+    bannerColor:
+        admin.profile_banner_color ||
+        "blue"
+}
             });
 
 
@@ -1501,6 +1513,947 @@ app.use(
 
 
         next();
+
+    }
+);
+
+// ========================================
+// ADMINISTRATOR SETTINGS
+// ========================================
+
+const ADMINISTRATOR_MAX_ATTEMPTS =
+    5;
+
+const ADMINISTRATOR_BLOCK_DURATION =
+    5 * 60 * 1000;
+
+
+let administratorSettingsTablePromise =
+    null;
+
+
+async function ensureAdministratorSettingsTable() {
+
+    if (
+        administratorSettingsTablePromise
+    ) {
+        return administratorSettingsTablePromise;
+    }
+
+
+    administratorSettingsTablePromise =
+        tursoDb.run(
+            `
+                CREATE TABLE IF NOT EXISTS
+                    administrator_settings
+                (
+                    id INTEGER PRIMARY KEY
+                        CHECK (id = 1),
+
+                    password_hash TEXT NOT NULL,
+
+                    updated_by_admin_id INTEGER,
+
+                    updated_at DATETIME NOT NULL
+                        DEFAULT CURRENT_TIMESTAMP,
+
+                    FOREIGN KEY (
+                        updated_by_admin_id
+                    )
+                    REFERENCES admins(id)
+                    ON DELETE SET NULL
+                )
+            `
+        )
+            .catch(error => {
+
+                administratorSettingsTablePromise =
+                    null;
+
+                throw error;
+
+            });
+
+
+    return administratorSettingsTablePromise;
+
+}
+
+
+async function getAdministratorSettings() {
+
+    await ensureAdministratorSettingsTable();
+
+
+    return tursoDb.get(
+        `
+            SELECT
+                id,
+                password_hash,
+                updated_at
+
+            FROM administrator_settings
+
+            WHERE id = 1
+
+            LIMIT 1
+        `
+    );
+
+}
+
+
+async function administratorPasswordMatches(
+    submittedPassword
+) {
+
+    const password =
+        String(
+            submittedPassword ||
+            ""
+        );
+
+
+    if (!password) {
+        return false;
+    }
+
+
+    const settings =
+        await getAdministratorSettings();
+
+
+    if (
+        !settings ||
+        !settings.password_hash
+    ) {
+        return false;
+    }
+
+
+    return bcrypt.compare(
+        password,
+        settings.password_hash
+    );
+
+}
+
+
+function hasAdministratorSettingsAccess(
+    req
+) {
+
+    return (
+        req.session
+            ?.administratorSettingsUnlocked ===
+        true
+    );
+
+}
+
+
+function requireAdministratorSettingsAccess(
+    req,
+    res,
+    next
+) {
+
+    if (
+        !hasAdministratorSettingsAccess(
+            req
+        )
+    ) {
+
+        return res.status(403).json({
+            success: false,
+
+            administratorLocked:
+                true,
+
+            message:
+                "Administrator Settings terkunci."
+        });
+
+    }
+
+
+    next();
+
+}
+
+
+// ========================================
+// STATUS ADMINISTRATOR SETTINGS
+// ========================================
+
+app.get(
+    "/api/admin/settings/administrator/status",
+    async (req, res) => {
+
+        try {
+
+            const settings =
+                await getAdministratorSettings();
+
+            const configured =
+                Boolean(
+                    settings?.password_hash
+                );
+
+            const unlocked =
+                configured &&
+                hasAdministratorSettingsAccess(
+                    req
+                );
+
+
+return res.json({
+    success: true,
+    configured,
+    unlocked
+});
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengecek Administrator Settings:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Status Administrator Settings gagal diperiksa."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// MEMBUKA ADMINISTRATOR SETTINGS
+// ========================================
+
+app.post(
+    "/api/admin/settings/administrator/unlock",
+    async (req, res) => {
+
+        const now =
+            Date.now();
+
+        const blockedUntil =
+            Number(
+                req.session
+                    .administratorSettingsBlockedUntil ||
+                0
+            );
+
+
+        if (blockedUntil > now) {
+
+            const remainingSeconds =
+                Math.ceil(
+                    (
+                        blockedUntil -
+                        now
+                    ) / 1000
+                );
+
+
+            return res.status(429).json({
+                success: false,
+                retryAfter:
+                    remainingSeconds,
+
+                message:
+                    `Terlalu banyak percobaan. Coba lagi dalam ${remainingSeconds} detik.`
+            });
+
+        }
+
+
+        try {
+
+            const settings =
+                await getAdministratorSettings();
+
+
+            if (!settings) {
+
+                return res.status(409).json({
+                    success: false,
+                    setupRequired: true,
+
+                    message:
+                        "Buat password Administrator Settings terlebih dahulu."
+                });
+
+            }
+
+
+            const passwordValid =
+                await bcrypt.compare(
+                    String(
+                        req.body?.password ||
+                        ""
+                    ),
+                    settings.password_hash
+                );
+
+
+            if (!passwordValid) {
+
+                const failedAttempts =
+                    Number(
+                        req.session
+                            .administratorSettingsFailedAttempts ||
+                        0
+                    ) + 1;
+
+
+                req.session
+                    .administratorSettingsFailedAttempts =
+                        failedAttempts;
+
+
+                if (
+                    failedAttempts >=
+                    ADMINISTRATOR_MAX_ATTEMPTS
+                ) {
+
+                    req.session
+                        .administratorSettingsBlockedUntil =
+                            now +
+                            ADMINISTRATOR_BLOCK_DURATION;
+
+                    req.session
+                        .administratorSettingsFailedAttempts =
+                            0;
+
+
+                    return res.status(429).json({
+                        success: false,
+
+                        message:
+                            "Terlalu banyak percobaan. Administrator Settings dikunci selama 5 menit."
+                    });
+
+                }
+
+
+                return res.status(403).json({
+                    success: false,
+
+                    message:
+                        "Password administrator salah."
+                });
+
+            }
+
+
+req.session
+    .administratorSettingsUnlocked =
+        true;
+
+            req.session
+                .administratorSettingsFailedAttempts =
+                    0;
+
+            req.session
+                .administratorSettingsBlockedUntil =
+                    0;
+
+
+return res.json({
+    success: true,
+    configured: true,
+    unlocked: true,
+
+    message:
+        "Administrator Settings berhasil dibuka."
+});
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal membuka Administrator Settings:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Administrator Settings gagal dibuka."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// GANTI PASSWORD ADMINISTRATOR
+// ========================================
+
+app.patch(
+    "/api/admin/settings/administrator/password",
+
+    requireAdministratorSettingsAccess,
+
+    async (req, res) => {
+
+        const currentPassword =
+            String(
+                req.body?.currentPassword ||
+                ""
+            );
+
+        const newPassword =
+            String(
+                req.body?.newPassword ||
+                ""
+            );
+
+
+        if (
+            newPassword.length < 8 ||
+            newPassword.length > 72
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Password baru harus terdiri dari 8–72 karakter."
+            });
+
+        }
+
+
+        try {
+
+            const currentPasswordValid =
+                await administratorPasswordMatches(
+                    currentPassword
+                );
+
+
+            if (!currentPasswordValid) {
+
+                return res.status(403).json({
+                    success: false,
+
+                    message:
+                        "Password administrator lama salah."
+                });
+
+            }
+
+
+            const newPasswordHash =
+                await bcrypt.hash(
+                    newPassword,
+                    12
+                );
+
+
+            await tursoDb.run(
+                `
+                    UPDATE administrator_settings
+
+                    SET
+                        password_hash = ?,
+                        updated_by_admin_id = ?,
+                        updated_at =
+                            CURRENT_TIMESTAMP
+
+                    WHERE id = 1
+                `,
+                [
+                    newPasswordHash,
+                    Number(
+                        req.session.adminId
+                    )
+                ]
+            );
+
+
+delete req.session
+    .administratorSettingsUnlocked;
+
+
+            return res.json({
+                success: true,
+                unlocked: false,
+
+                message:
+                    "Password administrator berhasil diganti. Panel dikunci kembali."
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal mengganti password administrator:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Password administrator gagal diganti."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// KUNCI KEMBALI PANEL
+// ========================================
+
+app.post(
+    "/api/admin/settings/administrator/lock",
+    (req, res) => {
+
+delete req.session
+    .administratorSettingsUnlocked;
+
+
+        return res.json({
+            success: true,
+            unlocked: false
+        });
+
+    }
+);
+
+// ========================================
+// GENERAL SETTINGS ADMIN / GURU
+// ========================================
+
+app.patch(
+    "/api/admin/settings/account",
+    async (req, res) => {
+
+        const adminId =
+            Number(
+                req.session.adminId
+            );
+
+        const action =
+            String(
+                req.body?.action ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const submittedValue =
+            String(
+                req.body?.value ||
+                ""
+            ).trim();
+
+        const currentPassword =
+            String(
+                req.body?.currentPassword ||
+                ""
+            );
+
+
+        if (
+            !Number.isInteger(adminId) ||
+            adminId <= 0
+        ) {
+
+            return res.status(401).json({
+                success: false,
+
+                message:
+                    "Session guru tidak valid."
+            });
+
+        }
+
+
+        if (
+            ![
+                "name",
+                "username",
+                "password"
+            ].includes(action)
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Jenis perubahan tidak valid."
+            });
+
+        }
+
+
+        if (!currentPassword) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Masukkan password lama."
+            });
+
+        }
+
+
+        try {
+
+            const admin =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            username,
+                            password
+
+                        FROM admins
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            if (!admin) {
+
+                return res.status(404).json({
+                    success: false,
+
+                    message:
+                        "Akun guru tidak ditemukan."
+                });
+
+            }
+
+
+            const passwordValid =
+                await bcrypt.compare(
+                    currentPassword,
+                    admin.password
+                );
+
+
+            if (!passwordValid) {
+
+                return res.status(403).json({
+                    success: false,
+
+                    message:
+                        "Password lama salah."
+                });
+
+            }
+
+
+            let successMessage =
+                "Perubahan berhasil disimpan.";
+
+
+            // =============================
+            // GANTI NAMA
+            // =============================
+
+            if (action === "name") {
+
+                const normalizedName =
+                    submittedValue.replace(
+                        /\s+/g,
+                        " "
+                    );
+
+
+                if (
+                    normalizedName.length < 4 ||
+                    normalizedName.length > 80
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+
+                        message:
+                            "Nama guru harus terdiri dari 4–80 karakter."
+                    });
+
+                }
+
+
+                if (
+                    !/^(Mr|Ms)\s+\S+/i.test(
+                        normalizedName
+                    )
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+
+                        message:
+                            "Nama guru harus menggunakan prefix Mr atau Ms."
+                    });
+
+                }
+
+
+                await tursoDb.run(
+                    `
+                        UPDATE admins
+
+                        SET name = ?
+
+                        WHERE id = ?
+                    `,
+                    [
+                        normalizedName,
+                        adminId
+                    ]
+                );
+
+
+                successMessage =
+                    "Nama guru berhasil diperbarui.";
+
+            }
+
+
+            // =============================
+            // GANTI USERNAME
+            // =============================
+
+            if (action === "username") {
+
+                const normalizedUsername =
+                    submittedValue.toLowerCase();
+
+
+                if (
+                    !/^[a-z0-9._-]{3,40}$/
+                        .test(
+                            normalizedUsername
+                        )
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+
+                        message:
+                            "Username harus 3–40 karakter dan hanya boleh berisi huruf, angka, titik, garis bawah, atau strip."
+                    });
+
+                }
+
+
+                const duplicateUsername =
+                    await tursoDb.get(
+                        `
+                            SELECT id
+
+                            FROM admins
+
+                            WHERE
+                                username = ?
+                                COLLATE NOCASE
+
+                            AND id <> ?
+
+                            LIMIT 1
+                        `,
+                        [
+                            normalizedUsername,
+                            adminId
+                        ]
+                    );
+
+
+                if (duplicateUsername) {
+
+                    return res.status(409).json({
+                        success: false,
+
+                        message:
+                            "Username sudah digunakan guru lain."
+                    });
+
+                }
+
+
+                await tursoDb.run(
+                    `
+                        UPDATE admins
+
+                        SET username = ?
+
+                        WHERE id = ?
+                    `,
+                    [
+                        normalizedUsername,
+                        adminId
+                    ]
+                );
+
+
+                req.session.adminUsername =
+                    normalizedUsername;
+
+
+                successMessage =
+                    "Username berhasil diperbarui.";
+
+            }
+
+
+            // =============================
+            // GANTI PASSWORD
+            // =============================
+
+            if (action === "password") {
+
+                if (
+                    submittedValue.length < 8 ||
+                    submittedValue.length > 72
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+
+                        message:
+                            "Password baru harus terdiri dari 8–72 karakter."
+                    });
+
+                }
+
+
+                const sameAsOldPassword =
+                    await bcrypt.compare(
+                        submittedValue,
+                        admin.password
+                    );
+
+
+                if (sameAsOldPassword) {
+
+                    return res.status(400).json({
+                        success: false,
+
+                        message:
+                            "Password baru tidak boleh sama dengan password lama."
+                    });
+
+                }
+
+
+                const newPasswordHash =
+                    await bcrypt.hash(
+                        submittedValue,
+                        12
+                    );
+
+
+                await tursoDb.run(
+                    `
+                        UPDATE admins
+
+                        SET password = ?
+
+                        WHERE id = ?
+                    `,
+                    [
+                        newPasswordHash,
+                        adminId
+                    ]
+                );
+
+
+                successMessage =
+                    "Password berhasil diperbarui.";
+
+            }
+
+
+            const updatedAdmin =
+                await tursoDb.get(
+                    `
+                        SELECT
+                            id,
+                            name,
+                            username
+
+                        FROM admins
+
+                        WHERE id = ?
+
+                        LIMIT 1
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            return res.json({
+                success: true,
+
+                admin: {
+                    id:
+                        Number(
+                            updatedAdmin.id
+                        ),
+
+                    name:
+                        updatedAdmin.name,
+
+                    username:
+                        updatedAdmin.username
+                },
+
+                message:
+                    successMessage
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal memperbarui akun guru:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Gagal melakukan perubahan akun."
+            });
+
+        }
 
     }
 );
@@ -22361,10 +23314,15 @@ async function saveFeedMentionsAndNotifications({
             className
         );
 
-    const statements = [];
+const statements = [];
 
-    const validRecipientKeys =
-        new Set();
+const mentionLocation =
+    replyId === null
+        ? "post"
+        : "reply";
+
+const validRecipientKeys =
+    new Set();
 
     validMentions.forEach(
         (mention) => {
@@ -22472,7 +23430,7 @@ async function saveFeedMentionsAndNotifications({
                             senderId,
                             announcementId,
                             replyId,
-                            `${senderName} mention kamu dalam announcement.`
+                            `${senderName} mention kamu dalam ${mentionLocation}.`
                         ]
                     });
 
@@ -22502,7 +23460,7 @@ async function saveFeedMentionsAndNotifications({
                             senderId,
                             announcementId,
                             replyId,
-                            `${senderName} mention kamu dalam announcement.`
+                            `${senderName} mention kamu dalam ${mentionLocation}.`
                         ]
                     });
 
@@ -22544,7 +23502,7 @@ async function saveFeedMentionsAndNotifications({
                         senderId,
                         announcementId,
                         replyId,
-                        `${senderName} mention kamu dalam announcement.`
+                        `${senderName} mention kamu dalam ${mentionLocation}.`
                     ]
                 });
 
@@ -22574,7 +23532,7 @@ async function saveFeedMentionsAndNotifications({
                         senderId,
                         announcementId,
                         replyId,
-                        `${senderName} mention kamu dalam announcement.`
+                        `${senderName} mention kamu dalam ${mentionLocation}.`
                     ]
                 });
 
@@ -27865,6 +28823,39 @@ app.get(
     }
 );
 
+function normalizeFeedMentionNotification(
+    notification
+) {
+    const normalizedNotification = {
+        ...notification
+    };
+
+    if (
+        normalizedNotification.type !==
+        "mention"
+    ) {
+        return normalizedNotification;
+    }
+
+    const mentionLocation =
+        Number(
+            normalizedNotification.reply_id
+        ) > 0
+            ? "reply"
+            : "post";
+
+    normalizedNotification.message =
+        String(
+            normalizedNotification.message ||
+            ""
+        ).replace(
+            /mention kamu dalam announcement\.$/i,
+            `mention kamu dalam ${mentionLocation}.`
+        );
+
+    return normalizedNotification;
+}
+
 // ========================================
 // NOTIFIKASI SISWA
 // ========================================
@@ -27958,7 +28949,10 @@ LIMIT 100
                         unread?.total || 0
                     ),
 
-                notifications
+                notifications:
+    notifications.map(
+        normalizeFeedMentionNotification
+    )
             });
 
 
@@ -28074,7 +29068,10 @@ LIMIT 100
                         unread?.total || 0
                     ),
 
-                notifications
+                notifications:
+    notifications.map(
+        normalizeFeedMentionNotification
+    )
             });
 
 
@@ -30950,6 +31947,9 @@ app.get(
 
 app.delete(
     "/api/admin/teachers/:teacherId",
+
+    requireAdministratorSettingsAccess,
+
     async (req, res) => {
 
         if (!req.session.adminId) {
@@ -30968,12 +31968,6 @@ app.delete(
         const teacherId =
             Number(
                 req.params.teacherId
-            );
-
-
-        const password =
-            String(
-                req.body?.password || ""
             );
 
 
@@ -31012,19 +32006,6 @@ app.delete(
         }
 
 
-        if (!password) {
-
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message:
-                        "Password guru wajib diisi."
-                });
-
-        }
-
-
         try {
 
             /*
@@ -31034,11 +32015,10 @@ app.delete(
             const teacher =
                 await tursoDb.get(
                     `
-                        SELECT
-                            id,
-                            name,
-                            username,
-                            password
+SELECT
+    id,
+    name,
+    username
 
                         FROM admins
 
@@ -31090,30 +32070,6 @@ app.delete(
                         success: false,
                         message:
                             "Minimal harus ada satu akun guru."
-                    });
-
-            }
-
-
-            /*
-                PASSWORD HARUS MILIK
-                GURU YANG AKAN DIHAPUS.
-            */
-            const passwordValid =
-                await bcrypt.compare(
-                    password,
-                    teacher.password
-                );
-
-
-            if (!passwordValid) {
-
-                return res
-                    .status(403)
-                    .json({
-                        success: false,
-                        message:
-                            "Password guru salah. Akun tidak dihapus."
                     });
 
             }
@@ -31378,611 +32334,2433 @@ app.delete(
     }
 );
 
-app.post(
-    "/api/admin/system/factory-reset",
-    async (req, res) => {
+// ========================================
+// SYSTEM RESET V2
+// ========================================
 
-        if (!req.session.adminId) {
+const SYSTEM_RESET_SECTIONS = {
 
-            return res
-                .status(401)
-                .json({
-                    success: false,
-                    message:
-                        "Harus login sebagai guru."
-                });
+    points: {
+        title:
+            "Reset Poin",
+
+        confirmation:
+            "RESET POIN"
+    },
+
+    scores: {
+        title:
+            "Reset Nilai",
+
+        confirmation:
+            "RESET NILAI"
+    },
+
+    announcements: {
+        title:
+            "Reset Information Board",
+
+        confirmation:
+            "RESET INFORMATION BOARD"
+    },
+
+    "classroom-feed": {
+        title:
+            "Reset Classroom Feed",
+
+        confirmation:
+            "RESET CLASSROOM FEED"
+    },
+
+    moderation: {
+        title:
+            "Reset Moderasi",
+
+        confirmation:
+            "RESET MODERASI"
+    },
+
+    quizzes: {
+        title:
+            "Reset Semua Quiz",
+
+        confirmation:
+            "RESET SEMUA QUIZ"
+    },
+
+    "student-profiles": {
+        title:
+            "Reset Profil Siswa",
+
+        confirmation:
+            "RESET PROFIL SISWA"
+    },
+
+    "teacher-profiles": {
+        title:
+            "Reset Profil Guru",
+
+        confirmation:
+            "RESET PROFIL GURU"
+    },
+
+    students: {
+        title:
+            "Reset Semua Siswa",
+
+        confirmation:
+            "RESET SEMUA SISWA"
+    },
+
+    factory: {
+        title:
+            "Factory Reset LMS",
+
+        confirmation:
+            "FACTORY RESET"
+    }
+
+};
+
+
+function getSystemResetSection(
+    rawSection
+) {
+
+    const section =
+        String(
+            rawSection || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const validSections =
+        Object.keys(
+            SYSTEM_RESET_SECTIONS
+        );
+
+
+    if (
+        !validSections.includes(
+            section
+        )
+    ) {
+
+        return null;
+
+    }
+
+
+    return section;
+
+}
+
+
+async function getResetCount(
+    sql,
+    args = []
+) {
+
+    const result =
+        await tursoDb.get(
+            sql,
+            args
+        );
+
+
+    return Number(
+        result?.total || 0
+    );
+
+}
+
+
+async function getSystemResetPreview(
+    section
+) {
+
+    let items = [];
+
+
+    if (section === "points") {
+
+        items = [
+            {
+                label:
+                    "Riwayat poin",
+
+                count:
+                    await getResetCount(`
+                        SELECT COUNT(*) AS total
+                        FROM point_transactions
+                    `)
+            }
+        ];
+
+    }
+
+
+    else if (section === "scores") {
+
+        items = [
+            {
+                label:
+                    "Nilai ujian",
+
+                count:
+                    await getResetCount(`
+                        SELECT COUNT(*) AS total
+                        FROM exam_scores
+                    `)
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "announcements"
+    ) {
+
+        const [
+            announcements,
+            classTargets,
+            images
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM public_announcements
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM public_announcement_classes
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM public_announcements
+                WHERE
+                    image_public_id IS NOT NULL
+                    AND TRIM(image_public_id) <> ''
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label:
+                    "Information Board",
+
+                count:
+                    announcements
+            },
+
+            {
+                label:
+                    "Target kelas",
+
+                count:
+                    classTargets
+            },
+
+            {
+                label:
+                    "Gambar",
+
+                count:
+                    images
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "classroom-feed"
+    ) {
+
+        const [
+            posts,
+            replies,
+            mentions,
+            notifications,
+            images
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM announcements
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM announcement_replies
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM announcement_mentions
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM notifications
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM announcements
+                WHERE
+                    image_public_id IS NOT NULL
+                    AND TRIM(image_public_id) <> ''
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label: "Post",
+                count: posts
+            },
+
+            {
+                label: "Reply",
+                count: replies
+            },
+
+            {
+                label: "Mention",
+                count: mentions
+            },
+
+            {
+                label: "Notifikasi",
+                count: notifications
+            },
+
+            {
+                label: "Gambar",
+                count: images
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "moderation"
+    ) {
+
+        const [
+            currentModeration,
+            actions,
+            events
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM feed_moderation
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM feed_moderation_actions
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM feed_moderation_events
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label:
+                    "Status moderasi",
+
+                count:
+                    currentModeration
+            },
+
+            {
+                label:
+                    "Tindakan moderasi",
+
+                count:
+                    actions
+            },
+
+            {
+                label:
+                    "Riwayat moderasi",
+
+                count:
+                    events
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "quizzes"
+    ) {
+
+        const [
+            quizzes,
+            questions,
+            attempts,
+            answers,
+            guestAttempts,
+            guestAnswers,
+            images
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quizzes
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_questions
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_attempts
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_answers
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_guest_attempts
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_guest_answers
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_questions
+                WHERE
+                    image_public_id IS NOT NULL
+                    AND TRIM(image_public_id) <> ''
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label: "Quiz",
+                count: quizzes
+            },
+
+            {
+                label: "Pertanyaan",
+                count: questions
+            },
+
+            {
+                label: "Respons siswa",
+                count: attempts
+            },
+
+            {
+                label: "Jawaban siswa",
+                count: answers
+            },
+
+            {
+                label: "Respons guest",
+                count: guestAttempts
+            },
+
+            {
+                label: "Jawaban guest",
+                count: guestAnswers
+            },
+
+            {
+                label: "Gambar soal",
+                count: images
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "student-profiles"
+    ) {
+
+        const [
+            profiles,
+            images
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM students
+                WHERE
+                    COALESCE(
+                        profile_bio,
+                        ''
+                    ) <> ''
+
+                    OR COALESCE(
+                        profile_banner_color,
+                        'blue'
+                    ) <> 'blue'
+
+                    OR profile_picture_url
+                        IS NOT NULL
+
+                    OR date_of_birth
+                        IS NOT NULL
+
+                    OR COALESCE(
+                        profile_show_academic_stats,
+                        0
+                    ) <> 0
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM students
+                WHERE
+                    profile_picture_public_id
+                        IS NOT NULL
+
+                    AND TRIM(
+                        profile_picture_public_id
+                    ) <> ''
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label:
+                    "Profil siswa berubah",
+
+                count:
+                    profiles
+            },
+
+            {
+                label:
+                    "Foto profil",
+
+                count:
+                    images
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "teacher-profiles"
+    ) {
+
+        const [
+            profiles,
+            subjects,
+            images
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM admins
+                WHERE
+                    COALESCE(
+                        profile_bio,
+                        ''
+                    ) <> ''
+
+                    OR COALESCE(
+                        profile_banner_color,
+                        'blue'
+                    ) <> 'blue'
+
+                    OR profile_picture_url
+                        IS NOT NULL
+
+                    OR profile_date_of_birth
+                        IS NOT NULL
+
+                    OR COALESCE(
+                        profile_is_homeroom_teacher,
+                        0
+                    ) <> 0
+
+                    OR profile_homeroom_class_id
+                        IS NOT NULL
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM admin_profile_subjects
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM admins
+                WHERE
+                    profile_picture_public_id
+                        IS NOT NULL
+
+                    AND TRIM(
+                        profile_picture_public_id
+                    ) <> ''
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label:
+                    "Profil guru berubah",
+
+                count:
+                    profiles
+            },
+
+            {
+                label:
+                    "Relasi mata pelajaran",
+
+                count:
+                    subjects
+            },
+
+            {
+                label:
+                    "Foto profil",
+
+                count:
+                    images
+            }
+        ];
+
+    }
+
+
+    else if (
+        section ===
+        "students"
+    ) {
+
+        const [
+            students,
+            points,
+            scores,
+            attempts,
+            moderation
+        ] = await Promise.all([
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM students
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM point_transactions
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM exam_scores
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM quiz_attempts
+            `),
+
+            getResetCount(`
+                SELECT COUNT(*) AS total
+                FROM feed_moderation_actions
+            `)
+
+        ]);
+
+
+        items = [
+            {
+                label: "Akun siswa",
+                count: students
+            },
+
+            {
+                label: "Riwayat poin",
+                count: points
+            },
+
+            {
+                label: "Nilai",
+                count: scores
+            },
+
+            {
+                label: "Respons quiz",
+                count: attempts
+            },
+
+            {
+                label: "Tindakan moderasi",
+                count: moderation
+            }
+        ];
+
+    }
+
+
+ else if (
+    section ===
+    "factory"
+) {
+
+    const [
+        students,
+        teachers,
+        quizzes,
+        posts,
+        replies,
+        informationBoards,
+        notifications,
+        studentImages,
+        teacherImages,
+        feedImages,
+        informationImages,
+        quizImages
+    ] = await Promise.all([
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM students
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM admins
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM quizzes
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM announcements
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM announcement_replies
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM public_announcements
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM notifications
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM students
+            WHERE
+                profile_picture_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    profile_picture_public_id
+                ) <> ''
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM admins
+            WHERE
+                profile_picture_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    profile_picture_public_id
+                ) <> ''
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM announcements
+            WHERE
+                image_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    image_public_id
+                ) <> ''
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM public_announcements
+            WHERE
+                image_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    image_public_id
+                ) <> ''
+        `),
+
+        getResetCount(`
+            SELECT COUNT(*) AS total
+            FROM quiz_questions
+            WHERE
+                image_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    image_public_id
+                ) <> ''
+        `)
+
+    ]);
+
+
+    const totalImages =
+        studentImages +
+        teacherImages +
+        feedImages +
+        informationImages +
+        quizImages;
+
+
+    items = [
+        {
+            label:
+                "Akun siswa",
+
+            count:
+                students
+        },
+
+        {
+            label:
+                "Akun guru",
+
+            count:
+                teachers
+        },
+
+        {
+            label:
+                "Quiz",
+
+            count:
+                quizzes
+        },
+
+        {
+            label:
+                "Post Classroom Feed",
+
+            count:
+                posts
+        },
+
+        {
+            label:
+                "Reply Classroom Feed",
+
+            count:
+                replies
+        },
+
+        {
+            label:
+                "Information Board",
+
+            count:
+                informationBoards
+        },
+
+        {
+            label:
+                "Notifikasi",
+
+            count:
+                notifications
+        },
+
+        {
+            label:
+                "Seluruh gambar",
+
+            count:
+                totalImages
+        }
+    ];
+
+}
+
+
+    return {
+        items,
+
+        total:
+            items.reduce(
+                (
+                    total,
+                    item
+                ) =>
+                    total +
+                    Number(
+                        item.count || 0
+                    ),
+                0
+            )
+    };
+
+}
+
+
+async function getResetImagePublicIds(
+    section
+) {
+
+    const queries = [];
+
+
+    if (
+        [
+            "student-profiles",
+            "students",
+            "factory"
+        ].includes(section)
+    ) {
+
+        queries.push(`
+            SELECT
+                profile_picture_public_id
+                    AS public_id
+            FROM students
+            WHERE
+                profile_picture_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    profile_picture_public_id
+                ) <> ''
+        `);
+
+    }
+
+
+    if (
+        [
+            "teacher-profiles",
+            "factory"
+        ].includes(section)
+    ) {
+
+        queries.push(`
+            SELECT
+                profile_picture_public_id
+                    AS public_id
+            FROM admins
+            WHERE
+                profile_picture_public_id
+                    IS NOT NULL
+
+                AND TRIM(
+                    profile_picture_public_id
+                ) <> ''
+        `);
+
+    }
+
+
+    if (
+        [
+            "classroom-feed",
+            "students",
+            "factory"
+        ].includes(section)
+    ) {
+
+        let feedWhere = "";
+
+
+        if (section === "students") {
+
+            feedWhere = `
+                AND student_id IS NOT NULL
+            `;
 
         }
 
 
+        queries.push(`
+            SELECT
+                image_public_id
+                    AS public_id
+            FROM announcements
+            WHERE
+                image_public_id IS NOT NULL
+                AND TRIM(image_public_id) <> ''
+                ${feedWhere}
+        `);
+
+    }
+
+
+    if (
+        [
+            "announcements",
+            "factory"
+        ].includes(section)
+    ) {
+
+        queries.push(`
+            SELECT
+                image_public_id
+                    AS public_id
+            FROM public_announcements
+            WHERE
+                image_public_id IS NOT NULL
+                AND TRIM(image_public_id) <> ''
+        `);
+
+    }
+
+
+    if (
+        [
+            "quizzes",
+            "factory"
+        ].includes(section)
+    ) {
+
+        queries.push(`
+            SELECT
+                image_public_id
+                    AS public_id
+            FROM quiz_questions
+            WHERE
+                image_public_id IS NOT NULL
+                AND TRIM(image_public_id) <> ''
+        `);
+
+    }
+
+
+    const resultGroups =
+        await Promise.all(
+            queries.map(
+                query =>
+                    tursoDb.all(
+                        query
+                    )
+            )
+        );
+
+
+    return [
+        ...new Set(
+            resultGroups
+                .flat()
+                .map(
+                    row =>
+                        String(
+                            row.public_id ||
+                            ""
+                        ).trim()
+                )
+                .filter(Boolean)
+        )
+    ];
+
+}
+
+
+function createSequenceResetStatement(
+    tableNames
+) {
+
+    const placeholders =
+        tableNames
+            .map(() => "?")
+            .join(", ");
+
+
+    return {
+        sql: `
+            DELETE FROM sqlite_sequence
+            WHERE name IN (
+                ${placeholders}
+            )
+        `,
+
+        args:
+            tableNames
+    };
+
+}
+
+
+async function buildSystemResetStatements(
+    section
+) {
+
+    const statements = [];
+
+
+    if (section === "points") {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM point_transactions",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "point_transactions"
+            ])
+        );
+
+    }
+
+
+    else if (section === "scores") {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM exam_scores",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "exam_scores"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "announcements"
+    ) {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM public_announcement_classes",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM public_announcements",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "public_announcements"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "classroom-feed"
+    ) {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM announcement_mentions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM notifications",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM announcement_replies",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM announcements",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "announcement_mentions",
+                "notifications",
+                "announcement_replies",
+                "announcements"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "moderation"
+    ) {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM feed_moderation_actions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM feed_moderation_events",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM feed_moderation",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "feed_moderation_actions",
+                "feed_moderation_events"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "quizzes"
+    ) {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM quiz_guest_answers",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_answers",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_guest_attempts",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_attempts",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_allowed_students",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_options",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_questions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quizzes",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "quiz_guest_answers",
+                "quiz_answers",
+                "quiz_guest_attempts",
+                "quiz_attempts",
+                "quiz_options",
+                "quiz_questions",
+                "quizzes"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "student-profiles"
+    ) {
+
+        statements.push({
+            sql: `
+                UPDATE students
+                SET
+                    profile_bio = '',
+                    profile_banner_color = 'blue',
+                    profile_picture_url = NULL,
+                    profile_picture_public_id = NULL,
+                    profile_picture_width = NULL,
+                    profile_picture_height = NULL,
+                    profile_picture_bytes = NULL,
+                    profile_show_academic_stats = 0,
+                    date_of_birth = NULL
+            `,
+
+            args: []
+        });
+
+    }
+
+
+    else if (
+        section ===
+        "teacher-profiles"
+    ) {
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM admin_profile_subjects",
+
+                args: []
+            },
+
+            {
+                sql: `
+                    UPDATE admins
+                    SET
+                        profile_bio = '',
+                        profile_banner_color = 'blue',
+                        profile_picture_url = NULL,
+                        profile_picture_public_id = NULL,
+                        profile_picture_width = NULL,
+                        profile_picture_height = NULL,
+                        profile_picture_bytes = NULL,
+                        profile_date_of_birth = NULL,
+                        profile_is_homeroom_teacher = 0,
+                        profile_homeroom_class_id = NULL
+                `,
+
+                args: []
+            }
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "students"
+    ) {
+
+        const students =
+            await tursoDb.all(`
+                SELECT id
+                FROM students
+            `);
+
+
+        const studentIds =
+            students.map(
+                student =>
+                    Number(
+                        student.id
+                    )
+            );
+
+
+        statements.push(
+            ...buildStudentDeletionStatements(
+                studentIds
+            ),
+
+            {
+                sql:
+                    "DELETE FROM classes",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "students",
+                "point_transactions",
+                "exam_scores",
+                "quiz_attempts",
+                "quiz_answers",
+                "feed_moderation_actions",
+                "feed_moderation_events",
+                "announcement_mentions",
+                "notifications",
+                "announcement_replies",
+                "announcements",
+                "classes"
+            ])
+        );
+
+    }
+
+
+    else if (
+        section ===
+        "factory"
+    ) {
+
+        const passwordHash =
+            await bcrypt.hash(
+                "admin123",
+                12
+            );
+
+
+        statements.push(
+            {
+                sql:
+                    "DELETE FROM quiz_guest_answers",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_answers",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_guest_attempts",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_attempts",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_allowed_students",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_options",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quiz_questions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM quizzes",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM feed_moderation_actions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM feed_moderation_events",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM feed_moderation",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM announcement_mentions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM notifications",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM announcement_replies",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM announcements",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM public_announcement_classes",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM public_announcements",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM admin_profile_subjects",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM point_transactions",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM exam_scores",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM teacher_registration_codes",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM students",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM subjects",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM classes",
+
+                args: []
+            },
+
+            {
+                sql:
+                    "DELETE FROM admins",
+
+                args: []
+            },
+
+            createSequenceResetStatement([
+                "quiz_guest_answers",
+                "quiz_answers",
+                "quiz_guest_attempts",
+                "quiz_attempts",
+                "quiz_options",
+                "quiz_questions",
+                "quizzes",
+                "feed_moderation_actions",
+                "feed_moderation_events",
+                "announcement_mentions",
+                "notifications",
+                "announcement_replies",
+                "announcements",
+                "public_announcements",
+                "point_transactions",
+                "exam_scores",
+                "teacher_registration_codes",
+                "students",
+                "subjects",
+                "classes",
+                "admins"
+            ]),
+
+            {
+                sql: `
+                    INSERT INTO admins (
+                        username,
+                        password,
+                        name,
+                        role
+                    )
+                    VALUES (?, ?, ?, ?)
+                `,
+
+                args: [
+                    "admin",
+                    passwordHash,
+                    "Admin",
+                    "teacher"
+                ]
+            }
+        );
+
+    }
+
+
+    return statements;
+
+}
+
+
+// ========================================
+// PREVIEW RESET
+// ========================================
+
+app.get(
+    "/api/admin/system/reset/:section/preview",
+
+    requireAdministratorSettingsAccess,
+
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+
+                message:
+                    "Harus login sebagai guru."
+            });
+
+        }
+
+
+const rawSection =
+    String(
+        req.params?.section ||
+        ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+const allowedSections =
+    new Set([
+        "points",
+        "scores",
+        "announcements",
+        "classroom-feed",
+        "moderation",
+        "quizzes",
+        "student-profiles",
+        "teacher-profiles",
+        "students",
+        "factory"
+    ]);
+
+
+if (
+    !allowedSections.has(
+        rawSection
+    )
+) {
+
+    return res.status(400).json({
+        success: false,
+
+        receivedSection:
+            rawSection,
+
+        message:
+            `Jenis reset "${rawSection || "(kosong)"}" tidak valid.`
+    });
+
+}
+
+
+const section =
+    rawSection;
+
+
         try {
 
-            const passwordHash =
-                await bcrypt.hash(
-                    "admin123",
-                    12
+            const preview =
+                await getSystemResetPreview(
+                    section
                 );
 
 
-            /*
-                Urutan penghapusan penting
-                karena ada FOREIGN KEY.
-            */
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        announcement_mentions
-                `
-            );
+            const previewToken =
+                crypto
+                    .randomBytes(24)
+                    .toString("hex");
 
 
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        notifications
-                `
-            );
+            req.session
+                .systemResetPreviewTokens = {
+                    ...(
+                        req.session
+                            .systemResetPreviewTokens ||
+                        {}
+                    ),
 
+                    [section]: {
+                        token:
+                            previewToken,
 
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        announcement_replies
-                `
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        announcements
-                `
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        public_announcements
-                `
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        point_transactions
-                `
-            );
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        exam_scores
-                `
-            );
-
-            /*
-    Factory Reset juga menghapus
-    seluruh katalog Mapel.
-*/
-await ensureSubjectsTable();
-
-await tursoDb.run(
-    `
-        DELETE FROM subjects
-    `
-);
-
-
-            await tursoDb.run(
-                `
-                    DELETE FROM
-                        teacher_registration_codes
-                `
-            );
-
-
-await tursoDb.run(
-    `
-        DELETE FROM students
-    `
-);
-
-
-/*
-    Factory Reset juga harus
-    menghapus seluruh Master Kelas.
-*/
-await ensureClassesTable();
-
-await tursoDb.run(
-    `
-        DELETE FROM classes
-    `
-);
-
-
-await tursoDb.run(
-    `
-        DELETE FROM admins
-    `
-);
-
-
-            /*
-                Reset AUTOINCREMENT supaya
-                database benar-benar fresh.
-            */
-
-const sequences = [
-    "announcement_mentions",
-    "notifications",
-    "announcement_replies",
-    "announcements",
-    "public_announcements",
-    "point_transactions",
-    "exam_scores",
-    "subjects",
-    "teacher_registration_codes",
-    "students",
-    "classes",
-    "admins"
-];
-
-
-            for (const tableName of sequences) {
-
-                await tursoDb.run(
-                    `
-                        DELETE FROM sqlite_sequence
-                        WHERE name = ?
-                    `,
-                    [
-                        tableName
-                    ]
-                );
-
-            }
-
-
-            /*
-                Buat kembali akun guru default.
-            */
-
-await tursoDb.run(
-    `
-        INSERT INTO admins (
-            username,
-            password,
-            name,
-            role
-        )
-
-        VALUES (
-            ?,
-            ?,
-            ?,
-            ?
-        )
-    `,
-    [
-        "admin",
-        passwordHash,
-        "Admin",
-        "teacher"
-    ]
-);
-
-
-            /*
-                Session lama tidak boleh
-                dipakai setelah factory reset.
-            */
-
-            req.session.destroy(
-                (error) => {
-
-                    if (error) {
-
-                        console.error(
-                            "Reset berhasil tetapi session gagal dihapus:",
-                            error
-                        );
-
+                        expiresAt:
+                            Date.now() +
+                            5 * 60 * 1000
                     }
-
-                }
-            );
+                };
 
 
             return res.json({
                 success: true,
 
-message:
-    "Factory reset berhasil. Semua data telah dihapus dan akun default sementara dibuat kembali."
+                section,
+
+                title:
+                    SYSTEM_RESET_SECTIONS[
+                        section
+                    ].title,
+
+                confirmation:
+                    SYSTEM_RESET_SECTIONS[
+                        section
+                    ].confirmation,
+
+                previewToken,
+
+                total:
+                    preview.total,
+
+                items:
+                    preview.items
             });
 
 
         } catch (error) {
 
             console.error(
-                "Factory reset gagal:",
+                "Preview reset gagal:",
                 error
             );
 
 
-            return res
-                .status(500)
-                .json({
-                    success: false,
+            return res.status(500).json({
+                success: false,
 
-                    message:
-                        "Factory reset gagal."
-                });
+                message:
+                    "Data reset tidak dapat diperiksa."
+            });
 
         }
 
     }
 );
 
+
+// ========================================
+// ACTUAL RESET
+// ========================================
+
 app.post(
     "/api/admin/system/reset/:section",
+
+    requireAdministratorSettingsAccess,
+
     async (req, res) => {
 
         if (!req.session.adminId) {
 
-            return res
-                .status(401)
-                .json({
-                    success: false,
-                    message:
-                        "Harus login sebagai guru."
-                });
+            return res.status(401).json({
+                success: false,
+
+                message:
+                    "Harus login sebagai guru."
+            });
 
         }
 
 
-        const section =
+const rawSection =
+    String(
+        req.params?.section ||
+        ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+const allowedSections =
+    new Set([
+        "points",
+        "scores",
+        "announcements",
+        "classroom-feed",
+        "moderation",
+        "quizzes",
+        "student-profiles",
+        "teacher-profiles",
+        "students",
+        "factory"
+    ]);
+
+
+if (
+    !allowedSections.has(
+        rawSection
+    )
+) {
+
+    return res.status(400).json({
+        success: false,
+
+        receivedSection:
+            rawSection,
+
+        message:
+            `Jenis reset "${rawSection || "(kosong)"}" tidak valid.`
+    });
+
+}
+
+
+const section =
+    rawSection;
+
+
+        const previewSession =
+            req.session
+                .systemResetPreviewTokens
+                ?.[section];
+
+
+        const submittedToken =
             String(
-                req.params.section || ""
-            ).trim();
+                req.body?.previewToken ||
+                ""
+            );
 
 
-try {
+        if (
+            !previewSession ||
+            previewSession.token !==
+                submittedToken ||
+            Number(
+                previewSession.expiresAt
+            ) <= Date.now()
+        ) {
 
-    if (section === "points") {
+            return res.status(409).json({
+                success: false,
 
-        await tursoDb.run(
-            `
-                DELETE FROM
-                    point_transactions
-            `
-        );
+                previewExpired:
+                    true,
 
+                message:
+                    "Preview sudah kedaluwarsa. Periksa data kembali."
+            });
 
-        await tursoDb.run(
-            `
-                DELETE FROM sqlite_sequence
-                WHERE name =
-                    'point_transactions'
-            `
-        );
-
-
-        return res.json({
-            success: true,
-            message:
-                "Semua data poin berhasil direset."
-        });
-
-    }
-
-    if (section === "scores") {
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                exam_scores
-        `
-    );
+        }
 
 
-    await tursoDb.run(
-        `
-            DELETE FROM sqlite_sequence
-            WHERE name =
-                'exam_scores'
-        `
-    );
+        const requiredConfirmation =
+            SYSTEM_RESET_SECTIONS[
+                section
+            ].confirmation;
 
 
-    return res.json({
-        success: true,
-        message:
-            "Semua nilai berhasil direset."
-    });
-
-}
-
-if (
-    section ===
-    "announcements"
-) {
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                public_announcements
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM sqlite_sequence
-            WHERE name =
-                'public_announcements'
-        `
-    );
-
-
-    return res.json({
-        success: true,
-        message:
-            "Semua Announcement berhasil direset."
-    });
-
-}
-
-if (
-    section ===
-    "classroom-feed"
-) {
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                announcement_mentions
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                notifications
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                announcement_replies
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM
-                announcements
-        `
-    );
-
-
-    const tables = [
-        "announcement_mentions",
-        "notifications",
-        "announcement_replies",
-        "announcements"
-    ];
-
-
-    for (const tableName of tables) {
-
-        await tursoDb.run(
-            `
-                DELETE FROM sqlite_sequence
-                WHERE name = ?
-            `,
-            [
-                tableName
-            ]
-        );
-
-    }
-
-
-    return res.json({
-        success: true,
-        message:
-            "Classroom Feed berhasil direset."
-    });
-
-}
-
-if (
-    section ===
-    "students"
-) {
-
-    await tursoDb.run(
-        `
-            DELETE FROM announcement_mentions
-
-            WHERE
-                mentioned_student_id IS NOT NULL
-
-            OR announcement_id IN (
-                SELECT id
-                FROM announcements
-                WHERE student_id IS NOT NULL
+        const submittedConfirmation =
+            String(
+                req.body?.confirmation ||
+                ""
             )
-
-            OR reply_id IN (
-                SELECT id
-                FROM announcement_replies
-                WHERE student_id IS NOT NULL
-            )
-        `
-    );
+                .trim()
+                .toUpperCase();
 
 
-    await tursoDb.run(
-        `
-            DELETE FROM notifications
+        if (
+            submittedConfirmation !==
+            requiredConfirmation
+        ) {
 
-            WHERE
-                recipient_student_id IS NOT NULL
+            return res.status(400).json({
+                success: false,
 
-            OR sender_student_id IS NOT NULL
+                message:
+                    `Ketik ${requiredConfirmation} dengan benar.`
+            });
 
-            OR announcement_id IN (
-                SELECT id
-                FROM announcements
-                WHERE student_id IS NOT NULL
-            )
-
-            OR reply_id IN (
-                SELECT id
-                FROM announcement_replies
-                WHERE student_id IS NOT NULL
-            )
-        `
-    );
+        }
 
 
-    await tursoDb.run(
-        `
-            DELETE FROM announcement_replies
+        try {
 
-            WHERE announcement_id IN (
-                SELECT id
-                FROM announcements
-                WHERE student_id IS NOT NULL
-            )
-        `
-    );
+            const imagePublicIds =
+                await getResetImagePublicIds(
+                    section
+                );
 
 
-    await tursoDb.run(
-        `
-            DELETE FROM announcement_replies
-            WHERE student_id IS NOT NULL
-        `
-    );
+            const statements =
+                await buildSystemResetStatements(
+                    section
+                );
 
-
-    await tursoDb.run(
-        `
-            DELETE FROM announcements
-            WHERE student_id IS NOT NULL
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM point_transactions
-        `
-    );
-
-
-    await tursoDb.run(
-        `
-            DELETE FROM exam_scores
-        `
-    );
-
-
-await tursoDb.run(
-    `
-        DELETE FROM students
-    `
-);
-
-
-await ensureClassesTable();
-
-await tursoDb.run(
-    `
-        DELETE FROM classes
-    `
-);
-
-
-const tables = [
-    "students",
-    "point_transactions",
-    "exam_scores",
-    "classes"
-];
-
-
-    for (const tableName of tables) {
-
-        await tursoDb.run(
-            `
-                DELETE FROM sqlite_sequence
-                WHERE name = ?
-            `,
-            [
-                tableName
-            ]
-        );
-
-    }
-
-
-    return res.json({
-        success: true,
-        message:
-            "Semua data siswa berhasil direset."
-    });
-
-}
-
-
-throw new Error(
-    "RESET_SECTION_INVALID"
-);
-
-
-        } catch (error) {
 
             if (
-                error.message ===
-                "RESET_SECTION_INVALID"
+                !Array.isArray(statements) ||
+                statements.length === 0
             ) {
 
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        message:
-                            "Jenis reset tidak valid."
-                    });
+                throw new Error(
+                    "RESET_STATEMENTS_EMPTY"
+                );
 
             }
 
 
+            /*
+                Semua query dijalankan dalam
+                satu transaction atomik.
+            */
+
+            await tursoDb.batch(
+                statements,
+                "immediate"
+            );
+
+
+            delete req.session
+                .systemResetPreviewTokens[
+                    section
+                ];
+
+
+            /*
+                Database sudah berhasil.
+                Cleanup gambar tidak boleh membuat
+                database kembali setengah terhapus.
+            */
+
+            const failedImagePublicIds =
+                await deleteStoredQuizImages(
+                    imagePublicIds
+                );
+
+
+            const imageWarning =
+                failedImagePublicIds.length > 0
+                    ? ` ${failedImagePublicIds.length} gambar belum berhasil dibersihkan.`
+                    : "";
+
+
+            if (section === "factory") {
+
+                const successMessage =
+                    "Factory reset berhasil. Akun sementara admin / admin123 sudah dibuat." +
+                    imageWarning;
+
+
+                req.session.destroy(
+                    error => {
+
+                        if (error) {
+
+                            console.error(
+                                "Session gagal ditutup setelah Factory Reset:",
+                                error
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                res.clearCookie(
+                    "connect.sid"
+                );
+
+
+                return res.json({
+                    success: true,
+
+                    logout:
+                        true,
+
+                    message:
+                        successMessage
+                });
+
+            }
+
+
+            return res.json({
+                success: true,
+
+                logout:
+                    false,
+
+                message:
+                    `${SYSTEM_RESET_SECTIONS[section].title} berhasil.` +
+                    imageWarning
+            });
+
+
+        } catch (error) {
+
             console.error(
-                "Reset bagian gagal:",
+                "Actual reset gagal:",
                 error
             );
 
 
-            return res
-                .status(500)
-                .json({
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Reset gagal. Seluruh perubahan database telah dibatalkan."
+            });
+
+        }
+
+    }
+);
+
+
+// ========================================
+// TESTING RESET TANPA HAPUS DATA
+// ========================================
+
+let systemResetTestTablePromise =
+    null;
+
+
+async function ensureSystemResetTestTable() {
+
+    if (!systemResetTestTablePromise) {
+
+        systemResetTestTablePromise =
+            tursoDb.run(`
+                CREATE TABLE IF NOT EXISTS
+                    system_reset_test_runs
+                (
+                    token TEXT PRIMARY KEY,
+
+                    created_at DATETIME NOT NULL
+                        DEFAULT CURRENT_TIMESTAMP
+                )
+            `)
+                .catch(
+                    error => {
+
+                        systemResetTestTablePromise =
+                            null;
+
+                        throw error;
+
+                    }
+                );
+
+    }
+
+
+    return systemResetTestTablePromise;
+
+}
+
+
+app.post(
+    "/api/admin/system/reset-testing",
+
+    requireAdministratorSettingsAccess,
+
+    async (req, res) => {
+
+        if (!req.session.adminId) {
+
+            return res.status(401).json({
+                success: false,
+
+                message:
+                    "Harus login sebagai guru."
+            });
+
+        }
+
+
+        try {
+
+            await ensureSystemResetTestTable();
+
+
+            const sections =
+                Object.keys(
+                    SYSTEM_RESET_SECTIONS
+                );
+
+
+            /*
+                1. Periksa seluruh Preview API.
+                Hanya menjalankan SELECT.
+            */
+
+            for (
+                const section
+                of sections
+            ) {
+
+                await getSystemResetPreview(
+                    section
+                );
+
+            }
+
+
+            /*
+                2. Bangun seluruh query Actual Reset,
+                kemudian tambahkan EXPLAIN.
+
+                EXPLAIN hanya memeriksa syntax,
+                tabel, kolom, dan parameter.
+                Query aslinya tidak dijalankan.
+            */
+
+            const explainStatements =
+                [];
+
+
+            for (
+                const section
+                of sections
+            ) {
+
+                const resetStatements =
+                    await buildSystemResetStatements(
+                        section
+                    );
+
+
+                if (
+                    !Array.isArray(
+                        resetStatements
+                    ) ||
+                    resetStatements.length === 0
+                ) {
+
+                    throw new Error(
+                        `Tidak ada query reset untuk ${section}.`
+                    );
+
+                }
+
+
+                resetStatements.forEach(
+                    statement => {
+
+                        if (
+                            !statement ||
+                            !statement.sql
+                        ) {
+
+                            throw new Error(
+                                `Query reset ${section} tidak valid.`
+                            );
+
+                        }
+
+
+                        explainStatements.push({
+                            sql:
+                                `EXPLAIN ${
+                                    statement.sql
+                                }`,
+
+                            args:
+                                Array.isArray(
+                                    statement.args
+                                )
+                                    ? statement.args
+                                    : []
+                        });
+
+                    }
+                );
+
+            }
+
+
+            /*
+                Semua EXPLAIN dikirim dalam satu batch.
+                Tidak ada DELETE, UPDATE, atau INSERT
+                yang benar-benar dijalankan.
+            */
+
+            await tursoDb.batch(
+                explainStatements,
+                "immediate"
+            );
+
+
+            /*
+                3. Tes rollback transaction.
+
+                Token dimasukkan pada query pertama,
+                kemudian query kedua sengaja dibuat gagal.
+                Token tidak boleh tertinggal.
+            */
+
+            const testToken =
+                crypto
+                    .randomBytes(24)
+                    .toString("hex");
+
+
+            const missingTable =
+                `reset_test_missing_${
+                    crypto
+                        .randomBytes(8)
+                        .toString("hex")
+                }`;
+
+
+            let expectedFailure =
+                false;
+
+
+            try {
+
+                await tursoDb.batch(
+                    [
+                        {
+                            sql: `
+                                INSERT INTO
+                                    system_reset_test_runs
+                                (
+                                    token
+                                )
+                                VALUES (?)
+                            `,
+
+                            args: [
+                                testToken
+                            ]
+                        },
+
+                        {
+                            sql: `
+                                SELECT *
+                                FROM ${missingTable}
+                            `,
+
+                            args: []
+                        }
+                    ],
+                    "immediate"
+                );
+
+
+            } catch (error) {
+
+                expectedFailure =
+                    true;
+
+            }
+
+
+            if (!expectedFailure) {
+
+                throw new Error(
+                    "Tes transaction seharusnya gagal, tetapi tetap berhasil."
+                );
+
+            }
+
+
+            const residue =
+                await tursoDb.get(
+                    `
+                        SELECT token
+                        FROM system_reset_test_runs
+                        WHERE token = ?
+                        LIMIT 1
+                    `,
+                    [
+                        testToken
+                    ]
+                );
+
+
+            if (residue) {
+
+                /*
+                    Pengaman jika driver ternyata
+                    tidak melakukan rollback.
+                */
+
+                await tursoDb.run(
+                    `
+                        DELETE FROM
+                            system_reset_test_runs
+                        WHERE token = ?
+                    `,
+                    [
+                        testToken
+                    ]
+                );
+
+
+                return res.status(500).json({
                     success: false,
+
                     message:
-                        "Reset data gagal."
+                        "Testing gagal: transaction tidak melakukan rollback dengan benar."
                 });
+
+            }
+
+
+            return res.json({
+                success: true,
+
+                checkedSections:
+                    sections.length,
+
+                checkedStatements:
+                    explainStatements.length,
+
+                message:
+                    `Testing berhasil. ${sections.length} jenis Preview dan ${explainStatements.length} query Actual Reset valid. Rollback transaction bekerja dan tidak ada data LMS yang dihapus.`
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Testing System Reset gagal:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    error.message ||
+                    "Testing gagal. Tidak ada reset yang dijalankan."
+            });
 
         }
 

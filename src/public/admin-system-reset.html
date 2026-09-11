@@ -309,8 +309,7 @@
                         </h1>
 
                         <p>
-                            Kelola penghapusan data LMS.
-                            Gunakan setiap tindakan dengan hati-hati.
+Pengaturan guru dan pengaturan administrator.
                         </p>
 
                     </div>
@@ -318,49 +317,295 @@
                 </section>
 
 
-                <!-- RESET PANEL -->
+<!-- =========================
+     GENERAL SETTINGS
+========================== -->
 
-                <section class="admin-reset-page-panel">
+<section class="admin-settings-panel">
 
-                    <div class="admin-reset-page-header">
+    <div class="admin-settings-panel-header">
 
-                        <small class="eyebrow">
-                            DATA CONTROL
-                        </small>
+        <small class="eyebrow">
+            GENERAL SETTINGS
+        </small>
 
-                        <h2>
-                            Pengelolaan Data
-                        </h2>
+        <h2>
+            Pengaturan Akun
+        </h2>
 
-                        <p>
-                            Pilih data tertentu yang ingin direset
-                            atau lakukan Factory Reset.
-                        </p>
+        <p>
+            Ubah nama, username, atau password akun guru.
+            Semua perubahan memerlukan password lama.
+        </p>
 
-                    </div>
+    </div>
 
 
-                    <div class="admin-reset-options">
+ <div class="admin-account-action-grid">
 
-    <!-- =========================
-         FACTORY RESET
-    ========================== -->
+    <button
+        type="button"
+        class="
+            admin-primary-button
+            admin-account-action-button
+        "
+        data-account-setting="name"
+    >
+        Ganti Nama
+    </button>
 
-    <div class="admin-reset-option danger">
+
+    <button
+        type="button"
+        class="
+            admin-primary-button
+            admin-account-action-button
+        "
+        data-account-setting="username"
+    >
+        Ganti Username
+    </button>
+
+
+    <button
+        type="button"
+        class="
+            admin-primary-button
+            admin-account-action-button
+        "
+        data-account-setting="password"
+    >
+        Ganti Password
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     ADMINISTRATOR SETTINGS
+========================== -->
+
+<section
+    id="administratorAccessPanel"
+    class="
+        admin-settings-panel
+        administrator-access-panel
+    "
+>
+
+    <div class="administrator-access-header">
 
         <div>
 
-            <span class="admin-reset-label">
+            <small class="eyebrow">
+                RESTRICTED ACCESS
+            </small>
+
+            <h2 id="administratorAccessTitle">
+                Administrator Settings
+            </h2>
+
+            <p id="administratorAccessDescription">
+                Masukkan password administrator untuk
+                membuka pengaturan sensitif.
+            </p>
+
+        </div>
+
+    </div>
+
+
+<form
+    id="administratorUnlockForm"
+    class="administrator-unlock-form"
+>
+
+    <div class="administrator-login-row">
+
+        <label>
+            <span>
+                Password administrator
+            </span>
+
+            <input
+                type="password"
+                id="administratorPasswordInput"
+                maxlength="72"
+                autocomplete="current-password"
+                placeholder="Masukkan password"
+            >
+        </label>
+
+
+        <button
+            type="submit"
+            class="admin-primary-button"
+            id="administratorOpenButton"
+        >
+            Buka
+        </button>
+
+    </div>
+
+
+    <p
+        id="administratorAccessMessage"
+        class="admin-form-message"
+    ></p>
+
+</form>
+
+</section>
+
+
+<!-- =========================
+     EXTENDED ADMIN PANEL
+========================== -->
+
+<section
+    id="administratorExtendedPanel"
+    class="
+        admin-settings-panel
+        administrator-extended-panel
+    "
+    hidden
+>
+
+    <div class="admin-settings-panel-header">
+
+        <small class="eyebrow">
+            TEACHER MANAGEMENT
+        </small>
+
+        <h2>
+            Hapus Guru
+        </h2>
+
+        <p>
+            Penghapusan akun hanya tersedia melalui
+            Administrator Settings.
+        </p>
+
+    </div>
+
+
+    <div
+        id="administratorTeacherList"
+        class="administrator-teacher-list"
+    >
+        <div class="administrator-teacher-loading">
+            Memuat daftar guru...
+        </div>
+    </div>
+
+
+    <div class="administrator-password-section">
+
+        <strong>
+            Ganti Password Administrator
+        </strong>
+
+        <p>
+            Panel akan dikunci kembali setelah
+            password berhasil diganti.
+        </p>
+
+
+        <form
+            id="administratorPasswordForm"
+            class="administrator-password-form"
+        >
+
+            <input
+                type="password"
+                id="currentAdministratorPassword"
+                maxlength="72"
+                autocomplete="current-password"
+                placeholder="Password lama"
+                required
+            >
+
+
+            <input
+                type="password"
+                id="newAdministratorPassword"
+                maxlength="72"
+                autocomplete="new-password"
+                placeholder="Password baru"
+                required
+            >
+
+
+            <button
+                type="submit"
+                class="secondary-button"
+                id="changeAdministratorPasswordButton"
+            >
+                Ganti Password
+            </button>
+
+        </form>
+
+
+        <p
+            id="administratorPasswordMessage"
+            class="admin-form-message"
+        ></p>
+
+    </div>
+
+</section>
+
+
+<!-- RESET PANEL -->
+
+<section
+    id="administratorResetPanel"
+    class="
+        admin-reset-page-panel
+        administrator-sensitive-panel
+        admin-reset-v2
+    "
+    hidden
+>
+
+    <div class="admin-reset-page-header">
+
+        <small class="eyebrow">
+            DATA CONTROL
+        </small>
+
+        <h2>
+            Pengelolaan Data
+        </h2>
+
+        <p>
+            Periksa data terlebih dahulu sebelum
+            menjalankan reset sebenarnya.
+        </p>
+
+    </div>
+
+
+    <!-- FACTORY RESET -->
+
+    <div class="system-reset-danger-zone">
+
+        <div class="system-reset-card-copy">
+
+            <span class="system-reset-card-label">
                 HARD RESET
             </span>
 
             <strong>
-                Factory Reset
+                Factory Reset LMS
             </strong>
 
             <p>
-                Hapus seluruh data LMS dan
-                kembalikan sistem ke kondisi awal.
+                Hapus seluruh data LMS dan buat kembali
+                akun guru sementara.
             </p>
 
         </div>
@@ -368,45 +613,51 @@
 
         <button
             type="button"
-            class="admin-danger-reset-button"
-            onclick="openFactoryResetModal()"
+            class="
+                admin-v2-secondary-button
+                system-reset-preview-button
+                system-reset-factory-button
+            "
+            data-reset-section="factory"
         >
-            Factory Reset
+            <span>
+                Reset
+            </span>
         </button>
 
     </div>
 
 
-    <!-- =========================
-         RESET PER BAGIAN
-    ========================== -->
+    <!-- RESET PER BAGIAN -->
 
-    <div class="admin-reset-section-divider">
+    <div class="system-reset-section-heading">
 
-        <div>
+        <small class="eyebrow">
+            SECTION RESET
+        </small>
 
-            <small class="eyebrow">
-                SECTION RESET
-            </small>
+        <h3>
+            Reset Per Bagian
+        </h3>
 
-            <h2>
-                Reset Per Bagian
-            </h2>
-
-            <p>
-                Hanya data pada bagian yang dipilih yang akan dihapus.
-            </p>
-
-        </div>
+        <p>
+            Hanya bagian yang dipilih yang akan direset.
+        </p>
 
     </div>
 
 
-    <div class="admin-section-reset-grid">
+    <div class="system-reset-v2-grid">
 
-        <div class="admin-section-reset-card">
+        <!-- POIN -->
 
-            <div>
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
 
                 <strong>
                     Reset Poin
@@ -414,7 +665,7 @@
 
                 <p>
                     Hapus seluruh riwayat poin siswa.
-                    Data siswa tetap ada.
+                    Akun siswa tetap tersedia.
                 </p>
 
             </div>
@@ -422,29 +673,37 @@
 
             <button
                 type="button"
-                class="admin-section-reset-button"
-                onclick="resetSection(
-                    'points',
-                    'Poin',
-                    'Semua riwayat poin siswa akan dihapus.'
-                )"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="points"
             >
-                Reset
+<span>
+    Reset
+</span>
             </button>
 
-        </div>
+        </article>
 
 
-        <div class="admin-section-reset-card">
+        <!-- NILAI -->
 
-            <div>
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
 
                 <strong>
                     Reset Nilai
                 </strong>
 
                 <p>
-                    Hapus seluruh data nilai ujian siswa.
+                    Hapus seluruh nilai ujian siswa.
+                    Data akun tidak ikut dihapus.
                 </p>
 
             </div>
@@ -452,29 +711,37 @@
 
             <button
                 type="button"
-                class="admin-section-reset-button"
-                onclick="resetSection(
-                    'scores',
-                    'Nilai',
-                    'Semua nilai ujian siswa akan dihapus.'
-                )"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="scores"
             >
-                Reset
+<span>
+    Reset
+</span>
             </button>
 
-        </div>
+        </article>
 
 
-        <div class="admin-section-reset-card">
+        <!-- INFORMATION BOARD -->
 
-            <div>
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
 
                 <strong>
                     Reset Information Board
                 </strong>
 
                 <p>
-                    Hapus seluruh informasi resmi sekolah.
+                    Hapus seluruh informasi resmi,
+                    target kelas, dan gambarnya.
                 </p>
 
             </div>
@@ -482,30 +749,37 @@
 
             <button
                 type="button"
-                class="admin-section-reset-button"
-                onclick="resetSection(
-                    'announcements',
-                    'Announcement',
-                    'Semua Announcement resmi akan dihapus.'
-                )"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="announcements"
             >
-                Reset
+<span>
+    Reset
+</span>
             </button>
 
-        </div>
+        </article>
 
 
-        <div class="admin-section-reset-card">
+        <!-- CLASSROOM FEED -->
 
-            <div>
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
 
                 <strong>
                     Reset Classroom Feed
                 </strong>
 
                 <p>
-                    Hapus seluruh post, reply, mention,
-                    dan notifikasi Classroom Feed.
+                    Hapus post, reply, mention,
+                    notifikasi, dan gambar Feed.
                 </p>
 
             </div>
@@ -513,30 +787,189 @@
 
             <button
                 type="button"
-                class="admin-section-reset-button"
-                onclick="resetSection(
-                    'classroom-feed',
-                    'Classroom Feed',
-                    'Seluruh Classroom Feed, reply, mention, dan notifikasi akan dihapus.'
-                )"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="classroom-feed"
             >
-                Reset
+<span>
+    Reset
+</span>
             </button>
 
-        </div>
+        </article>
 
 
-        <div class="admin-section-reset-card">
+        <!-- MODERASI -->
 
-            <div>
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
+
+                <strong>
+                    Reset Moderasi
+                </strong>
+
+                <p>
+                    Hapus seluruh mute, ban,
+                    antrean, dan riwayat moderasi.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="moderation"
+            >
+<span>
+    Reset
+</span>
+            </button>
+
+        </article>
+
+
+        <!-- QUIZ -->
+
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
+
+                <strong>
+                    Reset Semua Quiz
+                </strong>
+
+                <p>
+                    Hapus quiz, soal, jawaban,
+                    respons siswa, respons guest, dan gambar.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="quizzes"
+            >
+<span>
+    Reset
+</span>
+            </button>
+
+        </article>
+
+
+        <!-- PROFIL SISWA -->
+
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
+
+                <strong>
+                    Reset Profil Siswa
+                </strong>
+
+                <p>
+                    Kosongkan bio, foto, tanggal lahir,
+                    privasi, dan kembalikan tema ke biru.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="student-profiles"
+            >
+<span>
+    Reset
+</span>
+            </button>
+
+        </article>
+
+
+        <!-- PROFIL GURU -->
+
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
+
+                <strong>
+                    Reset Profil Guru
+                </strong>
+
+                <p>
+                    Reset bio, foto, tema, tanggal lahir,
+                    mapel, dan status wali kelas.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="teacher-profiles"
+            >
+<span>
+    Reset
+</span>
+            </button>
+
+        </article>
+
+
+        <!-- SEMUA SISWA -->
+
+        <article class="system-reset-v2-card">
+
+            <div class="system-reset-card-copy">
+
+                <span class="system-reset-card-status">
+                    RESET PERMANEN
+                </span>
 
                 <strong>
                     Reset Semua Siswa
                 </strong>
 
                 <p>
-                    Hapus semua akun siswa beserta poin,
-                    nilai, dan aktivitas siswa.
+                    Hapus semua akun siswa beserta
+                    poin, nilai, aktivitas, dan profilnya.
                 </p>
 
             </div>
@@ -544,29 +977,94 @@
 
             <button
                 type="button"
-                class="admin-section-reset-button"
-                onclick="resetSection(
-                    'students',
-                    'Semua Siswa',
-                    'SEMUA akun siswa beserta data terkait akan dihapus.'
-                )"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-preview-button
+                "
+                data-reset-section="students"
             >
-                Reset
+<span>
+    Reset
+</span>
             </button>
 
-        </div>
+        </article>
 
     </div>
 
 
-    <p
-        id="sectionResetMessage"
-        class="admin-form-message"
-    ></p>
+    <!-- MODE TESTING -->
 
-                    </div>
+    <section class="system-reset-test-panel">
 
-                </section>
+        <div class="system-reset-test-heading">
+
+            <div>
+
+                <span class="system-reset-card-label">
+                    DEVELOPER TOOL
+                </span>
+
+                <strong>
+                    Mode Testing
+                </strong>
+
+                <p>
+                    Periksa seluruh Preview API dan rollback
+                    transaction tanpa menghapus data LMS.
+                </p>
+
+            </div>
+
+
+            <label class="profile-privacy-switch">
+
+                <input
+                    type="checkbox"
+                    id="systemResetTestToggle"
+                    aria-label="Aktifkan Mode Testing"
+                >
+
+                <span
+                    class="profile-privacy-slider"
+                ></span>
+
+            </label>
+
+        </div>
+
+
+        <div
+            id="systemResetTestActions"
+            class="system-reset-test-actions"
+            hidden
+        >
+
+            <button
+                type="button"
+                id="runSystemResetTestButton"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-test-button
+                "
+            >
+                <span>
+                    Jalankan Testing
+                </span>
+            </button>
+
+
+            <p
+                id="systemResetTestMessage"
+                class="admin-form-message"
+                aria-live="polite"
+            ></p>
+
+        </div>
+
+    </section>
+
+</section>
 
             </div>
 
@@ -574,103 +1072,496 @@
 
     </div>
 
+    <!-- GENERAL ACCOUNT SETTINGS MODAL -->
 
-    <div
-        id="factoryResetModal"
-        class="admin-reset-modal"
+<div
+    id="accountSettingsOverlay"
+    class="account-settings-overlay"
+    hidden
+>
+
+    <section
+        class="account-settings-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accountSettingsModalTitle"
     >
 
-        <div class="admin-reset-modal-card">
+        <header class="account-settings-modal-header">
 
-            <small class="admin-reset-danger-label">
-                DANGER ZONE
-            </small>
+            <div>
 
-            <h2>
-                Factory Reset LMS
-            </h2>
+                <small class="eyebrow">
+                    GENERAL SETTINGS
+                </small>
 
-            <p>
-                Semua siswa, poin, nilai,
-                Classroom Feed, Announcement,
-                notifikasi, kode registrasi,
-                dan akun guru akan dihapus.
-            </p>
+                <h2 id="accountSettingsModalTitle">
+                    Ubah Pengaturan
+                </h2>
+
+                <p id="accountSettingsModalDescription">
+                    Masukkan data baru dan password lama.
+                </p>
+
+            </div>
 
 
-<div class="admin-reset-default-account">
+<button
+    type="button"
+    id="closeAccountSettingsButton"
+    class="
+        notification-close-button
+        system-settings-close-button
+    "
+    aria-label="Tutup"
+>
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M6.7 5.3 12 10.6l5.3-5.3 1.4 1.4-5.3 5.3 5.3 5.3-1.4 1.4-5.3-5.3-5.3 5.3-1.4-1.4 5.3-5.3-5.3-5.3 1.4-1.4Z"
+                    ></path>
+                </svg>
+            </button>
 
-    <span>
-        Username
-        <strong>
-            admin
+        </header>
+
+
+ <form
+    id="accountSettingsModalForm"
+    class="account-settings-modal-form"
+>
+
+    <!-- NAMA SEKARANG -->
+
+    <div
+        id="accountCurrentName"
+        class="account-settings-current"
+        hidden
+    >
+        <span>
+            Nama sekarang
+        </span>
+
+        <strong id="accountCurrentNameValue">
+            -
         </strong>
-    </span>
+    </div>
 
-    <span>
-        Password
-        <strong>
-            admin123
+
+    <!-- USERNAME SEKARANG -->
+
+    <div
+        id="accountCurrentUsername"
+        class="account-settings-current"
+        hidden
+    >
+        <span>
+            Username sekarang
+        </span>
+
+        <strong id="accountCurrentUsernameValue">
+            -
         </strong>
-    </span>
-
-</div>
-
-<p>
-    Akun ini hanya akun sementara setelah Factory Reset.
-    Setelah login, segera daftarkan akun guru pertama,
-    lalu hapus akun <strong>admin</strong> karena akun
-    default ini tidak aman untuk digunakan sehari-hari.
-</p>
+    </div>
 
 
-            <label for="factoryResetConfirm">
-                Ketik
-                <strong>
-                    FACTORY RESET
-                </strong>
-                untuk melanjutkan
-            </label>
+    <!-- GANTI NAMA -->
 
+    <div
+        id="accountNameField"
+        class="account-name-fields"
+        hidden
+    >
+
+        <label class="account-prefix-field">
+
+            <span>
+                Prefix
+            </span>
+
+            <select id="settingsTeacherPrefix">
+
+                <option value="Mr">
+                    Mr
+                </option>
+
+                <option value="Ms">
+                    Ms
+                </option>
+
+            </select>
+
+        </label>
+
+
+        <label>
+
+            <span>
+                Nama baru
+            </span>
 
             <input
                 type="text"
-                id="factoryResetConfirm"
-                placeholder="FACTORY RESET"
-                autocomplete="off"
+                id="settingsTeacherName"
+                maxlength="77"
+                autocomplete="name"
+                placeholder="Masukkan nama"
             >
 
+        </label>
 
-            <p
-                id="factoryResetMessage"
-                class="admin-form-message"
-            ></p>
+    </div>
 
 
-            <div class="admin-reset-modal-actions">
+    <!-- GANTI USERNAME -->
 
-                <button
-                    type="button"
-                    class="secondary-button"
-                    onclick="closeFactoryResetModal()"
+    <label
+        id="accountUsernameField"
+        hidden
+    >
+
+        <span>
+            Username baru
+        </span>
+
+        <input
+            type="text"
+            id="settingsTeacherUsername"
+            maxlength="40"
+            autocomplete="username"
+            placeholder="Masukkan username baru"
+        >
+
+    </label>
+
+
+    <!-- PASSWORD LAMA:
+         MUNCUL PADA SEMUA FLOW -->
+
+    <label id="accountCurrentPasswordField">
+
+        <span>
+            Password lama
+        </span>
+
+        <input
+            type="password"
+            id="settingsCurrentPassword"
+            maxlength="72"
+            autocomplete="current-password"
+            placeholder="Masukkan password lama"
+            required
+        >
+
+    </label>
+
+
+    <!-- PASSWORD BARU:
+         HANYA FLOW GANTI PASSWORD -->
+
+    <label
+        id="accountNewPasswordField"
+        hidden
+    >
+
+        <span>
+            Password baru
+        </span>
+
+        <input
+            type="password"
+            id="settingsNewPassword"
+            maxlength="72"
+            autocomplete="new-password"
+            placeholder="Minimal 8 karakter"
+        >
+
+    </label>
+
+    <label
+    id="accountConfirmPasswordField"
+    hidden
+>
+
+    <span>
+        Konfirmasi password baru
+    </span>
+
+    <input
+        type="password"
+        id="settingsConfirmPassword"
+        maxlength="72"
+        autocomplete="new-password"
+        placeholder="Ketik ulang password baru"
+    >
+
+</label>
+
+
+    <p
+        id="accountSettingsMessage"
+        class="admin-form-message"
+    ></p>
+
+
+    <div class="account-settings-modal-actions">
+
+        <button
+            type="button"
+            id="cancelAccountSettingsButton"
+            class="admin-v2-secondary-button"
+        >
+            Batal
+        </button>
+
+
+        <button
+            type="submit"
+            id="saveAccountSettingsButton"
+            class="admin-primary-button"
+        >
+            Simpan
+        </button>
+
+    </div>
+
+</form>
+
+    </section>
+
+</div>
+
+    <!-- ADMINISTRATOR SETTINGS MODAL -->
+
+<div
+    id="administratorSettingsOverlay"
+    class="administrator-settings-overlay"
+    hidden
+>
+
+    <section
+        class="administrator-settings-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="administratorModalTitle"
+    >
+
+        <header class="administrator-modal-header">
+
+            <div>
+
+                <small class="eyebrow">
+                    RESTRICTED ACCESS
+                </small>
+
+                <h2 id="administratorModalTitle">
+                    Administrator Settings
+                </h2>
+
+                <p>
+                    Kelola penghapusan guru dan data sistem.
+                </p>
+
+            </div>
+
+
+<button
+    type="button"
+    id="closeAdministratorModalButton"
+    class="
+        notification-close-button
+        system-settings-close-button
+    "
+    aria-label="Tutup Administrator Settings"
+>
+<span class="administrator-close-icon">
+
+    <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="M6.7 5.3 12 10.6l5.3-5.3 1.4 1.4-5.3 5.3 5.3 5.3-1.4 1.4-5.3-5.3-5.3 5.3-1.4-1.4 5.3-5.3-5.3-5.3 1.4-1.4Z"
+        ></path>
+    </svg>
+
+</span>
+
+<span
+    class="administrator-close-spinner"
+    aria-hidden="true"
+></span>
+            </button>
+
+        </header>
+
+
+        <div
+            id="administratorModalBody"
+            class="administrator-modal-body"
+        ></div>
+
+    </section>
+
+</div>
+
+
+<div
+    id="systemResetPreviewOverlay"
+    class="system-reset-preview-overlay"
+    hidden
+>
+
+    <section
+        class="system-reset-preview-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="systemResetPreviewTitle"
+    >
+
+        <button
+            type="button"
+            id="closeSystemResetPreviewButton"
+            class="notification-close-button"
+            aria-label="Tutup Preview Reset"
+            title="Tutup"
+        >
+            ×
+        </button>
+
+
+        <header class="system-reset-preview-header">
+
+            <small class="eyebrow">
+               KONFIRMASI RESET
+            </small>
+
+            <h2 id="systemResetPreviewTitle">
+                Memeriksa data
+            </h2>
+
+            <p id="systemResetPreviewDescription">
+                Tunggu hingga pemeriksaan selesai.
+            </p>
+
+        </header>
+
+
+        <!-- LOADING PREVIEW -->
+
+        <div
+            id="systemResetPreviewLoading"
+            class="system-reset-preview-loading"
+            role="status"
+            aria-label="Memeriksa data reset"
+        >
+
+            <span
+                class="system-reset-loading-spinner"
+                aria-hidden="true"
+            ></span>
+
+            <span>
+                Memeriksa data...
+            </span>
+
+        </div>
+
+
+        <!-- HASIL PREVIEW -->
+
+        <div
+            id="systemResetPreviewContent"
+            class="system-reset-preview-content"
+            hidden
+        >
+
+            <div class="system-reset-preview-total">
+
+                <span>
+                    Total data terdampak
+                </span>
+
+                <strong id="systemResetPreviewTotal">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div
+                id="systemResetPreviewList"
+                class="system-reset-preview-list"
+            ></div>
+
+
+            <div class="system-reset-confirmation">
+
+                <label for="systemResetConfirmationInput">
+
+                    Ketik
+
+                    <strong id="systemResetConfirmationPhrase">
+                        RESET
+                    </strong>
+
+                    untuk menjalankan reset sebenarnya.
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="systemResetConfirmationInput"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="Ketik kalimat konfirmasi"
                 >
-                    Batal
-                </button>
-
-
-                <button
-                    type="button"
-                    class="admin-danger-reset-button"
-                    onclick="runFactoryReset()"
-                >
-                    Hapus Semua Data
-                </button>
 
             </div>
 
         </div>
 
-    </div>
+
+        <p
+            id="systemResetPreviewMessage"
+            class="admin-form-message"
+            aria-live="polite"
+        ></p>
+
+
+        <footer class="system-reset-preview-actions">
+
+            <button
+                type="button"
+                id="cancelSystemResetPreviewButton"
+                class="admin-v2-secondary-button"
+            >
+                Batal
+            </button>
+
+
+            <button
+                type="button"
+                id="runActualSystemResetButton"
+                class="
+                    admin-v2-secondary-button
+                    system-reset-actual-button
+                "
+                disabled
+            >
+                <span>
+                    Jalankan Reset
+                </span>
+            </button>
+
+        </footer>
+
+    </section>
+
+</div>
 
     <script src="/time.js"></script>
 
@@ -801,166 +1692,625 @@ async function logout() {
         }
 
 
-        function openFactoryResetModal() {
+const systemResetPreviewOverlay =
+    document.getElementById(
+        "systemResetPreviewOverlay"
+    );
 
-            const modal =
-                document.getElementById(
-                    "factoryResetModal"
-                );
+/*
+    Pindahkan overlay Preview langsung ke body
+    agar tidak terjebak stacking context panel
+    Administrator Settings.
+*/
+document.body.append(
+    systemResetPreviewOverlay
+);
 
-            const input =
-                document.getElementById(
-                    "factoryResetConfirm"
-                );
+const systemResetPreviewLoading =
+    document.getElementById(
+        "systemResetPreviewLoading"
+    );
 
-            const message =
-                document.getElementById(
-                    "factoryResetMessage"
-                );
+const systemResetPreviewContent =
+    document.getElementById(
+        "systemResetPreviewContent"
+    );
 
+const systemResetPreviewTitle =
+    document.getElementById(
+        "systemResetPreviewTitle"
+    );
 
-            input.value =
-                "";
+const systemResetPreviewDescription =
+    document.getElementById(
+        "systemResetPreviewDescription"
+    );
 
-            message.textContent =
-                "";
+const systemResetPreviewTotal =
+    document.getElementById(
+        "systemResetPreviewTotal"
+    );
 
+const systemResetPreviewList =
+    document.getElementById(
+        "systemResetPreviewList"
+    );
 
-            modal.classList.add(
-                "show"
-            );
+const systemResetConfirmationPhrase =
+    document.getElementById(
+        "systemResetConfirmationPhrase"
+    );
 
+const systemResetConfirmationInput =
+    document.getElementById(
+        "systemResetConfirmationInput"
+    );
 
-            setTimeout(
-                () => {
-                    input.focus();
-                },
-                50
-            );
+const systemResetPreviewMessage =
+    document.getElementById(
+        "systemResetPreviewMessage"
+    );
 
-        }
+const runActualSystemResetButton =
+    document.getElementById(
+        "runActualSystemResetButton"
+    );
 
+const closeSystemResetPreviewButton =
+    document.getElementById(
+        "closeSystemResetPreviewButton"
+    );
 
-        function closeFactoryResetModal() {
+const cancelSystemResetPreviewButton =
+    document.getElementById(
+        "cancelSystemResetPreviewButton"
+    );
 
-            document.getElementById(
-                "factoryResetModal"
-            ).classList.remove(
-                "show"
-            );
+const systemResetTestToggle =
+    document.getElementById(
+        "systemResetTestToggle"
+    );
 
-        }
+const systemResetTestActions =
+    document.getElementById(
+        "systemResetTestActions"
+    );
 
+const runSystemResetTestButton =
+    document.getElementById(
+        "runSystemResetTestButton"
+    );
 
-        async function runFactoryReset() {
-
-            const input =
-                document.getElementById(
-                    "factoryResetConfirm"
-                );
-
-            const message =
-                document.getElementById(
-                    "factoryResetMessage"
-                );
-
-
-            if (
-                input.value.trim() !==
-                "FACTORY RESET"
-            ) {
-
-                message.textContent =
-                    "Ketik FACTORY RESET dengan benar.";
-
-                return;
-
-            }
-
-
-            const confirmed =
-                confirm(
-                    "Semua data LMS akan dihapus permanen. Lanjutkan?"
-                );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            message.textContent =
-                "Melakukan factory reset...";
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/admin/system/factory-reset",
-                        {
-                            method:
-                                "POST"
-                        }
-                    );
+const systemResetTestMessage =
+    document.getElementById(
+        "systemResetTestMessage"
+    );
 
 
-                const data =
-                    await response.json();
+let activeSystemResetSection =
+    "";
+
+let activeSystemResetToken =
+    "";
+
+let activeSystemResetConfirmation =
+    "";
+
+let activeSystemResetTrigger =
+    null;
+
+let systemResetPreviewClosing =
+    false;
 
 
-                if (!data.success) {
+/*
+    Pesan modal Preview/Actual Reset.
+*/
 
-                    message.textContent =
-                        data.message ||
-                        "Factory reset gagal.";
-
-                    return;
-
-                }
-
-
-                localStorage.clear();
-
-
-                alert(
-                    "Factory reset berhasil. Silakan login kembali."
-                );
-
-
-                window.location.href =
-                    "/admin-login.html";
-
-
-            } catch (error) {
-
-                console.error(
-                    error
-                );
-
-
-                message.textContent =
-                    "Tidak dapat terhubung ke server.";
-
-            }
-
-        }
-
-        async function resetSection(
-    section,
-    sectionName,
-    warning
+function setSystemResetPreviewMessage(
+    message,
+    isError = false
 ) {
 
-    const message =
-        document.getElementById(
-            "sectionResetMessage"
+    systemResetPreviewMessage.textContent =
+        message || "";
+
+    systemResetPreviewMessage.classList.toggle(
+        "error",
+        Boolean(isError)
+    );
+
+}
+
+
+/*
+    Loading pada tombol tanpa mengubah
+    lebar tombol.
+*/
+
+function setSystemResetButtonLoading(
+    button,
+    loading,
+    loadingText
+) {
+
+    if (!button) {
+        return;
+    }
+
+
+    const label =
+        button.querySelector(
+            "span"
         );
 
 
+    button.disabled =
+        Boolean(loading);
+
+    button.classList.toggle(
+        "is-loading",
+        Boolean(loading)
+    );
+
+
+    if (
+        label &&
+        loading
+    ) {
+
+        button.dataset.originalText =
+            label.textContent.trim();
+
+        label.textContent =
+            loadingText;
+
+    }
+
+
+    else if (
+        label &&
+        button.dataset.originalText
+    ) {
+
+        label.textContent =
+            button.dataset.originalText;
+
+        delete button.dataset.originalText;
+
+    }
+
+}
+
+
+/*
+    Render hasil Preview tanpa innerHTML
+    yang berasal dari server.
+*/
+
+function renderSystemResetPreviewItems(
+    items
+) {
+
+    systemResetPreviewList.replaceChildren();
+
+
+    const safeItems =
+        Array.isArray(items)
+            ? items
+            : [];
+
+
+    safeItems.forEach(
+        item => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "system-reset-preview-row";
+
+
+            const label =
+                document.createElement(
+                    "span"
+                );
+
+
+            label.textContent =
+                String(
+                    item.label ||
+                    "Data"
+                );
+
+
+            const count =
+                document.createElement(
+                    "strong"
+                );
+
+
+            count.textContent =
+                Number(
+                    item.count || 0
+                ).toLocaleString(
+                    "id-ID"
+                );
+
+
+            row.append(
+                label,
+                count
+            );
+
+
+            systemResetPreviewList.append(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/*
+    Buka overlay dahulu, kemudian ambil
+    data Preview dari server.
+*/
+
+async function openSystemResetPreview(
+    section,
+    triggerButton
+) {
+
+    if (
+        !section ||
+        systemResetPreviewClosing
+    ) {
+        return;
+    }
+
+
+    activeSystemResetSection =
+        section;
+
+    activeSystemResetToken =
+        "";
+
+    activeSystemResetConfirmation =
+        "";
+
+    activeSystemResetTrigger =
+        triggerButton || null;
+
+
+    systemResetPreviewTitle.textContent =
+        "Memeriksa data";
+
+    systemResetPreviewDescription.textContent =
+        "Tunggu hingga pemeriksaan selesai.";
+
+    systemResetPreviewTotal.textContent =
+        "0";
+
+    systemResetPreviewList.replaceChildren();
+
+    systemResetConfirmationPhrase.textContent =
+        "RESET";
+
+    systemResetConfirmationInput.value =
+        "";
+
+    systemResetConfirmationInput.disabled =
+        true;
+
+    runActualSystemResetButton.disabled =
+        true;
+
+    systemResetPreviewLoading.hidden =
+        false;
+
+    systemResetPreviewContent.hidden =
+        true;
+
+
+    setSystemResetPreviewMessage(
+        ""
+    );
+
+
+    systemResetPreviewOverlay.hidden =
+        false;
+
+
+    requestAnimationFrame(
+        () => {
+
+            systemResetPreviewOverlay
+                .classList.add(
+                    "is-open"
+                );
+
+        }
+    );
+
+
+    setSystemResetButtonLoading(
+        activeSystemResetTrigger,
+        true,
+        "Memeriksa"
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/system/reset/${
+                    encodeURIComponent(
+                        section
+                    )
+                }/preview`,
+                {
+                    method:
+                        "GET",
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(
+                    () => ({})
+                );
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Preview reset gagal dimuat."
+            );
+
+        }
+
+
+        activeSystemResetToken =
+            String(
+                data.previewToken ||
+                ""
+            );
+
+        activeSystemResetConfirmation =
+            String(
+                data.confirmation ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        if (
+            !activeSystemResetToken ||
+            !activeSystemResetConfirmation
+        ) {
+
+            throw new Error(
+                "Token Preview Reset tidak valid."
+            );
+
+        }
+
+
+        systemResetPreviewTitle.textContent =
+            data.title ||
+            "Preview Reset";
+
+        systemResetPreviewDescription.textContent =
+            "Periksa jumlah data berikut sebelum melanjutkan.";
+
+        systemResetPreviewTotal.textContent =
+            Number(
+                data.total || 0
+            ).toLocaleString(
+                "id-ID"
+            );
+
+        systemResetConfirmationPhrase.textContent =
+            activeSystemResetConfirmation;
+
+
+        renderSystemResetPreviewItems(
+            data.items
+        );
+
+
+        systemResetPreviewLoading.hidden =
+            true;
+
+        systemResetPreviewContent.hidden =
+            false;
+
+        systemResetConfirmationInput.disabled =
+            false;
+
+
+        setTimeout(
+            () => {
+
+                systemResetConfirmationInput.focus();
+
+            },
+            80
+        );
+
+
+    } catch (error) {
+
+        systemResetPreviewLoading.hidden =
+            true;
+
+        systemResetPreviewContent.hidden =
+            true;
+
+
+        setSystemResetPreviewMessage(
+            error.message,
+            true
+        );
+
+
+    } finally {
+
+        setSystemResetButtonLoading(
+            activeSystemResetTrigger,
+            false
+        );
+
+    }
+
+}
+
+
+/*
+    Tutup modal Preview. Overlay ini boleh
+    ditutup dengan klik area kosong.
+*/
+
+function closeSystemResetPreview() {
+
+    if (
+        systemResetPreviewClosing
+    ) {
+        return;
+    }
+
+
+    systemResetPreviewClosing =
+        true;
+
+
+    systemResetPreviewOverlay.classList.remove(
+        "is-open"
+    );
+
+
+    setTimeout(
+        () => {
+
+            systemResetPreviewOverlay.hidden =
+                true;
+
+            systemResetPreviewLoading.hidden =
+                false;
+
+            systemResetPreviewContent.hidden =
+                true;
+
+            systemResetConfirmationInput.value =
+                "";
+
+systemResetConfirmationInput.disabled =
+    true;
+
+runActualSystemResetButton.disabled =
+    true;
+
+closeSystemResetPreviewButton.disabled =
+    false;
+
+cancelSystemResetPreviewButton.disabled =
+    false;
+
+
+setSystemResetPreviewMessage(
+    ""
+);
+
+
+            activeSystemResetSection =
+                "";
+
+            activeSystemResetToken =
+                "";
+
+            activeSystemResetConfirmation =
+                "";
+
+            activeSystemResetTrigger =
+                null;
+
+            systemResetPreviewClosing =
+                false;
+
+        },
+        180
+    );
+
+}
+
+
+/*
+    Jalankan reset sebenarnya setelah
+    Preview dan kalimat konfirmasi valid.
+*/
+
+async function runActualSystemReset() {
+
+    if (
+        !activeSystemResetSection ||
+        !activeSystemResetToken ||
+        !activeSystemResetConfirmation
+    ) {
+
+        setSystemResetPreviewMessage(
+            "Preview Reset tidak valid. Tutup lalu periksa kembali.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    const submittedConfirmation =
+        systemResetConfirmationInput
+            .value
+            .trim()
+            .toUpperCase();
+
+
+    if (
+        submittedConfirmation !==
+        activeSystemResetConfirmation
+    ) {
+
+        setSystemResetPreviewMessage(
+            `Ketik ${activeSystemResetConfirmation} dengan benar.`,
+            true
+        );
+
+        return;
+
+    }
+
+
     const confirmed =
-        confirm(
-            `${warning}\n\nYakin ingin Reset ${sectionName}?`
+        window.confirm(
+            "Reset akan dijalankan sekarang dan tidak dapat dibatalkan. Lanjutkan?"
         );
 
 
@@ -969,58 +2319,1850 @@ async function logout() {
     }
 
 
-    message.textContent =
-        `Mereset ${sectionName}...`;
+    let resetSucceeded =
+        false;
+
+
+    setSystemResetPreviewMessage(
+        "Menjalankan reset..."
+    );
+
+
+    systemResetConfirmationInput.disabled =
+        true;
+
+    closeSystemResetPreviewButton.disabled =
+        true;
+
+    cancelSystemResetPreviewButton.disabled =
+        true;
+
+
+    setSystemResetButtonLoading(
+        runActualSystemResetButton,
+        true,
+        "Mereset"
+    );
 
 
     try {
 
         const response =
             await fetch(
-                `/api/admin/system/reset/${section}`,
+                `/api/admin/system/reset/${
+                    encodeURIComponent(
+                        activeSystemResetSection
+                    )
+                }`,
                 {
-                    method: "POST"
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            previewToken:
+                                activeSystemResetToken,
+
+                            confirmation:
+                                submittedConfirmation
+                        })
                 }
             );
 
 
         const data =
-            await response.json();
+            await response
+                .json()
+                .catch(
+                    () => ({})
+                );
 
 
-        if (!data.success) {
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
-            message.textContent =
+            throw new Error(
                 data.message ||
-                `Reset ${sectionName} gagal.`;
+                "Reset gagal dijalankan."
+            );
+
+        }
+
+
+        resetSucceeded =
+            true;
+
+
+        setSystemResetPreviewMessage(
+            data.message ||
+            "Reset berhasil."
+        );
+
+
+        /*
+            Setelah respons berhasil diterima,
+            tombol X dan Batal boleh digunakan lagi.
+        */
+
+        closeSystemResetPreviewButton.disabled =
+            false;
+
+        cancelSystemResetPreviewButton.disabled =
+            false;
+
+
+        if (data.logout) {
+
+            localStorage.clear();
+
+            sessionStorage.clear();
+
+
+            setTimeout(
+                () => {
+
+                    window.location.href =
+                        "/admin-login.html";
+
+                },
+                900
+            );
+
 
             return;
 
         }
 
 
-        message.textContent =
-            data.message;
+        setTimeout(
+            closeSystemResetPreview,
+            900
+        );
+
+
+    } catch (error) {
+
+        setSystemResetPreviewMessage(
+            error.message,
+            true
+        );
+
+
+        systemResetConfirmationInput.disabled =
+            false;
+
+        closeSystemResetPreviewButton.disabled =
+            false;
+
+        cancelSystemResetPreviewButton.disabled =
+            false;
+
+
+    } finally {
+
+        setSystemResetButtonLoading(
+            runActualSystemResetButton,
+            false
+        );
+
+
+        if (resetSucceeded) {
+
+            /*
+                Reset sudah dilakukan.
+                Jangan izinkan tombol dijalankan kedua kali
+                menggunakan token Preview yang sama.
+            */
+
+            runActualSystemResetButton.disabled =
+                true;
+
+        } else {
+
+            /*
+                Jika gagal, cek kembali teks konfirmasi
+                agar tombol dapat digunakan ulang.
+            */
+
+            systemResetConfirmationInput.dispatchEvent(
+                new Event(
+                    "input"
+                )
+            );
+
+        }
+
+    }
+
+}
+
+
+/*
+    Tombol Periksa pada seluruh kartu.
+*/
+
+document
+    .querySelectorAll(
+        ".system-reset-preview-button"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const section =
+                        String(
+                            button.getAttribute(
+                                "data-reset-section"
+                            ) ||
+                            ""
+                        )
+                            .trim()
+                            .toLowerCase();
+
+
+                    if (!section) {
+
+                        console.error(
+                            "Tombol Reset tidak mempunyai data-reset-section.",
+                            button
+                        );
+
+                        return;
+
+                    }
+
+
+                    openSystemResetPreview(
+                        section,
+                        button
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/*
+    Aktifkan tombol Actual Reset hanya jika
+    kalimat konfirmasi benar.
+*/
+
+systemResetConfirmationInput.addEventListener(
+    "input",
+    () => {
+
+        const matches =
+            systemResetConfirmationInput
+                .value
+                .trim()
+                .toUpperCase() ===
+            activeSystemResetConfirmation;
+
+
+        runActualSystemResetButton.disabled =
+            !matches;
+
+
+        if (matches) {
+
+            setSystemResetPreviewMessage(
+                ""
+            );
+
+        }
+
+    }
+);
+
+
+runActualSystemResetButton.addEventListener(
+    "click",
+    runActualSystemReset
+);
+
+
+closeSystemResetPreviewButton.addEventListener(
+    "click",
+    closeSystemResetPreview
+);
+
+
+cancelSystemResetPreviewButton.addEventListener(
+    "click",
+    closeSystemResetPreview
+);
+
+
+/*
+    Modal Preview boleh ditutup dengan
+    klik area kosong. Administrator Settings
+    tetap tidak memakai perilaku ini.
+*/
+
+systemResetPreviewOverlay.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            systemResetPreviewOverlay
+        ) {
+
+            closeSystemResetPreview();
+
+        }
+
+    }
+);
+
+
+/*
+    Escape hanya menutup Preview Reset.
+*/
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape" &&
+            !systemResetPreviewOverlay.hidden
+        ) {
+
+            closeSystemResetPreview();
+
+        }
+
+    }
+);
+
+
+/*
+    Toggle Mode Testing.
+*/
+
+systemResetTestToggle.addEventListener(
+    "change",
+    () => {
+
+        const enabled =
+            systemResetTestToggle.checked;
+
+
+        systemResetTestActions.hidden =
+            !enabled;
+
+
+        if (!enabled) {
+
+            systemResetTestMessage.textContent =
+                "";
+
+            systemResetTestMessage.classList.remove(
+                "error"
+            );
+
+        }
+
+    }
+);
+
+
+/*
+    Testing tidak menjalankan reset asli.
+*/
+
+runSystemResetTestButton.addEventListener(
+    "click",
+    async () => {
+
+        systemResetTestMessage.textContent =
+            "Menjalankan pemeriksaan...";
+
+        systemResetTestMessage.classList.remove(
+            "error"
+        );
+
+
+        setSystemResetButtonLoading(
+            runSystemResetTestButton,
+            true,
+            "Menguji"
+        );
+
+
+        try {
+
+const response =
+    await fetch(
+        "/api/admin/system/reset-testing",
+        {
+            method:
+                "POST",
+
+            headers: {
+                "Accept":
+                    "application/json"
+            }
+        }
+    );
+
+
+            const data =
+                await response
+                    .json()
+                    .catch(
+                        () => ({})
+                    );
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Testing System Reset gagal."
+                );
+
+            }
+
+
+            systemResetTestMessage.textContent =
+                data.message;
+
+
+        } catch (error) {
+
+            systemResetTestMessage.textContent =
+                error.message;
+
+            systemResetTestMessage.classList.add(
+                "error"
+            );
+
+
+        } finally {
+
+            setSystemResetButtonLoading(
+                runSystemResetTestButton,
+                false
+            );
+
+        }
+
+    }
+);
+
+const administratorExtendedPanel =
+    document.getElementById(
+        "administratorExtendedPanel"
+    );
+
+const administratorResetPanel =
+    document.getElementById(
+        "administratorResetPanel"
+    );
+
+const administratorSettingsOverlay =
+    document.getElementById(
+        "administratorSettingsOverlay"
+    );
+
+const administratorModalBody =
+    document.getElementById(
+        "administratorModalBody"
+    );
+
+const closeAdministratorModalButton =
+    document.getElementById(
+        "closeAdministratorModalButton"
+    );
+
+
+let administratorModalCloseTimer =
+    null;
+
+
+/*
+    Teacher Management ditampilkan lebih dahulu,
+    kemudian Pengelolaan Data.
+*/
+administratorModalBody.append(
+    administratorExtendedPanel,
+    administratorResetPanel
+);
+
+const administratorUnlockForm =
+    document.getElementById(
+        "administratorUnlockForm"
+    );
+
+const administratorNormalUnlock =
+    document.getElementById(
+        "administratorNormalUnlock"
+    );
+
+const administratorOpenButton =
+    document.getElementById(
+        "administratorOpenButton"
+    );
+
+function setSettingsMessage(
+    elementId,
+    message,
+    isError = false
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    element.textContent =
+        message || "";
+
+    element.classList.toggle(
+        "error",
+        Boolean(message) &&
+        isError
+    );
+
+    element.classList.toggle(
+        "success",
+        Boolean(message) &&
+        !isError
+    );
+
+}
+
+
+async function parseSettingsResponse(
+    response
+) {
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+
+    if (
+        !contentType.includes(
+            "application/json"
+        )
+    ) {
+        throw new Error(
+            "Respons server tidak valid."
+        );
+    }
+
+
+    return response.json();
+
+}
+
+function showAdministratorSettings() {
+
+    if (administratorModalCloseTimer) {
+
+        clearTimeout(
+            administratorModalCloseTimer
+        );
+
+        administratorModalCloseTimer =
+            null;
+
+    }
+
+
+    administratorExtendedPanel.hidden =
+        false;
+
+    administratorResetPanel.hidden =
+        false;
+
+    administratorSettingsOverlay.hidden =
+        false;
+
+
+    administratorSettingsOverlay.classList.remove(
+        "is-closing"
+    );
+
+
+    document.body.classList.add(
+        "administrator-modal-open"
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            administratorSettingsOverlay
+                .classList.add(
+                    "is-open"
+                );
+
+        }
+    );
+
+
+    loadAdministratorTeacherList();
+
+}
+
+
+function resetAdministratorModal() {
+
+    administratorSettingsOverlay.hidden =
+        true;
+
+    administratorExtendedPanel.hidden =
+        true;
+
+    administratorResetPanel.hidden =
+        true;
+
+
+    administratorSettingsOverlay.classList.remove(
+        "is-open",
+        "is-closing"
+    );
+
+
+    document.body.classList.remove(
+        "administrator-modal-open"
+    );
+
+
+    document.getElementById(
+        "administratorPasswordInput"
+    ).value = "";
+
+}
+
+function setAdministratorCloseLoading(
+    loading
+) {
+
+    closeAdministratorModalButton.disabled =
+        loading;
+
+    closeAdministratorModalButton.classList.toggle(
+        "is-loading",
+        loading
+    );
+
+}
+
+
+async function closeAdministratorSettings(
+    revokeSession = true
+) {
+
+    setAdministratorCloseLoading(
+    true
+);
+
+    /*
+        Session Administrator langsung
+        dihapus saat tombol X ditekan.
+    */
+    if (revokeSession) {
+
+        try {
+
+            await fetch(
+                "/api/admin/settings/administrator/lock",
+                {
+                    method:
+                        "POST"
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Gagal menutup session Administrator:",
+                error
+            );
+
+        }
+
+    }
+
+
+    administratorSettingsOverlay.classList.remove(
+        "is-open"
+    );
+
+    administratorSettingsOverlay.classList.add(
+        "is-closing"
+    );
+
+
+    administratorModalCloseTimer =
+        setTimeout(
+            () => {
+
+                resetAdministratorModal();
+
+
+                setAdministratorCloseLoading(
+    false
+);
+
+                administratorModalCloseTimer =
+                    null;
+
+            },
+            220
+        );
+
+}
+
+
+const accountSettingsOverlay =
+    document.getElementById(
+        "accountSettingsOverlay"
+    );
+
+const accountSettingsModalForm =
+    document.getElementById(
+        "accountSettingsModalForm"
+    );
+
+
+let currentAccountSettings = {
+    name: "",
+    username: ""
+};
+
+let activeAccountSetting =
+    null;
+
+
+async function loadGeneralSettings() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/me"
+            );
+
+        const data =
+            await parseSettingsResponse(
+                response
+            );
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Data akun gagal dimuat."
+            );
+        }
+
+
+        currentAccountSettings = {
+            name:
+                data.admin.name ||
+                "",
+
+            username:
+                data.admin.username ||
+                ""
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "General Settings gagal dimuat:",
+            error
+        );
+
+    }
+
+}
+
+
+function splitTeacherName(
+    fullName
+) {
+
+    const normalizedName =
+        String(
+            fullName ||
+            ""
+        ).trim();
+
+
+    const prefixMatch =
+        normalizedName.match(
+            /^(Mr|Ms)\s+(.+)$/i
+        );
+
+
+    if (!prefixMatch) {
+
+        return {
+            prefix:
+                "Mr",
+
+            name:
+                normalizedName
+        };
+
+    }
+
+
+    return {
+        prefix:
+            prefixMatch[1]
+                .toLowerCase() ===
+                    "ms"
+                    ? "Ms"
+                    : "Mr",
+
+        name:
+            prefixMatch[2].trim()
+    };
+
+}
+
+
+function splitTeacherName(
+    fullName
+) {
+
+    const normalizedName =
+        String(
+            fullName ||
+            ""
+        ).trim();
+
+
+    const prefixMatch =
+        normalizedName.match(
+            /^(Mr|Ms)\s+(.+)$/i
+        );
+
+
+    if (!prefixMatch) {
+
+        return {
+            prefix:
+                "Mr",
+
+            name:
+                normalizedName
+        };
+
+    }
+
+
+    return {
+        prefix:
+            prefixMatch[1]
+                .toLowerCase() ===
+                    "ms"
+                    ? "Ms"
+                    : "Mr",
+
+        name:
+            prefixMatch[2].trim()
+    };
+
+}
+
+
+function openAccountSettingsModal(
+    settingType
+) {
+
+    activeAccountSetting =
+        settingType;
+
+
+    const currentName =
+        document.getElementById(
+            "accountCurrentName"
+        );
+
+    const currentUsername =
+        document.getElementById(
+            "accountCurrentUsername"
+        );
+
+    const nameField =
+        document.getElementById(
+            "accountNameField"
+        );
+
+    const usernameField =
+        document.getElementById(
+            "accountUsernameField"
+        );
+
+    const newPasswordField =
+        document.getElementById(
+            "accountNewPasswordField"
+        );
+
+    const confirmPasswordField =
+    document.getElementById(
+        "accountConfirmPasswordField"
+    );
+
+
+    /*
+        Hanya field milik flow aktif
+        yang boleh tampil.
+    */
+    currentName.hidden =
+        settingType !== "name";
+
+    currentUsername.hidden =
+        settingType !== "username";
+
+    nameField.hidden =
+        settingType !== "name";
+
+    usernameField.hidden =
+        settingType !== "username";
+
+    newPasswordField.hidden =
+        settingType !== "password";
+
+    confirmPasswordField.hidden =
+    settingType !== "password";
+
+
+    document.getElementById(
+        "accountCurrentNameValue"
+    ).textContent =
+        currentAccountSettings.name ||
+        "-";
+
+    document.getElementById(
+        "accountCurrentUsernameValue"
+    ).textContent =
+        currentAccountSettings.username ||
+        "-";
+
+
+    const separatedName =
+        splitTeacherName(
+            currentAccountSettings.name
+        );
+
+
+    document.getElementById(
+        "settingsTeacherPrefix"
+    ).value =
+        separatedName.prefix;
+
+    document.getElementById(
+        "settingsTeacherName"
+    ).value =
+        separatedName.name;
+
+    document.getElementById(
+        "settingsTeacherUsername"
+    ).value =
+        currentAccountSettings.username;
+
+    document.getElementById(
+        "settingsCurrentPassword"
+    ).value = "";
+
+    document.getElementById(
+        "settingsNewPassword"
+    ).value = "";
+
+    document.getElementById(
+    "settingsConfirmPassword"
+).value = "";
+
+
+    const titles = {
+        name:
+            "Ganti Nama Guru",
+
+        username:
+            "Ganti Username",
+
+        password:
+            "Ganti Password"
+    };
+
+
+    const descriptions = {
+        name:
+            "Pilih prefix, masukkan nama baru, lalu verifikasi dengan password lama.",
+
+        username:
+            "Masukkan username baru, lalu verifikasi dengan password lama.",
+
+        password:
+            "Masukkan password lama dan password baru."
+    };
+
+
+    document.getElementById(
+        "accountSettingsModalTitle"
+    ).textContent =
+        titles[settingType];
+
+    document.getElementById(
+        "accountSettingsModalDescription"
+    ).textContent =
+        descriptions[settingType];
+
+
+    setSettingsMessage(
+        "accountSettingsMessage",
+        ""
+    );
+
+
+    accountSettingsOverlay.hidden =
+        false;
+
+    document.body.classList.add(
+        "account-settings-modal-open"
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            accountSettingsOverlay.classList.add(
+                "is-open"
+            );
+
+        }
+    );
+
+}
+
+
+function closeAccountSettingsModal() {
+
+    accountSettingsOverlay.classList.remove(
+        "is-open"
+    );
+
+
+    setTimeout(
+        () => {
+
+            accountSettingsOverlay.hidden =
+                true;
+
+            document.body.classList.remove(
+                "account-settings-modal-open"
+            );
+
+            activeAccountSetting =
+                null;
+
+        },
+        190
+    );
+
+}
+
+
+document
+    .querySelectorAll(
+        "[data-account-setting]"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    openAccountSettingsModal(
+                        button.dataset
+                            .accountSetting
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "closeAccountSettingsButton"
+    )
+    .addEventListener(
+        "click",
+        closeAccountSettingsModal
+    );
+
+
+document
+    .getElementById(
+        "cancelAccountSettingsButton"
+    )
+    .addEventListener(
+        "click",
+        closeAccountSettingsModal
+    );
+
+
+/*
+    Tutup modal General Settings saat
+    area gelap di luar panel diklik.
+
+    event.target harus overlay itu sendiri,
+    supaya klik pada input atau isi panel
+    tidak ikut menutup modal.
+*/
+accountSettingsOverlay.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            accountSettingsOverlay
+        ) {
+
+            closeAccountSettingsModal();
+
+        }
+
+    }
+);
+
+
+accountSettingsModalForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const button =
+            document.getElementById(
+                "saveAccountSettingsButton"
+            );
+
+        const currentPassword =
+            document.getElementById(
+                "settingsCurrentPassword"
+            ).value;
+
+        const newPassword =
+            document.getElementById(
+                "settingsNewPassword"
+            ).value;
+
+            const confirmPassword =
+    document.getElementById(
+        "settingsConfirmPassword"
+    ).value;
+
+
+        let nextName =
+            currentAccountSettings.name;
+
+        let nextUsername =
+            currentAccountSettings.username;
+
+        let nextPassword =
+            "";
+
+
+        if (
+            activeAccountSetting ===
+            "name"
+        ) {
+
+            const prefix =
+                document.getElementById(
+                    "settingsTeacherPrefix"
+                ).value;
+
+            const plainName =
+                document.getElementById(
+                    "settingsTeacherName"
+                ).value.trim();
+
+
+            if (!plainName) {
+
+                setSettingsMessage(
+                    "accountSettingsMessage",
+                    "Masukkan nama guru baru.",
+                    true
+                );
+
+                return;
+
+            }
+
+
+            nextName =
+                `${prefix} ${plainName}`;
+
+        }
+
+
+        if (
+            activeAccountSetting ===
+            "username"
+        ) {
+
+            nextUsername =
+                document.getElementById(
+                    "settingsTeacherUsername"
+                ).value.trim();
+
+        }
+
+
+        if (
+            activeAccountSetting ===
+            "password"
+        ) {
+
+            nextPassword =
+                newPassword;
+
+        }
+
+        if (
+    activeAccountSetting ===
+        "password" &&
+    newPassword !==
+        confirmPassword
+) {
+
+    setSettingsMessage(
+        "accountSettingsMessage",
+        "Konfirmasi password baru tidak sama.",
+        true
+    );
+
+    return;
+
+}
+
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Menyimpan...";
+
+
+        setSettingsMessage(
+            "accountSettingsMessage",
+            ""
+        );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/admin/settings/account",
+                    {
+                        method:
+                            "PATCH",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+body:
+    JSON.stringify({
+        action:
+            activeAccountSetting,
+
+        value:
+            activeAccountSetting ===
+                "name"
+                ? nextName
+                : activeAccountSetting ===
+                    "username"
+                    ? nextUsername
+                    : nextPassword,
+
+        currentPassword
+    })
+                    }
+                );
+
+
+            const data =
+                await parseSettingsResponse(
+                    response
+                );
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Pengaturan gagal disimpan."
+                );
+
+            }
+
+
+            currentAccountSettings = {
+                name:
+                    data.admin.name,
+
+                username:
+                    data.admin.username
+            };
+
+
+            localStorage.setItem(
+                "adminName",
+                data.admin.name
+            );
+
+            localStorage.setItem(
+                "adminUsername",
+                data.admin.username
+            );
+
+
+            document.getElementById(
+                "sidebarAdminName"
+            ).textContent =
+                data.admin.name;
+
+            document.getElementById(
+                "topAdminName"
+            ).textContent =
+                data.admin.name;
+
+
+            setSettingsMessage(
+                "accountSettingsMessage",
+                data.message
+            );
+
+
+            setTimeout(
+                closeAccountSettingsModal,
+                650
+            );
+
+
+        } catch (error) {
+
+            setSettingsMessage(
+                "accountSettingsMessage",
+                error.message,
+                true
+            );
+
+
+        } finally {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Simpan";
+
+        }
+
+    }
+);
+
+
+administratorUnlockForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        administratorOpenButton.disabled =
+            true;
+
+        administratorOpenButton.textContent =
+            "Membuka...";
+
+
+        setSettingsMessage(
+            "administratorAccessMessage",
+            ""
+        );
+
+
+        try {
+
+            const password =
+                document.getElementById(
+                    "administratorPasswordInput"
+                ).value;
+
+
+            if (!password) {
+
+                throw new Error(
+                    "Masukkan password administrator."
+                );
+
+            }
+
+
+            const response =
+                await fetch(
+                    "/api/admin/settings/administrator/unlock",
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                password
+                            })
+                    }
+                );
+
+
+            const data =
+                await parseSettingsResponse(
+                    response
+                );
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Password administrator salah."
+                );
+
+            }
+
+
+            document.getElementById(
+                "administratorPasswordInput"
+            ).value = "";
+
+
+            showAdministratorSettings();
+
+
+        } catch (error) {
+
+            setSettingsMessage(
+                "administratorAccessMessage",
+                error.message,
+                true
+            );
+
+
+        } finally {
+
+            administratorOpenButton.disabled =
+                false;
+
+            administratorOpenButton.textContent =
+                "Open";
+
+        }
+
+    }
+);
+
+
+closeAdministratorModalButton.addEventListener(
+    "click",
+    () => {
+
+        closeAdministratorSettings(
+            true
+        );
+
+    }
+);
+
+
+async function loadAdministratorTeacherList() {
+
+    const list =
+        document.getElementById(
+            "administratorTeacherList"
+        );
+
+
+    list.textContent =
+        "Memuat daftar guru...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/teachers"
+            );
+
+        const data =
+            await parseSettingsResponse(
+                response
+            );
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Daftar guru gagal dimuat."
+            );
+        }
+
+
+        list.replaceChildren();
+
+
+        data.teachers.forEach(
+            teacher => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "administrator-teacher-row";
+
+
+                const name =
+                    document.createElement(
+                        "strong"
+                    );
+
+                name.textContent =
+                    teacher.name ||
+                    "Guru";
+
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.type =
+                    "button";
+
+                deleteButton.className =
+                    "administrator-delete-teacher-button";
+
+
+                const isActiveAccount =
+                    Number(teacher.id) ===
+                    Number(adminId);
+
+
+                deleteButton.textContent =
+                    isActiveAccount
+                        ? "Akun Aktif"
+                        : "Hapus";
+
+                deleteButton.disabled =
+                    isActiveAccount;
+
+
+                if (!isActiveAccount) {
+
+                    deleteButton.addEventListener(
+                        "click",
+                        () => {
+                            deleteAdministratorTeacher(
+                                teacher
+                            );
+                        }
+                    );
+
+                }
+
+
+                row.append(
+                    name,
+                    deleteButton
+                );
+
+                list.appendChild(
+                    row
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        list.textContent =
+            error.message;
+
+    }
+
+}
+
+
+async function deleteAdministratorTeacher(
+    teacher
+) {
+
+    const confirmed =
+        confirm(
+            `Hapus guru "${teacher.name}" beserta seluruh data terkait?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/teachers/${teacher.id}`,
+                {
+                    method:
+                        "DELETE",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({})
+                }
+            );
+
+
+        const data =
+            await parseSettingsResponse(
+                response
+            );
+
+
+        if (
+            response.status === 403 &&
+            data.administratorLocked
+        ) {
+
+closeAdministratorSettings(
+    false
+);
+
+throw new Error(
+    "Session Administrator sudah ditutup."
+);
+
+        }
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Guru gagal dihapus."
+            );
+        }
 
 
         alert(
             data.message
         );
 
+        await loadAdministratorTeacherList();
+
 
     } catch (error) {
 
-        console.error(error);
-
-
-        message.textContent =
-            "Tidak dapat terhubung ke server.";
+        alert(
+            error.message
+        );
 
     }
 
 }
 
+
+document
+    .getElementById(
+        "administratorPasswordForm"
+    )
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            const button =
+                document.getElementById(
+                    "changeAdministratorPasswordButton"
+                );
+
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "Mengganti...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/admin/settings/administrator/password",
+                        {
+                            method:
+                                "PATCH",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    currentPassword:
+                                        document
+                                            .getElementById(
+                                                "currentAdministratorPassword"
+                                            )
+                                            .value,
+
+                                    newPassword:
+                                        document
+                                            .getElementById(
+                                                "newAdministratorPassword"
+                                            )
+                                            .value
+                                })
+                        }
+                    );
+
+
+                const data =
+                    await parseSettingsResponse(
+                        response
+                    );
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+                    throw new Error(
+                        data.message ||
+                        "Password gagal diganti."
+                    );
+                }
+
+document.getElementById(
+    "currentAdministratorPassword"
+).value = "";
+
+document.getElementById(
+    "newAdministratorPassword"
+).value = "";
+
+
+setSettingsMessage(
+    "administratorPasswordMessage",
+    ""
+);
+
+
+closeAdministratorSettings(
+    false
+);
+
+
+            } catch (error) {
+
+                setSettingsMessage(
+                    "administratorPasswordMessage",
+                    error.message,
+                    true
+                );
+
+
+            } finally {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "Ganti Password";
+
+            }
+
+        }
+    );
+
+
+loadGeneralSettings();
+loadAdministratorStatus();
+
 </script>
+
+
 
 <script src="/mobile-nav.js"></script>
 

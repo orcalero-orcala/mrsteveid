@@ -335,6 +335,28 @@ message.textContent = "Sedang login...";
                         data.admin.role
                     );
 
+                    sessionStorage.setItem(
+    "adminProfileAppearance",
+    JSON.stringify({
+        adminId:
+            data.admin.id,
+
+        name:
+            data.admin.name,
+
+        role:
+            data.admin.role,
+
+        pictureUrl:
+            data.admin.profilePictureUrl ||
+            "",
+
+        bannerColor:
+            data.admin.bannerColor ||
+            "blue"
+    })
+);
+
 
 if (
     data.admin.username === "admin"

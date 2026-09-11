@@ -3497,8 +3497,19 @@ function applyProfileTheme(color) {
         normalizeProfileBannerColor(color);
 
 
-    document.body.dataset.profileTheme =
-        normalizedColor;
+const directoryView =
+    document.getElementById(
+        "studentDirectoryView"
+    );
+
+const isDirectoryVisible =
+    directoryView &&
+    !directoryView.hidden;
+
+document.body.dataset.profileTheme =
+    isDirectoryVisible
+        ? "blue"
+        : normalizedColor;
 
 
     setProfileBanner(

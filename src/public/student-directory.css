@@ -246,6 +246,11 @@
 }
 
 .student-directory-result {
+    --directory-avatar-start: #3b82f6;
+    --directory-avatar-end: #1d4ed8;
+    --directory-result-hover-border: rgba(96, 165, 250, 0.68);
+    --directory-result-hover-background: rgba(30, 64, 175, 0.16);
+
     box-sizing: border-box;
 
     display: flex;
@@ -279,8 +284,11 @@
 .student-directory-result:hover {
     transform: translateY(-2px);
 
-    border-color: #4776a8;
-    background: #132133;
+    border-color:
+        var(--directory-result-hover-border);
+
+    background:
+        var(--directory-result-hover-background);
 }
 
 .student-directory-result-avatar,
@@ -296,12 +304,12 @@
 
     color: #ffffff;
 
-    background:
-        linear-gradient(
-            135deg,
-            #3b82f6,
-            #1d4ed8
-        );
+background:
+    linear-gradient(
+        135deg,
+        var(--directory-avatar-start),
+        var(--directory-avatar-end)
+    );
 
     font-weight: 800;
 }
@@ -680,6 +688,9 @@
    ========================================= */
 
 .student-directory-profile {
+    --directory-avatar-start: #3b82f6;
+    --directory-avatar-end: #1d4ed8;
+
     --directory-theme-panel:
         #101a27;
 
@@ -710,6 +721,8 @@
 
     --directory-theme-icon:
         #2f2052;
+        --directory-avatar-start: #8b5cf6;
+--directory-avatar-end: #6d28d9;
 }
 
 
@@ -729,6 +742,8 @@
 
     --directory-theme-icon:
         #123d32;
+        --directory-avatar-start: #10b981;
+--directory-avatar-end: #047857;
 }
 
 
@@ -748,6 +763,8 @@
 
     --directory-theme-icon:
         #4b291b;
+        --directory-avatar-start: #f59e0b;
+--directory-avatar-end: #c2410c;
 }
 
 
@@ -767,6 +784,8 @@
 
     --directory-theme-icon:
         #4b1b25;
+        --directory-avatar-start: #ef4444;
+--directory-avatar-end: #b91c1c;
 }
 
 
@@ -1058,31 +1077,42 @@ svg[hidden] {
 }
 
 
-/* AVATAR GURU SAAT BELUM ADA FOTO */
+/* WARNA HASIL DIRECTORY MENGIKUTI BANNER */
 
 .student-directory-result[
-    data-account-type="teacher"
-]
-.student-directory-result-avatar {
-    background:
-        linear-gradient(
-            135deg,
-            #8b5cf6,
-            #6d28d9
-        );
+    data-banner-color="purple"
+] {
+    --directory-avatar-start: #8b5cf6;
+    --directory-avatar-end: #6d28d9;
+    --directory-result-hover-border: rgba(167, 139, 250, 0.68);
+    --directory-result-hover-background: rgba(76, 29, 149, 0.14);
 }
 
-
-/* HOVER GURU */
+.student-directory-result[
+    data-banner-color="green"
+] {
+    --directory-avatar-start: #10b981;
+    --directory-avatar-end: #047857;
+    --directory-result-hover-border: rgba(52, 211, 153, 0.62);
+    --directory-result-hover-background: rgba(6, 95, 70, 0.16);
+}
 
 .student-directory-result[
-    data-account-type="teacher"
-]:hover {
-    border-color:
-        rgba(167, 139, 250, 0.68);
+    data-banner-color="orange"
+] {
+    --directory-avatar-start: #f59e0b;
+    --directory-avatar-end: #c2410c;
+    --directory-result-hover-border: rgba(251, 146, 60, 0.66);
+    --directory-result-hover-background: rgba(154, 52, 18, 0.16);
+}
 
-    background:
-        rgba(76, 29, 149, 0.14);
+.student-directory-result[
+    data-banner-color="red"
+] {
+    --directory-avatar-start: #ef4444;
+    --directory-avatar-end: #b91c1c;
+    --directory-result-hover-border: rgba(248, 113, 113, 0.66);
+    --directory-result-hover-background: rgba(153, 27, 27, 0.16);
 }
 
 
