@@ -1,11 +1,3 @@
-Logout siswa admin langsung ke index html
-
-Format date time jadi
-
-Just now, 1m 5h 1d 1w 1m 1y
-
-Bukan exact date misal 9/9/2026 18:43 PM
-
 Tambah banner color yellow siswa amdin
 
 Tambah site Maintenance page, bisa dinyalakin di admin settings, Exclude localhost, kalau tidak bisa sistem exclude localhost, yasudah gak usah, jangan dipaksakan
@@ -17,13 +9,9 @@ Cara tulis changelog itu di information board, akan jadi sistem 2 tab, tab infor
 
 Polling feature
 
-Ubah semua logo "LMS" menjadi sesuai faviicon
-
 Tambah tombol read all (gak perlu scroll to mention cuma hilangkan badge dan biru highlight)
 
 Kenapa website lebih lambat jika di publish di vercel. Apakah ada solusi biar mempercepat jadi kecepatan hampir sama dgn menggunakan localhost
-
-Login siswa bukan di page dedicated melainakn isi kode langsung di index
 ----------------------------------------------------
 MAJOR ADMIN Redesign Part 2 based
 

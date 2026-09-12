@@ -2288,6 +2288,16 @@ font-size: 47px;
 
     </style>
 
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 
@@ -2303,7 +2313,7 @@ font-size: 47px;
             <div class="brand">
 
                 <div class="brand-logo">
-                    LMS
+                    <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
                 </div>
 
                 <div>
@@ -4324,7 +4334,7 @@ async function uploadProfilePictureBlob(
     ) {
 
         window.location.href =
-            "/student-login.html";
+            "/index.html";
 
         throw new Error(
             "Sesi siswa telah berakhir."
@@ -4558,7 +4568,7 @@ body:
         ) {
 
             window.location.href =
-                "/student-login.html";
+                "/index.html";
 
             return;
 
@@ -4888,7 +4898,7 @@ backIcon.hidden =
                     ) {
 
                         window.location.href =
-                            "/student-login.html";
+                            "/index.html";
 
                         return;
 
@@ -5236,7 +5246,7 @@ renderAllProfileAvatars();
 
 
             window.location.href =
-                "/student-login.html";
+                "/index.html";
 
         }
 

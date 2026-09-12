@@ -3,6 +3,9 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 const crypto = require("crypto");
+const dns = require("dns").promises;
+const net = require("net");
+const sharp = require("sharp");
 
 const {
     v2: cloudinary
@@ -1354,6 +1357,692 @@ app.use(
     express.static(
         publicDirectory
     )
+);
+
+
+// ========================================
+// DOWNLOAD GAMBAR PREVIEW
+// ========================================
+
+const MEDIA_DOWNLOAD_MAX_BYTES =
+    15 * 1024 * 1024;
+
+const MEDIA_DOWNLOAD_MAX_REDIRECTS =
+    3;
+
+
+function isPrivateIpv4(address) {
+
+    const parts =
+        address
+            .split(".")
+            .map(Number);
+
+
+    if (
+        parts.length !== 4 ||
+
+        parts.some(
+            part =>
+                !Number.isInteger(part)
+        )
+    ) {
+        return true;
+    }
+
+
+    const [
+        first,
+        second
+    ] = parts;
+
+
+    return (
+        first === 0 ||
+
+        first === 10 ||
+
+        first === 127 ||
+
+        (
+            first === 100 &&
+            second >= 64 &&
+            second <= 127
+        ) ||
+
+        (
+            first === 169 &&
+            second === 254
+        ) ||
+
+        (
+            first === 172 &&
+            second >= 16 &&
+            second <= 31
+        ) ||
+
+        (
+            first === 192 &&
+            second === 168
+        ) ||
+
+        (
+            first === 198 &&
+            (
+                second === 18 ||
+                second === 19
+            )
+        ) ||
+
+        first >= 224
+    );
+
+}
+
+
+function isPrivateNetworkAddress(
+    address
+) {
+
+    const normalized =
+        String(address || "")
+            .toLowerCase()
+            .split("%")[0];
+
+
+    const ipVersion =
+        net.isIP(normalized);
+
+
+    if (ipVersion === 4) {
+
+        return isPrivateIpv4(
+            normalized
+        );
+
+    }
+
+
+    if (ipVersion !== 6) {
+        return true;
+    }
+
+
+    if (
+        normalized.startsWith(
+            "::ffff:"
+        )
+    ) {
+
+        return isPrivateIpv4(
+            normalized.slice(7)
+        );
+
+    }
+
+
+    return (
+        normalized === "::" ||
+
+        normalized === "::1" ||
+
+        normalized.startsWith("fc") ||
+
+        normalized.startsWith("fd") ||
+
+        /^fe[89ab]/.test(
+            normalized
+        )
+    );
+
+}
+
+
+async function validateRemoteImageUrl(
+    rawUrl
+) {
+
+    const value =
+        String(rawUrl || "")
+            .trim();
+
+
+    if (
+        !value ||
+        value.length > 2048
+    ) {
+
+        throw new Error(
+            "URL gambar tidak valid."
+        );
+
+    }
+
+
+    let parsedUrl;
+
+
+    try {
+
+        parsedUrl =
+            new URL(value);
+
+    } catch {
+
+        throw new Error(
+            "URL gambar tidak valid."
+        );
+
+    }
+
+
+    if (
+        ![
+            "http:",
+            "https:"
+        ].includes(
+            parsedUrl.protocol
+        )
+    ) {
+
+        throw new Error(
+            "Protokol gambar tidak didukung."
+        );
+
+    }
+
+
+    if (
+        parsedUrl.username ||
+        parsedUrl.password
+    ) {
+
+        throw new Error(
+            "URL gambar tidak valid."
+        );
+
+    }
+
+
+    const hostname =
+        parsedUrl.hostname
+            .toLowerCase()
+            .replace(/\.$/, "");
+
+
+    if (
+        hostname === "localhost" ||
+
+        hostname.endsWith(
+            ".localhost"
+        ) ||
+
+        hostname.endsWith(
+            ".local"
+        ) ||
+
+        hostname.endsWith(
+            ".internal"
+        )
+    ) {
+
+        throw new Error(
+            "Alamat gambar tidak diizinkan."
+        );
+
+    }
+
+
+    const literalIpVersion =
+        net.isIP(hostname);
+
+
+    const addresses =
+        literalIpVersion
+            ? [
+                {
+                    address:
+                        hostname
+                }
+            ]
+            : await dns.lookup(
+                hostname,
+                {
+                    all:
+                        true,
+
+                    verbatim:
+                        true
+                }
+            );
+
+
+    if (
+        addresses.length === 0 ||
+
+        addresses.some(
+            result =>
+                isPrivateNetworkAddress(
+                    result.address
+                )
+        )
+    ) {
+
+        throw new Error(
+            "Alamat gambar tidak diizinkan."
+        );
+
+    }
+
+
+    return parsedUrl;
+
+}
+
+
+async function fetchPublicImage(
+    rawUrl
+) {
+
+    let currentUrl =
+        rawUrl;
+
+
+    for (
+        let redirectCount = 0;
+
+        redirectCount <=
+            MEDIA_DOWNLOAD_MAX_REDIRECTS;
+
+        redirectCount += 1
+    ) {
+
+        const validatedUrl =
+            await validateRemoteImageUrl(
+                currentUrl
+            );
+
+
+        const response =
+            await fetch(
+                validatedUrl,
+                {
+                    redirect:
+                        "manual",
+
+                    signal:
+                        AbortSignal.timeout(
+                            12000
+                        ),
+
+                    headers: {
+                        Accept:
+                            "image/avif," +
+                            "image/webp," +
+                            "image/png," +
+                            "image/jpeg," +
+                            "image/gif," +
+                            "image/*;q=0.8"
+                    }
+                }
+            );
+
+
+        if (
+            response.status >= 300 &&
+            response.status < 400
+        ) {
+
+            const location =
+                response.headers.get(
+                    "location"
+                );
+
+
+            if (
+                !location ||
+
+                redirectCount ===
+                    MEDIA_DOWNLOAD_MAX_REDIRECTS
+            ) {
+
+                throw new Error(
+                    "Redirect gambar terlalu banyak."
+                );
+
+            }
+
+
+            currentUrl =
+                new URL(
+                    location,
+                    validatedUrl
+                ).href;
+
+
+            continue;
+
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Gambar tidak dapat diunduh."
+            );
+
+        }
+
+
+        const contentType =
+            String(
+                response.headers.get(
+                    "content-type"
+                ) || ""
+            )
+                .split(";")[0]
+                .trim()
+                .toLowerCase();
+
+
+        if (
+            !contentType.startsWith(
+                "image/"
+            )
+        ) {
+
+            throw new Error(
+                "URL tidak mengarah ke file gambar."
+            );
+
+        }
+
+
+        const declaredLength =
+            Number(
+                response.headers.get(
+                    "content-length"
+                ) || 0
+            );
+
+
+        if (
+            declaredLength >
+            MEDIA_DOWNLOAD_MAX_BYTES
+        ) {
+
+            throw new Error(
+                "Ukuran gambar terlalu besar."
+            );
+
+        }
+
+
+        if (!response.body) {
+
+            throw new Error(
+                "Data gambar kosong."
+            );
+
+        }
+
+
+        const reader =
+            response.body.getReader();
+
+
+        const chunks = [];
+
+        let totalBytes = 0;
+
+
+        while (true) {
+
+            const {
+                done,
+                value
+            } = await reader.read();
+
+
+            if (done) {
+                break;
+            }
+
+
+            totalBytes +=
+                value.byteLength;
+
+
+            if (
+                totalBytes >
+                MEDIA_DOWNLOAD_MAX_BYTES
+            ) {
+
+                await reader.cancel();
+
+
+                throw new Error(
+                    "Ukuran gambar terlalu besar."
+                );
+
+            }
+
+
+            chunks.push(
+                Buffer.from(value)
+            );
+
+        }
+
+
+        return {
+            buffer:
+                Buffer.concat(chunks),
+
+            contentType,
+
+            finalUrl:
+                validatedUrl
+        };
+
+    }
+
+
+    throw new Error(
+        "Gambar tidak dapat diunduh."
+    );
+
+}
+
+
+function createDownloadedImageName(
+    sourceUrl
+) {
+
+    let sourceName =
+        "gambar";
+
+
+    try {
+
+        const originalName =
+            decodeURIComponent(
+                path.basename(
+                    sourceUrl.pathname
+                )
+            );
+
+
+        sourceName =
+            path.parse(
+                originalName
+            ).name ||
+            "gambar";
+
+    } catch {
+
+        sourceName =
+            "gambar";
+
+    }
+
+
+    sourceName =
+        sourceName
+            .replace(
+                /[^a-zA-Z0-9_-]/g,
+                "-"
+            )
+            .replace(
+                /-+/g,
+                "-"
+            )
+            .replace(
+                /^[-_]+|[-_]+$/g,
+                ""
+            )
+            .slice(
+                0,
+                90
+            );
+
+
+    return (
+        sourceName ||
+        "gambar"
+    ) + ".jpg";
+
+}
+
+
+app.get(
+    "/api/media/download",
+    async (req, res) => {
+
+        /*
+        Endpoint hanya bisa dipakai setelah
+        login siswa atau guru.
+        */
+
+        if (
+            !req.session.adminId &&
+            !req.session.studentId
+        ) {
+
+            return res
+                .status(401)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        "Silakan login terlebih dahulu."
+                });
+
+        }
+
+
+        try {
+
+const downloadedImage =
+    await fetchPublicImage(
+        req.query.url
+    );
+
+
+/*
+Konversi semua format sumber menjadi JPG.
+
+Gambar transparan diberi background putih
+karena format JPEG tidak mendukung alpha.
+*/
+
+const jpegBuffer =
+    await sharp(
+        downloadedImage.buffer,
+        {
+            failOn:
+                "none",
+
+            limitInputPixels:
+                40000000
+        }
+    )
+        .rotate()
+        .flatten({
+            background:
+                "#ffffff"
+        })
+        .jpeg({
+            quality:
+                90,
+
+            chromaSubsampling:
+                "4:4:4",
+
+            mozjpeg:
+                true
+        })
+        .toBuffer();
+
+
+const fileName =
+    createDownloadedImageName(
+        downloadedImage
+            .finalUrl
+    );
+
+
+res.setHeader(
+    "Content-Type",
+    "image/jpeg"
+);
+
+
+res.setHeader(
+    "Content-Length",
+    jpegBuffer.length
+);
+
+
+res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${fileName}"`
+);
+
+
+res.setHeader(
+    "Cache-Control",
+    "private, no-store"
+);
+
+
+return res.send(
+    jpegBuffer
+);
+
+        } catch (error) {
+
+            console.error(
+                "Download gambar gagal:",
+                error.message
+            );
+
+
+            return res
+                .status(400)
+                .json({
+                    success:
+                        false,
+
+                    message:
+                        error.message ||
+                        "Gambar gagal diunduh."
+                });
+
+        }
+
+    }
 );
 
 

@@ -30432,18 +30432,22 @@ html {
 
 .home-v2-hero::before {
     content: "";
+
     position: absolute;
     top: -180px;
-    right: -250px;
+    right: 0;
 
-    width: 650px;
+    width: min(650px, 100%);
     height: 650px;
 
     pointer-events: none;
     border-radius: 50%;
 
-    background: rgba(37, 99, 235, 0.12);
-    filter: blur(120px);
+    background:
+        rgba(37, 99, 235, 0.12);
+
+    filter:
+        blur(120px);
 }
 
 .home-v2-hero-content {
@@ -31172,16 +31176,18 @@ html {
 
 /* RESPONSIVE */
 
-@media (max-width: 1050px) {
+@media (max-width: 900px) {
 
     .home-v2-hero {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 54px;
         padding-top: 70px;
     }
 
     .home-v2-hero-content {
+        width: 100%;
         max-width: 700px;
+        min-width: 0;
     }
 
     .home-v2-hero-content h1 {
@@ -31190,6 +31196,7 @@ html {
 
     .home-v2-visual {
         width: min(680px, 100%);
+        min-width: 0;
         margin: 0 auto;
     }
 
@@ -31198,7 +31205,8 @@ html {
     }
 
     .home-v2-feature-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
 }
@@ -31373,9 +31381,26 @@ html {
    ========================================= */
 
 .home-v2-page {
+    width: 100%;
+    min-width: 0;
     min-height: 100dvh;
+
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+
+    grid-template-columns:
+        minmax(0, 1fr);
+
+    grid-template-rows:
+        auto
+        minmax(0, 1fr)
+        auto;
+}
+
+.home-v2-page > .home-v2-header,
+.home-v2-page > main,
+.home-v2-page > .home-v2-footer {
+    width: 100%;
+    min-width: 0;
 }
 
 .home-v2-page > main {
@@ -31563,426 +31588,57 @@ html {
 @media (max-width: 900px) {
 
     .home-v2-page {
-        display: block;
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr);
+
+        grid-template-rows:
+            auto
+            minmax(1fr, auto)
+            auto;
     }
 
     .home-v2-hero {
         min-height: auto;
-        grid-template-columns: 1fr;
-        padding: 56px 0 65px;
-    }
 
-    .home-v2-footer-inner {
-        min-height: 76px;
-    }
-
-}
-
-/* =========================================
-   HOMEPAGE MOBILE OVERFLOW FIX
-   ========================================= */
-
-@media (max-width: 700px) {
-
-    html,
-    body.home-v2-page {
-        width: 100%;
-        max-width: 100%;
-
-        overflow-x: hidden !important;
-        overscroll-behavior-x: none;
-    }
-
-    body.home-v2-page {
-        display: block !important;
-    }
-
-    .home-v2-header,
-    .home-v2-page > main,
-    .home-v2-footer {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-
-        overflow-x: hidden;
-    }
-
-
-    /* HAPUS TOMBOL LOGIN DI NAVBAR MOBILE */
-
-    .home-v2-top-actions {
-        display: none !important;
-    }
-
-
-    /* NAVBAR */
-
-    .home-v2-navbar {
-        width: calc(100% - 36px) !important;
-        max-width: none;
-        min-width: 0;
-        margin: 0 18px;
-    }
-
-    .home-v2-brand {
-        min-width: 0;
-    }
-
-    .home-v2-brand-copy {
-        min-width: 0;
-    }
-
-    .home-v2-brand-copy strong {
-        overflow: hidden;
-
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-
-
-    /* HERO */
-
-    .home-v2-hero {
-        width: calc(100% - 38px) !important;
-        max-width: none;
-        min-width: 0;
-
-        margin:
-            0 19px;
-
-        padding:
-            52px 0 62px;
-
-        display: grid !important;
-
-        grid-template-columns:
-            minmax(0, 1fr) !important;
-
-        gap: 46px;
-    }
-
-    .home-v2-hero::before {
-        display: none;
-    }
-
-    .home-v2-hero-content,
-    .home-v2-visual,
-    .home-v2-dashboard {
-        width: 100%;
-        max-width: 100% !important;
-        min-width: 0;
-    }
-
-    .home-v2-visual {
-        margin: 0;
-        overflow: hidden;
-    }
-
-    .home-v2-glow {
-        display: none;
-    }
-
-    .home-v2-floating-card {
-        display: none !important;
-    }
-
-
-    /* TOMBOL HERO TETAP ADA */
-
-    .home-v2-hero-actions {
-        width: 100%;
-
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .home-v2-button-primary,
-    .home-v2-button-secondary {
-        width: 100%;
-        max-width: 100%;
-    }
-
-
-    /* DASHBOARD PREVIEW */
-
-    .home-v2-dashboard {
-        overflow: hidden;
-    }
-
-    .home-v2-preview-body {
-        min-width: 0;
-    }
-
-    .home-v2-preview-stats {
         grid-template-columns:
             minmax(0, 1fr);
+
+        gap: 22px;
+
+        padding:
+            56px 0 65px;
     }
 
+.home-v2-visual {
+    width: min(680px, 100%);
+    min-width: 0;
+    min-height: 0;
 
-    /* FOOTER */
+    margin:
+        0 auto;
 
-/* FOOTER MOBILE */
+    align-items:
+        flex-start;
+}
 
-.home-v2-footer {
-    width: 100% !important;
-    max-width: 100% !important;
+.home-v2-dashboard {
+    width: 100%;
+    max-width: 630px;
 
-    overflow: hidden;
+    margin:
+        0 auto;
+}
 
-    border-top:
-        1px solid
-        #1e293b;
+.home-v2-floating-card {
+    display: none !important;
 }
 
 .home-v2-footer-inner {
-    width: calc(100% - 38px) !important;
-    max-width: none !important;
-    min-width: 0;
-    min-height: 70px !important;
-
-    margin: 0 19px !important;
-    padding: 14px 0 !important;
-
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-
-    gap: 14px;
+    min-height: 76px;
 }
 
-.home-v2-footer-inner > div {
-    min-width: 0;
-}
-
-.home-v2-footer-inner strong {
-    overflow: hidden;
-
-    font-size: 10px;
-
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.home-v2-footer-inner span {
-    margin-top: 2px;
-
-    font-size: 8px;
-}
-
-.home-v2-footer-inner > small {
-    flex-shrink: 0;
-
-    font-size: 8px;
-
-    white-space: nowrap;
-    text-align: right;
-}
-
-}
-
-/* =========================================
-   MOBILE ANNOUNCEMENT POSITION ONLY
-   ========================================= */
-
-@media (max-width: 600px) {
-
-    .official-announcement-card {
-        position: relative;
-
-        padding:
-            16px 16px 17px;
-    }
-
-
-    /* IKON + JUDUL + GLOBAL DI ATAS */
-
-    .official-announcement-header {
-        display: grid !important;
-
-        grid-template-columns:
-            40px
-            minmax(0, 1fr)
-            auto !important;
-
-        grid-template-rows:
-            auto !important;
-
-        align-items: start;
-
-        column-gap: 10px;
-        row-gap: 0;
-    }
-
-    .official-announcement-icon {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .official-announcement-title {
-        grid-column: 2;
-        grid-row: 1;
-
-        min-width: 0;
-    }
-
-    .official-announcement-header-actions {
-        grid-column: 3;
-        grid-row: 1;
-
-        width: auto !important;
-        min-width: 0;
-
-        margin: 0 !important;
-
-        display: block !important;
-    }
-
-    .official-announcement-target-badge {
-        width: auto;
-        max-width: 78px;
-
-        padding: 5px 7px;
-
-        font-size: 7px;
-
-        white-space: nowrap;
-    }
-
-
-    /* HAPUS DIPINDAH KE KANAN BAWAH */
-
-    .official-announcement-header-actions
-    .admin-delete-button {
-        position: absolute;
-
-        right: 16px;
-        bottom: 17px;
-
-        width: auto !important;
-        min-width: 58px;
-
-        margin: 0 !important;
-        padding: 7px 10px;
-
-        z-index: 2;
-    }
-
-
-    /* SISAKAN RUANG UNTUK TOMBOL HAPUS */
-
-    .official-announcement-meta {
-        min-height: 35px;
-
-        padding-right: 76px;
-
-        display: flex !important;
-        align-items: flex-start !important;
-        flex-direction: column !important;
-
-        gap: 5px;
-    }
-
-}
-
-.admin-feed-page .feed-avatar,
-.admin-feed-page .reply-avatar {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    min-height: 42px;
-    max-width: 42px;
-    max-height: 42px;
-    flex: 0 0 42px;
-    border-radius: 50%;
-    overflow: hidden;
-}
-
-.admin-feed-page .feed-profile-picture {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    min-height: 42px;
-    max-width: 42px;
-    max-height: 42px;
-    display: block;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: center;
-}
-
-.admin-feed-page .reply-avatar {
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    min-height: 30px !important;
-    max-width: 30px !important;
-    max-height: 30px !important;
-    flex: 0 0 30px !important;
-}
-
-.admin-feed-page .reply-avatar > .feed-profile-picture {
-    width: 31px !important;
-    height: 31px !important;
-    min-width: 31px !important;
-    min-height: 31px !important;
-    max-width: 31px !important;
-    max-height: 31px !important;
-}
-
-.feed-author strong,
-.reply-author-info strong {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.teacher-verified-badge {
-    position: relative;
-    top: -2px;
-
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    line-height: 0;
-    vertical-align: middle;
-}
-
-.teacher-verified-badge svg {
-    width: 16px;
-    height: 16px;
-    display: block;
-    overflow: visible;
-}
-
-.teacher-verified-badge svg circle {
-    fill: #2487ff !important;
-}
-
-.teacher-verified-badge svg path {
-    fill: none !important;
-    stroke: #ffffff !important;
-    stroke-width: 2.3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.reply-author-info .teacher-verified-badge {
-    width: 13px;
-    height: 13px;
-    min-width: 13px;
-
-    top: 0px;
-}
-
-.reply-author-info .teacher-verified-badge svg {
-    width: 13px;
-    height: 13px;
 }
 
 /* =========================================
@@ -49893,7 +49549,7 @@ span {
 
     color: #6f88a5;
 
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.4;
 }
 
@@ -50670,7 +50326,7 @@ span {
     .classroom-feed-redesign
     .classroom-feed-surface
     .feed-author-meta {
-        font-size: 8px;
+        font-size: 9px;
     }
 
     .classroom-feed-redesign
@@ -54185,4 +53841,2199 @@ and
 .admin-reset-page-header {
     position: relative;
     top: -3px;
+}
+
+/* =========================================
+   HOMEPAGE — LOGIN BUTTON V2
+   Dipakai tombol siswa dan guru
+   ========================================= */
+
+.home-v2-login-button {
+    position: relative;
+    isolation: isolate;
+
+    overflow: hidden;
+
+    color: #f4f8ff !important;
+
+    background:
+        radial-gradient(
+            circle at 88% 10%,
+            rgba(125, 211, 252, 0.17),
+            transparent 38%
+        ),
+        linear-gradient(
+            125deg,
+            #3b82f6 0%,
+            #3478ef 48%,
+            #2563eb 100%
+        ) !important;
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.48) !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.16),
+
+        inset 0 -1px 0
+        rgba(30, 64, 175, 0.16),
+
+        0 7px 17px
+        rgba(37, 99, 235, 0.19);
+
+    font-weight: 800;
+    letter-spacing: 0.01em;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        filter 0.18s ease !important;
+}
+
+.home-v2-login-button::after {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            105deg,
+            transparent 25%,
+            rgba(255, 255, 255, 0.13) 48%,
+            transparent 70%
+        );
+
+    transform:
+        translateX(-115%);
+
+    transition:
+        transform 0.55s ease;
+
+    pointer-events: none;
+}
+
+.home-v2-login-button:hover {
+    transform:
+        translateY(-2px);
+
+    filter:
+        brightness(1.08);
+
+    border-color:
+        rgba(165, 243, 252, 0.68) !important;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.2),
+
+        0 10px 23px
+        rgba(37, 99, 235, 0.27),
+
+        0 0 16px
+        rgba(59, 130, 246, 0.1);
+}
+
+.home-v2-login-button:hover::after {
+    transform:
+        translateX(115%);
+}
+
+.home-v2-login-button:active {
+    transform:
+        translateY(0)
+        scale(0.985);
+}
+
+.home-v2-login-button:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.2),
+
+        0 10px 25px
+        rgba(37, 99, 235, 0.26);
+}
+
+.home-v2-login-button:disabled {
+    transform: none;
+
+    opacity: 0.6;
+    filter: saturate(0.7);
+
+    cursor: wait;
+}
+
+/*
+Tombol siswa menyatu dengan input.
+Jangan digeser saat hover karena akan membuka celah.
+*/
+
+.home-v2-student-login-submit.home-v2-login-button,
+.home-v2-student-login-submit.home-v2-login-button:hover,
+.home-v2-student-login-submit.home-v2-login-button:active {
+    transform: none;
+}
+
+/* =========================================
+   HOMEPAGE — INLINE STUDENT LOGIN
+   ========================================= */
+
+.home-v2-login-actions {
+    align-items: flex-start;
+}
+
+.home-v2-student-login-form {
+    width:
+        min(
+            100%,
+            340px
+        );
+
+    margin: 0;
+}
+
+.home-v2-student-login-control {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: stretch;
+
+    overflow: hidden;
+
+    border:
+        1px solid #315077;
+
+    border-radius: 10px;
+
+    background: #0e1825;
+
+    box-shadow:
+        0 12px 30px
+        rgba(37, 99, 235, 0.12);
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.home-v2-student-login-control:focus-within {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.15),
+        0 12px 30px
+        rgba(37, 99, 235, 0.16);
+}
+
+.home-v2-student-login-input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+
+    padding:
+        0 14px;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #f8fafc;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.home-v2-student-login-input::placeholder {
+    color: #64748b;
+
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.home-v2-student-login-submit {
+    position: relative;
+
+    width: auto !important;
+    min-width: 91px;
+    min-height: 46px;
+
+    padding:
+        0 16px;
+
+    border: none;
+    border-radius: 0;
+
+    cursor: pointer;
+}
+
+.home-v2-student-login-submit,
+
+.home-v2-student-login-submit:hover,
+
+.home-v2-student-login-submit:active,
+
+.home-v2-student-login-submit:focus-visible,
+
+.home-v2-student-login-submit:disabled {
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+        ) !important;
+
+    box-shadow:
+        0 12px 30px
+        rgba(37, 99, 235, 0.24) !important;
+
+    transform:
+        none !important;
+}
+
+.home-v2-student-login-submit {
+    transition:
+        filter 0.18s ease,
+        opacity 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.home-v2-student-login-submit:hover:not(:disabled) {
+    filter:
+        brightness(1.08);
+}
+
+.home-v2-student-login-submit:active:not(:disabled) {
+    filter:
+        brightness(0.96);
+}
+
+.home-v2-student-login-submit:disabled {
+    cursor: wait;
+    opacity: 0.82;
+}
+
+.home-v2-student-login-submit.is-loading {
+    gap: 8px;
+}
+
+.home-v2-student-login-submit.is-loading::before {
+    content: "";
+
+    width: 13px;
+    height: 13px;
+
+    flex: 0 0 13px;
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.3);
+
+    border-top-color: #ffffff;
+    border-radius: 50%;
+
+    animation:
+        home-v2-student-login-spin
+        0.75s linear infinite;
+}
+
+@keyframes home-v2-student-login-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+.home-v2-student-login-message {
+    box-sizing: border-box;
+
+    width: 100%;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+
+    margin: 0 2px;
+    padding-top: 12px;
+
+    overflow: hidden;
+
+    color: #8da0b7;
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.home-v2-student-login-message:empty {
+    display: block;
+
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+
+    margin: 0 2px;
+    padding-top: 12px;
+}
+
+.home-v2-student-login-message.error {
+    color: #f87171;
+}
+
+.home-v2-student-login-message.success {
+    color: #86efac;
+}
+
+
+/* TABLET */
+
+@media (max-width: 900px) {
+
+    .home-v2-login-actions {
+        align-items: stretch;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 500px) {
+
+    .home-v2-student-login-form {
+        width: 100%;
+        max-width: none;
+    }
+
+
+    .home-v2-student-login-control {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+    }
+
+
+    .home-v2-student-login-submit {
+        width: auto !important;
+        min-width: 84px;
+        padding:
+            0 13px;
+    }
+
+
+    .home-v2-login-actions
+    > .home-v2-button-secondary {
+        width: 100%;
+    }
+
+}
+
+/* =========================================
+   GLOBAL LMS BRAND ICON
+   ========================================= */
+
+:is(
+    .brand-logo,
+    .auth-brand-logo,
+    .landing-brand-logo,
+    .home-v2-brand-logo
+) {
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.lms-brand-icon {
+    width: 95%;
+    height: 95%;
+
+    display: block;
+    flex: 0 0 auto;
+
+    object-fit: contain;
+
+    border-radius: 8px;
+
+    user-select: none;
+    pointer-events: none;
+}
+
+/* =========================================
+   GLOBAL IMAGE PROTECTION
+   ========================================= */
+
+img {
+    -webkit-user-drag: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    -webkit-touch-callout: none;
+}
+
+/* CURSOR GAMBAR YANG DAPAT DIBUKA */
+
+html.media-viewer-enabled
+img:not(.lms-brand-icon):not(
+    .media-viewer-image
+):not(
+    [data-image-preview="off"]
+) {
+    cursor: pointer;
+}
+
+
+/*
+Jika pengecualian diberikan kepada
+container, seluruh gambar di dalamnya
+tetap menggunakan cursor biasa.
+*/
+
+html.media-viewer-enabled
+[data-image-preview="off"]
+img {
+    cursor: default !important;
+}
+
+/* =========================================
+   GLOBAL IMAGE VIEWER
+   ========================================= */
+
+body.media-viewer-open {
+    overflow: hidden;
+}
+
+.media-viewer-overlay[hidden] {
+    display: none !important;
+}
+
+.media-viewer-overlay {
+    position: fixed;
+    z-index: 100000;
+
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+background:
+    rgba(2, 7, 14, 0.78);
+
+backdrop-filter: none;
+-webkit-backdrop-filter: none;
+
+    animation:
+        media-viewer-overlay-in
+        0.2s ease both;
+}
+
+@keyframes media-viewer-overlay-in {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+/* TOOLBAR */
+
+.media-viewer-toolbar {
+    position: absolute;
+    z-index: 4;
+
+    top: 18px;
+    left: 18px;
+    right: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    pointer-events: none;
+}
+
+.media-viewer-zoom-controls,
+.media-viewer-main-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    pointer-events: auto;
+}
+
+.media-viewer-tool,
+.media-viewer-scale {
+    height: 40px;
+    min-width: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 12px;
+
+    color: #dce8f7;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(24, 38, 56, 0.96),
+            rgba(13, 25, 39, 0.96)
+        );
+
+    border:
+        1px solid #344b66;
+
+    border-radius: 10px;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.05),
+
+        0 8px 22px
+        rgba(0, 0, 0, 0.24);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.media-viewer-tool:hover,
+.media-viewer-scale:hover {
+    transform:
+        translateY(-1px);
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            145deg,
+            #1b2c40,
+            #132236
+        );
+
+    border-color: #53779f;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.07),
+
+        0 10px 24px
+        rgba(0, 0, 0, 0.3);
+}
+
+.media-viewer-tool:active,
+.media-viewer-scale:active {
+    transform:
+        translateY(0)
+        scale(0.97);
+}
+
+.media-viewer-tool:focus-visible,
+.media-viewer-scale:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.2),
+
+        0 8px 22px
+        rgba(0, 0, 0, 0.24);
+}
+
+.media-viewer-tool svg {
+    width: 18px;
+    height: 18px;
+
+    display: block;
+
+    fill: currentColor;
+}
+
+.media-viewer-scale {
+    min-width: 66px;
+}
+
+.media-viewer-download {
+    position: relative;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+        );
+
+    border-color:
+        rgba(96, 165, 250, 0.6);
+}
+
+.media-viewer-download:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #60a5fa,
+            #2563eb
+        );
+
+    border-color:
+        rgba(147, 197, 253, 0.8);
+}
+
+/* LOADING DOWNLOAD */
+
+.media-viewer-download.is-loading {
+    transform: none;
+
+    opacity: 0.82;
+
+    cursor: wait;
+}
+
+.media-viewer-download.is-loading svg {
+    visibility: hidden;
+}
+
+.media-viewer-download.is-loading::before {
+    content: "";
+
+    position: absolute;
+
+    width: 16px;
+    height: 16px;
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.34);
+
+    border-top-color:
+        #ffffff;
+
+    border-radius: 50%;
+
+    animation:
+        media-viewer-download-spin
+        0.7s linear infinite;
+}
+
+.media-viewer-download:disabled {
+    transform: none;
+
+    pointer-events: none;
+}
+
+.media-viewer-download.is-error {
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #b91c1c
+        );
+
+    border-color:
+        rgba(252, 165, 165, 0.72);
+}
+
+@keyframes media-viewer-download-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+/* AREA GAMBAR */
+
+.media-viewer-stage {
+    position: absolute;
+
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    padding:
+        76px 34px 34px;
+
+    overflow: hidden;
+
+    touch-action: none;
+}
+
+.media-viewer-image {
+    max-width:
+        calc(
+            100vw - 68px
+        );
+
+    max-height:
+        calc(
+            100dvh - 110px
+        );
+
+    display: block;
+
+    object-fit: contain;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 24px 70px
+        rgba(0, 0, 0, 0.46);
+
+transform-origin: center;
+will-change: transform;
+
+transition:
+    transform
+    0.16s
+    cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+    );
+
+cursor: default;
+
+touch-action: none;
+}
+
+/*
+Transisi dimatikan sementara saat
+pengguna melakukan pan atau pinch agar
+gambar tetap mengikuti tangan/mouse.
+*/
+
+.media-viewer-stage.is-panning
+.media-viewer-image {
+    transition: none;
+}
+
+/* FEEDBACK KLIK GAMBAR */
+
+.image-preview-pressed {
+    opacity: 0.88 !important;
+
+    filter:
+        brightness(0.82) !important;
+
+    transition:
+        opacity 0.08s ease,
+        filter 0.08s ease !important;
+}
+
+.media-viewer-image[hidden] {
+    display: none !important;
+}
+
+.media-viewer-stage.is-zoomed
+.media-viewer-image {
+    cursor: grab;
+}
+
+.media-viewer-stage.is-zoomed
+.media-viewer-image:active {
+    cursor: grabbing;
+}
+
+
+/* LOADING */
+
+.media-viewer-loading {
+    width: 36px;
+    height: 36px;
+
+    border:
+        3px solid
+        rgba(96, 165, 250, 0.18);
+
+    border-top-color:
+        #60a5fa;
+
+    border-radius: 50%;
+
+    animation:
+        media-viewer-spin
+        0.75s linear infinite;
+}
+
+.media-viewer-loading[hidden] {
+    display: none !important;
+}
+
+@keyframes media-viewer-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+/* ERROR */
+
+.media-viewer-error {
+    margin: 0;
+    padding: 14px 18px;
+
+    color: #fca5a5;
+
+    background:
+        rgba(127, 29, 29, 0.16);
+
+    border:
+        1px solid
+        rgba(248, 113, 113, 0.28);
+
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .media-viewer-toolbar {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+    }
+
+    .media-viewer-tool,
+    .media-viewer-scale {
+        height: 38px;
+        min-width: 38px;
+
+        padding:
+            0 10px;
+
+        border-radius: 9px;
+    }
+
+    .media-viewer-scale {
+        min-width: 58px;
+
+        font-size: 11px;
+    }
+
+    .media-viewer-tool svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .media-viewer-stage {
+        padding:
+            66px 12px 20px;
+    }
+
+    .media-viewer-image {
+        max-width:
+            calc(
+                100vw - 24px
+            );
+
+        max-height:
+            calc(
+                100dvh - 86px
+            );
+    }
+
+}
+
+@media (max-width: 390px) {
+
+    .media-viewer-toolbar {
+        gap: 7px;
+    }
+
+    .media-viewer-zoom-controls,
+    .media-viewer-main-actions {
+        gap: 5px;
+    }
+
+    .media-viewer-tool,
+    .media-viewer-scale {
+        height: 36px;
+        min-width: 36px;
+
+        padding:
+            0 8px;
+    }
+
+    .media-viewer-scale {
+        min-width: 52px;
+    }
+
+}
+
+/* =========================================
+   HOMEPAGE MOBILE — FINAL CLEAN FIX
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    html,
+    body.home-v2-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        margin: 0;
+        padding: 0;
+
+        overflow-x: hidden !important;
+    }
+
+    .home-v2-page *,
+    .home-v2-page *::before,
+    .home-v2-page *::after {
+        box-sizing: border-box;
+    }
+
+
+    /* HEADER */
+
+    .home-v2-header {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .home-v2-navbar {
+        width:
+            calc(
+                100% - 28px
+            ) !important;
+
+        max-width: none !important;
+        min-width: 0 !important;
+
+        margin:
+            0 auto !important;
+
+        display: grid !important;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+
+        align-items: center;
+
+        gap: 8px;
+    }
+
+    .home-v2-brand {
+        width: 100%;
+        min-width: 0;
+
+        overflow: hidden;
+    }
+
+    .home-v2-brand-logo {
+        flex-shrink: 0;
+    }
+
+    .home-v2-brand-copy {
+        min-width: 0;
+
+        overflow: hidden;
+    }
+
+    .home-v2-brand-copy strong {
+        display: block;
+
+        overflow: hidden;
+
+        font-size: 10px;
+
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .home-v2-brand-copy small {
+        display: none;
+    }
+
+    .home-v2-top-actions {
+        width: auto;
+
+        display: flex !important;
+
+        justify-self: end;
+    }
+
+    .home-v2-top-actions a {
+        width: auto !important;
+        min-width: 72px;
+        max-width: none !important;
+        min-height: 32px;
+
+        padding:
+            0 8px;
+
+        flex-shrink: 0;
+
+        font-size: 8px;
+
+        white-space: nowrap;
+    }
+
+
+    /* HERO */
+
+    .home-v2-page > main {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .home-v2-hero {
+        width:
+            calc(
+                100% - 28px
+            ) !important;
+
+        max-width: none !important;
+        min-width: 0 !important;
+
+        margin:
+            0 auto !important;
+
+        padding:
+            38px 0 44px;
+
+        /*
+        Hapus grid pada mobile agar ukuran
+        anak tidak dapat memperlebar hero.
+        */
+
+        display: block !important;
+    }
+
+    .home-v2-hero::before {
+    display: none !important;
+}
+
+    .home-v2-hero-content {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .home-v2-eyebrow {
+        font-size: 9px;
+    }
+
+    .home-v2-hero-content h1 {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        margin:
+            11px 0 15px;
+
+        font-size:
+            clamp(
+                32px,
+                9.2vw,
+                40px
+            );
+
+        line-height: 1.06;
+        letter-spacing: -0.04em;
+
+        white-space: normal !important;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    .home-v2-hero-content > p {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        font-size: 12px;
+        line-height: 1.65;
+
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+
+    /* LOGIN SISWA */
+
+    .home-v2-hero-actions,
+    .home-v2-login-actions,
+    .home-v2-student-login-form {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .home-v2-login-actions {
+        margin-top: 21px;
+    }
+
+    .home-v2-student-login-control {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        display: grid !important;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            82px !important;
+
+        overflow: hidden;
+    }
+
+    .home-v2-student-login-input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        padding:
+            0 11px;
+
+        font-size: 11px;
+    }
+
+    .home-v2-student-login-input::placeholder {
+        font-size: 10px;
+    }
+
+    .home-v2-student-login-submit {
+        width: 82px !important;
+        min-width: 82px !important;
+        max-width: 82px !important;
+
+        padding:
+            0 9px !important;
+
+        font-size: 10px;
+    }
+
+
+    /* DASHBOARD PREVIEW */
+
+    .home-v2-visual {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0;
+
+        margin:
+            34px 0 0 !important;
+
+        padding: 0 !important;
+
+        display: block !important;
+
+        overflow: hidden !important;
+    }
+
+    .home-v2-glow,
+    .home-v2-floating-card {
+        display: none !important;
+    }
+
+    .home-v2-dashboard {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin: 0 !important;
+
+        overflow: hidden !important;
+
+        border-radius: 13px;
+    }
+
+    .home-v2-preview-header,
+    .home-v2-preview-body,
+    .home-v2-preview-welcome,
+    .home-v2-preview-stats,
+    .home-v2-preview-stat,
+    .home-v2-preview-quiz,
+    .home-v2-preview-feed {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .home-v2-preview-header {
+        min-height: 39px;
+
+        padding:
+            0 12px;
+
+        overflow: hidden;
+    }
+
+    .home-v2-preview-header > span {
+        min-width: 0;
+
+        overflow: hidden;
+
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .home-v2-preview-body {
+        padding: 10px;
+    }
+
+    .home-v2-preview-welcome {
+        margin-bottom: 8px;
+
+        padding: 12px;
+    }
+
+    .home-v2-preview-stats {
+        display: grid !important;
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            ) !important;
+
+        gap: 8px;
+    }
+
+    .home-v2-preview-stat {
+        min-height: 55px;
+
+        padding: 8px;
+
+        overflow: hidden;
+    }
+
+    .home-v2-preview-stat > div,
+    .home-v2-preview-quiz-top > div,
+    .home-v2-preview-feed > div {
+        min-width: 0;
+    }
+
+    .home-v2-preview-stat small,
+    .home-v2-preview-stat strong,
+    .home-v2-preview-quiz-top strong,
+    .home-v2-preview-quiz-bottom small,
+    .home-v2-preview-quiz-bottom strong {
+        display: block;
+
+        max-width: 100%;
+
+        overflow: hidden;
+
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .home-v2-preview-quiz {
+        margin-top: 8px;
+
+        padding: 10px;
+
+        overflow: hidden;
+    }
+
+    .home-v2-preview-quiz-top,
+    .home-v2-preview-quiz-bottom {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        gap: 7px;
+    }
+
+    .home-v2-preview-quiz-top > small {
+        flex-shrink: 0;
+    }
+
+    .home-v2-preview-feed {
+        display: none;
+    }
+
+
+    /* FOOTER */
+
+    .home-v2-footer {
+        width: 100%;
+        max-width: 100%;
+    }
+
+.home-v2-footer-inner {
+    width:
+        calc(
+            100% - 28px
+        ) !important;
+
+    max-width: none !important;
+    min-width: 0;
+    min-height: 70px !important;
+
+    margin:
+        0 auto !important;
+
+    padding:
+        12px 0;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 12px;
+
+    overflow: hidden;
+}
+
+.home-v2-footer-inner > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.home-v2-footer-inner > small {
+    flex: 0 0 auto;
+
+    white-space: nowrap;
+    text-align: right;
+}
+
+}
+
+
+/* HP SANGAT SEMPIT */
+
+@media (max-width: 340px) {
+
+    .home-v2-navbar,
+    .home-v2-hero,
+    .home-v2-footer-inner {
+        width:
+            calc(
+                100% - 20px
+            ) !important;
+    }
+
+    .home-v2-hero-content h1 {
+        font-size: 29px;
+    }
+
+    .home-v2-student-login-control {
+        grid-template-columns:
+            minmax(0, 1fr)
+            74px !important;
+    }
+
+    .home-v2-student-login-submit {
+        width: 74px !important;
+        min-width: 74px !important;
+        max-width: 74px !important;
+    }
+
+    .home-v2-preview-stats {
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+    }
+
+}
+
+/* CLASS FEED RELATIVE TIME */
+
+.classroom-feed-redesign
+time[data-relative-time] {
+    cursor: pointer;
+}
+
+.classroom-feed-redesign
+time[data-relative-time]:focus-visible {
+    color: #bfdbfe;
+    outline:
+        1px solid
+        rgba(96, 165, 250, 0.55);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+
+/* EXACT TIME MOBILE POPUP */
+
+.relative-time-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 10050;
+
+    max-width:
+        calc(100vw - 32px);
+
+    padding: 9px 13px;
+
+    color: #eaf2ff;
+    background:
+        rgba(12, 25, 42, 0.97);
+
+    border:
+        1px solid
+        rgba(96, 165, 250, 0.32);
+
+    border-radius: 9px;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    white-space: nowrap;
+
+    opacity: 0;
+    box-shadow:
+        0 14px 34px
+        rgba(0, 0, 0, 0.42);
+
+    transform:
+        translate(-50%, 8px);
+
+    transition:
+        opacity 160ms ease,
+        transform 160ms ease;
+
+    pointer-events: none;
+}
+
+.relative-time-toast.is-visible {
+    opacity: 1;
+
+    transform:
+        translate(-50%, 0);
+}
+
+.relative-time-toast[hidden] {
+    display: none !important;
+}
+
+/* =========================================
+   REPLY INLINE META + CORNER DELETE
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-thread-reply {
+    position: relative;
+}
+
+
+/* Metadata berada di bawah nama */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-meta {
+    min-width: 0;
+
+    margin-top: 2px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    color: #607894;
+
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/*
+ * Override aturan lama:
+ * .reply-author-info span
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info
+.reply-author-meta span,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info
+.reply-author-meta time {
+    position: static;
+
+    display: inline;
+
+    margin: 0;
+    padding: 0;
+
+    color: inherit;
+
+    font-size: inherit;
+    line-height: inherit;
+
+    white-space: nowrap;
+}
+
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info
+.reply-author-meta
+.reply-meta-separator {
+    color: #3f5873;
+}
+
+
+/*
+ * Waktu tidak lagi berada di pojok kanan atas.
+ * Selector baru juga menghindari aturan mobile
+ * lama yang menyembunyikan .reply-created-time.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-inline-time {
+    position: static;
+
+    flex: none;
+
+    cursor: pointer;
+}
+
+
+/*
+ * Hapus ditempel ke pojok bawah kanan.
+ * Tidak ada reply-footer atau baris kosong baru.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-delete-corner {
+    position: absolute;
+    right: 11px;
+    bottom: 8px;
+    z-index: 2;
+
+    margin: 0;
+}
+
+/* =========================================
+   UKURAN ELEMEN REPLY
+   ========================================= */
+
+/* Kartu reply */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-thread-reply {
+    padding: 12px 13px;
+
+    border-radius: 11px;
+}
+
+
+/* Kolom avatar dan isi */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-layout {
+    grid-template-columns:
+        34px
+        minmax(0, 1fr);
+
+    gap: 10px;
+}
+
+
+/* Avatar reply */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-avatar {
+    width: 34px !important;
+    height: 34px !important;
+
+    min-width: 34px !important;
+    min-height: 34px !important;
+
+    max-width: 34px !important;
+    max-height: 34px !important;
+
+    flex:
+        0 0 34px !important;
+
+    font-size: 11px;
+
+    position: relative;
+top: -1px;
+}
+
+
+/* Nama pembuat reply */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-info strong {
+    gap: 4px;
+
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+
+/* Grade 9A • 1d lalu / Teacher • 1d lalu */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-author-meta {
+    margin-top: 2px;
+
+    gap: 5px;
+
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* Isi reply */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content
+.reply-message {
+    margin-top: 8px;
+
+    color: #c6d4e3;
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+/* List di dalam reply */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-message ul,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-message ol {
+    padding-left: 18px;
+}
+
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-message li
++ li {
+    margin-top: 2px;
+}
+
+
+/* Tombol hapus */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-delete-button {
+    min-height: 26px;
+
+    padding: 0 7px;
+
+    font-size: 9px;
+}
+
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-delete-corner {
+    right: 11px;
+    bottom: 8px;
+}
+
+
+/* Ukuran HP */
+
+@media (max-width: 600px) {
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .feed-thread-reply {
+        padding: 11px 12px;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-thread-layout {
+        grid-template-columns:
+            33px
+            minmax(0, 1fr);
+
+        gap: 9px;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-avatar {
+        width: 33px !important;
+        height: 33px !important;
+
+        min-width: 33px !important;
+        min-height: 33px !important;
+
+        max-width: 33px !important;
+        max-height: 33px !important;
+
+        flex:
+            0 0 33px !important;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-author-info strong {
+        font-size: 11px;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-author-meta {
+        font-size: 9px;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-thread-content
+    .reply-message {
+        font-size: 11px;
+    }
+
+}
+
+/* =========================================
+   PERBESAR REPLY COMPOSER 15%
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-composer {
+    padding: 13px;
+
+    gap: 10px;
+
+    border-radius: 12px;
+}
+
+
+/* Perbesar area pengetikan */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-input.feed-rich-editor {
+    min-height: 62px;
+    max-height: 173px;
+
+    padding: 12px 13px;
+}
+
+
+/* Sesuaikan tombol kirim */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-send-button {
+    min-width: 77px;
+    min-height: 39px;
+
+    margin-top: 12px;
+    padding: 0 14px;
+
+    align-self: start !important;
+    justify-self: end;
+}
+
+/* Baru diturunkan ke bawah pada HP sempit */
+
+@media (max-width: 520px) {
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-composer,
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .admin-reply-form.reply-composer {
+        grid-template-columns:
+            minmax(0, 1fr) !important;
+    }
+
+
+    .classroom-feed-redesign
+    .classroom-feed-surface
+    .reply-send-button {
+        margin-top: 0;
+
+        align-self: auto !important;
+        justify-self: end;
+    }
+
+}
+
+
+/* =========================================
+   JARAK TEKS DARI TOMBOL HAPUS
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content
+.reply-message {
+    padding-right: 52px;
+}
+
+
+/* =========================================
+   TOMBOL DAFTAR POIN MENJADI KOTAK
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor
+.feed-format-list-button {
+    width: 25px;
+    min-width: 25px;
+    max-width: 25px;
+    height: 25px;
+
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0;
+}
+
+
+/* Pastikan ikon tepat di tengah */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-editor
+.feed-format-list-button svg {
+    width: 13px;
+    height: 13px;
+
+    flex: 0 0 13px;
+
+    margin: 0;
+}
+
+/* =========================================
+   CLASS FEED COLLAPSIBLE TEXT
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-collapse {
+    min-width: 0;
+}
+
+
+/* Post maksimal 6 baris */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-collapsible-post {
+    max-height: 10.2em;
+
+    overflow: hidden;
+}
+
+
+/* Reply maksimal 4 baris */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-collapsible-reply {
+    max-height: 6.4em;
+
+    overflow: hidden;
+}
+
+
+/* Gradient hanya ketika teks benar-benar terpotong */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-collapsible-text.is-overflowing:not(
+    .is-expanded
+) {
+    -webkit-mask-image:
+        linear-gradient(
+            to bottom,
+            #000 75%,
+            transparent 100%
+        );
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            #000 75%,
+            transparent 100%
+        );
+}
+
+
+/* Buka seluruh teks */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-collapsible-text.is-expanded {
+    max-height: none;
+
+    overflow: visible;
+
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+
+/*
+ * Secara HTML tetap button agar bisa dipakai
+ * keyboard, tetapi secara visual hanya berupa teks.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+
+    margin: 6px 0 0;
+    padding: 0;
+
+    display: inline;
+
+    color: #60a5fa;
+    background: transparent;
+
+    border: 0;
+    border-radius: 0;
+
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.4;
+    text-align: left;
+
+    box-shadow: none;
+
+    cursor: pointer;
+    transform: none;
+}
+
+
+/* Hilangkan shimmer tombol global */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle::before,
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle::after {
+    display: none !important;
+    content: none !important;
+}
+
+
+/* Hover tetap terasa seperti link teks */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle:hover {
+    color: #93c5fd;
+    background: transparent;
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    box-shadow: none;
+    transform: none;
+}
+
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle:focus-visible {
+    color: #bfdbfe;
+
+    outline:
+        1px solid
+        rgba(96, 165, 250, 0.65);
+
+    outline-offset: 3px;
+}
+
+
+/* Versi reply sedikit lebih kecil */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-thread-reply
+.feed-text-toggle {
+    margin-top: 5px;
+
+    font-size: 10px;
+}
+
+
+/*
+ * Padding tombol Hapus tetap dipertahankan,
+ * sehingga link selengkapnya tidak menabraknya.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content
+.feed-text-collapse {
+    padding-right: 52px;
+}
+
+
+/*
+ * Padding sebelumnya sudah dipindahkan ke wrapper,
+ * jadi jangan diterapkan dua kali pada isi reply.
+ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.reply-thread-content
+.reply-message {
+    padding-right: 0;
+}
+
+
+/* Jangan tampilkan elemen yang belum diperlukan */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-text-toggle[hidden] {
+    display: none !important;
+}
+
+/* =========================================
+   LIVE MENTION PREVIEW
+   ========================================= */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-editor-mention {
+    display: inline;
+
+    padding:
+        1px 3px;
+
+    background:
+        rgba(59, 130, 246, 0.14);
+
+    border-radius:
+        4px;
+
+    color:
+        #60a5fa;
+
+    font: inherit;
+    font-weight: 750;
+
+    white-space: nowrap;
+
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+
+    cursor: text;
+}
+
+
+/* Loading langsung terlihat setelah mengetik @ */
+
+.classroom-feed-redesign
+.classroom-feed-surface
+.feed-mention-loading {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+
+    padding:
+        8px 11px;
+
+    color:
+        #7890aa;
+
+    font-size:
+        10px;
+
+    font-weight:
+        650;
 }

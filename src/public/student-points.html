@@ -25,6 +25,16 @@
 
 <script src="/student-profile-initial.js"></script>
 
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 
@@ -39,7 +49,7 @@
             <div class="brand">
 
                 <div class="brand-logo">
-                    LMS
+                    <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
                 </div>
 
                 <div>
@@ -684,7 +694,7 @@
         <div class="student-point-print-brand">
 
             <div class="student-point-print-logo">
-                LMS
+                <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
             </div>
 
             <div>
@@ -957,7 +967,7 @@ const studentId =
 if (!studentId) {
 
     window.location.href =
-        "/student-login.html";
+        "/index.html";
 
 }
 
@@ -3160,7 +3170,7 @@ async function logout() {
 
 
     window.location.href =
-        "/student-login.html";
+        "/index.html";
 }
 
 

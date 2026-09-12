@@ -21,6 +21,16 @@
         rel="stylesheet"
         href="/styles.css"
     >
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 <body class="home-v2-page">
@@ -34,7 +44,7 @@
                 class="home-v2-brand"
             >
                 <span class="home-v2-brand-logo">
-                    LMS
+                    <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
                 </span>
 
                 <span class="home-v2-brand-copy">
@@ -45,19 +55,15 @@
 
 <div class="home-v2-top-actions">
 
-    <a
-        href="/student-login.html"
-        class="home-v2-top-student"
-    >
-        Login Siswa
-    </a>
-
-    <a
-        href="/admin-login.html"
-        class="home-v2-top-admin"
-    >
-        Admin / Guru
-    </a>
+<a
+    href="/admin-login.html"
+    class="
+        home-v2-top-admin
+        home-v2-login-button
+    "
+>
+    Login Guru
+</a>
 
 </div>
 
@@ -88,24 +94,62 @@
                     informasi sekolah dengan lebih mudah.
                 </p>
 
-                <div class="home-v2-hero-actions">
+<div
+    class="
+        home-v2-hero-actions
+        home-v2-login-actions
+    "
+>
 
-                    <a
-                        href="/student-login.html"
-                        class="home-v2-button-primary"
-                    >
-                        Masuk sebagai Siswa
-                        <span>→</span>
-                    </a>
+    <form
+        id="homeStudentLoginForm"
+        class="home-v2-student-login-form"
+        novalidate
+    >
 
-                    <a
-                        href="/admin-login.html"
-                        class="home-v2-button-secondary"
-                    >
-                        Masuk sebagai Admin / Guru
-                    </a>
+        <div class="home-v2-student-login-control">
 
-                </div>
+            <input
+                type="text"
+                id="homeStudentLoginCode"
+                class="home-v2-student-login-input"
+                maxlength="5"
+                minlength="5"
+                autocomplete="one-time-code"
+                autocapitalize="characters"
+                spellcheck="false"
+                aria-label="Kode siswa"
+                placeholder="Masukkan kode siswa"
+                required
+            >
+
+
+<button
+    type="submit"
+    id="homeStudentLoginButton"
+    class="
+        home-v2-button-primary
+        home-v2-student-login-submit
+        home-v2-login-button
+    "
+>
+    <span>
+        Masuk
+    </span>
+</button>
+
+        </div>
+
+
+        <p
+            id="homeStudentLoginMessage"
+            class="home-v2-student-login-message"
+            aria-live="polite"
+        ></p>
+
+    </form>
+
+</div>
 
             </div>
             <!-- PENUTUP .home-v2-hero-content -->
@@ -261,12 +305,325 @@
             </div>
 
             <small>
-                Version 4.1
+                Version 4.3
             </small>
 
         </div>
 
     </footer>
+
+<script>
+
+    const homeStudentLoginForm =
+        document.getElementById(
+            "homeStudentLoginForm"
+        );
+
+    const homeStudentLoginCode =
+        document.getElementById(
+            "homeStudentLoginCode"
+        );
+
+    const homeStudentLoginButton =
+        document.getElementById(
+            "homeStudentLoginButton"
+        );
+
+    const homeStudentLoginMessage =
+        document.getElementById(
+            "homeStudentLoginMessage"
+        );
+
+
+    let homeStudentLoginRunning =
+        false;
+
+
+    function setHomeStudentLoginMessage(
+        message,
+        type = ""
+    ) {
+
+        homeStudentLoginMessage.textContent =
+            message || "";
+
+
+        homeStudentLoginMessage.classList.toggle(
+            "error",
+            type === "error"
+        );
+
+
+        homeStudentLoginMessage.classList.toggle(
+            "success",
+            type === "success"
+        );
+
+    }
+
+
+    function setHomeStudentLoginLoading(
+        loading
+    ) {
+
+        const label =
+            homeStudentLoginButton
+                .querySelector(
+                    "span"
+                );
+
+
+        homeStudentLoginButton.disabled =
+            loading;
+
+
+        homeStudentLoginButton.classList.toggle(
+            "is-loading",
+            loading
+        );
+
+
+        label.textContent =
+            loading
+                ? "Memeriksa"
+                : "Masuk";
+
+    }
+
+
+    /*
+        Kode siswa hanya menerima huruf dan angka,
+        selalu kapital, maksimal lima karakter.
+    */
+
+    homeStudentLoginCode.addEventListener(
+        "input",
+        () => {
+
+            const oldPosition =
+                homeStudentLoginCode
+                    .selectionStart;
+
+
+            homeStudentLoginCode.value =
+                homeStudentLoginCode
+                    .value
+                    .toUpperCase()
+                    .replace(
+                        /[^A-Z0-9]/g,
+                        ""
+                    )
+                    .slice(
+                        0,
+                        5
+                    );
+
+
+            const newPosition =
+                Math.min(
+                    Number(
+                        oldPosition || 0
+                    ),
+                    homeStudentLoginCode
+                        .value
+                        .length
+                );
+
+
+            homeStudentLoginCode
+                .setSelectionRange(
+                    newPosition,
+                    newPosition
+                );
+
+
+            if (
+                homeStudentLoginMessage
+                    .classList
+                    .contains(
+                        "error"
+                    )
+            ) {
+
+                setHomeStudentLoginMessage(
+                    ""
+                );
+
+            }
+
+        }
+    );
+
+
+    homeStudentLoginForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (homeStudentLoginRunning) {
+                return;
+            }
+
+
+            const loginCode =
+                homeStudentLoginCode
+                    .value
+                    .trim()
+                    .toUpperCase();
+
+
+            if (loginCode.length !== 5) {
+
+                setHomeStudentLoginMessage(
+                    "Kode siswa harus terdiri dari 5 karakter.",
+                    "error"
+                );
+
+
+                homeStudentLoginCode.focus();
+
+                return;
+
+            }
+
+
+            homeStudentLoginRunning =
+                true;
+
+
+            setHomeStudentLoginLoading(
+                true
+            );
+
+
+            setHomeStudentLoginMessage(
+                "Memeriksa kode..."
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/student/login",
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    loginCode
+                                })
+                        }
+                    );
+
+
+                const data =
+                    await response
+                        .json()
+                        .catch(
+                            () => ({})
+                        );
+
+
+                if (
+                    !response.ok ||
+                    !data.success ||
+                    !data.student
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Kode siswa tidak valid."
+                    );
+
+                }
+
+
+                localStorage.setItem(
+                    "studentId",
+                    String(
+                        data.student.id
+                    )
+                );
+
+
+                localStorage.setItem(
+                    "studentName",
+                    String(
+                        data.student.name ||
+                        ""
+                    )
+                );
+
+
+                localStorage.setItem(
+                    "studentClass",
+                    String(
+                        data.student.className ||
+                        ""
+                    )
+                );
+
+
+                localStorage.setItem(
+                    "studentLoginCode",
+                    String(
+                        data.student.loginCode ||
+                        loginCode
+                    )
+                );
+
+
+                setHomeStudentLoginMessage(
+                    "Login berhasil. Membuka dashboard...",
+                    "success"
+                );
+
+
+                window.location.replace(
+                    "/student-dashboard.html"
+                );
+
+
+            } catch (error) {
+
+                setHomeStudentLoginMessage(
+                    error.message ||
+                    "Tidak dapat terhubung ke server.",
+                    "error"
+                );
+
+
+                homeStudentLoginRunning =
+                    false;
+
+
+                setHomeStudentLoginLoading(
+                    false
+                );
+
+
+                homeStudentLoginCode.focus();
+
+                homeStudentLoginCode.select();
+
+            }
+
+        }
+    );
+
+</script>
 
 </body>
 

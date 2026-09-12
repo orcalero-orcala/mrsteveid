@@ -23,6 +23,16 @@
     >
 
     <script src="/admin-profile-initial.js"></script>
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 <body
@@ -39,7 +49,7 @@
             <div class="brand">
 
                 <div class="brand-logo">
-                    LMS
+                    <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
                 </div>
 
                 <div>
@@ -1063,7 +1073,7 @@
 
         if (response.status === 401) {
             window.location.href =
-                "/admin-login.html";
+                "/index.html";
 
             throw new Error(
                 "Sesi Admin / Guru berakhir."
@@ -2565,7 +2575,7 @@ function updatePreview() {
 
 
             window.location.href =
-                "/admin-login.html";
+                "/index.html";
         }
     }
 

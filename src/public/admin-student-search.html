@@ -28,6 +28,16 @@
 >
 
 <script src="/admin-profile-initial.js"></script>
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 <body class="admin-student-search-page">
@@ -37,7 +47,7 @@
     <aside class="sidebar admin-sidebar">
 
         <div class="brand">
-            <div class="brand-logo">LMS</div>
+            <div class="brand-logo"><img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon"></div>
 
             <div>
                 <strong>mrsteve.my.id</strong>
@@ -426,7 +436,7 @@ async function logout() {
 
 
         window.location.href =
-            "/admin-login.html";
+            "/index.html";
     }
 }
 </script>

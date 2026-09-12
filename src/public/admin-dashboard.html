@@ -19,6 +19,16 @@
 
 <script src="/admin-profile-initial.js"></script>
 
+<script
+    src="/image-guard.js"
+    defer
+></script>
+
+<script
+    src="/image-viewer.js"
+    defer
+></script>
+
 </head>
 
 <body>
@@ -128,7 +138,7 @@
             <div class="brand">
 
                 <div class="brand-logo">
-                    LMS
+                    <img src="/favicon.png" alt="" aria-hidden="true" class="lms-brand-icon">
                 </div>
 
                 <div>
@@ -940,7 +950,7 @@
         if (!username) {
 
             window.location.href =
-                "/admin-login.html";
+                "/index.html";
 
         }
 
@@ -1129,7 +1139,7 @@ async function runFactoryReset() {
 
 
         window.location.href =
-            "/admin-login.html";
+            "/index.html";
 
 
     } catch (error) {
@@ -1180,7 +1190,7 @@ async function logout() {
 
 
     window.location.href =
-        "/admin-login.html";
+        "/index.html";
 }
 
     </script>

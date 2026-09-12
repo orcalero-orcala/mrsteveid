@@ -9,7 +9,7 @@
     const adminUsername = localStorage.getItem("adminUsername");
 
     if (!Number.isInteger(adminId) || !adminUsername) {
-        location.href = "/admin-login.html";
+        location.href = "/index.html";
         return;
     }
 
@@ -89,9 +89,11 @@
         latestPostId: 0,
         latestReplyId: 0,
         filter: "all",
-        postMentions: [],
-        postMentionUsers: [],
-        pollTimer: null,
+postMentions: [],
+postMentionUsers: [],
+postMentionPromise: null,
+postMentionLoaded: false,
+pollTimer: null,
         pollRunning: false,
         foreground: 0,
         notificationTick: 0,
@@ -138,6 +140,191 @@
         const date = new Date(value);
         return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("id-ID");
     }
+
+    function relativeTime(value) {
+
+    if (
+        typeof window.formatRelativeTime ===
+        "function"
+    ) {
+
+        return window.formatRelativeTime(
+            value
+        );
+
+    }
+
+
+    return dateTime(value);
+
+}
+
+function setFeedTextExpanded(
+    toggle,
+    expanded
+) {
+
+    if (!toggle) {
+        return;
+    }
+
+
+    const contentId =
+        toggle.getAttribute(
+            "aria-controls"
+        );
+
+    const content =
+        document.getElementById(
+            contentId
+        );
+
+
+    if (!content) {
+        return;
+    }
+
+
+    expanded =
+        Boolean(expanded);
+
+
+    content.classList.toggle(
+        "is-expanded",
+        expanded
+    );
+
+    toggle.setAttribute(
+        "aria-expanded",
+        String(expanded)
+    );
+
+    toggle.textContent =
+        expanded
+            ? "Tampilkan lebih sedikit"
+            : "Lihat selengkapnya";
+
+    toggle.hidden =
+        false;
+
+}
+
+
+function setupFeedTextCollapse(
+    root = document
+) {
+
+    const toggles =
+        root.querySelectorAll(
+            ".feed-text-toggle"
+        );
+
+
+    toggles.forEach(toggle => {
+
+        const content =
+            document.getElementById(
+                toggle.getAttribute(
+                    "aria-controls"
+                )
+            );
+
+
+        if (!content) {
+            return;
+        }
+
+
+        /*
+         * Jangan ukur elemen yang masih berada
+         * di panel reply tersembunyi.
+         */
+        if (
+            content.getClientRects()
+                .length === 0
+        ) {
+            return;
+        }
+
+
+        if (
+            content.classList.contains(
+                "is-expanded"
+            )
+        ) {
+
+            toggle.hidden =
+                false;
+
+            return;
+
+        }
+
+
+        const overflowing =
+            content.scrollHeight >
+            content.clientHeight + 1;
+
+
+        content.classList.toggle(
+            "is-overflowing",
+            overflowing
+        );
+
+        toggle.hidden =
+            !overflowing;
+
+    });
+
+}
+
+
+function queueFeedTextCollapse(
+    root = document
+) {
+
+    requestAnimationFrame(() => {
+
+        setupFeedTextCollapse(
+            root
+        );
+
+    });
+
+}
+
+
+function expandNotificationText(
+    target
+) {
+
+    if (!target) {
+        return;
+    }
+
+
+    const toggle =
+        target.classList.contains(
+            "feed-thread-reply"
+        )
+            ? target.querySelector(
+                ".feed-text-toggle"
+            )
+            : target.querySelector(
+                ".feed-card-body .feed-text-toggle"
+            );
+
+
+    if (toggle) {
+
+        setFeedTextExpanded(
+            toggle,
+            true
+        );
+
+    }
+
+}
 
     function profileInitial(name) {
         return typeof window.getProfileInitial === "function"
@@ -569,52 +756,172 @@ function getEditorCaretOffset(editor) {
     }
 }
 
-function findEditorTextPoint(editor, wantedOffset) {
-    const walker = document.createTreeWalker(
-        editor,
-        NodeFilter.SHOW_TEXT
-    );
+function findEditorTextPoint(
+    editor,
+    wantedOffset,
+    preferNextAtBoundary = false
+) {
+    const walker =
+        document.createTreeWalker(
+            editor,
+            NodeFilter.SHOW_TEXT
+        );
+
+    const textNodes = [];
+    let currentNode;
+
+    while (
+        (
+            currentNode =
+                walker.nextNode()
+        )
+    ) {
+        textNodes.push(
+            currentNode
+        );
+    }
+
+    if (!textNodes.length) {
+        const fallback =
+            document.createTextNode(
+                ""
+            );
+
+        editor.appendChild(
+            fallback
+        );
+
+        return {
+            node: fallback,
+            offset: 0
+        };
+    }
+
+    const targetOffset =
+        Math.max(
+            0,
+            Number(wantedOffset) || 0
+        );
 
     let passed = 0;
-    let node;
 
-    while ((node = walker.nextNode())) {
-        const length = node.nodeValue?.length || 0;
+    for (
+        let index = 0;
+        index < textNodes.length;
+        index += 1
+    ) {
+        const node =
+            textNodes[index];
 
-        if (wantedOffset <= passed + length) {
+        const length =
+            node.nodeValue?.length ||
+            0;
+
+        const nodeEnd =
+            passed + length;
+
+        /*
+         * Offset benar-benar berada di dalam node.
+         */
+        if (targetOffset < nodeEnd) {
             return {
                 node,
-                offset: Math.max(
-                    0,
-                    wantedOffset - passed
-                )
+
+                offset:
+                    Math.max(
+                        0,
+                        targetOffset -
+                            passed
+                    )
             };
         }
 
-        passed += length;
+        /*
+         * Offset tepat di batas dua node.
+         *
+         * Untuk awal mention, pilih awal node berikutnya.
+         * Untuk akhir mention, pilih akhir node sekarang.
+         */
+        if (targetOffset === nodeEnd) {
+            if (
+                preferNextAtBoundary &&
+                textNodes[index + 1]
+            ) {
+                return {
+                    node:
+                        textNodes[
+                            index + 1
+                        ],
+
+                    offset: 0
+                };
+            }
+
+            return {
+                node,
+                offset: length
+            };
+        }
+
+        passed =
+            nodeEnd;
     }
 
-    const fallback = document.createTextNode("");
-    editor.appendChild(fallback);
+    const lastNode =
+        textNodes[
+            textNodes.length - 1
+        ];
 
     return {
-        node: fallback,
-        offset: 0
+        node: lastNode,
+
+        offset:
+            lastNode.nodeValue
+                ?.length || 0
     };
 }
 
-function selectEditorText(editor, start, end) {
-    const startPoint = findEditorTextPoint(
-        editor,
-        Math.max(0, start)
-    );
+function selectEditorText(
+    editor,
+    start,
+    end
+) {
+    const safeStart =
+        Math.max(
+            0,
+            Number(start) || 0
+        );
 
-    const endPoint = findEditorTextPoint(
-        editor,
-        Math.max(start, end)
-    );
+    const safeEnd =
+        Math.max(
+            safeStart,
+            Number(end) ||
+                safeStart
+        );
 
-    const range = document.createRange();
+    /*
+     * Awal mention harus memilih node berikutnya
+     * jika posisinya tepat di batas dua text node.
+     */
+    const startPoint =
+        findEditorTextPoint(
+            editor,
+            safeStart,
+            true
+        );
+
+    /*
+     * Akhir mention tetap memilih ujung node saat ini.
+     */
+    const endPoint =
+        findEditorTextPoint(
+            editor,
+            safeEnd,
+            false
+        );
+
+    const range =
+        document.createRange();
 
     range.setStart(
         startPoint.node,
@@ -626,9 +933,13 @@ function selectEditorText(editor, start, end) {
         endPoint.offset
     );
 
-    const selection = window.getSelection();
+    const selection =
+        window.getSelection();
+
     selection.removeAllRanges();
-    selection.addRange(range);
+    selection.addRange(
+        range
+    );
 }
 
 function editorFromToolbar(button) {
@@ -788,6 +1099,305 @@ function activeRichEditor() {
     return element?.closest(".feed-rich-editor") || null;
 }
 
+function mentionBeforeCaret(
+    editor
+) {
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        !selection.isCollapsed ||
+        !selection.anchorNode ||
+        !editor.contains(
+            selection.anchorNode
+        )
+    ) {
+        return null;
+    }
+
+    const anchorNode =
+        selection.anchorNode;
+
+    const anchorOffset =
+        selection.anchorOffset;
+
+    /*
+     * Kondisi paling umum:
+     *
+     * [mention][NBSP]
+     *                ↑ caret
+     */
+    if (
+        anchorNode.nodeType ===
+        Node.TEXT_NODE
+    ) {
+        const text =
+            String(
+                anchorNode.nodeValue ||
+                ""
+            );
+
+        const textBeforeCaret =
+            text.slice(
+                0,
+                anchorOffset
+            );
+
+        /*
+         * Jangan hapus mention jika sebelum caret sudah
+         * terdapat teks biasa yang ditulis pengguna.
+         */
+        if (
+            !/^[\u00A0\u200B ]*$/.test(
+                textBeforeCaret
+            )
+        ) {
+            return null;
+        }
+
+        let candidate =
+            anchorNode.previousSibling;
+
+        while (
+            candidate &&
+            candidate.nodeType ===
+                Node.TEXT_NODE &&
+            !candidate.nodeValue
+        ) {
+            candidate =
+                candidate.previousSibling;
+        }
+
+        if (
+            candidate?.nodeType ===
+                Node.ELEMENT_NODE &&
+            candidate.matches(
+                ".feed-editor-mention"
+            )
+        ) {
+            return {
+                mention: candidate,
+                spacerNode:
+                    anchorNode,
+
+                spacerLength:
+                    anchorOffset
+            };
+        }
+
+        return null;
+    }
+
+    /*
+     * Kondisi caret berada langsung pada parent:
+     *
+     * [mention]|
+     */
+    if (
+        anchorNode.nodeType ===
+        Node.ELEMENT_NODE
+    ) {
+        let candidate =
+            anchorNode.childNodes[
+                anchorOffset - 1
+            ];
+
+        let spacerNode =
+            null;
+
+        let spacerLength =
+            0;
+
+        if (
+            candidate?.nodeType ===
+            Node.TEXT_NODE &&
+            /^[\u00A0\u200B ]*$/.test(
+                candidate.nodeValue ||
+                ""
+            )
+        ) {
+            spacerNode =
+                candidate;
+
+            spacerLength =
+                candidate.nodeValue
+                    ?.length || 0;
+
+            candidate =
+                candidate.previousSibling;
+        }
+
+        if (
+            candidate?.nodeType ===
+                Node.ELEMENT_NODE &&
+            candidate.matches(
+                ".feed-editor-mention"
+            )
+        ) {
+            return {
+                mention: candidate,
+                spacerNode,
+                spacerLength
+            };
+        }
+    }
+
+    return null;
+}
+
+function deleteMentionBeforeCaret(
+    event
+) {
+    if (
+        event.key !== "Backspace" ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey
+    ) {
+        return;
+    }
+
+    const editor =
+        event.target.closest?.(
+            ".feed-rich-editor"
+        );
+
+    if (!editor) {
+        return;
+    }
+
+    const target =
+        mentionBeforeCaret(
+            editor
+        );
+
+    if (!target) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const parent =
+        target.mention.parentNode;
+
+    if (!parent) {
+        return;
+    }
+
+    /*
+     * Marker kosong mempertahankan posisi caret setelah
+     * mention dan spasi tak terlihat dihapus.
+     */
+ const caretNode =
+    document.createTextNode(
+        ""
+    );
+
+parent.insertBefore(
+    caretNode,
+    target.mention
+);
+
+/*
+ * Simpan node sebelum mention. Pada multiple mention,
+ * node ini biasanya merupakan spasi milik mention
+ * sebelumnya.
+ */
+const previousNode =
+    caretNode.previousSibling;
+
+target.mention.remove();
+
+if (
+    target.spacerNode &&
+    target.spacerNode.isConnected &&
+    target.spacerLength > 0
+) {
+    target.spacerNode.deleteData(
+        0,
+        target.spacerLength
+    );
+}
+
+let caretTarget =
+    caretNode;
+
+let caretOffset = 0;
+
+/*
+ * Jika sebelum mention terdapat text node yang hanya
+ * berisi spasi, pindahkan caret ke ujung spasi tersebut.
+ *
+ * Dengan begitu Backspace berikutnya langsung dapat
+ * menemukan mention sebelumnya.
+ */
+if (
+    previousNode?.nodeType ===
+        Node.TEXT_NODE &&
+    /^[\u00A0\u200B ]*$/.test(
+        previousNode.nodeValue ||
+        ""
+    )
+) {
+    caretTarget =
+        previousNode;
+
+    caretOffset =
+        previousNode.nodeValue
+            ?.length || 0;
+
+    /*
+     * Marker kosong tidak diperlukan karena caret
+     * sudah memiliki text node yang valid.
+     */
+    caretNode.remove();
+}
+
+const range =
+    document.createRange();
+
+range.setStart(
+    caretTarget,
+    caretOffset
+);
+
+range.collapse(true);
+
+const selection =
+    window.getSelection();
+
+selection.removeAllRanges();
+
+selection.addRange(
+    range
+);
+
+    resetTypingFormatAfterMention(
+        editor
+    );
+
+    editor.dispatchEvent(
+        new Event(
+            "input",
+            {
+                bubbles: true
+            }
+        )
+    );
+}
+
+/*
+ * Capture digunakan agar browser tidak sempat
+ * menyeleksi elemen contenteditable=false terlebih dahulu.
+ */
+document.addEventListener(
+    "keydown",
+    deleteMentionBeforeCaret,
+    true
+);
+
 function applyFeedFormatting(editor, format) {
     if (!editor) return;
 
@@ -825,7 +1435,7 @@ function applyFeedFormatting(editor, format) {
         const response = await fetch(url, { cache: "no-store", ...options });
         const data = await response.json().catch(() => ({}));
         if (response.status === 401) {
-            location.href = "/admin-login.html";
+            location.href = "/index.html";
             throw new Error("Sesi admin berakhir.");
         }
         if (!response.ok || data.success === false) {
@@ -891,9 +1501,22 @@ function setRepliesOpen(card, open) {
     const wasOpen =
         button.getAttribute("aria-expanded") === "true";
 
-    if (wasOpen === open) return;
+if (wasOpen === open) return;
 
-    button.setAttribute("aria-expanded", String(open));
+if (open) {
+    const replyForm =
+        card.querySelector(
+            ".admin-reply-form"
+        );
+
+    if (replyForm) {
+        void prepareReplyMentions(
+            replyForm
+        );
+    }
+}
+
+button.setAttribute("aria-expanded", String(open));
 
     const label = $("[data-reply-label]", button);
 
@@ -2458,83 +3081,197 @@ function setRepliesOpen(card, open) {
 
     }
 
-function createReplyItem(postId, reply) {
+function createReplyItem(
+    postId,
+    reply
+) {
+
     const type =
         reply.sender_type ||
-        (reply.admin_id ? "admin" : "student");
+        (
+            reply.admin_id
+                ? "admin"
+                : "student"
+        );
+
 
     const name =
         reply.sender_name ||
         reply.student_name ||
-        (type === "admin" ? "Admin / Guru" : "Siswa");
+        (
+            type === "admin"
+                ? "Admin / Guru"
+                : "Siswa"
+        );
+
 
     const detail =
         type === "admin"
             ? "Teacher"
-            : reply.class_name
-                ? `Student · ${reply.class_name}`
-                : "Student";
+            : (
+                reply.class_name ||
+                "-"
+            );
+
 
     const picture =
         reply.profile_picture_url ||
         reply.student_profile_picture_url ||
         "";
 
-    const item = document.createElement("article");
 
-    item.id = `reply-${reply.id}`;
-    item.className = "reply-item feed-thread-reply";
+    const item =
+        document.createElement(
+            "article"
+        );
+
+
+    item.id =
+        `reply-${reply.id}`;
+
+
+    item.className =
+        "reply-item feed-thread-reply";
+
 
     item.innerHTML = `
         <div class="reply-thread-layout">
+
             <div class="reply-avatar"></div>
 
+
             <div class="reply-thread-content">
+
                 <div class="reply-thread-header">
+
                     <div class="reply-author-info">
+
                         <strong>
+
                             ${escapeHtml(name)}
-                            ${type === "admin" ? teacherBadge() : ""}
+
+                            ${
+                                type === "admin"
+                                    ? teacherBadge()
+                                    : ""
+                            }
+
                         </strong>
-                        <span>${escapeHtml(detail)}</span>
+
+
+                        <div class="reply-author-meta">
+
+                            <span>
+                                ${escapeHtml(detail)}
+                            </span>
+
+
+                            <span
+                                class="reply-meta-separator"
+                                aria-hidden="true"
+                            >
+                                •
+                            </span>
+
+
+                            <time
+                                class="reply-inline-time"
+                                data-relative-time
+                                datetime="${escapeHtml(
+                                    reply.created_at ||
+                                    ""
+                                )}"
+                            >
+
+                                ${escapeHtml(
+                                    relativeTime(
+                                        reply.created_at
+                                    )
+                                )}
+
+                            </time>
+
+                        </div>
+
                     </div>
 
-                    <time
-                        class="reply-created-time"
-                        datetime="${escapeHtml(reply.created_at || "")}"
-                    >
-                        ${escapeHtml(dateTime(reply.created_at))}
-                    </time>
                 </div>
 
-                <div class="reply-message">${formatMessage(
-                    reply.message,
-                    reply.mentions
-                )}</div>
 
-                <div class="reply-footer">
-                    <button
-                        type="button"
-                        class="reply-delete-button feed-delete-button"
-                        data-action="delete-reply"
-                        data-post-id="${Number(postId)}"
-                        data-reply-id="${Number(reply.id)}"
-                    >
-                        Hapus
-                    </button>
-                </div>
+<div class="feed-text-collapse">
+
+    <div
+        id="reply-text-${Number(reply.id)}"
+        class="
+            reply-message
+            feed-collapsible-text
+            feed-collapsible-reply
+        "
+    >
+
+        ${formatMessage(
+            reply.message,
+            reply.mentions
+        )}
+
+    </div>
+
+
+    <button
+        type="button"
+        class="feed-text-toggle"
+        data-action="toggle-feed-text"
+        aria-controls="reply-text-${Number(
+            reply.id
+        )}"
+        aria-expanded="false"
+        hidden
+    >
+        Lihat selengkapnya
+    </button>
+
+</div>
+
+
+                <button
+                    type="button"
+                    class="
+                        reply-delete-button
+                        feed-delete-button
+                        reply-delete-corner
+                    "
+                    data-action="delete-reply"
+                    data-post-id="${Number(
+                        postId
+                    )}"
+                    data-reply-id="${Number(
+                        reply.id
+                    )}"
+                >
+                    Hapus
+                </button>
+
             </div>
+
         </div>
     `;
 
-    renderAvatar(
-        $(".reply-avatar", item),
-        type,
-        name,
-        picture
-    );
 
-    return item;
+renderAvatar(
+    $(".reply-avatar", item),
+    type,
+    name,
+    picture
+);
+
+
+queueFeedTextCollapse(
+    item
+);
+
+
+return item;
+
 }
 
     function createPostCard(post) {
@@ -2542,7 +3279,14 @@ function createReplyItem(postId, reply) {
         const name = isStudent
             ? (post.student_creator_name || post.studentName || "Siswa")
             : (post.admin_creator_name || "Admin / Guru");
-        const detail = isStudent ? (post.student_creator_class || post.class_name || "Siswa") : "Admin / Guru";
+const detail =
+    isStudent
+        ? (
+            post.student_creator_class ||
+            post.class_name ||
+            "-"
+        )
+        : "Teacher";
 const picture =
     isStudent
         ? (
@@ -2592,11 +3336,12 @@ card.className = [
                         aria-hidden="true"
                     >•</span>
 
-                    <time
-                        datetime="${escapeHtml(post.created_at || "")}"
-                    >
-                        ${escapeHtml(dateTime(post.created_at))}
-                    </time>
+<time
+    data-relative-time
+    datetime="${escapeHtml(post.created_at || "")}"
+>
+    ${escapeHtml(relativeTime(post.created_at))}
+</time>
                 </div>
             </div>
         </div>
@@ -2613,12 +3358,41 @@ card.className = [
     </header>
 
     <div class="feed-card-body">
-        <div class="feed-message">${formatMessage(
+<div class="feed-text-collapse">
+
+    <div
+        id="post-text-${Number(post.id)}"
+        class="
+            feed-message
+            feed-collapsible-text
+            feed-collapsible-post
+        "
+    >
+
+        ${formatMessage(
             post.message,
             post.mentions
-        )}</div>
+        )}
 
-        ${feedPostImageMarkup(post)}
+    </div>
+
+
+    <button
+        type="button"
+        class="feed-text-toggle"
+        data-action="toggle-feed-text"
+        aria-controls="post-text-${Number(
+            post.id
+        )}"
+        aria-expanded="false"
+        hidden
+    >
+        Lihat selengkapnya
+    </button>
+
+</div>
+
+${feedPostImageMarkup(post)}
     </div>
 
     <div class="feed-card-actions">
@@ -2808,7 +3582,12 @@ card.className = [
             });
         }
 updateReplyCount(container);
-        return card;
+
+queueFeedTextCollapse(
+    card
+);
+
+return card;
     }
 
     function addPost(post, position = "prepend") {
@@ -3171,21 +3950,130 @@ updateReplyCount(container);
         }
     }
 
-    function mergeTypedMentions(text, selected, users) {
-        const result = [...selected];
-        users.forEach(user => {
-            if (text.includes(`@${user.name}`) && !result.some(item => item.id === user.id && item.type === user.type)) {
-                result.push({ id: user.id, type: user.type, name: user.name });
-            }
-        });
-        return result;
+function mergeTypedMentions(
+    text,
+    selected,
+    users
+) {
+    const normalizedText =
+        String(text || "");
+
+    /*
+     * Buang selected mention yang sudah dihapus
+     * dari editor.
+     */
+    const result =
+        [...selected].filter(item =>
+            normalizedText.includes(
+                `@${item.name}`
+            )
+        );
+
+    users.forEach(user => {
+        const mentionText =
+            `@${user.name}`;
+
+        const alreadyAdded =
+            result.some(item =>
+                Number(item.id) ===
+                    Number(user.id) &&
+                item.type ===
+                    user.type
+            );
+
+        if (
+            normalizedText.includes(
+                mentionText
+            ) &&
+            !alreadyAdded
+        ) {
+            result.push({
+                id: user.id,
+                type: user.type,
+                name: user.name
+            });
+        }
+    });
+
+    return result;
+}
+
+function hideSuggestions(box) {
+    if (!box) return;
+
+    box.innerHTML = "";
+    box.style.display = "none";
+}
+
+function showMentionLoading(box) {
+    if (!box) return;
+
+    box.innerHTML = `
+        <div
+            class="feed-mention-loading"
+            role="status"
+        >
+            Memuat pengguna...
+        </div>
+    `;
+
+    box.style.display = "block";
+}
+
+function promoteTypedMention(
+    input,
+    users,
+    selected
+) {
+    if (
+        !input ||
+        input._promotingMention
+    ) {
+        return false;
     }
 
-    function hideSuggestions(box) {
-        if (!box) return;
-        box.innerHTML = "";
-        box.style.display = "none";
+    const query =
+        activeMentionQuery(input);
+
+    if (query === null) {
+        return false;
     }
+
+    const typedName =
+        query.trim();
+
+    if (!typedName) {
+        return false;
+    }
+
+    const matchedUser =
+        users.find(user =>
+            String(user.name || "")
+                .trim()
+                .toLowerCase() ===
+            typedName.toLowerCase()
+        );
+
+    if (!matchedUser) {
+        return false;
+    }
+
+    input._promotingMention =
+        true;
+
+    try {
+        insertMention(
+            input,
+            matchedUser,
+            selected
+        );
+    } finally {
+        input._promotingMention =
+            false;
+    }
+
+    return true;
+}
 
     function suggestionLabel(user) {
         return user.type === "student"
@@ -3193,31 +4081,526 @@ updateReplyCount(container);
             : `${user.name} (${user.role || "Admin / Guru"})`;
     }
 
-function activeMentionQuery(input) {
-    const text = editorPlainText(input);
-    const cursor = getEditorCaretOffset(input);
-    const before = text.slice(0, cursor);
-    const match = before.match(/@([^@\n]*)$/);
+function escapeMentionPattern(
+    value
+) {
+    return String(value || "")
+        .replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+        );
+}
 
-    if (!match) {
+function decoratePastedMentions(
+    editor,
+    users,
+    selected
+) {
+    if (
+        !editor ||
+        !Array.isArray(users) ||
+        !users.length
+    ) {
+        return;
+    }
+
+    /*
+     * Nama terpanjang diproses lebih dahulu.
+     * Contoh: "Budi Santoso" tidak boleh berhenti
+     * pada pengguna lain bernama "Budi".
+     */
+    const validUsers =
+        [...users]
+            .filter(user =>
+                String(
+                    user.name || ""
+                ).trim()
+            )
+            .sort(
+                (a, b) =>
+                    String(b.name || "")
+                        .length -
+                    String(a.name || "")
+                        .length
+            );
+
+    if (!validUsers.length) {
+        return;
+    }
+
+    const usersByName =
+        new Map();
+
+    validUsers.forEach(user => {
+        const key =
+            String(user.name)
+                .trim()
+                .toLowerCase();
+
+        if (
+            !usersByName.has(key)
+        ) {
+            usersByName.set(
+                key,
+                user
+            );
+        }
+    });
+
+    const namesPattern =
+        validUsers
+            .map(user =>
+                escapeMentionPattern(
+                    String(
+                        user.name
+                    ).trim()
+                )
+            )
+            .join("|");
+
+    /*
+     * Karakter setelah nama tidak boleh huruf,
+     * angka, atau underscore. Ini mencegah @Budi
+     * terdeteksi di dalam teks seperti @Budiman.
+     */
+    const mentionPattern =
+        new RegExp(
+            `@(?:${namesPattern})(?![\\p{L}\\p{N}_])`,
+            "giu"
+        );
+
+    /*
+     * Simpan posisi caret sebelum text node diganti.
+     * Panjang teks tidak berubah saat dibungkus span,
+     * sehingga offset bisa dipulihkan setelah proses.
+     */
+    const selection =
+        window.getSelection();
+
+    const restoreCaret =
+        selection &&
+        selection.rangeCount > 0 &&
+        selection.isCollapsed &&
+        selection.focusNode &&
+        editor.contains(
+            selection.focusNode
+        );
+
+    const savedCaretOffset =
+        restoreCaret
+            ? getEditorCaretOffset(
+                  editor
+              )
+            : null;
+
+    const walker =
+        document.createTreeWalker(
+            editor,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode(node) {
+                    const parent =
+                        node.parentElement;
+
+                    if (
+                        !parent ||
+                        parent.closest(
+                            [
+                                ".feed-editor-mention",
+                                "[data-mention-caret-marker]"
+                            ].join(",")
+                        )
+                    ) {
+                        return NodeFilter
+                            .FILTER_REJECT;
+                    }
+
+                    return String(
+                        node.nodeValue ||
+                        ""
+                    ).includes("@")
+                        ? NodeFilter
+                              .FILTER_ACCEPT
+                        : NodeFilter
+                              .FILTER_REJECT;
+                }
+            }
+        );
+
+    const textNodes = [];
+    let textNode;
+
+    while (
+        (
+            textNode =
+                walker.nextNode()
+        )
+    ) {
+        textNodes.push(
+            textNode
+        );
+    }
+
+    let decoratedCount = 0;
+
+    textNodes.forEach(node => {
+        const value =
+            String(
+                node.nodeValue || ""
+            );
+
+        mentionPattern.lastIndex = 0;
+
+        let match;
+        let lastIndex = 0;
+        let hasMatch = false;
+
+        const fragment =
+            document.createDocumentFragment();
+
+        while (
+            (
+                match =
+                    mentionPattern.exec(
+                        value
+                    )
+            )
+        ) {
+            const matchedText =
+                match[0];
+
+            const matchedName =
+                matchedText.slice(1);
+
+            const user =
+                usersByName.get(
+                    matchedName
+                        .toLowerCase()
+                );
+
+            if (!user) {
+                continue;
+            }
+
+            hasMatch = true;
+
+            fragment.append(
+                document.createTextNode(
+                    value.slice(
+                        lastIndex,
+                        match.index
+                    )
+                )
+            );
+
+            const mention =
+                document.createElement(
+                    "span"
+                );
+
+            mention.className =
+                "feed-editor-mention";
+
+            mention.dataset.mentionId =
+                String(user.id);
+
+            mention.dataset.mentionType =
+                String(
+                    user.type ||
+                    "student"
+                );
+
+            mention.contentEditable =
+                "false";
+
+            /*
+             * Pertahankan huruf persis seperti hasil paste.
+             */
+            mention.textContent =
+                matchedText;
+
+            fragment.append(
+                mention
+            );
+
+            if (
+                !selected.some(item =>
+                    Number(item.id) ===
+                        Number(user.id) &&
+                    item.type ===
+                        user.type
+                )
+            ) {
+                selected.push({
+                    id: user.id,
+                    type: user.type,
+                    name: user.name
+                });
+            }
+
+            decoratedCount += 1;
+
+            lastIndex =
+                match.index +
+                matchedText.length;
+        }
+
+        if (!hasMatch) {
+            return;
+        }
+
+        /*
+         * Tetap buat text node meskipun string sisanya
+         * kosong. Ini menyediakan lokasi caret setelah
+         * mention yang berada di akhir teks.
+         */
+        fragment.append(
+            document.createTextNode(
+                value.slice(lastIndex)
+            )
+        );
+
+        node.replaceWith(
+            fragment
+        );
+    });
+
+    if (!decoratedCount) {
+        return;
+    }
+
+    if (
+        restoreCaret &&
+        Number.isInteger(
+            savedCaretOffset
+        )
+    ) {
+        const caretPoint =
+            findEditorTextPoint(
+                editor,
+                savedCaretOffset,
+                true
+            );
+
+        const caretRange =
+            document.createRange();
+
+        caretRange.setStart(
+            caretPoint.node,
+            caretPoint.offset
+        );
+
+        caretRange.collapse(true);
+
+        const currentSelection =
+            window.getSelection();
+
+        currentSelection.removeAllRanges();
+
+        currentSelection.addRange(
+            caretRange
+        );
+    }
+
+    resetTypingFormatAfterMention(
+        editor
+    );
+
+    syncRichEditorEmptyState(
+        editor
+    );
+
+    /*
+     * Perbarui toolbar tanpa menjalankan autocomplete
+     * terhadap mention yang baru dibungkus.
+     */
+    const previousPromotingState =
+        Boolean(
+            editor._promotingMention
+        );
+
+    editor._promotingMention =
+        true;
+
+    editor.dispatchEvent(
+        new Event(
+            "input",
+            {
+                bubbles: true
+            }
+        )
+    );
+
+    editor._promotingMention =
+        previousPromotingState;
+}
+
+function activeMentionQuery(input) {
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        !selection.focusNode ||
+        !input.contains(
+            selection.focusNode
+        )
+    ) {
         input._mentionStart = null;
         input._mentionEnd = null;
+
         return null;
     }
 
+    /*
+     * Ambil teks langsung dari awal editor sampai caret.
+     *
+     * Jangan gabungkan innerText dengan offset Range karena
+     * keduanya dapat menghitung baris contenteditable secara
+     * berbeda pada teks panjang dan elemen berformat.
+     */
+    const range =
+        document.createRange();
+
+    range.selectNodeContents(
+        input
+    );
+
+    try {
+        range.setEnd(
+            selection.focusNode,
+            selection.focusOffset
+        );
+    } catch (error) {
+        input._mentionStart = null;
+        input._mentionEnd = null;
+
+        return null;
+    }
+
+    const completeBeforeCaret =
+        range
+            .toString()
+            .replace(/\u00a0/g, " ");
+
+    /*
+     * Cukup periksa 100 karakter terakhir.
+     * Nama pengguna tidak mungkin membutuhkan seluruh post.
+     */
+    const searchStart =
+        Math.max(
+            0,
+            completeBeforeCaret.length -
+                100
+        );
+
+    const nearbyText =
+        completeBeforeCaret.slice(
+            searchStart
+        );
+
+    const localAtIndex =
+        nearbyText.lastIndexOf("@");
+
+    if (localAtIndex < 0) {
+        input._mentionStart = null;
+        input._mentionEnd = null;
+
+        return null;
+    }
+
+    const query =
+        nearbyText.slice(
+            localAtIndex + 1
+        );
+
+    if (
+        query.includes("\n") ||
+        query.includes("\r") ||
+        query.includes("@")
+    ) {
+        input._mentionStart = null;
+        input._mentionEnd = null;
+
+        return null;
+    }
+
+    /*
+     * Offset ini sekarang berasal dari Range.toString().
+     * Sistemnya sama dengan selectEditorText() yang berjalan
+     * melalui seluruh text node di dalam editor.
+     */
     input._mentionStart =
-        before.lastIndexOf("@");
+        searchStart +
+        localAtIndex;
 
-    input._mentionEnd = cursor;
+    input._mentionEnd =
+        completeBeforeCaret.length;
 
-    return match[1]
-        .trim()
+    return query
+        .trimStart()
         .toLowerCase();
 }
 
-function insertMention(input, user, selected) {
-    const start = Number(input._mentionStart);
-    const end = Number(input._mentionEnd);
+function resetTypingFormatAfterMention(
+    editor
+) {
+    if (!editor) return;
+
+    /*
+     * Browser terkadang mewariskan format mention
+     * ke posisi pengetikan setelahnya.
+     */
+    [
+        "bold",
+        "italic",
+        "underline",
+        "strikeThrough"
+    ].forEach(command => {
+        try {
+            if (
+                document.queryCommandState(
+                    command
+                )
+            ) {
+                document.execCommand(
+                    command,
+                    false,
+                    null
+                );
+            }
+        } catch (error) {
+            /*
+             * Browser lama boleh mengabaikan command
+             * yang tidak didukung.
+             */
+        }
+    });
+
+    getEditorFormatStates(
+        editor
+    ).clear();
+
+    syncFormatToolbar(
+        editor
+    );
+}
+
+function insertMention(
+    input,
+    user,
+    selected
+) {
+    const start =
+        Number(
+            input._mentionStart
+        );
+
+    const end =
+        Number(
+            input._mentionEnd
+        );
 
     if (
         !Number.isInteger(start) ||
@@ -3228,58 +4611,232 @@ function insertMention(input, user, selected) {
         return;
     }
 
-    const token = `@${user.name} `;
+    const name =
+        String(
+            user.name ||
+            "Pengguna"
+        ).trim();
+
+    const type =
+        String(
+            user.type ||
+            "student"
+        );
 
     input.focus();
-    selectEditorText(input, start, end);
 
-    document.execCommand(
-        "insertText",
-        false,
-        token
+    /*
+     * Pilih hanya teks mulai dari @ sampai caret.
+     */
+    selectEditorText(
+        input,
+        start,
+        end
+    );
+
+    const selection =
+        window.getSelection();
+
+    if (
+        !selection ||
+        selection.rangeCount === 0 ||
+        !selection.anchorNode ||
+        !input.contains(
+            selection.anchorNode
+        )
+    ) {
+        return;
+    }
+
+    const range =
+        selection
+            .getRangeAt(0)
+            .cloneRange();
+
+    /*
+     * Buat elemen mention secara langsung.
+     * Tidak memakai insertHTML agar browser tidak
+     * memindahkannya ke block atau baris berikutnya.
+     */
+    const mentionNode =
+        document.createElement(
+            "span"
+        );
+
+    mentionNode.className =
+        "feed-editor-mention";
+
+    mentionNode.dataset.mentionId =
+        String(user.id);
+
+    mentionNode.dataset.mentionType =
+        type;
+
+    mentionNode.contentEditable =
+        "false";
+
+    mentionNode.textContent =
+        `@${name}`;
+
+    /*
+     * Spasi diletakkan sebagai text node normal agar
+     * caret dapat berada tepat setelah mention.
+     */
+    const trailingSpace =
+        document.createTextNode(
+            "\u00A0"
+        );
+
+    const fragment =
+        document.createDocumentFragment();
+
+    fragment.append(
+        mentionNode,
+        trailingSpace
+    );
+
+    /*
+     * Hapus @ atau query yang sedang diketik,
+     * lalu masukkan mention pada lokasi Range yang sama.
+     */
+    range.deleteContents();
+
+    range.insertNode(
+        fragment
+    );
+
+    /*
+     * Pindahkan caret setelah mention dan spasi.
+     * Mention tidak terseleksi dan tidak pindah baris.
+     */
+    const caretRange =
+        document.createRange();
+
+    caretRange.setStart(
+        trailingSpace,
+        trailingSpace.nodeValue.length
+    );
+
+    caretRange.collapse(true);
+
+    selection.removeAllRanges();
+
+    selection.addRange(
+        caretRange
     );
 
     if (
         !selected.some(item =>
-            Number(item.id) === Number(user.id) &&
-            item.type === user.type
+            Number(item.id) ===
+                Number(user.id) &&
+            item.type === type
         )
     ) {
         selected.push({
             id: user.id,
-            type: user.type,
-            name: user.name
+            type,
+            name
         });
     }
 
-    input._mentionStart = null;
-    input._mentionEnd = null;
+    input._mentionStart =
+        null;
+
+    input._mentionEnd =
+        null;
+
+    syncRichEditorEmptyState(
+        input
+    );
+
+    /*
+     * Jangan wariskan font-weight mention ke teks
+     * yang akan diketik setelahnya.
+     */
+    resetTypingFormatAfterMention(
+        input
+    );
+
+    /*
+     * Perbarui editor tanpa menjalankan autocomplete
+     * sekali lagi terhadap mention yang baru dibuat.
+     */
+    const previousPromotingState =
+        Boolean(
+            input._promotingMention
+        );
+
+    input._promotingMention =
+        true;
 
     input.dispatchEvent(
-        new Event("input", { bubbles: true })
+        new Event(
+            "input",
+            {
+                bubbles: true
+            }
+        )
     );
+
+    input._promotingMention =
+        previousPromotingState;
 }
 
-function renderSuggestions(input, box, users, selected) {
-    const query = activeMentionQuery(input);
+function renderSuggestions(
+    input,
+    box,
+    users,
+    selected
+) {
+    /*
+     * Setelah autocomplete dipilih, callback request atau
+     * input programmatic tidak boleh membuka panel kembali.
+     */
+    if (
+        input._mentionSuggestionsDismissed
+    ) {
+        hideSuggestions(box);
+        return;
+    }
+
+    const query =
+        activeMentionQuery(input);
 
     if (query === null) {
         hideSuggestions(box);
         return;
     }
 
-    const matches = [...users]
-        .filter(user =>
-            String(user.name || "")
-                .toLowerCase()
-                .includes(query)
-        )
-        .sort((a, b) =>
-            String(a.name || "").localeCompare(
-                String(b.name || ""),
-                "id",
-                { sensitivity: "base" }
+const normalizedQuery =
+    String(query || "")
+        .trim()
+        .toLowerCase();
+
+const matches =
+    [...users]
+        .filter(user => {
+            if (!normalizedQuery) {
+                return true;
+            }
+
+            return String(
+                user.name || ""
             )
+                .toLowerCase()
+                .includes(
+                    normalizedQuery
+                );
+        })
+        .sort((a, b) =>
+            String(a.name || "")
+                .localeCompare(
+                    String(b.name || ""),
+                    "id",
+                    {
+                        sensitivity:
+                            "base"
+                    }
+                )
         )
         .slice(0, 12);
 
@@ -3336,10 +4893,27 @@ function renderSuggestions(input, box, users, selected) {
             event.preventDefault();
         });
 
-        button.addEventListener("click", () => {
-            insertMention(input, user, selected);
-            hideSuggestions(box);
-        });
+button.addEventListener(
+    "click",
+    () => {
+        input._mentionSuggestionsDismissed =
+            true;
+
+        hideSuggestions(
+            box
+        );
+
+        insertMention(
+            input,
+            user,
+            selected
+        );
+
+        hideSuggestions(
+            box
+        );
+    }
+);
 
         box.appendChild(button);
     });
@@ -3347,39 +4921,95 @@ function renderSuggestions(input, box, users, selected) {
     box.style.display = matches.length ? "block" : "none";
 }
 
-    async function loadPostMentionUsers() {
-        try {
-            const [studentsData, adminsData] = await Promise.all([
-                request("/api/admin/students"),
-                request("/api/admin/users/mention-list")
-            ]);
-state.postMentionUsers = [
-    ...(studentsData.students || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        type: "student",
-        className: item.class_name,
-        profile_picture_url:
-            item.profile_picture_url ||
-            item.profilePictureUrl ||
-            ""
-    })),
+async function loadPostMentionUsers() {
+    if (state.postMentionLoaded) {
+        return state.postMentionUsers;
+    }
 
-    ...(adminsData.admins || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        type: "admin",
-        role: item.role,
-        profile_picture_url:
-            item.profile_picture_url ||
-            item.profilePictureUrl ||
-            ""
-    }))
-];
-        } catch (error) {
-            console.error("Gagal memuat mention post:", error);
+    if (state.postMentionPromise) {
+        return state.postMentionPromise;
+    }
+
+    const currentPromise =
+        Promise.all([
+            request(
+                "/api/admin/students"
+            ),
+
+            request(
+                "/api/admin/users/mention-list"
+            )
+        ]);
+
+    state.postMentionPromise =
+        currentPromise;
+
+    try {
+        const [
+            studentsData,
+            adminsData
+        ] = await currentPromise;
+
+        state.postMentionUsers = [
+            ...(
+                studentsData.students ||
+                []
+            ).map(item => ({
+                id: item.id,
+                name: item.name,
+                type: "student",
+
+                className:
+                    item.class_name,
+
+                profile_picture_url:
+                    item.profile_picture_url ||
+                    item.profilePictureUrl ||
+                    ""
+            })),
+
+            ...(
+                adminsData.admins ||
+                []
+            ).map(item => ({
+                id: item.id,
+                name: item.name,
+                type: "admin",
+                role: item.role,
+
+                profile_picture_url:
+                    item.profile_picture_url ||
+                    item.profilePictureUrl ||
+                    ""
+            }))
+        ];
+
+        state.postMentionLoaded =
+            true;
+
+        return state.postMentionUsers;
+    } catch (error) {
+        state.postMentionUsers = [];
+
+        state.postMentionLoaded =
+            false;
+
+        console.error(
+            "Gagal memuat mention post:",
+            error
+        );
+
+        return [];
+    } finally {
+        if (
+            state.postMentionPromise ===
+            currentPromise
+        ) {
+            state.postMentionPromise =
+                null;
         }
     }
+}
 
     function availablePostMentionUsers() {
         const target = $("input[name='target']:checked")?.value || "global";
@@ -3389,18 +5019,54 @@ state.postMentionUsers = [
             : state.postMentionUsers;
     }
 
-    async function prepareReplyMentions(form) {
-        if (form._mentionUsers || form._mentionLoading) return;
-        form._mentionLoading = true;
-        try {
-            const data = await request(`/api/mentions/users?announcementId=${encodeURIComponent(form.dataset.id)}`);
-            form._mentionUsers = data.users || [];
-        } catch (error) {
-            form._mentionUsers = [];
-        } finally {
-            form._mentionLoading = false;
-        }
+async function prepareReplyMentions(form) {
+    if (
+        Array.isArray(
+            form._mentionUsers
+        )
+    ) {
+        return form._mentionUsers;
     }
+
+    if (form._mentionPromise) {
+        return form._mentionPromise;
+    }
+
+    form._mentionLoading = true;
+
+    form._mentionPromise = request(
+        `/api/mentions/users?announcementId=${encodeURIComponent(
+            form.dataset.id
+        )}`
+    )
+        .then(data => {
+            form._mentionUsers =
+                Array.isArray(data.users)
+                    ? data.users
+                    : [];
+
+            return form._mentionUsers;
+        })
+        .catch(error => {
+            console.error(
+                "Gagal memuat mention reply:",
+                error
+            );
+
+            form._mentionUsers = [];
+
+            return form._mentionUsers;
+        })
+        .finally(() => {
+            form._mentionLoading =
+                false;
+
+            form._mentionPromise =
+                null;
+        });
+
+    return form._mentionPromise;
+}
 
     async function loadClasses() {
         if (state.classesLoaded) return;
@@ -3634,15 +5300,23 @@ function scrollToStoredTarget() {
 
     if (!target) return false;
 
-    if (replyId) {
-        setRepliesOpen(
-            target.closest(".feed-card"),
-            true
-        );
-    }
+if (replyId) {
 
-    /*
-     * Data target langsung dibersihkan agar pemanggilan
+    setRepliesOpen(
+        target.closest(".feed-card"),
+        true
+    );
+
+}
+
+
+expandNotificationText(
+    target
+);
+
+
+/*
+ * Data target langsung dibersihkan agar pemanggilan
      * scroll berikutnya tidak menjadwalkan scroll kedua.
      */
     sessionStorage.removeItem(
@@ -3980,7 +5654,7 @@ document.body.classList.remove(
     async function logout() {
         try { await fetch("/api/logout", { method: "POST" }); } finally {
             ["adminId", "adminName", "adminRole", "adminUsername"].forEach(key => localStorage.removeItem(key));
-            location.href = "/admin-login.html";
+            location.href = "/index.html";
         }
     }
 
@@ -4051,6 +5725,31 @@ document.addEventListener("keydown", event => {
     applyFeedFormatting(editor, format);
 });
 
+/*
+ * Hanya input asli pengguna yang membuka kembali
+ * autocomplete setelah option dipilih.
+ *
+ * Event input buatan dari insertMention tidak memiliki
+ * beforeinput sehingga tidak akan membuka lock.
+ */
+document.addEventListener(
+    "beforeinput",
+    event => {
+        const editor =
+            event.target.closest?.(
+                ".feed-rich-editor"
+            );
+
+        if (!editor) {
+            return;
+        }
+
+        editor._mentionSuggestionsDismissed =
+            false;
+    },
+    true
+);
+
 document.addEventListener("input", event => {
     const editor = event.target.closest?.(".feed-rich-editor");
     if (!editor) return;
@@ -4091,34 +5790,186 @@ document.addEventListener("mouseup", event => {
 
 $$(".feed-rich-editor").forEach(syncRichEditorEmptyState);
 
-document.addEventListener("paste", event => {
-    const editor = event.target.closest(
-        ".feed-rich-editor"
-    );
+document.addEventListener(
+    "paste",
+    event => {
+        const editor =
+            event.target.closest(
+                ".feed-rich-editor"
+            );
 
-    if (!editor) return;
+        if (!editor) {
+            return;
+        }
 
-    /*
-     * Paste sebagai teks biasa supaya HTML dari website
-     * lain tidak masuk ke editor.
-     */
-    event.preventDefault();
+        event.preventDefault();
 
-    const text =
-        event.clipboardData?.getData("text/plain") || "";
+        const text =
+            event.clipboardData
+                ?.getData(
+                    "text/plain"
+                ) || "";
 
-    document.execCommand(
-        "insertText",
-        false,
-        text
-    );
-});
+        document.execCommand(
+            "insertText",
+            false,
+            text
+        );
+
+        /*
+         * Post utama admin/guru.
+         */
+        if (editor === ui.message) {
+            const applyPostMentions =
+                () => {
+                    decoratePastedMentions(
+                        editor,
+                        availablePostMentionUsers(),
+                        state.postMentions
+                    );
+                };
+
+            if (
+                state.postMentionLoaded
+            ) {
+                applyPostMentions();
+            } else {
+                loadPostMentionUsers()
+                    .then(
+                        applyPostMentions
+                    );
+            }
+
+            return;
+        }
+
+        /*
+         * Reply admin/guru.
+         */
+        const form =
+            editor.closest(
+                ".admin-reply-form"
+            );
+
+        if (!form) {
+            return;
+        }
+
+        const applyReplyMentions =
+            () => {
+                decoratePastedMentions(
+                    editor,
+                    form._mentionUsers ||
+                        [],
+
+                    form._selectedMentions ||=
+                        []
+                );
+            };
+
+        if (
+            Array.isArray(
+                form._mentionUsers
+            )
+        ) {
+            applyReplyMentions();
+        } else {
+            prepareReplyMentions(form)
+                .then(
+                    applyReplyMentions
+                );
+        }
+    }
+);
 
 initializeFeedPostImageControls();
 
-    ui.form.addEventListener("submit", submitPost);
+/*
+ * Preload satu kali. Setelah selesai, mengetik @
+ * tidak lagi melakukan request API baru.
+ */
+void loadPostMentionUsers();
+
+ui.form.addEventListener(
+    "submit",
+    submitPost
+);
     ui.filter.addEventListener("change", () => { state.filter = ui.filter.value; applyFilter(); });
-    ui.message.addEventListener("input", () => renderSuggestions(ui.message, ui.mentionBox, availablePostMentionUsers(), state.postMentions));
+ui.message.addEventListener(
+    "input",
+    () => {
+        if (
+            ui.message._promotingMention
+        ) {
+            return;
+        }
+
+        if (
+            activeMentionQuery(
+                ui.message
+            ) === null
+        ) {
+            hideSuggestions(
+                ui.mentionBox
+            );
+
+            return;
+        }
+
+        const renderCurrentMention =
+            () => {
+                if (
+                    activeMentionQuery(
+                        ui.message
+                    ) === null
+                ) {
+                    hideSuggestions(
+                        ui.mentionBox
+                    );
+
+                    return;
+                }
+
+                const users =
+                    availablePostMentionUsers();
+
+                if (
+                    promoteTypedMention(
+                        ui.message,
+                        users,
+                        state.postMentions
+                    )
+                ) {
+                    hideSuggestions(
+                        ui.mentionBox
+                    );
+
+                    return;
+                }
+
+                renderSuggestions(
+                    ui.message,
+                    ui.mentionBox,
+                    users,
+                    state.postMentions
+                );
+            };
+
+        if (state.postMentionLoaded) {
+            renderCurrentMention();
+            return;
+        }
+
+        showMentionLoading(
+            ui.mentionBox
+        );
+
+        loadPostMentionUsers()
+            .then(
+                renderCurrentMention
+            );
+    }
+);
     ui.classSelect.addEventListener("change", () => { state.postMentions = []; hideSuggestions(ui.mentionBox); });
     $$("input[name='target']").forEach(radio => radio.addEventListener("change", () => {
         const isClass = $("input[name='target']:checked")?.value === "class";
@@ -4132,28 +5983,157 @@ initializeFeedPostImageControls();
     ui.list.addEventListener("submit", event => {
         if (event.target.matches(".admin-reply-form")) submitReply(event);
     });
-    ui.list.addEventListener("input", event => {
-        const input = event.target.closest(".admin-reply-input");
-        if (!input) return;
-        const form = input.closest(".admin-reply-form");
-        const box = $(".admin-mention-suggestions", form);
-        prepareReplyMentions(form).then(() => renderSuggestions(input, box, form._mentionUsers || [], form._selectedMentions ||= []));
-    });
+ui.list.addEventListener(
+    "input",
+    event => {
+        const input =
+            event.target.closest(
+                ".admin-reply-input"
+            );
+
+        if (
+            !input ||
+            input._promotingMention
+        ) {
+            return;
+        }
+
+        const form =
+            input.closest(
+                ".admin-reply-form"
+            );
+
+        const box =
+            $(
+                ".admin-mention-suggestions",
+                form
+            );
+
+        if (
+            activeMentionQuery(input) ===
+            null
+        ) {
+            hideSuggestions(box);
+            return;
+        }
+
+        const renderReplyMention =
+            () => {
+                if (
+                    activeMentionQuery(
+                        input
+                    ) === null
+                ) {
+                    hideSuggestions(box);
+                    return;
+                }
+
+                const users =
+                    form._mentionUsers ||
+                    [];
+
+                const selected =
+                    form._selectedMentions ||=
+                        [];
+
+                if (
+                    promoteTypedMention(
+                        input,
+                        users,
+                        selected
+                    )
+                ) {
+                    hideSuggestions(box);
+                    return;
+                }
+
+                renderSuggestions(
+                    input,
+                    box,
+                    users,
+                    selected
+                );
+            };
+
+        if (
+            Array.isArray(
+                form._mentionUsers
+            )
+        ) {
+            renderReplyMention();
+            return;
+        }
+
+        showMentionLoading(box);
+
+        prepareReplyMentions(form)
+            .then(
+                renderReplyMention
+            );
+    }
+);
+
+    window.addEventListener(
+    "resize",
+    () => {
+
+        queueFeedTextCollapse(
+            document
+        );
+
+    }
+);
 ui.list.addEventListener("click", event => {
     const button = event.target.closest(
         "button[data-action]"
     );
 
-    if (!button) return;
+if (!button) return;
 
-    if (button.dataset.action === "toggle-replies") {
+
+if (
+    button.dataset.action ===
+    "toggle-feed-text"
+) {
+
+    const currentlyExpanded =
+        button.getAttribute(
+            "aria-expanded"
+        ) === "true";
+
+
+    setFeedTextExpanded(
+        button,
+        !currentlyExpanded
+    );
+
+    return;
+
+}
+
+
+if (button.dataset.action === "toggle-replies") {
         const card = button.closest(".feed-card");
 
         const currentlyOpen =
             button.getAttribute("aria-expanded") === "true";
 
-        setRepliesOpen(card, !currentlyOpen);
-        return;
+setRepliesOpen(
+    card,
+    !currentlyOpen
+);
+
+
+if (!currentlyOpen) {
+
+    queueFeedTextCollapse(
+        card
+    );
+
+}
+
+
+return;
     }
 
     if (button.dataset.action === "delete-post") {
