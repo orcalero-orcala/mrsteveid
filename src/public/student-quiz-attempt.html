@@ -161,7 +161,9 @@
 
 </style>
 
-    <title>Kerjakan Quiz</title>
+    <title data-i18n="studentQuizAttempt.pageTitle">
+        Kerjakan Quiz
+    </title>
 
         <link
     rel="icon"
@@ -189,6 +191,11 @@
     defer
 ></script>
 
+<script
+    src="/language.js?v=20260913-9"
+    defer
+></script>
+
 </head>
 
 
@@ -200,6 +207,7 @@
     role="status"
     aria-live="polite"
     aria-label="Halaman sedang dimuat"
+    data-i18n-aria-label="studentQuizAttempt.loadingPage"
 >
     <div class="lms-page-loader-content">
 
@@ -224,17 +232,25 @@
     class="quiz-attempt-back-button"
     onclick="returnToStudentQuizDashboard()"
 >
-    ← Kembali
+    <span data-i18n="studentQuizAttempt.back">
+        ← Kembali
+    </span>
 </button>
 
 
         <div class="student-quiz-attempt-title">
 
-            <strong id="studentQuizTopTitle">
+            <strong
+                id="studentQuizTopTitle"
+                data-i18n="studentQuizAttempt.loadingQuiz"
+            >
                 Memuat Quiz...
             </strong>
 
-            <span id="studentQuizSaveStatus">
+            <span
+                id="studentQuizSaveStatus"
+                data-i18n="studentQuizAttempt.answerSaved"
+            >
                 Jawaban tersimpan di perangkat
             </span>
 
@@ -243,7 +259,10 @@
 
         <div class="student-quiz-progress-summary">
 
-            <span id="studentQuizProgressText">
+            <span
+                id="studentQuizProgressText"
+                data-i18n="studentQuizAttempt.initialProgress"
+            >
                 0/0 dijawab
             </span>
 
@@ -272,7 +291,7 @@
 
 <div class="quiz-attempt-information-loading">
 
-    <span>
+    <span data-i18n="studentQuizAttempt.loadingInformation">
         Memuat informasi Quiz...
     </span>
 
@@ -287,7 +306,7 @@
             hidden
         >
 
-            <strong>
+            <strong data-i18n="studentQuizAttempt.instructions">
                 Instruksi
             </strong>
 
@@ -301,7 +320,10 @@
             class="student-quiz-attempt-question-list"
         >
 
-            <div class="student-quiz-attempt-loading">
+            <div
+                class="student-quiz-attempt-loading"
+                data-i18n="studentQuizAttempt.loadingQuestions"
+            >
                 Memuat soal...
             </div>
 
@@ -319,11 +341,14 @@
 
     <div>
 
-        <strong>
+        <strong data-i18n="studentQuizAttempt.finishedQuestion">
             Selesai mengerjakan?
         </strong>
 
-        <p id="studentQuizSubmitSummary">
+        <p
+            id="studentQuizSubmitSummary"
+            data-i18n="studentQuizAttempt.checkingAnswers"
+        >
             Memeriksa jawaban...
         </p>
 
@@ -336,7 +361,9 @@
         type="button"
         onclick="requestStudentQuizSubmission()"
     >
-        Submit Quiz
+        <span data-i18n="studentQuizAttempt.submitQuiz">
+            Submit Quiz
+        </span>
     </button>
 
 </section>
@@ -364,12 +391,18 @@
             </small>
 
 
-            <h2 id="studentQuizSubmitDialogTitle">
+            <h2
+                id="studentQuizSubmitDialogTitle"
+                data-i18n="studentQuizAttempt.submitQuestion"
+            >
                 Submit Quiz?
             </h2>
 
 
-            <p id="studentQuizSubmitDialogMessage">
+            <p
+                id="studentQuizSubmitDialogMessage"
+                data-i18n="studentQuizAttempt.cannotChangeAfterSubmit"
+            >
                 Jawaban tidak dapat diubah setelah dikirim.
             </p>
 
@@ -381,7 +414,9 @@
                     class="secondary-button"
                     type="button"
                 >
-                    Periksa Lagi
+                    <span data-i18n="studentQuizAttempt.reviewAgain">
+                        Periksa Lagi
+                    </span>
                 </button>
 
 
@@ -390,7 +425,9 @@
                     class="student-quiz-primary-button"
                     type="button"
                 >
-                    Submit Quiz
+                    <span data-i18n="studentQuizAttempt.submitQuiz">
+                        Submit Quiz
+                    </span>
                 </button>
 
             </div>
@@ -401,6 +438,48 @@
 
 
 <script>
+
+    function studentQuizAttemptText(
+        key,
+        variables = {}
+    ) {
+
+        if (
+            window.LMSLanguage &&
+            typeof window.LMSLanguage.t ===
+                "function"
+        ) {
+
+            return window.LMSLanguage.t(
+                `studentQuizAttempt.${key}`,
+                variables
+            );
+
+        }
+
+
+        return key;
+
+    }
+
+
+    function getStudentQuizAttemptLanguage() {
+
+        if (
+            window.LMSLanguage &&
+            typeof window.LMSLanguage
+                .getLanguage === "function"
+        ) {
+
+            return window.LMSLanguage
+                .getLanguage();
+
+        }
+
+
+        return "id";
+
+    }
 
     // =====================================
     // STATE
@@ -597,13 +676,15 @@
             )
         ) {
 
-            return "Tanpa deadline";
+            return studentQuizAttemptText(
+                "noDeadline"
+            );
 
         }
 
 
         return new Intl.DateTimeFormat(
-            "id-ID",
+            getStudentQuizAttemptLanguage(),
             {
                 dateStyle:
                     "long",
@@ -674,7 +755,9 @@
 
 
         saveStatus.textContent =
-            "Jawaban tersimpan di perangkat";
+            studentQuizAttemptText(
+                "answerSaved"
+            );
 
     }
 
@@ -756,7 +839,16 @@
 
 
         studentQuizProgressText.textContent =
-            `${answeredQuestions}/${totalQuestions} dijawab`;
+            studentQuizAttemptText(
+                "answeredProgress",
+                {
+                    answered:
+                        answeredQuestions,
+
+                    total:
+                        totalQuestions
+                }
+            );
 
 
         studentQuizProgressFill.style.width =
@@ -771,8 +863,16 @@
         studentQuizSubmitSummary.textContent =
             emptyQuestions === 0
 
-                ? "Semua soal sudah dijawab."
-                : `${emptyQuestions} soal masih kosong dan akan dihitung salah.`;
+                ? studentQuizAttemptText(
+                    "allQuestionsAnswered"
+                )
+                : studentQuizAttemptText(
+                    "unansweredSummary",
+                    {
+                        count:
+                            emptyQuestions
+                    }
+                );
 
     }
 
@@ -901,7 +1001,13 @@
 
 
         document.title =
-            `${quiz.title} · Quiz`;
+            studentQuizAttemptText(
+                "documentTitle",
+                {
+                    title:
+                        quiz.title
+                }
+            );
 
 
         const hero =
@@ -927,19 +1033,31 @@
                 <p>
                     ${escapeStudentQuizAttemptHtml(
                         quiz.subject ||
-                        "Tanpa mapel"
+                        studentQuizAttemptText(
+                            "noSubject"
+                        )
                     )}
 
                     <span>•</span>
 
                     ${escapeStudentQuizAttemptHtml(
                         quiz.material ||
-                        "Tanpa materi"
+                        studentQuizAttemptText(
+                            "noMaterial"
+                        )
                     )}
 
                     <span>•</span>
 
-                    ${quiz.questions.length} soal
+                    ${escapeStudentQuizAttemptHtml(
+                        studentQuizAttemptText(
+                            "questionCount",
+                            {
+                                count:
+                                    quiz.questions.length
+                            }
+                        )
+                    )}
                 </p>
 
             </div>
@@ -948,7 +1066,11 @@
             <div class="student-quiz-deadline-box">
 
                 <span>
-                    Deadline
+                    ${escapeStudentQuizAttemptHtml(
+                        studentQuizAttemptText(
+                            "deadline"
+                        )
+                    )}
                 </span>
 
                 <strong id="studentQuizDeadlineText">
@@ -962,7 +1084,11 @@
                                 )
                             )
 
-                            : "Tanpa deadline"
+                            : escapeStudentQuizAttemptHtml(
+                                studentQuizAttemptText(
+                                    "noDeadline"
+                                )
+                            )
                     }
 
                 </strong>
@@ -1016,7 +1142,15 @@
                             <div class="student-quiz-question-header">
 
                                 <span class="student-quiz-question-number">
-                                    No. ${questionIndex + 1}
+                                    ${escapeStudentQuizAttemptHtml(
+                                        studentQuizAttemptText(
+                                            "questionNumber",
+                                            {
+                                                number:
+                                                    questionIndex + 1
+                                            }
+                                        )
+                                    )}
                                 </span>
 
 
@@ -1025,8 +1159,16 @@
                                         question.type ===
                                         "essay"
 
-                                            ? "Esai"
-                                            : "1 poin"
+                                            ? escapeStudentQuizAttemptHtml(
+                                                studentQuizAttemptText(
+                                                    "essay"
+                                                )
+                                            )
+                                            : escapeStudentQuizAttemptHtml(
+                                                studentQuizAttemptText(
+                                                    "onePoint"
+                                                )
+                                            )
                                     }
                                 </span>
 
@@ -1058,9 +1200,15 @@ ${
                     src="${escapeStudentQuizAttemptHtml(
                         question.imageUrl
                     )}"
-                    alt="Gambar soal nomor ${
-                        questionIndex + 1
-                    }"
+                    alt="${escapeStudentQuizAttemptHtml(
+                        studentQuizAttemptText(
+                            "questionImageAlt",
+                            {
+                                number:
+                                    questionIndex + 1
+                            }
+                        )
+                    )}"
                     loading="lazy"
                     decoding="async"
                     referrerpolicy="no-referrer"
@@ -1071,7 +1219,11 @@ ${
                 >
 
                 <p hidden>
-                    Gambar tidak dapat dimuat.
+                    ${escapeStudentQuizAttemptHtml(
+                        studentQuizAttemptText(
+                            "imageLoadFailed"
+                        )
+                    )}
                 </p>
             </div>
         `
@@ -1176,14 +1328,22 @@ ${
                                             ">
 
                                                 <label>
-                                                    Jawaban kamu
+                                                    ${escapeStudentQuizAttemptHtml(
+                                                        studentQuizAttemptText(
+                                                            "yourAnswer"
+                                                        )
+                                                    )}
                                                 </label>
 
 
                                                 <textarea
                                                     rows="6"
 
-                                                    placeholder="Tulis jawaban kamu..."
+                                                    placeholder="${escapeStudentQuizAttemptHtml(
+                                                        studentQuizAttemptText(
+                                                            "essayPlaceholder"
+                                                        )
+                                                    )}"
 
                                                     maxlength="5000"
 
@@ -1205,7 +1365,11 @@ ${
                                             <div class="student-quiz-text-answer">
 
                                                 <label>
-                                                    Jawaban kamu
+                                                    ${escapeStudentQuizAttemptHtml(
+                                                        studentQuizAttemptText(
+                                                            "yourAnswer"
+                                                        )
+                                                    )}
                                                 </label>
 
 
@@ -1217,7 +1381,11 @@ ${
                                                         ""
                                                     )}"
 
-                                                    placeholder="Ketik jawaban kamu..."
+                                                    placeholder="${escapeStudentQuizAttemptHtml(
+                                                        studentQuizAttemptText(
+                                                            "shortAnswerPlaceholder"
+                                                        )
+                                                    )}"
 
                                                     maxlength="1000"
 
@@ -1320,7 +1488,9 @@ ${
         ) {
 
             countdownElement.textContent =
-                "Deadline berakhir";
+                studentQuizAttemptText(
+                    "deadlineEnded"
+                );
 
 
             countdownElement.classList.add(
@@ -1333,7 +1503,9 @@ ${
 
 
             submitStudentQuizButton.textContent =
-                "Deadline Berakhir";
+                studentQuizAttemptText(
+                    "deadlineEnded"
+                );
 
 
             clearInterval(
@@ -1389,17 +1561,41 @@ countdownElement.textContent =
 
     days > 0
 
-        ? `${days} hari, ${hours} jam, ${minutes} menit lagi`
+        ? studentQuizAttemptText(
+            "countdownDays",
+            {
+                days,
+                hours,
+                minutes
+            }
+        )
 
         : hours > 0
 
-            ? `${hours} jam, ${minutes} menit lagi`
+            ? studentQuizAttemptText(
+                "countdownHours",
+                {
+                    hours,
+                    minutes
+                }
+            )
 
             : minutes >= 10
 
-                ? `${minutes} menit lagi`
+                ? studentQuizAttemptText(
+                    "countdownMinutes",
+                    {
+                        minutes
+                    }
+                )
 
-                : `${minutes} menit, ${seconds} detik lagi`;
+                : studentQuizAttemptText(
+                    "countdownSeconds",
+                    {
+                        minutes,
+                        seconds
+                    }
+                );
 
 }
 
@@ -1490,7 +1686,9 @@ countdownElement.textContent =
 
                 throw new Error(
                     data.message ||
-                    "Quiz tidak dapat dibuka."
+                    studentQuizAttemptText(
+                        "quizCannotOpenMessage"
+                    )
                 );
 
             }
@@ -1561,7 +1759,11 @@ countdownElement.textContent =
                 <div class="student-quiz-attempt-error">
 
                     <h2>
-                        Quiz tidak dapat dibuka
+                        ${escapeStudentQuizAttemptHtml(
+                            studentQuizAttemptText(
+                                "quizCannotOpen"
+                            )
+                        )}
                     </h2>
 
                     <p>
@@ -1577,7 +1779,11 @@ countdownElement.textContent =
                             returnToStudentQuizDashboard()
                         "
                     >
-                        Kembali ke Dashboard Quiz
+                        ${escapeStudentQuizAttemptHtml(
+                            studentQuizAttemptText(
+                                "backToQuizDashboard"
+                            )
+                        )}
                     </button>
 
                 </div>
@@ -1623,8 +1829,16 @@ countdownElement.textContent =
         message.textContent =
             emptyQuestionCount > 0
 
-                ? `${emptyQuestionCount} soal masih kosong dan akan dihitung salah. Jawaban tidak dapat diubah setelah dikirim.`
-                : "Jawaban tidak dapat diubah setelah dikirim.";
+                ? studentQuizAttemptText(
+                    "submitWarningWithEmpty",
+                    {
+                        count:
+                            emptyQuestionCount
+                    }
+                )
+                : studentQuizAttemptText(
+                    "cannotChangeAfterSubmit"
+                );
 
 
         overlay.hidden =
@@ -1766,7 +1980,9 @@ countdownElement.textContent =
 
 
         submitStudentQuizButton.textContent =
-            "Mengirim...";
+            studentQuizAttemptText(
+                "submitting"
+            );
 
 
         try {
@@ -1846,7 +2062,9 @@ countdownElement.textContent =
 
                 throw new Error(
                     data.message ||
-                    "Gagal mengirim jawaban Quiz."
+                    studentQuizAttemptText(
+                        "submitFailedMessage"
+                    )
                 );
 
             }
@@ -1868,12 +2086,16 @@ countdownElement.textContent =
 
 
             submitStudentQuizButton.textContent =
-                "Submit Quiz";
+                studentQuizAttemptText(
+                    "submitQuiz"
+                );
 
 
             studentQuizSubmitSummary.textContent =
                 error.message ||
-                "Gagal mengirim jawaban Quiz.";
+                studentQuizAttemptText(
+                    "submitFailedMessage"
+                );
 
 
             studentQuizSubmitSummary.classList.add(

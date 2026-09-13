@@ -9,7 +9,9 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>mrsteve.my.id</title>
+<title data-i18n="meta.homeTitle">
+    mrsteve.my.id
+</title>
 
     <link
         rel="icon"
@@ -21,6 +23,9 @@
         rel="stylesheet"
         href="/styles.css"
     >
+
+    <script src="/language.js"></script>
+
 <script
     src="/image-guard.js"
     defer
@@ -49,21 +54,54 @@
 
                 <span class="home-v2-brand-copy">
                     <strong>mrsteve.my.id</strong>
-                    <small>Student & Admin Portal</small>
+                    <small data-i18n="home.portalSubtitle">
+    Portal Siswa & Guru
+</small>
                 </span>
             </a>
 
 <div class="home-v2-top-actions">
 
-<a
-    href="/admin-login.html"
-    class="
-        home-v2-top-admin
-        home-v2-login-button
-    "
->
-    Login Guru
-</a>
+    <div
+        class="home-v2-language-switch"
+        role="group"
+        aria-label="Pilih bahasa"
+        data-i18n-aria-label="language.selectorLabel"
+    >
+
+        <button
+            type="button"
+            class="home-v2-language-option"
+            data-language-option="id"
+            aria-pressed="true"
+            aria-label="Bahasa Indonesia"
+        >
+            ID
+        </button>
+
+        <button
+            type="button"
+            class="home-v2-language-option"
+            data-language-option="en-US"
+            aria-pressed="false"
+            aria-label="English (US)"
+        >
+            EN
+        </button>
+
+    </div>
+
+
+    <a
+        href="/admin-login.html"
+        class="
+            home-v2-top-admin
+            home-v2-login-button
+        "
+        data-i18n="home.teacherLogin"
+    >
+        Login Guru
+    </a>
 
 </div>
 
@@ -80,19 +118,21 @@
 
             <div class="home-v2-hero-content">
 
-                <span class="home-v2-eyebrow">
-                    LEARNING MANAGEMENT SYSTEM
-                </span>
+<span
+    class="home-v2-eyebrow"
+>
+    LEARNING MANAGEMENT SYSTEM
+</span>
 
-                <h1>
-                    Belajar lebih terarah dalam satu ruang.
-                </h1>
+<h1 data-i18n="home.heroTitle">
+    Belajar lebih terarah dalam satu ruang.
+</h1>
 
-                <p>
-                    Akses Classroom Feed, kerjakan quiz,
-                    pantau nilai dan poin, serta dapatkan
-                    informasi sekolah dengan lebih mudah.
-                </p>
+<p data-i18n="home.heroDescription">
+    Akses Classroom Feed, kerjakan quiz,
+    pantau nilai dan poin, serta dapatkan
+    informasi sekolah dengan lebih mudah.
+</p>
 
 <div
     class="
@@ -118,8 +158,10 @@
                 autocomplete="one-time-code"
                 autocapitalize="characters"
                 spellcheck="false"
-                aria-label="Kode siswa"
-                placeholder="Masukkan kode siswa"
+aria-label="Kode siswa"
+data-i18n-aria-label="home.studentCodeLabel"
+placeholder="Masukkan kode siswa"
+data-i18n-placeholder="home.studentCodePlaceholder"
                 required
             >
 
@@ -133,9 +175,9 @@
         home-v2-login-button
     "
 >
-    <span>
-        Masuk
-    </span>
+<span data-i18n="home.enter">
+    Masuk
+</span>
 </button>
 
         </div>
@@ -171,7 +213,9 @@
                             <span></span>
                         </div>
 
-                        <span>Student Dashboard</span>
+<span data-i18n="home.studentDashboard">
+    Dashboard Siswa
+</span>
 
                     </div>
 
@@ -181,56 +225,75 @@
 
                             <span>STUDENT PORTAL</span>
 
-                            <strong>
-                                Selamat datang
-                            </strong>
+<strong data-i18n="home.welcome">
+    Selamat datang
+</strong>
 
-                            <small>
-                                Pantau aktivitas belajar kamu.
-                            </small>
-
-                        </div>
-
-                        <div class="home-v2-preview-stats">
-
-                            <div class="home-v2-preview-stat">
-
-                                <span class="home-v2-preview-icon">
-                                    P
-                                </span>
-
-                                <div>
-                                    <small>Poin Saya</small>
-                                    <strong>120 poin</strong>
-                                </div>
-
-                            </div>
-
-                            <div class="home-v2-preview-stat">
-
-                                <span class="home-v2-preview-icon">
-                                    N
-                                </span>
-
-                                <div>
-                                    <small>Nilai Saya</small>
-                                    <strong>Rata-rata 86</strong>
-                                </div>
-
-                            </div>
+<small data-i18n="home.monitorActivity">
+    Pantau aktivitas belajar kamu.
+</small>
 
                         </div>
+
+<div class="home-v2-preview-stats">
+
+    <div class="home-v2-preview-stat">
+
+        <span class="home-v2-preview-icon">
+            P
+        </span>
+
+        <div class="home-v2-preview-stat-copy">
+
+            <small data-i18n="home.myPoints">
+                Poin Saya
+            </small>
+
+            <strong data-i18n="home.pointsExample">
+                120 poin
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="home-v2-preview-stat">
+
+        <span class="home-v2-preview-icon">
+            N
+        </span>
+
+        <div class="home-v2-preview-stat-copy">
+
+            <small data-i18n="home.myGrades">
+                Nilai Saya
+            </small>
+
+            <strong data-i18n="home.averageExample">
+                Rata-rata 86
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
 
                         <div class="home-v2-preview-quiz">
 
                             <div class="home-v2-preview-quiz-top">
 
                                 <div>
-                                    <span>QUIZ AKTIF</span>
-                                    <strong>Quiz Matematika</strong>
+                                    <span>ACTIVE QUIZ</span>
+<strong data-i18n="home.mathQuiz">
+    Quiz Matematika
+</strong>
                                 </div>
 
-                                <small>8 soal</small>
+                                <small data-i18n="home.questionCount">
+    8 soal
+</small>
 
                             </div>
 
@@ -239,8 +302,13 @@
                             </div>
 
                             <div class="home-v2-preview-quiz-bottom">
-                                <small>5 dari 8 soal dijawab</small>
-                                <strong>Lanjutkan →</strong>
+<small data-i18n="home.answeredCount">
+    5 dari 8 soal dijawab
+</small>
+
+<strong data-i18n="home.continue">
+    Lanjutkan →
+</strong>
                             </div>
 
                         </div>
@@ -252,13 +320,18 @@
                             </span>
 
                             <div>
-                                <strong>Classroom Feed</strong>
-                                <span>
-                                    Informasi kelas terbaru telah dibagikan.
-                                </span>
+<strong data-i18n="home.classroomFeed">
+    Classroom Feed
+</strong>
+
+<span data-i18n="home.feedExample">
+    Informasi kelas terbaru telah dibagikan.
+</span>
                             </div>
 
-                            <small>Baru</small>
+                            <small data-i18n="home.new">
+    Baru
+</small>
 
                         </div>
 
@@ -271,8 +344,13 @@
                     <span>92</span>
 
                     <div>
-                        <strong>Nilai terbaru</strong>
-                        <small>Matematika</small>
+<strong data-i18n="home.latestGrade">
+    Nilai terbaru
+</strong>
+
+<small data-i18n="home.mathematics">
+    Matematika
+</small>
                     </div>
 
                 </div>
@@ -282,8 +360,13 @@
                     <span>Q</span>
 
                     <div>
-                        <strong>Quiz aktif</strong>
-                        <small>Siap dikerjakan</small>
+<strong data-i18n="home.activeQuizTitle">
+    Quiz aktif
+</strong>
+
+<small data-i18n="home.quizReady">
+    Siap dikerjakan
+</small>
                     </div>
 
                 </div>

@@ -173,7 +173,7 @@
 
     <link
         rel="stylesheet"
-        href="/styles.css"
+        href="/styles.css?v=3"
     >
 
 <script
@@ -218,6 +218,7 @@
 </div>
 
 <section
+    id="quizEditorMobileWarning"
     class="quiz-editor-mobile-blocker"
     aria-labelledby="quizEditorMobileTitle"
 >
@@ -225,37 +226,67 @@
     <div class="quiz-editor-mobile-blocker-card">
 
         <span class="quiz-editor-mobile-label">
-            DESKTOP ONLY
+            MOBILE WARNING
         </span>
 
 
         <h1 id="quizEditorMobileTitle">
-            Editor Quiz hanya tersedia di komputer
+            Editor Quiz lebih nyaman di komputer
         </h1>
 
 
         <p>
             Pembuatan dan penyusunan soal membutuhkan
-            layar yang lebih besar serta kontrol mouse.
-            Buka halaman ini melalui komputer atau
-            laptop untuk mengedit Quiz.
+            ruang layar yang cukup. Kamu tetap bisa
+            melanjutkan lewat perangkat ini, tetapi
+            beberapa bagian mungkin terasa lebih sempit.
         </p>
 
 
-        <button
-            type="button"
-            class="admin-primary-button"
-            onclick="
-                window.location.href =
-                    '/admin-quizzes.html'
-            "
-        >
-            Kembali ke Dashboard Quiz
-        </button>
+        <div class="quiz-editor-mobile-actions">
+            <button
+                type="button"
+                class="secondary-button"
+                onclick="window.location.href = '/admin-quizzes.html'"
+            >
+                Kembali
+            </button>
+
+            <button
+                type="button"
+                class="admin-primary-button"
+                onclick="dismissQuizEditorMobileWarning()"
+            >
+                Tetap Lanjut
+            </button>
+        </div>
 
     </div>
 
 </section>
+
+<script>
+    function dismissQuizEditorMobileWarning() {
+        sessionStorage.setItem(
+            "quizEditorMobileWarningDismissed",
+            "1"
+        );
+
+        document.getElementById(
+            "quizEditorMobileWarning"
+        ).hidden = true;
+    }
+
+    if (
+        sessionStorage.getItem(
+            "quizEditorMobileWarningDismissed"
+        ) === "1"
+    ) {
+        document.getElementById(
+            "quizEditorMobileWarning"
+        ).hidden = true;
+    }
+</script>
 
     <!-- =========================
          EDITOR TOPBAR

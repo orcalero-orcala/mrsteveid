@@ -30,6 +30,7 @@
         notificationButton: $(".notification-button"),
         notificationOverlay: $("#studentNotificationOverlay"),
         notificationList: $("#studentNotificationList"),
+        notificationReadAll: $("#studentNotificationReadAll"),
         blocker: $("#studentFeedModerationBlocker"),
         feedContent: $(".feed-page-content"),
         recoveryOverlay: $("#studentFeedRecoveryOverlay"),
@@ -5507,7 +5508,80 @@ await Promise.allSettled(tasks);
 
     function updateBadge(count) {
         ui.notificationBadge.textContent = count > 0 ? String(count) : "";
+
+        if (
+            ui.notificationReadAll &&
+            ui.notificationReadAll.dataset.loading !== "true"
+        ) {
+            ui.notificationReadAll.disabled = count <= 0;
+        }
     }
+
+async function markAllStudentNotificationsRead() {
+    const button = ui.notificationReadAll;
+
+    const unreadItems = $$(
+        ".notification.unread",
+        ui.notificationList
+    );
+
+    if (!button || button.disabled || unreadItems.length === 0) {
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Menyimpan...";
+
+    try {
+        await Promise.all(
+            unreadItems.map(item => {
+                const notificationId = Number(
+                    item.id.replace("notification-", "")
+                );
+
+                if (!Number.isInteger(notificationId)) {
+                    return Promise.resolve();
+                }
+
+                return request(
+                    `/api/notifications/${notificationId}/read`,
+                    {
+                        method: "PATCH"
+                    }
+                );
+            })
+        );
+
+        unreadItems.forEach(item => {
+            item.classList.remove("unread");
+
+            item.querySelector(
+                ".notification-unread-dot"
+            )?.remove();
+        });
+
+        updateBadge(0);
+        button.textContent = "Sudah dibaca";
+    } catch (error) {
+        console.error(
+            "Gagal membaca semua notifikasi siswa:",
+            error
+        );
+
+        button.textContent = "Gagal";
+
+        await loadNotificationPanel();
+    } finally {
+        setTimeout(() => {
+            button.textContent = "Baca Semua";
+
+            button.disabled =
+                !ui.notificationList.querySelector(
+                    ".notification.unread"
+                );
+        }, 800);
+    }
+}
 
     async function loadNotificationCount() {
         if (moderation.status !== "active") return;
@@ -5545,6 +5619,9 @@ await Promise.allSettled(tasks);
     }
 
     async function loadNotificationPanel() {
+if (ui.notificationReadAll) {
+    ui.notificationReadAll.disabled = true;
+}
 ui.notificationList.innerHTML = `
     <div
         class="notification-panel-loading"
@@ -5590,6 +5667,7 @@ document.body.classList.remove(
         if (Number(notification.is_read) === 0) {
             notification.is_read = 1;
             item.classList.remove("unread");
+            item.querySelector(".notification-unread-dot")?.remove();
             updateBadge(Math.max(0, Number(ui.notificationBadge.textContent || 0) - 1));
             request(`/api/notifications/${notification.id}/read`, { method: "PATCH" }).catch(loadNotificationCount);
         }
@@ -5728,7 +5806,8 @@ expandNotificationText(
         goToProfile: () => navigate("/student-profile.html"),
         goToPoints: () => navigate("/student-points.html"),
         goToExamScores: () => navigate("/student-exam-scores.html"),
-        logout, goToNotifications, closeStudentNotifications, acknowledgeStudentFeedRecovery
+        logout, goToNotifications, closeStudentNotifications,
+        markAllStudentNotificationsRead, acknowledgeStudentFeedRecovery
     });
 
 /*

@@ -161,7 +161,9 @@
 
 </style>
 
-    <title>Quiz Siswa</title>
+    <title data-i18n="studentQuizzes.pageTitle">
+        Quiz Siswa
+    </title>
 
         <link
     rel="icon"
@@ -189,6 +191,11 @@
     defer
 ></script>
 
+<script
+    src="/language.js?v=20260913-8"
+    defer
+></script>
+
 </head>
 
 <script src="/student-profile-initial.js"></script>
@@ -203,6 +210,7 @@
     role="status"
     aria-live="polite"
     aria-label="Halaman sedang dimuat"
+    data-i18n-aria-label="studentQuizzes.loadingPage"
 >
     <div class="lms-page-loader-content">
 
@@ -256,7 +264,9 @@
                     "
                 >
                     <span class="nav-icon">◫</span>
-                    Dashboard
+                    <span data-i18n="studentQuizzes.dashboard">
+                        Dashboard
+                    </span>
                 </button>
 
 
@@ -269,7 +279,9 @@
                     "
                 >
                     <span class="nav-icon">S</span>
-                    Profile
+                    <span data-i18n="studentQuizzes.profile">
+                        Profil
+                    </span>
                 </button>
 
 
@@ -282,7 +294,9 @@
                     "
                 >
                     <span class="nav-icon">★</span>
-                    Poin Saya
+                    <span data-i18n="studentQuizzes.myPoints">
+                        Poin Saya
+                    </span>
                 </button>
 
 
@@ -295,7 +309,9 @@
                     "
                 >
                     <span class="nav-icon">▤</span>
-                    Nilai Saya
+                    <span data-i18n="studentQuizzes.myGrades">
+                        Nilai Saya
+                    </span>
                 </button>
 
 
@@ -304,7 +320,9 @@
                     type="button"
                 >
                     <span class="nav-icon">?</span>
-                    Quiz
+                    <span data-i18n="studentQuizzes.quiz">
+                        Quiz
+                    </span>
                 </button>
 
 
@@ -317,13 +335,31 @@
                     "
                 >
                     <span class="nav-icon">◉</span>
-                    Classroom Feed
+                    <span data-i18n="studentQuizzes.classroomFeed">
+                        Feed Kelas
+                    </span>
                 </button>
 
             </nav>
 
 
             <div class="sidebar-bottom">
+
+                <div class="sidebar-language-setting">
+                    <span class="sidebar-language-label">
+                        LANGUAGE
+                    </span>
+
+                    <div
+                        class="home-v2-language-switch sidebar-language-switch"
+                        role="group"
+                        aria-label="Pilih bahasa"
+                        data-i18n-aria-label="language.selectorLabel"
+                    >
+                        <button type="button" class="home-v2-language-option" data-language-option="id" aria-pressed="true" aria-label="Bahasa Indonesia">ID</button>
+                        <button type="button" class="home-v2-language-option" data-language-option="en-US" aria-pressed="false" aria-label="English (US)">EN</button>
+                    </div>
+                </div>
 
                 <div class="sidebar-profile">
 
@@ -351,7 +387,9 @@
                     type="button"
                     onclick="logout()"
                 >
-                    Keluar
+                    <span data-i18n="studentQuizzes.logout">
+                        Keluar
+                    </span>
                 </button>
 
             </div>
@@ -367,12 +405,12 @@
 
                 <div>
 
-                    <h2>
+                    <h2 data-i18n="studentQuizzes.quiz">
                         Quiz
                     </h2>
 
-                    <p>
-                        Quick assessment dan review materi
+                    <p data-i18n="studentQuizzes.summary">
+                        Asesmen singkat dan ulasan materi
                     </p>
 
                 </div>
@@ -405,11 +443,11 @@
                             ONLINE QUIZ
                         </small>
 
-                        <h1>
+                        <h1 data-i18n="studentQuizzes.myQuizzes">
                             Quiz Saya
                         </h1>
 
-                        <p>
+                        <p data-i18n="studentQuizzes.heroDescription">
                             Kerjakan Quiz sebelum deadline
                             dan lihat kembali hasil sebelumnya.
                         </p>
@@ -419,7 +457,7 @@
 
 <div class="points-total-block student-quiz-hero-count">
 
-                        <span>
+                        <span data-i18n="studentQuizzes.availableQuizzes">
                             Quiz tersedia
                         </span>
 
@@ -440,11 +478,11 @@
 
         <div>
 
-            <h2>
+            <h2 data-i18n="studentQuizzes.chooseQuiz">
                 Pilih Quiz
             </h2>
 
-            <p>
+            <p data-i18n="studentQuizzes.chooseQuizDescription">
                 Kerjakan Quiz aktif, periksa Quiz yang
                 terlewat, atau lihat hasil sebelumnya.
             </p>
@@ -461,7 +499,9 @@
                 )
             "
         >
-            Refresh
+            <span data-i18n="studentQuizzes.refresh">
+                Refresh
+            </span>
         </button>
 
     </div>
@@ -471,63 +511,76 @@
         class="student-quiz-status-tabs"
         role="tablist"
         aria-label="Status Quiz"
+        data-i18n-aria-label="studentQuizzes.quizStatus"
     >
 
-        <button
-            class="student-quiz-status-tab active"
-            type="button"
-            data-quiz-tab="active"
-            aria-selected="true"
-            onclick="
-                setStudentQuizTab(
-                    'active'
-                )
-            "
-        >
-            Quiz Aktif
+<button
+    class="student-quiz-status-tab active"
+    type="button"
+    data-quiz-tab="active"
+    aria-selected="true"
+    onclick="setStudentQuizTab('active')"
+>
+    <span
+        class="student-quiz-status-label"
+        data-i18n="studentQuizzes.activeTab"
+    >
+        Quiz Aktif
+    </span>
 
-            <span id="activeQuizTabCount">
-                0
-            </span>
-        </button>
-
-
-        <button
-            class="student-quiz-status-tab"
-            type="button"
-            data-quiz-tab="missing"
-            aria-selected="false"
-            onclick="
-                setStudentQuizTab(
-                    'missing'
-                )
-            "
-        >
-            Quiz Missing
-
-            <span id="missingQuizTabCount">
-                0
-            </span>
-        </button>
+    <span
+        id="activeQuizTabCount"
+        class="student-quiz-status-count"
+    >
+        0
+    </span>
+</button>
 
 
-        <button
-            class="student-quiz-status-tab"
-            type="button"
-            data-quiz-tab="completed"
-            aria-selected="false"
-            onclick="
-                setStudentQuizTab(
-                    'completed'
-                )
-            "
-        >
-            Quiz Selesai
+<button
+    class="student-quiz-status-tab"
+    type="button"
+    data-quiz-tab="missing"
+    aria-selected="false"
+    onclick="setStudentQuizTab('missing')"
+>
+    <span
+        class="student-quiz-status-label"
+        data-i18n="studentQuizzes.missingTab"
+    >
+        Quiz Terlewat
+    </span>
 
-            <span id="completedQuizTabCount">
-                0
-            </span>
-        </button>
+    <span
+        id="missingQuizTabCount"
+        class="student-quiz-status-count"
+    >
+        0
+    </span>
+</button>
+
+
+<button
+    class="student-quiz-status-tab"
+    type="button"
+    data-quiz-tab="completed"
+    aria-selected="false"
+    onclick="setStudentQuizTab('completed')"
+>
+    <span
+        class="student-quiz-status-label"
+        data-i18n="studentQuizzes.completedTab"
+    >
+        Quiz Selesai
+    </span>
+
+    <span
+        id="completedQuizTabCount"
+        class="student-quiz-status-count"
+    >
+        0
+    </span>
+</button>
 
     </div>
 
@@ -537,7 +590,10 @@
         class="student-quiz-tab-content"
     >
 
-        <div class="student-quiz-loading">
+        <div
+            class="student-quiz-loading"
+            data-i18n="studentQuizzes.loadingQuizList"
+        >
             Memuat daftar Quiz...
         </div>
 
@@ -550,6 +606,48 @@
 
 <script>
 
+    function studentQuizText(
+        key,
+        variables = {}
+    ) {
+
+        if (
+            window.LMSLanguage &&
+            typeof window.LMSLanguage.t ===
+                "function"
+        ) {
+
+            return window.LMSLanguage.t(
+                `studentQuizzes.${key}`,
+                variables
+            );
+
+        }
+
+
+        return key;
+
+    }
+
+
+    function getStudentQuizLanguage() {
+
+        if (
+            window.LMSLanguage &&
+            typeof window.LMSLanguage
+                .getLanguage === "function"
+        ) {
+
+            return window.LMSLanguage
+                .getLanguage();
+
+        }
+
+
+        return "id";
+
+    }
+
     const studentId =
         localStorage.getItem(
             "studentId"
@@ -560,14 +658,18 @@
         localStorage.getItem(
             "studentName"
         ) ||
-        "Student";
+        studentQuizText(
+            "defaultStudent"
+        );
 
 
     const studentClass =
         localStorage.getItem(
             "studentClass"
         ) ||
-        "Kelas";
+        studentQuizText(
+            "defaultClass"
+        );
 
 
     if (!studentId) {
@@ -616,6 +718,10 @@ let studentAvailableQuizzes =
 
 let studentCompletedQuizzes =
     [];
+
+
+let studentQuizDashboardLoaded =
+    false;
 
 
 let currentStudentQuizTab =
@@ -728,13 +834,15 @@ let currentStudentQuizTab =
             )
         ) {
 
-            return "Tanpa deadline";
+            return studentQuizText(
+                "noDeadline"
+            );
 
         }
 
 
         return new Intl.DateTimeFormat(
-            "id-ID",
+            getStudentQuizLanguage(),
             {
                 dateStyle:
                     "medium",
@@ -776,7 +884,9 @@ let currentStudentQuizTab =
 
             return {
                 label:
-                    "Tanpa deadline",
+                    studentQuizText(
+                        "noDeadline"
+                    ),
 
                 urgency:
                     "normal"
@@ -796,7 +906,9 @@ let currentStudentQuizTab =
 
             return {
                 label:
-                    "Deadline berakhir",
+                    studentQuizText(
+                        "deadlineEnded"
+                    ),
 
                 urgency:
                     "expired"
@@ -833,7 +945,13 @@ if (
 
     return {
         label:
-            `${remainingMinutes} menit lagi`,
+            studentQuizText(
+                "minutesRemaining",
+                {
+                    count:
+                        remainingMinutes
+                }
+            ),
 
         urgency:
             "urgent"
@@ -859,7 +977,13 @@ if (
 
             return {
                 label:
-                    `${remainingHours} jam lagi`,
+                    studentQuizText(
+                        "hoursRemaining",
+                        {
+                            count:
+                                remainingHours
+                        }
+                    ),
 
                 urgency:
                     "urgent"
@@ -877,7 +1001,13 @@ if (
 
         return {
             label:
-                `${remainingDays} hari lagi`,
+                studentQuizText(
+                    "daysRemaining",
+                    {
+                        count:
+                            remainingDays
+                    }
+                ),
 
             urgency:
                 remainingDays <= 3
@@ -1138,12 +1268,19 @@ function renderStudentActiveQuizzes() {
             <div class="student-quiz-empty-state">
 
                 <h3>
-                    Tidak ada Quiz aktif
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noActiveQuiz"
+                        )
+                    )}
                 </h3>
 
                 <p>
-                    Belum ada Quiz yang dapat
-                    dikerjakan sekarang.
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noActiveQuizDescription"
+                        )
+                    )}
                 </p>
 
             </div>
@@ -1171,20 +1308,32 @@ function renderStudentActiveQuizzes() {
                     quiz.dueAt
 
                         ? `
-                            Deadline ·
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "deadline"
+                                )
+                            )} ·
                             ${escapeStudentQuizHtml(
                                 remaining.label
                             )}
                         `
 
-                        : "Tidak ada deadline";
+                        : escapeStudentQuizHtml(
+                            studentQuizText(
+                                "noDeadline"
+                            )
+                        );
 
 
                 const deadlineInformation =
                     quiz.dueAt
 
                         ? `
-                            Deadline
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "deadline"
+                                )
+                            )}
                             ${escapeStudentQuizHtml(
                                 formatStudentQuizDate(
                                     quiz.dueAt
@@ -1192,7 +1341,11 @@ function renderStudentActiveQuizzes() {
                             )}
                         `
 
-                        : "Dapat dikerjakan kapan saja";
+                        : escapeStudentQuizHtml(
+                            studentQuizText(
+                                "availableAnytime"
+                            )
+                        );
 
 
                 return `
@@ -1226,7 +1379,15 @@ function renderStudentActiveQuizzes() {
 
 
     <span class="student-quiz-question-total">
-        ${quiz.questionCount} soal
+        ${escapeStudentQuizHtml(
+            studentQuizText(
+                "questionCount",
+                {
+                    count:
+                        quiz.questionCount
+                }
+            )
+        )}
     </span>
 
 </div>
@@ -1242,14 +1403,18 @@ function renderStudentActiveQuizzes() {
                             <p>
                                 ${escapeStudentQuizHtml(
                                     quiz.subject ||
-                                    "Tanpa mapel"
+                                    studentQuizText(
+                                        "noSubject"
+                                    )
                                 )}
 
                                 <span>•</span>
 
                                 ${escapeStudentQuizHtml(
                                     quiz.material ||
-                                    "Tanpa materi"
+                                    studentQuizText(
+                                        "noMaterial"
+                                    )
                                 )}
                             </p>
 
@@ -1272,7 +1437,11 @@ function renderStudentActiveQuizzes() {
         )
     "
 >
-    Kerjakan
+    ${escapeStudentQuizHtml(
+        studentQuizText(
+            "startQuiz"
+        )
+    )}
 </button>
 
                     </article>
@@ -1280,6 +1449,49 @@ function renderStudentActiveQuizzes() {
 
             }
         ).join("");
+
+}
+
+
+function getStudentQuizMissingReason(
+    reason
+) {
+
+    const normalizedReason =
+        String(
+            reason ||
+            ""
+        ).trim();
+
+
+    if (
+        normalizedReason ===
+        "Quiz ditutup oleh Guru"
+    ) {
+
+        return studentQuizText(
+            "closedByTeacher"
+        );
+
+    }
+
+
+    if (
+        normalizedReason ===
+        "Deadline telah berakhir"
+    ) {
+
+        return studentQuizText(
+            "deadlineEnded"
+        );
+
+    }
+
+
+    return normalizedReason ||
+        studentQuizText(
+            "quizUnavailable"
+        );
 
 }
 
@@ -1305,12 +1517,19 @@ function renderStudentMissingQuizzes() {
             <div class="student-quiz-empty-state">
 
                 <h3>
-                    Tidak ada Quiz Missing
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noMissingQuiz"
+                        )
+                    )}
                 </h3>
 
                 <p>
-                    Kamu tidak mempunyai Quiz yang
-                    terlewat atau ditutup Guru.
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noMissingQuizDescription"
+                        )
+                    )}
                 </p>
 
             </div>
@@ -1329,15 +1548,20 @@ function renderStudentMissingQuizzes() {
             ) => {
 
                 const reason =
-                    quiz.missingReason ||
-                    "Quiz tidak tersedia";
+                    getStudentQuizMissingReason(
+                        quiz.missingReason
+                    );
 
 
                 const deadlineInformation =
                     quiz.dueAt
 
                         ? `
-                            Deadline
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "deadline"
+                                )
+                            )}
                             ${escapeStudentQuizHtml(
                                 formatStudentQuizDate(
                                     quiz.dueAt
@@ -1345,7 +1569,11 @@ function renderStudentMissingQuizzes() {
                             )}
                         `
 
-                        : "Tidak ada deadline";
+                        : escapeStudentQuizHtml(
+                            studentQuizText(
+                                "noDeadline"
+                            )
+                        );
 
 
                 return `
@@ -1373,7 +1601,15 @@ function renderStudentMissingQuizzes() {
 
 
     <span class="student-quiz-question-total">
-        ${quiz.questionCount} soal
+        ${escapeStudentQuizHtml(
+            studentQuizText(
+                "questionCount",
+                {
+                    count:
+                        quiz.questionCount
+                }
+            )
+        )}
     </span>
 
 </div>
@@ -1389,14 +1625,18 @@ function renderStudentMissingQuizzes() {
                             <p>
                                 ${escapeStudentQuizHtml(
                                     quiz.subject ||
-                                    "Tanpa mapel"
+                                    studentQuizText(
+                                        "noSubject"
+                                    )
                                 )}
 
                                 <span>•</span>
 
                                 ${escapeStudentQuizHtml(
                                     quiz.material ||
-                                    "Tanpa materi"
+                                    studentQuizText(
+                                        "noMaterial"
+                                    )
                                 )}
                             </p>
 
@@ -1409,7 +1649,11 @@ function renderStudentMissingQuizzes() {
 
 
                         <span class="student-quiz-missing-lock">
-                            Tidak dapat dikerjakan
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "cannotAttempt"
+                                )
+                            )}
                         </span>
 
                     </article>
@@ -1432,12 +1676,19 @@ function renderStudentCompletedQuizzes() {
             <div class="student-quiz-empty-state">
 
                 <h3>
-                    Belum ada Quiz selesai
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noCompletedQuiz"
+                        )
+                    )}
                 </h3>
 
                 <p>
-                    Hasil akan muncul setelah kamu
-                    mengirim jawaban Quiz.
+                    ${escapeStudentQuizHtml(
+                        studentQuizText(
+                            "noCompletedQuizDescription"
+                        )
+                    )}
                 </p>
 
             </div>
@@ -1487,7 +1738,11 @@ function renderStudentCompletedQuizzes() {
                     <div class="student-quiz-history-score">
 
                         <span>
-                            Nilai
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "score"
+                                )
+                            )}
                         </span>
 
                         <strong>
@@ -1520,7 +1775,9 @@ function renderStudentCompletedQuizzes() {
                             <span>
                                 ${escapeStudentQuizHtml(
                                     attempt.subject ||
-                                    "Tanpa mapel"
+                                    studentQuizText(
+                                        "noSubject"
+                                    )
                                 )}
                             </span>
                             <strong>
@@ -1535,11 +1792,19 @@ function renderStudentCompletedQuizzes() {
                                         ? `
                                             ${attempt.correctCount}/${
                                                 attempt.totalQuestions
-                                            } Benar
+                                            } ${escapeStudentQuizHtml(
+                                                studentQuizText(
+                                                    "correct"
+                                                )
+                                            )}
                                         `
 
                                         : `
-                                            Esai · Tidak dinilai otomatis
+                                            ${escapeStudentQuizHtml(
+                                                studentQuizText(
+                                                    "essayNotAutoGraded"
+                                                )
+                                            )}
                                         `
                                 }
 
@@ -1549,7 +1814,11 @@ function renderStudentCompletedQuizzes() {
 
 
                         <small>
-                            Dikirim
+                            ${escapeStudentQuizHtml(
+                                studentQuizText(
+                                    "submitted"
+                                )
+                            )}
                             ${escapeStudentQuizHtml(
                                 formatStudentQuizDate(
                                     attempt.submittedAt
@@ -1571,7 +1840,11 @@ function renderStudentCompletedQuizzes() {
         )
     "
 >
-    Lihat Hasil
+    ${escapeStudentQuizHtml(
+        studentQuizText(
+            "viewResult"
+        )
+    )}
 </button>
 
                 </article>
@@ -1636,7 +1909,11 @@ if (forceReload) {
 
     studentQuizTabContent.innerHTML = `
         <div class="student-quiz-loading">
-            Memuat ulang Quiz...
+            ${escapeStudentQuizHtml(
+                studentQuizText(
+                    "reloadingQuizzes"
+                )
+            )}
         </div>
     `;
 
@@ -1688,7 +1965,9 @@ if (forceReload) {
 
                 throw new Error(
                     data.message ||
-                    "Gagal memuat Quiz."
+                    studentQuizText(
+                        "fetchFailed"
+                    )
                 );
 
             }
@@ -1743,6 +2022,10 @@ studentCompletedQuizzes =
         : [];
 
 
+studentQuizDashboardLoaded =
+    true;
+
+
 updateStudentQuizTabCounts();
 
 renderCurrentStudentQuizTab();
@@ -1759,7 +2042,11 @@ renderCurrentStudentQuizTab();
     <div class="student-quiz-empty-state">
 
         <h3>
-            Gagal memuat Quiz
+            ${escapeStudentQuizHtml(
+                studentQuizText(
+                    "loadFailed"
+                )
+            )}
         </h3>
 
         <p>
@@ -1777,7 +2064,11 @@ renderCurrentStudentQuizTab();
                 )
             "
         >
-            Coba Lagi
+            ${escapeStudentQuizHtml(
+                studentQuizText(
+                    "retry"
+                )
+            )}
         </button>
 
     </div>
@@ -1925,6 +2216,65 @@ studentQuizTabContent.addEventListener(
         );
 
     }
+);
+
+
+function refreshStudentQuizLanguage() {
+
+    if (
+        !localStorage.getItem(
+            "studentName"
+        )
+    ) {
+
+        document.getElementById(
+            "sidebarStudentName"
+        ).textContent =
+            studentQuizText(
+                "defaultStudent"
+            );
+
+
+        document.getElementById(
+            "topStudentName"
+        ).textContent =
+            studentQuizText(
+                "defaultStudent"
+            );
+
+    }
+
+
+    if (
+        !localStorage.getItem(
+            "studentClass"
+        )
+    ) {
+
+        document.getElementById(
+            "sidebarStudentClass"
+        ).textContent =
+            studentQuizText(
+                "defaultClass"
+            );
+
+    }
+
+
+    if (
+        studentQuizDashboardLoaded
+    ) {
+
+        renderCurrentStudentQuizTab();
+
+    }
+
+}
+
+
+document.addEventListener(
+    "lmslanguagechange",
+    refreshStudentQuizLanguage
 );
 
 

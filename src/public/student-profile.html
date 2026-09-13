@@ -161,7 +161,9 @@
 
 </style>
 
-    <title>Profil Siswa</title>
+<title data-i18n="studentProfile.pageTitle">
+    Profil Siswa
+</title>
 
     <link
         rel="icon"
@@ -2470,6 +2472,11 @@ body.is-profile-modal-open
     defer
 ></script>
 
+<script
+    src="/language.js"
+    defer
+></script>
+
 </head>
 
 
@@ -2480,7 +2487,8 @@ body.is-profile-modal-open
     class="lms-page-loader is-visible"
     role="status"
     aria-live="polite"
-    aria-label="Halaman sedang dimuat"
+data-i18n-aria-label="studentProfile.loadingPage"
+aria-label="Halaman sedang dimuat"
 >
     <div class="lms-page-loader-content">
 
@@ -2524,91 +2532,116 @@ body.is-profile-modal-open
             </div>
 
 
-            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToDashboard()"
-                >
-                    <span class="nav-icon">
-                        ◫
-                    </span>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToDashboard()"
+    >
+        <span class="nav-icon">◫</span>
 
-                    Dashboard
-                </button>
+        <span data-i18n="studentProfile.dashboard">
+            Dashboard
+        </span>
+    </button>
 
+    <button
+        class="nav-item active"
+        type="button"
+    >
+        <span class="nav-icon">S</span>
 
-                <button
-                    class="nav-item active"
-                    type="button"
-                >
-                    <span class="nav-icon">
-                        S
-                    </span>
+        <span data-i18n="studentProfile.profile">
+            Profil
+        </span>
+    </button>
 
-                    Profile
-                </button>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToPoints()"
+    >
+        <span class="nav-icon">★</span>
 
+        <span data-i18n="studentProfile.myPoints">
+            Poin Saya
+        </span>
+    </button>
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToPoints()"
-                >
-                    <span class="nav-icon">
-                        ★
-                    </span>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToExamScores()"
+    >
+        <span class="nav-icon">▤</span>
 
-                    Poin Saya
-                </button>
+        <span data-i18n="studentProfile.myGrades">
+            Nilai Saya
+        </span>
+    </button>
 
+    <button
+        class="nav-item"
+        type="button"
+        onclick="
+            window.location.href =
+                '/student-quizzes.html'
+        "
+    >
+        <span class="nav-icon">?</span>
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToExamScores()"
-                >
-                    <span class="nav-icon">
-                        ▤
-                    </span>
+        <span data-i18n="studentProfile.quiz">
+            Quiz
+        </span>
+    </button>
 
-                    Nilai Saya
-                </button>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToAnnouncements()"
+    >
+        <span class="nav-icon">◉</span>
 
+        <span data-i18n="studentProfile.classroomFeed">
+            Feed Kelas
+        </span>
+    </button>
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="
-                        window.location.href =
-                            '/student-quizzes.html'
-                    "
-                >
-                    <span class="nav-icon">
-                        ?
-                    </span>
-
-                    Quiz
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToAnnouncements()"
-                >
-                    <span class="nav-icon">
-                        ◉
-                    </span>
-
-                    Classroom Feed
-                </button>
-
-            </nav>
+</nav>
 
 
             <div class="sidebar-bottom">
+
+                <div class="sidebar-language-setting">
+
+    <span class="sidebar-language-label">
+        LANGUAGE
+    </span>
+
+    <div
+        class="home-v2-language-switch sidebar-language-switch"
+        role="group"
+        aria-label="Language"
+    >
+        <button
+            type="button"
+            class="home-v2-language-option"
+            data-language-option="id"
+        >
+            ID
+        </button>
+
+        <button
+            type="button"
+            class="home-v2-language-option"
+            data-language-option="en-US"
+        >
+            EN
+        </button>
+    </div>
+
+</div>
 
                 <div class="sidebar-profile">
 
@@ -2655,11 +2688,17 @@ body.is-profile-modal-open
 
                 <div>
 
-<h2 id="studentProfileTopbarTitle">
-    Profile
+<h2
+    id="studentProfileTopbarTitle"
+    data-i18n="studentProfile.profile"
+>
+    Profil
 </h2>
 
-<p id="studentProfileTopbarDescription">
+<p
+    id="studentProfileTopbarDescription"
+    data-i18n="studentProfile.profileSummary"
+>
     Informasi akun dan ringkasan akademik
 </p>
 
@@ -2712,8 +2751,11 @@ body.is-profile-modal-open
         </svg>
 
 
-<span id="studentSearchTopbarLabel">
-    Directory
+<span
+    id="studentSearchTopbarLabel"
+    data-i18n="studentProfile.directory"
+>
+    Direktori
 </span>
 
     </button>
@@ -2772,13 +2814,18 @@ body.is-profile-modal-open
 
     <div class="student-profile-identity">
 
-        <h1 id="profileFullName">
-            Memuat profil...
-        </h1>
+<h1 id="profileFullName">
+    <span data-i18n="studentProfile.loadingProfile">
+        Memuat profil...
+    </span>
+</h1>
 
-        <p id="profileIdentityMeta">
-            Akun siswa
-        </p>
+<p
+    id="profileIdentityMeta"
+    data-i18n="studentProfile.studentAccount"
+>
+    Akun siswa
+</p>
 
 <p
     class="student-profile-bio is-loading"
@@ -2792,6 +2839,7 @@ body.is-profile-modal-open
         type="button"
         class="student-profile-customize-button"
         onclick="openProfileCustomization()"
+        data-i18n="studentProfile.customizeProfile"
     >
 
         <svg
@@ -2833,9 +2881,9 @@ body.is-profile-modal-open
 
                                 <div>
 
-                                    <span>
-                                        Total Poin
-                                    </span>
+                                    <span data-i18n="studentProfile.totalPoints">
+    Total Poin
+</span>
 
                                     <strong id="profilePoints">
                                         -
@@ -2864,9 +2912,9 @@ body.is-profile-modal-open
 
                                 <div>
 
-                                    <span>
-                                        Nilai Rata-rata
-                                    </span>
+<span data-i18n="studentProfile.averageScore">
+    Nilai Rata-rata
+</span>
 
                                     <strong id="profileAverage">
                                         -
@@ -2893,9 +2941,9 @@ body.is-profile-modal-open
 
                                 <div>
 
-                                    <span>
-                                        Kelas
-                                    </span>
+<span data-i18n="studentProfile.class">
+    Kelas
+</span>
 
                                     <strong id="profileClassSummary">
                                         -
@@ -2920,19 +2968,19 @@ body.is-profile-modal-open
 
                         <div>
 
-                            <h2>
-                                Informasi Siswa
-                            </h2>
+<h2 data-i18n="studentProfile.studentInformation">
+    Informasi Siswa
+</h2>
 
-                            <p>
-                                Data identitas yang terhubung dengan akun.
-                            </p>
+<p data-i18n="studentProfile.studentInformationDescription">
+    Data identitas yang terhubung dengan akun.
+</p>
 
                         </div>
 
-                        <span class="student-profile-account-badge">
-                            AKUN SISWA
-                        </span>
+<span class="student-profile-account-badge">
+    STUDENT ACCOUNT
+</span>
 
                     </div>
 
@@ -2944,9 +2992,9 @@ body.is-profile-modal-open
 
                             <div>
 
-                                <span>
-                                    Nama Pendek
-                                </span>
+<span data-i18n="studentProfile.shortName">
+    Nama Pendek
+</span>
 
                                 <strong id="profileShortName">
                                     -
@@ -2970,9 +3018,9 @@ body.is-profile-modal-open
 
                             <div>
 
-                                <span>
-                                    Kode Siswa
-                                </span>
+<span data-i18n="studentProfile.studentCode">
+    Kode Siswa
+</span>
 
                                 <strong id="profileCode">
                                     -
@@ -2998,9 +3046,9 @@ body.is-profile-modal-open
 
                             <div>
 
-                                <span>
-                                    Tanggal Lahir
-                                </span>
+<span data-i18n="studentProfile.dateOfBirth">
+    Tanggal Lahir
+</span>
 
                                 <strong id="profileDob">
                                     -
@@ -3026,9 +3074,9 @@ body.is-profile-modal-open
 
                             <div>
 
-                                <span>
-                                    Kelas
-                                </span>
+<span data-i18n="studentProfile.class">
+    Kelas
+</span>
 
                                 <strong id="profileClass">
                                     -
@@ -3070,13 +3118,18 @@ body.is-profile-modal-open
     SCHOOL DIRECTORY
 </span>
 
-<h1 class="student-directory-heading">
+<h1
+    class="student-directory-heading"
+    data-i18n="studentProfile.searchHeading"
+>
     Cari siswa dan guru sekolahmu
 </h1>
 
-<p class="student-directory-description">
-    Cari siswa atau guru berdasarkan nama,
-    kelas, atau mata pelajaran.
+<p
+    class="student-directory-description"
+    data-i18n="studentProfile.searchDescription"
+>
+    Cari berdasarkan nama, kelas, atau mata pelajaran.
 </p>
 
 
@@ -3102,34 +3155,37 @@ body.is-profile-modal-open
                         ></path>
                     </svg>
 
-                    <input
-                        type="search"
-                        class="student-directory-input"
-                        data-directory-input
-                        maxlength="80"
-                        autocomplete="off"
-                        placeholder="Cari nama, kelas, atau mata pelajaran..."
-                    >
+<input
+    type="search"
+    class="student-directory-input"
+    data-directory-input
+    maxlength="80"
+    autocomplete="off"
+    placeholder="Cari nama, kelas, atau mata pelajaran..."
+    data-i18n-placeholder="studentProfile.searchPlaceholder"
+>
 
                 </div>
 
-                <button
-                    type="submit"
-                    class="student-directory-submit student-modern-primary-button"
-                    data-directory-submit
-                >
-                    Cari
-                </button>
+<button
+    type="submit"
+    class="student-directory-submit student-modern-primary-button"
+    data-directory-submit
+    data-i18n="studentProfile.search"
+>
+    Cari
+</button>
 
             </form>
 
 
-            <p
-                class="student-directory-status"
-                data-directory-status
-            >
-                Ketik minimal 2 karakter untuk mulai mencari.
-            </p>
+<p
+    class="student-directory-status"
+    data-directory-status
+    data-i18n="studentProfile.searchHint"
+>
+    Ketik minimal 2 karakter untuk mulai mencari.
+</p>
 
         </div>
 
@@ -3183,12 +3239,13 @@ body.is-profile-modal-open
                     data-directory-profile-grid
                 ></div>
 
-                <div
-                    class="student-directory-privacy-note"
-                    data-directory-privacy-note
-                >
-                    Pemilik profil menyembunyikan statistik akademiknya.
-                </div>
+<div
+    class="student-directory-privacy-note"
+    data-directory-privacy-note
+    data-i18n="studentProfile.hiddenAcademicStats"
+>
+    Pemilik profil menyembunyikan statistik akademiknya.
+</div>
 
             </div>
 
@@ -3225,24 +3282,28 @@ body.is-profile-modal-open
                     PROFILE SETTINGS
                 </small>
 
-                <h2 id="profileCustomizationTitle">
-                    Sesuaikan Profil
-                </h2>
+<h2
+    id="profileCustomizationTitle"
+    data-i18n="studentProfile.customizationTitle"
+>
+    Sesuaikan Profil
+</h2>
 
-                <p>
-                    Atur tampilan profil siswa kamu.
-                </p>
+<p data-i18n="studentProfile.customizationDescription">
+    Atur tampilan profil siswa kamu.
+</p>
 
             </div>
 
-            <button
-                type="button"
-                class="profile-customization-close"
-                onclick="closeProfileCustomization()"
-                aria-label="Tutup panel"
-            >
-                ×
-            </button>
+<button
+    type="button"
+    class="profile-customization-close"
+    onclick="closeProfileCustomization()"
+    aria-label="Tutup panel"
+    data-i18n-aria-label="studentProfile.closePanel"
+>
+    ×
+</button>
 
         </header>
 
@@ -3268,11 +3329,11 @@ body.is-profile-modal-open
 
             <div>
 
-<strong>
+<strong data-i18n="studentProfile.customizationNoticeTitle">
     Kustomisasi profil
 </strong>
 
-<span>
+<span data-i18n="studentProfile.customizationNoticeDescription">
     Atur foto profil, bio, dan warna tampilan akun kamu.
 </span>
 
@@ -3305,13 +3366,13 @@ body.is-profile-modal-open
 
         <div>
 
-            <strong>
-                Foto Profil
-            </strong>
+<strong data-i18n="studentProfile.profilePicture">
+    Foto Profil
+</strong>
 
-            <span>
-                Pilih bagian foto yang ingin digunakan.
-            </span>
+<span data-i18n="studentProfile.profilePictureDescription">
+    Pilih bagian foto yang ingin digunakan.
+</span>
 
         </div>
 
@@ -3328,17 +3389,18 @@ body.is-profile-modal-open
 
     <div class="profile-picture-upload-row">
 
-        <button
-            type="button"
-            class="profile-picture-select-button"
-            onclick="openProfilePicturePicker()"
-        >
-            Pilih Foto
-        </button>
+<button
+    type="button"
+    class="profile-picture-select-button"
+    onclick="openProfilePicturePicker()"
+    data-i18n="studentProfile.selectPhoto"
+>
+    Pilih Foto
+</button>
 
-        <span>
-            JPG, PNG, atau WebP · Maksimal 2 MB
-        </span>
+<span data-i18n="studentProfile.acceptedImageFormats">
+    JPG, PNG, atau WebP · Maksimal 2 MB
+</span>
 
     </div>
 
@@ -3351,12 +3413,13 @@ body.is-profile-modal-open
 
         <div class="profile-picture-crop-stage">
 
-            <canvas
-                id="profilePictureCropCanvas"
-                width="320"
-                height="320"
-                aria-label="Area crop foto profil"
-            ></canvas>
+<canvas
+    id="profilePictureCropCanvas"
+    width="320"
+    height="320"
+    aria-label="Area crop foto profil"
+    data-i18n-aria-label="studentProfile.cropArea"
+></canvas>
 
         </div>
 
@@ -3379,15 +3442,16 @@ body.is-profile-modal-open
         <span class="profile-zoom-thumb"></span>
     </div>
 
-    <input
-        type="range"
-        id="profilePictureZoom"
-        min="1"
-        max="3"
-        step="0.01"
-        value="1"
-        aria-label="Zoom foto profil"
-    >
+<input
+    type="range"
+    id="profilePictureZoom"
+    min="1"
+    max="3"
+    step="0.01"
+    value="1"
+    aria-label="Zoom foto profil"
+    data-i18n-aria-label="studentProfile.profileZoom"
+>
 </div>
 
             <button
@@ -3401,9 +3465,12 @@ body.is-profile-modal-open
         </div>
 
 
-        <small class="profile-picture-crop-hint">
-            Geser foto untuk mengatur bagian yang ditampilkan.
-        </small>
+<small
+    class="profile-picture-crop-hint"
+    data-i18n="studentProfile.cropHint"
+>
+    Geser foto untuk mengatur bagian yang ditampilkan.
+</small>
 
     </div>
 
@@ -3418,9 +3485,9 @@ body.is-profile-modal-open
 
         <div>
             <strong>Bio</strong>
-            <span>
-                Tambahkan deskripsi singkat tentang diri kamu.
-            </span>
+<span data-i18n="studentProfile.bioDescription">
+    Tambahkan deskripsi singkat tentang diri kamu.
+</span>
         </div>
 
     </div>
@@ -3431,6 +3498,7 @@ body.is-profile-modal-open
     maxlength="120"
     rows="3"
     placeholder="Tulis bio singkat..."
+    data-i18n-placeholder="studentProfile.bioPlaceholder"
 ></textarea>
 
     <small
@@ -3451,13 +3519,13 @@ body.is-profile-modal-open
 
                 <div>
 
-                    <strong>
-                        Warna Banner
-                    </strong>
+<strong data-i18n="studentProfile.bannerColor">
+    Warna Banner
+</strong>
 
-                    <span>
-                        Pilih warna utama untuk banner profil.
-                    </span>
+<span data-i18n="studentProfile.bannerColorDescription">
+    Pilih warna utama untuk banner profil.
+</span>
 
                 </div>
 
@@ -3471,6 +3539,7 @@ body.is-profile-modal-open
         data-banner-color="blue"
         onclick="selectProfileBannerColor('blue')"
         aria-label="Biru"
+        data-i18n-aria-label="studentProfile.blue"
     ></button>
 
     <button
@@ -3479,6 +3548,7 @@ body.is-profile-modal-open
         data-banner-color="purple"
         onclick="selectProfileBannerColor('purple')"
         aria-label="Ungu"
+        data-i18n-aria-label="studentProfile.purple"
     ></button>
 
     <button
@@ -3487,6 +3557,7 @@ body.is-profile-modal-open
         data-banner-color="green"
         onclick="selectProfileBannerColor('green')"
         aria-label="Hijau"
+        data-i18n-aria-label="studentProfile.green"
     ></button>
 
 <button
@@ -3495,6 +3566,7 @@ body.is-profile-modal-open
     data-banner-color="orange"
     onclick="selectProfileBannerColor('orange')"
     aria-label="Oranye"
+    data-i18n-aria-label="studentProfile.orange"
 ></button>
 
 <button
@@ -3503,6 +3575,7 @@ body.is-profile-modal-open
     data-banner-color="yellow"
     onclick="selectProfileBannerColor('yellow')"
     aria-label="Kuning"
+    data-i18n-aria-label="studentProfile.yellow"
 ></button>
 
 <button
@@ -3511,6 +3584,7 @@ body.is-profile-modal-open
     data-banner-color="red"
     onclick="selectProfileBannerColor('red')"
     aria-label="Merah"
+    data-i18n-aria-label="studentProfile.red"
 ></button>
 
             </div>
@@ -3530,14 +3604,13 @@ body.is-profile-modal-open
 
         <div>
 
-            <strong>
-                Privasi Profil
-            </strong>
+<strong data-i18n="studentProfile.profilePrivacy">
+    Privasi Profil
+</strong>
 
-            <span>
-                Izinkan siswa lain melihat total poin
-                dan nilai rata-rata kamu.
-            </span>
+<span data-i18n="studentProfile.profilePrivacyDescription">
+    Izinkan siswa lain melihat total poin dan nilai rata-rata kamu.
+</span>
 
         </div>
 
@@ -3569,19 +3642,21 @@ body.is-profile-modal-open
 
         <footer class="profile-customization-footer">
 
-            <button
-                type="button"
-                class="profile-customization-cancel"
-                onclick="closeProfileCustomization()"
-            >
-                Tutup
-            </button>
+<button
+    type="button"
+    class="profile-customization-cancel"
+    onclick="closeProfileCustomization()"
+    data-i18n="studentProfile.close"
+>
+    Tutup
+</button>
 
 <button
     type="button"
     class="profile-customization-save"
     id="profileCustomizationSaveButton"
     onclick="saveProfileCustomization()"
+    data-i18n="studentProfile.saveChanges"
 >
     Simpan Perubahan
 </button>
@@ -3630,6 +3705,42 @@ const PROFILE_BANNER_BACKGROUNDS = {
         "radial-gradient(circle at 76% 25%, rgba(252, 165, 165, 0.24), transparent 28%), linear-gradient(120deg, #991b1b, #7f1d1d 55%, #2c1519)"
 
 };
+
+function profileText(key, variables = {}) {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage.t ===
+            "function"
+    ) {
+
+        return window.LMSLanguage.t(
+            `studentProfile.${key}`,
+            variables
+        );
+
+    }
+
+    return key;
+
+}
+
+
+function getProfileLanguage() {
+
+    return (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage
+            .getLanguage === "function"
+    )
+        ? window.LMSLanguage.getLanguage()
+        : "id";
+
+}
+
+
+let loadedStudentProfile =
+    null;
 
 
 let currentProfileBio = "";
@@ -3774,9 +3885,9 @@ function renderProfileBio(bio) {
 );
 
 
-    element.textContent =
-        cleanBio ||
-        "Belum ada bio.";
+element.textContent =
+    cleanBio ||
+    profileText("noBio");
 
 
     element.classList.toggle(
@@ -3937,8 +4048,8 @@ function renderProfileAvatar(
         "student-profile-avatar-image";
 
 
-    image.alt =
-        "Foto profil siswa";
+image.alt =
+    profileText("studentAvatar");
 
 
     image.src =
@@ -5059,14 +5170,14 @@ const backIcon =
 
 topbarTitle.textContent =
     isStudentDirectoryOpen
-        ? "Directory"
-        : "Profile";
+        ? profileText("directory")
+        : profileText("profile");
 
 
 topbarDescription.textContent =
     isStudentDirectoryOpen
-        ? "Cari dan lihat profil siswa atau guru"
-        : "Informasi akun dan ringkasan akademik";
+        ? profileText("directorySummary")
+        : profileText("profileSummary");
 
 /*
     Student Search selalu menggunakan
@@ -5091,8 +5202,8 @@ if (isStudentDirectoryOpen) {
 
 buttonLabel.textContent =
     isStudentDirectoryOpen
-        ? "Kembali ke Profile"
-        : "Directory";
+        ? profileText("backToProfile")
+        : profileText("directory");
 
 
 searchIcon.hidden =
@@ -5163,6 +5274,9 @@ backIcon.hidden =
 
                 const student =
                     data.student;
+
+                loadedStudentProfile =
+    student;
 
 
                 const fullName =
@@ -5254,10 +5368,12 @@ renderAllProfileAvatars();
                     fullName;
 
 
-                document.getElementById(
-                    "profileIdentityMeta"
-                ).textContent =
-                    `${className} · Akun siswa`;
+document.getElementById(
+    "profileIdentityMeta"
+).textContent =
+    `${className} · ${profileText(
+        "studentAccount"
+    )}`;
 
 
                 document.getElementById(
@@ -5304,8 +5420,8 @@ renderAllProfileAvatars();
                 ).textContent =
                     student.averageScore === null ||
                     student.averageScore === undefined
-                        ? "Belum ada nilai"
-                        : student.averageScore;
+? profileText("noScore")
+: student.averageScore;
 
 
                 document.getElementById(
@@ -5353,71 +5469,60 @@ renderAllProfileAvatars();
         }
 
 
-        function formatDate(dateString) {
+ function formatDate(dateString) {
 
-            if (!dateString) {
-
-                return "-";
-
-            }
+    if (!dateString) {
+        return "-";
+    }
 
 
-            const parts =
-                dateString.split("-");
+    const parts =
+        String(dateString).split("-");
 
 
-            if (
-                parts.length !== 3
-            ) {
-
-                return dateString;
-
-            }
+    if (parts.length !== 3) {
+        return dateString;
+    }
 
 
-            const [
-                year,
-                month,
-                day
-            ] = parts;
+    const year =
+        Number(parts[0]);
+
+    const month =
+        Number(parts[1]);
+
+    const day =
+        Number(parts[2]);
 
 
-            const months = [
-                "Januari",
-                "Februari",
-                "Maret",
-                "April",
-                "Mei",
-                "Juni",
-                "Juli",
-                "Agustus",
-                "September",
-                "Oktober",
-                "November",
-                "Desember"
-            ];
+    if (
+        !year ||
+        !month ||
+        !day
+    ) {
+        return dateString;
+    }
 
 
-            const monthName =
-                months[
-                    Number(month) - 1
-                ];
-
-
-            if (!monthName) {
-
-                return dateString;
-
-            }
-
-
-            return (
-                `${Number(day)} ` +
-                `${monthName} ` +
-                `${year}`
-            );
-
+    return new Intl.DateTimeFormat(
+        getProfileLanguage(),
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC"
         }
+    ).format(
+        new Date(
+            Date.UTC(
+                year,
+                month - 1,
+                day
+            )
+        )
+    );
+
+}
 
 
         function goToDashboard() {
@@ -5898,6 +6003,114 @@ profilePictureCropCanvas.addEventListener(
 profilePictureCropCanvas.addEventListener(
     "pointercancel",
     finishProfilePictureDrag
+);
+
+function refreshStudentProfileLanguage() {
+
+    const topbarTitle =
+        document.getElementById(
+            "studentProfileTopbarTitle"
+        );
+
+    const topbarDescription =
+        document.getElementById(
+            "studentProfileTopbarDescription"
+        );
+
+    const directoryButtonLabel =
+        document.getElementById(
+            "studentSearchTopbarLabel"
+        );
+
+
+    if (topbarTitle) {
+
+        topbarTitle.textContent =
+            isStudentDirectoryOpen
+                ? profileText("directory")
+                : profileText("profile");
+
+    }
+
+
+    if (topbarDescription) {
+
+        topbarDescription.textContent =
+            isStudentDirectoryOpen
+                ? profileText(
+                    "directorySummary"
+                )
+                : profileText(
+                    "profileSummary"
+                );
+
+    }
+
+
+    if (directoryButtonLabel) {
+
+        directoryButtonLabel.textContent =
+            isStudentDirectoryOpen
+                ? profileText(
+                    "backToProfile"
+                )
+                : profileText(
+                    "directory"
+                );
+
+    }
+
+
+    renderProfileBio(
+        currentProfileBio
+    );
+
+
+    renderAllProfileAvatars();
+
+
+    if (loadedStudentProfile) {
+
+        const className =
+            loadedStudentProfile.className ||
+            "-";
+
+
+        document.getElementById(
+            "profileIdentityMeta"
+        ).textContent =
+            `${className} · ${profileText(
+                "studentAccount"
+            )}`;
+
+
+        document.getElementById(
+            "profileDob"
+        ).textContent =
+            formatDate(
+                loadedStudentProfile.dateOfBirth
+            );
+
+
+        document.getElementById(
+            "profileAverage"
+        ).textContent =
+            loadedStudentProfile
+                .averageScore === null ||
+            loadedStudentProfile
+                .averageScore === undefined
+                ? profileText("noScore")
+                : loadedStudentProfile
+                    .averageScore;
+
+    }
+
+}
+
+
+window.addEventListener(
+    "lmslanguagechange",
+    refreshStudentProfileLanguage
 );
 
 

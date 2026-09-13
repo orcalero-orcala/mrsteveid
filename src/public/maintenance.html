@@ -210,21 +210,8 @@
         }
 
 
-        .description {
-            margin: 15px 0 0;
-
-            color: #9aacbf;
-
-            font-size: 13px;
-            line-height: 1.7;
-
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-
-        .estimate {
-            margin-top: 23px;
+        .maintenance-information-panel {
+            margin-top: 18px;
             padding: 14px 15px;
 
             background: #09131f;
@@ -236,7 +223,8 @@
         }
 
 
-        .estimate span {
+        .maintenance-information-label,
+        .estimate > span {
             display: block;
 
             color: #71849b;
@@ -245,6 +233,24 @@
             font-weight: 700;
             letter-spacing: 0.04em;
             text-transform: uppercase;
+        }
+
+
+        .description {
+            margin: 7px 0 0;
+
+            color: #c2cfdd;
+
+            font-size: 13px;
+            line-height: 1.65;
+
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+
+        .estimate {
+            margin-top: 10px;
         }
 
 
@@ -441,11 +447,17 @@
 
             <svg viewBox="0 0 24 24">
 
+                <path d="M6 2h12"></path>
+
+                <path d="M6 22h12"></path>
+
                 <path
-                    d="M12 3a6 6 0 0 0-4.6 9.8L3 17.2V21h3.8l4..4-4.4A6 6 0 1 0 12 3Z"
+                    d="M8 2v4.5c0 1.2.5 2.3 1.4 3.1L12 12l-2.6 2.4A4.2 4.2 0 0 0 8 17.5V22"
                 ></path>
 
-                <path d="m14.5 7.5 2 2"></path>
+                <path
+                    d="M16 2v4.5c0 1.2-.5 2.3-1.4 3.1L12 12l2.6 2.4a4.2 4.2 0 0 1 1.4 3.1V22"
+                ></path>
 
             </svg>
 
@@ -462,16 +474,27 @@
         </h1>
 
 
-        <p
-            id="maintenanceReason"
-            class="description"
-        >
-            Kami sedang melakukan pembaruan sistem.
-            Silakan coba kembali nanti.
-        </p>
+        <div class="maintenance-information-panel">
+
+            <span class="maintenance-information-label">
+                Alasan
+            </span>
+
+            <p
+                id="maintenanceReason"
+                class="description"
+            >
+                Kami sedang melakukan pembaruan sistem.
+                Silakan coba kembali nanti.
+            </p>
+
+        </div>
 
 
-        <div class="estimate">
+        <div class="
+            estimate
+            maintenance-information-panel
+        ">
 
             <span>
                 Estimasi selesai
@@ -540,6 +563,11 @@
         const retryButton =
             document.getElementById(
                 "retryButton"
+            );
+
+        const retryLabel =
+            retryButton.querySelector(
+                ".retry-label"
             );
 
 
@@ -673,25 +701,37 @@
 
                 try {
 
-                    const stillMaintenance =
-                        await loadMaintenanceStatus(
+                    await Promise.all([
+
+                        loadMaintenanceStatus(
                             true
-                        );
+                        ),
+
+                        new Promise(
+                            resolve => {
+
+                                setTimeout(
+                                    resolve,
+                                    350
+                                );
+
+                            }
+                        )
+
+                    ]);
 
 
-                    if (
-                        stillMaintenance &&
-                        !previewMode
-                    ) {
-
-                        window.location.reload();
-
-                    }
+                    /*
+                        Jika masih maintenance,
+                        halaman tidak direload agar
+                        isi card tidak berkedip.
+                    */
 
 
                 } catch (error) {
 
                     console.error(
+                        "Status website gagal diperiksa:",
                         error
                     );
 

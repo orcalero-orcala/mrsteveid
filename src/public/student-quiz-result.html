@@ -160,7 +160,9 @@
 
 </style>
 
-    <title>Hasil Quiz</title>
+    <title data-i18n="studentQuizResult.pageTitle">
+        Hasil Quiz
+    </title>
 
         <link
     rel="icon"
@@ -187,6 +189,11 @@
     defer
 ></script>
 
+<script
+    src="/language.js?v=20260913-10"
+    defer
+></script>
+
 </head>
 
 <body class="student-result-body">
@@ -197,6 +204,7 @@
     role="status"
     aria-live="polite"
     aria-label="Halaman sedang dimuat"
+    data-i18n-aria-label="studentQuizResult.loadingPage"
 >
     <div class="lms-page-loader-content">
 
@@ -217,6 +225,7 @@
         <div
             id="resultContent"
             class="student-result-loading"
+            data-i18n="studentQuizResult.loadingResult"
         >
             Memuat hasil Quiz...
         </div>
@@ -225,6 +234,48 @@
 
 
     <script>
+
+        function studentQuizResultText(
+            key,
+            variables = {}
+        ) {
+
+            if (
+                window.LMSLanguage &&
+                typeof window.LMSLanguage.t ===
+                    "function"
+            ) {
+
+                return window.LMSLanguage.t(
+                    `studentQuizResult.${key}`,
+                    variables
+                );
+
+            }
+
+
+            return key;
+
+        }
+
+
+        function getStudentQuizResultLanguage() {
+
+            if (
+                window.LMSLanguage &&
+                typeof window.LMSLanguage
+                    .getLanguage === "function"
+            ) {
+
+                return window.LMSLanguage
+                    .getLanguage();
+
+            }
+
+
+            return "id";
+
+        }
 
         const resultContent =
             document.getElementById(
@@ -365,7 +416,7 @@
 
 
             return new Intl.DateTimeFormat(
-                "id-ID",
+                getStudentQuizResultLanguage(),
                 {
                     dateStyle:
                         "long",
@@ -482,19 +533,25 @@ if (
 ) {
 
     resultScoreNote =
-        "Jawaban Esai tidak dinilai otomatis. Nilai akhir akan dibagikan melalui halaman Nilai Saya setelah diperiksa oleh guru.";
+        studentQuizResultText(
+            "essayOnlyScoreNote"
+        );
 
 } else if (
     resultHasEssayQuestions
 ) {
 
     resultScoreNote =
-        "Nilai ini merupakan hasil autograde, bukan nilai akhir. Jawaban Esai tidak dinilai otomatis. Nilai akhir akan dibagikan melalui halaman Nilai Saya setelah diperiksa oleh guru.";
+        studentQuizResultText(
+            "mixedScoreNote"
+        );
 
 } else {
 
     resultScoreNote =
-        "Nilai ini merupakan hasil autograde, bukan nilai akhir. Nilai akhir akan dibagikan melalui halaman Nilai Saya.";
+        studentQuizResultText(
+            "autoGradeScoreNote"
+        );
 
 }
 
@@ -515,7 +572,7 @@ if (
                     <section class="student-result-summary">
 
                         <div class="student-result-eyebrow">
-                            QUIZ SELESAI
+                            QUIZ COMPLETED
                         </div>
 
                         <h1>
@@ -530,13 +587,19 @@ if (
                                 hasAutoGradedQuestions
 
                                     ? `
-                                        Jawaban kamu sudah dikirim dan
-                                        dinilai secara otomatis.
+                                        ${escapeHtml(
+                                            studentQuizResultText(
+                                                "autoGradedSubtitle"
+                                            )
+                                        )}
                                     `
 
                                     : `
-                                        Jawaban Essay kamu sudah berhasil
-                                        dikirim.
+                                        ${escapeHtml(
+                                            studentQuizResultText(
+                                                "essaySubmittedSubtitle"
+                                            )
+                                        )}
                                     `
                             }
 
@@ -557,8 +620,12 @@ if (
 
                                 ${
                                     hasAutoGradedQuestions
-                                        ? "SCORE"
-                                        : "HASIL"
+                                        ? studentQuizResultText(
+                                            "scoreLabel"
+                                        )
+                                        : studentQuizResultText(
+                                            "resultLabel"
+                                        )
                                 }
 
                             </span>
@@ -578,7 +645,11 @@ if (
                                 ${
                                     hasAutoGradedQuestions
                                         ? "/ 100"
-                                        : "Tidak dinilai otomatis"
+                                        : escapeHtml(
+                                            studentQuizResultText(
+                                                "notAutoGraded"
+                                            )
+                                        )
                                 }
 
                             </span>
@@ -599,14 +670,26 @@ if (
             hasAutoGradedQuestions
 
                 ? `
-                    ${attempt.correctCount}
-                    dari
-                    ${attempt.totalQuestions}
-                    soal benar
+                    ${escapeHtml(
+                        studentQuizResultText(
+                            "correctFormula",
+                            {
+                                correct:
+                                    attempt.correctCount,
+
+                                total:
+                                    attempt.totalQuestions
+                            }
+                        )
+                    )}
                 `
 
                 : `
-                    Quiz ini hanya berisi soal Essay
+                    ${escapeHtml(
+                        studentQuizResultText(
+                            "essayOnlyQuiz"
+                        )
+                    )}
                 `
         }
 
@@ -619,12 +702,18 @@ if (
 
                             <div>
 
-                                <span>Mapel</span>
+                                <span>${escapeHtml(
+                                    studentQuizResultText(
+                                        "subject"
+                                    )
+                                )}</span>
 
                                 <strong>
                                     ${escapeHtml(
                                         attempt.subject ||
-                                        "Tanpa mapel"
+                                        studentQuizResultText(
+                                            "noSubject"
+                                        )
                                     )}
                                 </strong>
 
@@ -632,12 +721,18 @@ if (
 
                             <div>
 
-                                <span>Materi</span>
+                                <span>${escapeHtml(
+                                    studentQuizResultText(
+                                        "material"
+                                    )
+                                )}</span>
 
                                 <strong>
                                     ${escapeHtml(
                                         attempt.material ||
-                                        "Tanpa materi"
+                                        studentQuizResultText(
+                                            "noMaterial"
+                                        )
                                     )}
                                 </strong>
 
@@ -645,7 +740,11 @@ if (
 
                             <div>
 
-                                <span>Dikirim</span>
+                                <span>${escapeHtml(
+                                    studentQuizResultText(
+                                        "submitted"
+                                    )
+                                )}</span>
 
                                 <strong>
                                     ${escapeHtml(
@@ -667,7 +766,11 @@ if (
                                 class="student-result-primary-button"
                                 onclick="showReview()"
                             >
-                                Lihat Quiz
+                                ${escapeHtml(
+                                    studentQuizResultText(
+                                        "viewQuiz"
+                                    )
+                                )}
                             </button>
 
                             <button
@@ -675,7 +778,11 @@ if (
                                 class="student-result-secondary-button"
                                 onclick="goToQuizDashboard()"
                             >
-                                Kembali ke Dashboard Quiz
+                                ${escapeHtml(
+                                    studentQuizResultText(
+                                        "backToQuizDashboard"
+                                    )
+                                )}
                             </button>
 
                         </div>
@@ -711,23 +818,35 @@ if (
 
             const statusText =
                 isEssay
-                    ? "Jawaban Esai"
+                    ? studentQuizResultText(
+                        "essayAnswer"
+                    )
                     : answer.isCorrect
-                        ? "Benar"
-                        : "Salah";
+                        ? studentQuizResultText(
+                            "correct"
+                        )
+                        : studentQuizResultText(
+                            "incorrect"
+                        );
 
 
             const questionType =
                 answer.type ===
                 "mcq"
 
-                    ? "Pilihan Ganda"
+                    ? studentQuizResultText(
+                        "multipleChoice"
+                    )
 
                     : answer.type ===
                         "essay"
 
-                        ? "Esai"
-                        : "Isian Singkat";
+                        ? studentQuizResultText(
+                            "essay"
+                        )
+                        : studentQuizResultText(
+                            "shortAnswer"
+                        );
 
 
             /*
@@ -746,7 +865,11 @@ if (
                         <div class="student-review-answer correct-answer">
 
                             <span>
-                                Jawaban benar
+                                ${escapeHtml(
+                                    studentQuizResultText(
+                                        "correctAnswer"
+                                    )
+                                )}
                             </span>
 
                             <strong>
@@ -767,7 +890,15 @@ if (
                     <div class="student-review-card-header">
 
                         <span class="student-review-number">
-                            No. ${answerIndex + 1}
+                            ${escapeHtml(
+                                studentQuizResultText(
+                                    "questionNumber",
+                                    {
+                                        number:
+                                            answerIndex + 1
+                                    }
+                                )
+                            )}
                         </span>
 
                         <span class="student-review-type">
@@ -808,9 +939,15 @@ ${
                     src="${escapeHtml(
                         answer.imageUrl
                     )}"
-                    alt="Gambar soal nomor ${
-                        answerIndex + 1
-                    }"
+                    alt="${escapeHtml(
+                        studentQuizResultText(
+                            "questionImageAlt",
+                            {
+                                number:
+                                    answerIndex + 1
+                            }
+                        )
+                    )}"
                     loading="lazy"
                     decoding="async"
                     referrerpolicy="no-referrer"
@@ -821,7 +958,11 @@ ${
                 >
 
                 <p hidden>
-                    Gambar tidak dapat dimuat.
+                    ${escapeHtml(
+                        studentQuizResultText(
+                            "imageLoadFailed"
+                        )
+                    )}
                 </p>
             </div>
         `
@@ -833,7 +974,11 @@ ${
                     <div class="student-review-answer">
 
                         <span>
-                            Jawaban kamu
+                            ${escapeHtml(
+                                studentQuizResultText(
+                                    "yourAnswer"
+                                )
+                            )}
                         </span>
 
                         <strong>${escapeHtml(
@@ -883,7 +1028,7 @@ ${
                         <div>
 
                             <span class="student-result-eyebrow">
-                                REVIEW JAWABAN
+                                ANSWER REVIEW
                             </span>
 
                             <h1>
@@ -893,8 +1038,11 @@ ${
                             </h1>
 
                             <p>
-                                Periksa jawaban yang benar dan
-                                bagian yang perlu dipelajari lagi.
+                                ${escapeHtml(
+                                    studentQuizResultText(
+                                        "reviewDescription"
+                                    )
+                                )}
                             </p>
 
                         </div>
@@ -902,7 +1050,11 @@ ${
 
                         <div class="student-review-score">
 
-                            <span>Nilai</span>
+                            <span>${escapeHtml(
+                                studentQuizResultText(
+                                    "grade"
+                                )
+                            )}</span>
 
                             <strong>
 
@@ -920,14 +1072,26 @@ ${
                                     hasAutoGradedQuestions
 
                                         ? `
-                                            ${attempt.correctCount}
-                                            /
-                                            ${attempt.totalQuestions}
-                                            benar
+                                            ${escapeHtml(
+                                                studentQuizResultText(
+                                                    "correctCount",
+                                                    {
+                                                        correct:
+                                                            attempt.correctCount,
+
+                                                        total:
+                                                            attempt.totalQuestions
+                                                    }
+                                                )
+                                            )}
                                         `
 
                                         : `
-                                            Tidak dinilai otomatis
+                                            ${escapeHtml(
+                                                studentQuizResultText(
+                                                    "notAutoGraded"
+                                                )
+                                            )}
                                         `
                                 }
 
@@ -951,7 +1115,11 @@ ${
 
                                 : `
                                     <div class="student-result-empty">
-                                        Detail jawaban tidak tersedia.
+                                        ${escapeHtml(
+                                            studentQuizResultText(
+                                                "answerDetailsUnavailable"
+                                            )
+                                        )}
                                     </div>
                                 `
                         }
@@ -966,7 +1134,11 @@ ${
                             class="student-result-secondary-button"
                             onclick="showSummary()"
                         >
-                            Lihat Ringkasan Nilai
+                            ${escapeHtml(
+                                studentQuizResultText(
+                                    "viewScoreSummary"
+                                )
+                            )}
                         </button>
 
                         <button
@@ -974,7 +1146,11 @@ ${
                             class="student-result-primary-button"
                             onclick="goToQuizDashboard()"
                         >
-                            Kembali ke Dashboard Quiz
+                            ${escapeHtml(
+                                studentQuizResultText(
+                                    "backToQuizDashboard"
+                                )
+                            )}
                         </button>
 
                     </div>
@@ -1009,7 +1185,11 @@ ${
             resultContent.innerHTML =
                 `
                     <h2>
-                        Hasil Quiz tidak dapat dibuka
+                        ${escapeHtml(
+                            studentQuizResultText(
+                                "resultCannotOpen"
+                            )
+                        )}
                     </h2>
 
                     <p>
@@ -1023,7 +1203,11 @@ ${
                         class="student-result-secondary-button"
                         onclick="goToQuizDashboard()"
                     >
-                        Kembali ke Dashboard Quiz
+                        ${escapeHtml(
+                            studentQuizResultText(
+                                "backToQuizDashboard"
+                            )
+                        )}
                     </button>
                 `;
 
@@ -1040,7 +1224,9 @@ ${
             ) {
 
                 showLoadError(
-                    "ID hasil Quiz tidak ditemukan."
+                    studentQuizResultText(
+                        "resultIdMissing"
+                    )
                 );
 
 
@@ -1081,7 +1267,9 @@ ${
 
                     throw new Error(
                         data.message ||
-                        "Gagal mengambil hasil Quiz."
+                        studentQuizResultText(
+                            "fetchFailed"
+                        )
                     );
 
                 }
@@ -1089,6 +1277,16 @@ ${
 
                 currentAttempt =
                     data.attempt;
+
+
+                document.title =
+                    studentQuizResultText(
+                        "documentTitle",
+                        {
+                            title:
+                                currentAttempt.title
+                        }
+                    );
 
 
                 /*
@@ -1122,7 +1320,13 @@ ${
         }
 
 
-        loadResult();
+        document.addEventListener(
+            "DOMContentLoaded",
+            loadResult,
+            {
+                once: true
+            }
+        );
 
     </script>
 

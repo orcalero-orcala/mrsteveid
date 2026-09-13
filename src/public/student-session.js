@@ -519,16 +519,19 @@ function getStudentSidebarIcon(
     }
 
 
-    if (
-        text.includes(
-            "profile"
-        )
-    ) {
+if (
+    text.includes(
+        "profile"
+    ) ||
+    text.includes(
+        "profil"
+    )
+) {
 
-        return STUDENT_SIDEBAR_ICONS
-            .profile;
+    return STUDENT_SIDEBAR_ICONS
+        .profile;
 
-    }
+}
 
 
     if (

@@ -161,7 +161,9 @@
 
 </style>
 
-    <title>Dashboard Siswa</title>
+<title data-i18n="studentDashboard.pageTitle">
+    Dashboard Siswa
+</title>
 
         <link
     rel="icon"
@@ -173,7 +175,7 @@
     rel="stylesheet"
     href="/styles.css"
 >
-
+<script src="/language.js"></script>
 <script src="/student-profile-initial.js"></script>
 
 <script
@@ -244,87 +246,136 @@
             </div>
 
 
-            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
 
-                <button
-                    class="nav-item active"
-                    type="button"
-                >
-                    <span class="nav-icon">
-                        ◫
-                    </span>
+    <button
+        class="nav-item active"
+        type="button"
+    >
+        <span class="nav-icon">◫</span>
 
-                    Dashboard
-                </button>
-
-                <button
-    class="nav-item"
-    type="button"
-    onclick="goToProfile()"
->
-    <span class="nav-icon">
-        S
-    </span>
-
-    Profile
-</button>
+        <span data-i18n="studentDashboard.dashboard">
+            Dashboard
+        </span>
+    </button>
 
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToPoints()"
-                >
-                    <span class="nav-icon">
-                        ★
-                    </span>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToProfile()"
+    >
+        <span class="nav-icon">S</span>
 
-                    Poin Saya
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToExamScores()"
-                >
-                    <span class="nav-icon">
-                        ▤
-                    </span>
-
-                    Nilai Saya
-                </button>
-
-                <button
-    class="nav-item"
-    onclick="
-        window.location.href =
-            '/student-quizzes.html'
-    "
->
-    <span class="nav-icon">?</span>
-    Quiz
-</button>
+        <span data-i18n="studentDashboard.profile">
+            Profil
+        </span>
+    </button>
 
 
-                <button
-                    class="nav-item"
-                    type="button"
-                    onclick="goToAnnouncements()"
-                >
-                    <span class="nav-icon">
-                        ◉
-                    </span>
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToPoints()"
+    >
+        <span class="nav-icon">★</span>
 
-                    Classroom Feed
-                </button>
-
-            </nav>
+        <span data-i18n="studentDashboard.myPoints">
+            Poin Saya
+        </span>
+    </button>
 
 
-            <div class="sidebar-bottom">
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToExamScores()"
+    >
+        <span class="nav-icon">▤</span>
 
-                <div class="sidebar-profile">
+        <span data-i18n="studentDashboard.myGrades">
+            Nilai Saya
+        </span>
+    </button>
+
+
+    <button
+        class="nav-item"
+        type="button"
+        onclick="
+            window.location.href =
+                '/student-quizzes.html'
+        "
+    >
+        <span class="nav-icon">?</span>
+
+        <span data-i18n="studentDashboard.quiz">
+            Quiz
+        </span>
+    </button>
+
+
+    <button
+        class="nav-item"
+        type="button"
+        onclick="goToAnnouncements()"
+    >
+        <span class="nav-icon">◉</span>
+
+        <span data-i18n="studentDashboard.classroomFeed">
+            Feed Kelas
+        </span>
+    </button>
+
+</nav>
+
+
+<div class="sidebar-bottom">
+
+    <div class="sidebar-language-setting">
+
+        <span class="sidebar-language-label">
+            LANGUAGE
+        </span>
+
+
+        <div
+            class="
+                home-v2-language-switch
+                sidebar-language-switch
+            "
+            role="group"
+            aria-label="Pilih bahasa"
+            data-i18n-aria-label="language.selectorLabel"
+        >
+
+            <button
+                type="button"
+                class="home-v2-language-option"
+                data-language-option="id"
+                aria-pressed="true"
+                aria-label="Bahasa Indonesia"
+            >
+                ID
+            </button>
+
+
+            <button
+                type="button"
+                class="home-v2-language-option"
+                data-language-option="en-US"
+                aria-pressed="false"
+                aria-label="English (US)"
+            >
+                EN
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="sidebar-profile">
 
                     <div class="profile-avatar">
                         S
@@ -343,13 +394,15 @@
                 </div>
 
 
-                <button
-                    class="logout-button"
-                    type="button"
-                    onclick="logout()"
-                >
-                    Keluar
-                </button>
+<button
+    class="logout-button"
+    type="button"
+    onclick="logout()"
+>
+    <span data-i18n="studentDashboard.logout">
+        Keluar
+    </span>
+</button>
 
             </div>
 
@@ -373,9 +426,9 @@
                         Dashboard
                     </h2>
 
-                    <p>
-                        Ringkasan akun siswa
-                    </p>
+                    <p data-i18n="studentDashboard.summary">
+    Ringkasan akun siswa
+</p>
 
                 </div>
 
@@ -416,11 +469,11 @@
                             Selamat datang
                         </h1>
 
-                        <p>
-                            Semua kebutuhan belajar, informasi sekolah,
-                            nilai, poin, dan aktivitas kelas tersedia dalam
-                            satu ruang siswa.
-                        </p>
+<p data-i18n="studentDashboard.description">
+    Semua kebutuhan belajar, informasi sekolah,
+    nilai, poin, dan aktivitas kelas tersedia dalam
+    satu ruang siswa.
+</p>
 
                     </div>
 
@@ -549,7 +602,9 @@
 
         <div>
             <small>REWARD POINTS</small>
-            <strong>Poin Saya</strong>
+<strong data-i18n="studentDashboard.myPoints">
+    Poin Saya
+</strong>
         </div>
 
     </div>
@@ -558,6 +613,7 @@
         <span
             id="studentQuickPointsValue"
             aria-label="Total poin"
+data-i18n-aria-label="studentDashboard.totalPoints"
         >
             …
         </span>
@@ -574,9 +630,12 @@
         <div>
             <small>ASSIGNMENT REMINDER</small>
 
-            <h2 id="studentAssignmentReminderTitle">
-                Tugas mendatang
-            </h2>
+<h2
+    id="studentAssignmentReminderTitle"
+    data-i18n="studentDashboard.upcomingAssignments"
+>
+    Tugas mendatang
+</h2>
         </div>
 
         <span class="student-assignment-coming-soon">
@@ -606,14 +665,14 @@
 
         <div class="student-assignment-reminder-copy">
 
-            <strong>
-                Assignment Reminder sedang disiapkan
-            </strong>
+<strong data-i18n="studentDashboard.assignmentPreparing">
+    Assignment Reminder sedang disiapkan
+</strong>
 
-            <p>
-                Tugas dari guru dan batas pengumpulan
-                nantinya akan muncul otomatis di sini.
-            </p>
+<p data-i18n="studentDashboard.assignmentDescription">
+    Tugas dari guru dan batas pengumpulan
+    nantinya akan muncul otomatis di sini.
+</p>
 
         </div>
 
@@ -654,7 +713,9 @@
                                 </div>
                             </div>
 
-                            <p>Informasi terbaru dari sekolah.</p>
+<p data-i18n="studentDashboard.latestInformation">
+    Informasi terbaru dari sekolah.
+</p>
 
                         </div>
 
@@ -684,8 +745,9 @@
         type="button"
         class="student-announcement-view-all-button"
         onclick="openAnnouncementViewAll()"
+        data-i18n="studentDashboard.viewAll"
     >
-        View All
+        Lihat Semua
     </button>
 
 </div>
@@ -737,9 +799,12 @@
                     INFORMATION BOARD
                 </small>
 
-                <h2 id="announcementViewAllTitle">
-                    Semua Announcement
-                </h2>
+<h2
+    id="announcementViewAllTitle"
+    data-i18n="studentDashboard.allAnnouncements"
+>
+    Semua Pengumuman
+</h2>
 
                 <p id="announcementViewAllCount">
                     Memuat announcement...
@@ -753,6 +818,7 @@
                 class="student-announcement-modal-close"
                 onclick="closeAnnouncementViewAll()"
                 aria-label="Tutup panel"
+data-i18n-aria-label="studentDashboard.closePanel"
             >
                 ×
             </button>
@@ -952,10 +1018,33 @@ let publicAnnouncementPollingTimer =
 
 
         // Tampilkan informasi siswa
-        document.getElementById(
-            "studentName"
-        ).textContent =
-            `Selamat datang, ${studentName}`;
+function renderStudentDashboardLanguage() {
+
+    document.getElementById(
+        "studentName"
+    ).textContent =
+        window.LMSLanguage.t(
+            "studentDashboard.welcome",
+            {
+                name:
+                    studentName ||
+                    "Student"
+            }
+        );
+
+
+    document.getElementById(
+        "studentHeroClass"
+    ).textContent =
+        studentClass ||
+        window.LMSLanguage.t(
+            "studentDashboard.classUnavailable"
+        );
+
+}
+
+
+renderStudentDashboardLanguage();
 
                     document.getElementById(
             "sidebarStudentName"
@@ -978,12 +1067,6 @@ let publicAnnouncementPollingTimer =
             "studentHeroName"
         ).textContent =
             studentName || "Student";
-
-
-        document.getElementById(
-            "studentHeroClass"
-        ).textContent =
-            studentClass || "Kelas belum tersedia";
 
 loadStudentQuickPoints();
 loadPublicAnnouncements();
@@ -1930,7 +2013,14 @@ async function logout() {
         "/index.html";
 }
 
+document.addEventListener(
+    "lmslanguagechange",
+    () => {
 
+        renderStudentDashboardLanguage();
+
+    }
+);
 
     </script>
 

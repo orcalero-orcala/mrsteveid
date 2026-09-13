@@ -161,7 +161,7 @@
 
 </style>
 
-   <title>
+   <title data-i18n="studentExamScores.pageTitle">
     Nilai Saya
 </title>
 
@@ -173,7 +173,7 @@
 
 <link
     rel="stylesheet"
-    href="/styles.css"
+    href="/styles.css?v=20260913-3"
 >
 
 <script src="/student-profile-initial.js"></script>
@@ -193,6 +193,11 @@
     defer
 ></script>
 
+<script
+    src="/language.js?v=20260913-7"
+    defer
+></script>
+
 </head>
 
 
@@ -204,6 +209,7 @@
     role="status"
     aria-live="polite"
     aria-label="Halaman sedang dimuat"
+    data-i18n-aria-label="studentExamScores.loadingPage"
 >
     <div class="lms-page-loader-content">
 
@@ -255,7 +261,7 @@
                         ◫
                     </span>
 
-                    Dashboard
+                    <span data-i18n="studentExamScores.dashboard">Dashboard</span>
                 </button>
 
                 <button
@@ -263,11 +269,14 @@
     type="button"
     onclick="goToProfile()"
 >
-    <span class="nav-icon">
-        S
-    </span>
+<span class="nav-icon">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+    </svg>
+</span>
 
-    Profile
+    <span data-i18n="studentExamScores.profile">Profil</span>
 </button>
 
 
@@ -280,7 +289,7 @@
                         ★
                     </span>
 
-                    Poin Saya
+                    <span data-i18n="studentExamScores.myPoints">Poin Saya</span>
                 </button>
 
 
@@ -292,7 +301,7 @@
                         ▤
                     </span>
 
-                    Nilai Saya
+                    <span data-i18n="studentExamScores.myGrades">Nilai Saya</span>
                 </button>
 
                 <button
@@ -303,7 +312,7 @@
     "
 >
     <span class="nav-icon">?</span>
-    Quiz
+    <span data-i18n="studentExamScores.quiz">Quiz</span>
 </button>
 
 
@@ -316,13 +325,27 @@
                         ◉
                     </span>
 
-                    Classroom Feed
+                    <span data-i18n="studentExamScores.classroomFeed">Feed Kelas</span>
                 </button>
 
             </nav>
 
 
             <div class="sidebar-bottom">
+
+                <div class="sidebar-language-setting">
+                    <span class="sidebar-language-label">LANGUAGE</span>
+
+                    <div
+                        class="home-v2-language-switch sidebar-language-switch"
+                        role="group"
+                        aria-label="Pilih bahasa"
+                        data-i18n-aria-label="language.selectorLabel"
+                    >
+                        <button type="button" class="home-v2-language-option" data-language-option="id" aria-pressed="true" aria-label="Bahasa Indonesia">ID</button>
+                        <button type="button" class="home-v2-language-option" data-language-option="en-US" aria-pressed="false" aria-label="English (US)">EN</button>
+                    </div>
+                </div>
 
                 <div class="sidebar-profile">
 
@@ -350,7 +373,7 @@
                     type="button"
                     onclick="logout()"
                 >
-                    Keluar
+                    <span data-i18n="studentExamScores.logout">Keluar</span>
                 </button>
 
             </div>
@@ -366,11 +389,11 @@
 
                 <div>
 
-                    <h2>
+                    <h2 data-i18n="studentExamScores.myGrades">
                         Nilai Saya
                     </h2>
 
-                    <p>
+                    <p data-i18n="studentExamScores.summary">
                         Hasil ujian dan evaluasi belajar
                     </p>
 
@@ -405,11 +428,11 @@
                             ACADEMIC RECORD
                         </small>
 
-                        <h1>
+                        <h1 data-i18n="studentExamScores.myGrades">
                             Nilai Saya
                         </h1>
 
-                        <p>
+                        <p data-i18n="studentExamScores.heroDescription">
                             Pantau hasil ujian dan perkembangan akademik kamu.
                         </p>
 
@@ -426,11 +449,11 @@
 
         <div class="student-score-metric-heading">
 
-            <span>
+            <span data-i18n="studentExamScores.totalScores">
                 Jumlah Nilai
             </span>
 
-            <small>
+            <small data-i18n="studentExamScores.total">
                 Total
             </small>
 
@@ -440,7 +463,7 @@
             0
         </strong>
 
-        <p>
+        <p data-i18n="studentExamScores.totalScoresDescription">
             Nilai ujian yang sudah diberikan
         </p>
 
@@ -451,7 +474,7 @@
 
         <div class="student-score-metric-heading">
 
-            <span>
+            <span data-i18n="studentExamScores.average">
                 Rata-rata
             </span>
 
@@ -465,7 +488,7 @@
             0
         </strong>
 
-        <p>
+        <p data-i18n="studentExamScores.averageDescription">
             Rata-rata dari seluruh nilai
         </p>
 
@@ -476,7 +499,7 @@
 
         <div class="student-score-metric-heading">
 
-            <span>
+            <span data-i18n="studentExamScores.highestScore">
                 Nilai Tertinggi
             </span>
 
@@ -490,7 +513,7 @@
             0
         </strong>
 
-        <p>
+        <p data-i18n="studentExamScores.highestScoreDescription">
             Nilai terbaik yang pernah dicapai
         </p>
 
@@ -501,7 +524,7 @@
 
         <div class="student-score-metric-heading">
 
-            <span>
+            <span data-i18n="studentExamScores.latestScore">
                 Nilai Terbaru
             </span>
 
@@ -515,7 +538,7 @@
             0
         </strong>
 
-        <p id="latestScoreSubject">
+        <p id="latestScoreSubject" data-i18n="studentExamScores.noLatestScore">
             Belum ada nilai terbaru
         </p>
 
@@ -530,7 +553,7 @@
 
     <article class="student-score-insight-card">
 
-        <div class="student-score-insight-label">
+        <div class="student-score-insight-label" data-i18n="studentExamScores.strongestSubject">
             Mapel Terkuat
         </div>
 
@@ -538,7 +561,7 @@
             —
         </strong>
 
-        <p id="strongestSubjectValue">
+        <p id="strongestSubjectValue" data-i18n="studentExamScores.insufficientData">
             Belum cukup data
         </p>
 
@@ -547,7 +570,7 @@
 
     <article class="student-score-insight-card">
 
-        <div class="student-score-insight-label">
+        <div class="student-score-insight-label" data-i18n="studentExamScores.needsImprovement">
             Perlu Ditingkatkan
         </div>
 
@@ -555,7 +578,7 @@
             —
         </strong>
 
-        <p id="focusSubjectValue">
+        <p id="focusSubjectValue" data-i18n="studentExamScores.insufficientData">
             Belum cukup data
         </p>
 
@@ -564,7 +587,7 @@
 
     <article class="student-score-insight-card">
 
-        <div class="student-score-insight-label">
+        <div class="student-score-insight-label" data-i18n="studentExamScores.scoreTrend">
             Tren Nilai
         </div>
 
@@ -572,7 +595,7 @@
             —
         </strong>
 
-        <p id="scoreTrendDescription">
+        <p id="scoreTrendDescription" data-i18n="studentExamScores.minimumTwoScores">
             Minimal dua nilai diperlukan
         </p>
 
@@ -597,11 +620,11 @@
                     SUBJECT PERFORMANCE
                 </small>
 
-                <h2>
+                <h2 data-i18n="studentExamScores.subjectPerformance">
                     Performa per Mapel
                 </h2>
 
-                <p>
+                <p data-i18n="studentExamScores.subjectPerformanceDescription">
                     Rata-rata nilai pada setiap mata pelajaran.
                 </p>
 
@@ -618,21 +641,22 @@
         class="lms-loading-spinner lms-loading-spinner--chart"
         role="status"
         aria-label="Memuat performa mata pelajaran"
+        data-i18n-aria-label="studentExamScores.loadingSubjectPerformance"
     ></div>
 </div>
 
 
         <div class="student-score-chart-legend">
 
-            <span class="high">
+            <span class="high" data-i18n="studentExamScores.high">
                 85–100 Tinggi
             </span>
 
-            <span class="medium">
+            <span class="medium" data-i18n="studentExamScores.medium">
                 70–84 Sedang
             </span>
 
-            <span class="low">
+            <span class="low" data-i18n="studentExamScores.low">
                 Di bawah 70
             </span>
 
@@ -653,11 +677,11 @@
                     SCORE PROGRESS
                 </small>
 
-                <h2>
+                <h2 data-i18n="studentExamScores.scoreProgress">
                     Perkembangan Nilai
                 </h2>
 
-                <p>
+                <p data-i18n="studentExamScores.scoreProgressDescription">
                     Perubahan nilai dari waktu ke waktu.
                 </p>
 
@@ -666,7 +690,7 @@
 
             <div class="student-score-chart-filter">
 
-                <label for="trendSubjectFilter">
+                <label for="trendSubjectFilter" data-i18n="studentExamScores.subject">
                     Mapel
                 </label>
 
@@ -674,7 +698,7 @@
                     id="trendSubjectFilter"
                     onchange="renderScoreTrend()"
                 >
-                    <option value="all">
+                    <option value="all" data-i18n="studentExamScores.allSubjects">
                         Semua mapel
                     </option>
                 </select>
@@ -692,6 +716,7 @@
         class="lms-loading-spinner lms-loading-spinner--chart"
         role="status"
         aria-label="Memuat perkembangan nilai"
+        data-i18n-aria-label="studentExamScores.loadingScoreProgress"
     ></div>
 </div>
 
@@ -700,7 +725,7 @@
             id="scoreTrendFooter"
             class="student-score-trend-footer"
         >
-            Belum ada data perkembangan.
+            <span data-i18n="studentExamScores.noProgressData">Belum ada data perkembangan.</span>
         </div>
 
     </article>
@@ -716,11 +741,11 @@
 
         <div>
 
-            <h2>
+            <h2 data-i18n="studentExamScores.scoreHistory">
                 Riwayat Nilai
             </h2>
 
-            <p>
+            <p data-i18n="studentExamScores.scoreHistoryDescription">
                 Cari, filter, dan urutkan seluruh nilai ujian kamu.
             </p>
 
@@ -735,7 +760,7 @@
 
         <div class="student-score-search-control">
 
-            <label for="historySearch">
+            <label for="historySearch" data-i18n="studentExamScores.search">
                 Cari
             </label>
 
@@ -743,6 +768,7 @@
                 type="search"
                 id="historySearch"
                 placeholder="Cari mapel atau materi..."
+                data-i18n-placeholder="studentExamScores.searchPlaceholder"
                 oninput="renderScoreHistory()"
             >
 
@@ -751,7 +777,7 @@
 
         <div class="student-score-filter-control">
 
-            <label for="historySubjectFilter">
+            <label for="historySubjectFilter" data-i18n="studentExamScores.subject">
                 Mapel
             </label>
 
@@ -759,7 +785,7 @@
                 id="historySubjectFilter"
                 onchange="renderScoreHistory()"
             >
-                <option value="all">
+                <option value="all" data-i18n="studentExamScores.allSubjects">
                     Semua mapel
                 </option>
             </select>
@@ -769,7 +795,7 @@
 
         <div class="student-score-filter-control">
 
-            <label for="historySort">
+            <label for="historySort" data-i18n="studentExamScores.sort">
                 Urutkan
             </label>
 
@@ -777,19 +803,19 @@
                 id="historySort"
                 onchange="renderScoreHistory()"
             >
-                <option value="newest">
+                <option value="newest" data-i18n="studentExamScores.newest">
                     Terbaru
                 </option>
 
-                <option value="oldest">
+                <option value="oldest" data-i18n="studentExamScores.oldest">
                     Terlama
                 </option>
 
-                <option value="highest">
+                <option value="highest" data-i18n="studentExamScores.highest">
                     Nilai tertinggi
                 </option>
 
-                <option value="lowest">
+                <option value="lowest" data-i18n="studentExamScores.lowest">
                     Nilai terendah
                 </option>
             </select>
@@ -802,7 +828,7 @@
             class="student-score-filter-reset"
             onclick="resetScoreHistoryFilters()"
         >
-            Reset
+            <span data-i18n="studentExamScores.reset">Reset</span>
         </button>
 
     </div>
@@ -825,6 +851,7 @@
         class="lms-loading-spinner"
         role="status"
         aria-label="Memuat riwayat nilai"
+        data-i18n-aria-label="studentExamScores.loadingHistory"
     ></div>
 </div>
 
@@ -852,6 +879,49 @@ const studentId =
     );
 
 
+function scoreText(
+    key,
+    variables = {}
+) {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage.t ===
+            "function"
+    ) {
+
+        return window.LMSLanguage.t(
+            `studentExamScores.${key}`,
+            variables
+        );
+
+    }
+
+
+    return key;
+
+}
+
+
+function getScoreLanguage() {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage
+            .getLanguage === "function"
+    ) {
+
+        return window.LMSLanguage
+            .getLanguage();
+
+    }
+
+
+    return "id";
+
+}
+
+
 const studentInfo =
     document.getElementById(
         "studentInfo"
@@ -866,6 +936,7 @@ const examScoreContainer =
 
 let allExamScores = [];
 let overallScoreAverage = 0;
+let examScoresLoaded = false;
 
 
 // =====================================
@@ -955,7 +1026,7 @@ function formatScoreShortDate(dateValue) {
 
 
     return new Intl.DateTimeFormat(
-        "id-ID",
+        getScoreLanguage(),
         {
             day: "2-digit",
             month: "short"
@@ -980,13 +1051,15 @@ function getSubjectStatistics() {
         const subjectName =
             String(
                 examScore.subject ||
-                "Tanpa mapel"
+                scoreText(
+                    "noSubject"
+                )
             ).trim();
 
 
         const subjectKey =
             subjectName.toLocaleLowerCase(
-                "id-ID"
+                getScoreLanguage()
             );
 
 
@@ -1201,7 +1274,9 @@ function renderScoreMetrics() {
                         ? `${latestExamScore.subject} — ${latestExamScore.material}`
                         : latestExamScore.subject
                 )
-                : "Belum ada nilai terbaru";
+                : scoreText(
+                    "noLatestScore"
+                );
 
 
     renderScoreInsights();
@@ -1249,11 +1324,22 @@ function renderScoreInsights() {
         .textContent =
             strongestSubject
                 ? (
-                    `Rata-rata ${formatScoreNumber(
-                        strongestSubject.average
-                    )} dari ${strongestSubject.scores.length} nilai`
+                    scoreText(
+                        "averageFromScores",
+                        {
+                            average:
+                                formatScoreNumber(
+                                    strongestSubject.average
+                                ),
+
+                            count:
+                                strongestSubject.scores.length
+                        }
+                    )
                 )
-                : "Belum cukup data";
+                : scoreText(
+                    "insufficientData"
+                );
 
 
     document
@@ -1273,14 +1359,27 @@ function renderScoreInsights() {
         .textContent =
             focusSubject
                 ? (
-                    `Rata-rata ${formatScoreNumber(
-                        focusSubject.average
-                    )} dari ${focusSubject.scores.length} nilai`
+                    scoreText(
+                        "averageFromScores",
+                        {
+                            average:
+                                formatScoreNumber(
+                                    focusSubject.average
+                                ),
+
+                            count:
+                                focusSubject.scores.length
+                        }
+                    )
                 )
                 : (
                     subjectStatistics.length === 1
-                        ? "Belum ada mapel pembanding"
-                        : "Belum cukup data"
+                        ? scoreText(
+                            "noComparisonSubject"
+                        )
+                        : scoreText(
+                            "insufficientData"
+                        )
                 );
 
 
@@ -1315,7 +1414,9 @@ function renderScoreInsights() {
         trendValue.className = "";
 
         trendDescription.textContent =
-            "Minimal dua nilai diperlukan";
+            scoreText(
+                "minimumTwoScores"
+            );
 
         return;
 
@@ -1365,17 +1466,23 @@ function renderScoreInsights() {
     if (difference > 0) {
 
         trendDescription.textContent =
-            "Naik dibanding nilai sebelumnya";
+            scoreText(
+                "trendUp"
+            );
 
     } else if (difference < 0) {
 
         trendDescription.textContent =
-            "Turun dibanding nilai sebelumnya";
+            scoreText(
+                "trendDown"
+            );
 
     } else {
 
         trendDescription.textContent =
-            "Sama dengan nilai sebelumnya";
+            scoreText(
+                "trendSame"
+            );
 
     }
 
@@ -1416,18 +1523,31 @@ function populateScoreSubjectFilters() {
             );
 
 
-    trendFilter.innerHTML = `
-        <option value="all">
-            Semua mapel
-        </option>
-    `;
+trendFilter.replaceChildren();
+historyFilter.replaceChildren();
+
+const trendAllOption =
+    document.createElement("option");
+
+trendAllOption.value = "all";
+trendAllOption.textContent =
+    scoreText("allSubjects");
+
+trendFilter.appendChild(
+    trendAllOption
+);
 
 
-    historyFilter.innerHTML = `
-        <option value="all">
-            Semua mapel
-        </option>
-    `;
+const historyAllOption =
+    document.createElement("option");
+
+historyAllOption.value = "all";
+historyAllOption.textContent =
+    scoreText("allSubjects");
+
+historyFilter.appendChild(
+    historyAllOption
+);
 
 
     subjects.forEach(subject => {
@@ -1502,11 +1622,19 @@ function renderSubjectPerformance() {
             <div class="student-score-chart-empty">
 
                 <strong>
-                    Belum ada data mapel
+                    ${escapeHtml(
+                        scoreText(
+                            "noSubjectData"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Grafik akan muncul setelah nilai diberikan.
+                    ${escapeHtml(
+                        scoreText(
+                            "subjectChartWillAppear"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -1580,8 +1708,15 @@ function renderSubjectPerformance() {
 
 
             <small>
-                ${subject.scores.length}
-                nilai tercatat
+                ${escapeHtml(
+                    scoreText(
+                        "recordedScores",
+                        {
+                            count:
+                                subject.scores.length
+                        }
+                    )
+                )}
             </small>
 
         `;
@@ -1891,11 +2026,19 @@ function renderScoreTrend() {
             <div class="student-score-chart-empty">
 
                 <strong>
-                    Belum ada perkembangan
+                    ${escapeHtml(
+                        scoreText(
+                            "noProgress"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Belum ada nilai untuk filter ini.
+                    ${escapeHtml(
+                        scoreText(
+                            "noScoresForFilter"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -1904,7 +2047,9 @@ function renderScoreTrend() {
 
 
         footer.textContent =
-            "Belum ada data perkembangan.";
+            scoreText(
+                "noProgressData"
+            );
 
         return;
 
@@ -2101,7 +2246,9 @@ const plotBottom =
 data-chart-tooltip="${escapeHtml(
     String(
         point.examScore.subject ||
-        "Tanpa mapel"
+        scoreText(
+            "noSubject"
+        )
     )
 )}: ${formatScoreNumber(
     point.score
@@ -2196,7 +2343,11 @@ data-chart-tooltip="${escapeHtml(
                 ${graphHeight}
             "
             role="img"
-            aria-label="Grafik perkembangan nilai"
+            aria-label="${escapeHtml(
+                scoreText(
+                    "scoreProgressChart"
+                )
+            )}"
         >
 
             ${gridLines}
@@ -2244,11 +2395,20 @@ const numericScores =
 
 
     let footerText =
-        `Terbaru ${formatScoreNumber(
-            latestScore
-        )} · Tertinggi ${formatScoreNumber(
-            highestScore
-        )}`;
+        scoreText(
+            "trendFooter",
+            {
+                latest:
+                    formatScoreNumber(
+                        latestScore
+                    ),
+
+                highest:
+                    formatScoreNumber(
+                        highestScore
+                    )
+            }
+        );
 
 
     if (
@@ -2275,8 +2435,24 @@ const numericScores =
                 );
 
 
-        footerText +=
-            ` · Perubahan ${differenceText}`;
+        footerText =
+            scoreText(
+                "trendFooterWithChange",
+                {
+                    latest:
+                        formatScoreNumber(
+                            latestScore
+                        ),
+
+                    highest:
+                        formatScoreNumber(
+                            highestScore
+                        ),
+
+                    change:
+                        differenceText
+                }
+            );
 
     }
 
@@ -2301,7 +2477,7 @@ function renderScoreHistory() {
             .value
             .trim()
             .toLocaleLowerCase(
-                "id-ID"
+                getScoreLanguage()
             );
 
 
@@ -2334,7 +2510,7 @@ function renderScoreHistory() {
                         examScore.material || ""
                     }`
                         .toLocaleLowerCase(
-                            "id-ID"
+                            getScoreLanguage()
                         );
 
 
@@ -2407,7 +2583,16 @@ function renderScoreHistory() {
             "scoreHistorySummary"
         )
         .textContent =
-            `${visibleScores.length} dari ${allExamScores.length} nilai ditampilkan`;
+            scoreText(
+                "historySummary",
+                {
+                    visible:
+                        visibleScores.length,
+
+                    total:
+                        allExamScores.length
+                }
+            );
 
 
 if (
@@ -2419,11 +2604,19 @@ if (
         <div class="student-score-history-empty">
 
             <strong>
-                Tidak ada nilai ditemukan
+                ${escapeHtml(
+                    scoreText(
+                        "noScoreFound"
+                    )
+                )}
             </strong>
 
             <span>
-                Coba ubah pencarian atau filter.
+                ${escapeHtml(
+                    scoreText(
+                        "adjustSearchOrFilter"
+                    )
+                )}
             </span>
 
         </div>
@@ -2484,14 +2677,18 @@ visibleScores.forEach(
                     <strong>
                         ${escapeHtml(
                             examScore.material ||
-                            "Tanpa materi"
+                            scoreText(
+                                "noMaterial"
+                            )
                         )}
                     </strong>
 
                     <span>
                         ${escapeHtml(
                             examScore.subject ||
-                            "Tanpa mapel"
+                            scoreText(
+                                "noSubject"
+                            )
                         )}
                     </span>
 
@@ -2561,7 +2758,11 @@ async function loadExamScores() {
             <tr>
 
                 <td colspan="5">
-                    Data login siswa tidak ditemukan.
+                    ${escapeHtml(
+                        scoreText(
+                            "loginDataMissing"
+                        )
+                    )}
                 </td>
 
             </tr>
@@ -2586,7 +2787,11 @@ examScoreContainer.innerHTML = `
     <div
         class="lms-loading-spinner"
         role="status"
-        aria-label="Memuat riwayat nilai"
+        aria-label="${escapeHtml(
+            scoreText(
+                "loadingHistory"
+            )
+        )}"
     ></div>
 
 `;
@@ -2613,7 +2818,9 @@ try {
                     <td colspan="5">
                         ${escapeHtml(
                             data.message ||
-                            "Gagal mengambil nilai."
+                            scoreText(
+                                "fetchFailed"
+                            )
                         )}
                     </td>
 
@@ -2645,6 +2852,10 @@ try {
                 : [];
 
 
+        examScoresLoaded =
+            true;
+
+
         renderScoreMetrics();
 
         populateScoreSubjectFilters();
@@ -2666,7 +2877,11 @@ try {
             <tr>
 
                 <td colspan="5">
-                    Tidak dapat terhubung ke server.
+                    ${escapeHtml(
+                        scoreText(
+                            "cannotConnect"
+                        )
+                    )}
                 </td>
 
             </tr>
@@ -2681,7 +2896,11 @@ try {
             .innerHTML = `
 
                 <div class="student-score-chart-empty">
-                    Gagal memuat grafik.
+                    ${escapeHtml(
+                        scoreText(
+                            "chartLoadFailed"
+                        )
+                    )}
                 </div>
 
             `;
@@ -2694,7 +2913,11 @@ try {
             .innerHTML = `
 
                 <div class="student-score-chart-empty">
-                    Gagal memuat grafik.
+                    ${escapeHtml(
+                        scoreText(
+                            "chartLoadFailed"
+                        )
+                    )}
                 </div>
 
             `;
@@ -2785,10 +3008,83 @@ async function logout() {
 }
 
         // =====================================
+        // LANGUAGE REFRESH
+        // =====================================
+
+function refreshStudentExamScoreLanguage() {
+
+    const trendAllOption =
+        document.querySelector(
+            "#trendSubjectFilter option[value='all']"
+        );
+
+    const historyAllOption =
+        document.querySelector(
+            "#historySubjectFilter option[value='all']"
+        );
+
+
+    if (trendAllOption) {
+
+        trendAllOption.textContent =
+            scoreText(
+                "allSubjects"
+            );
+
+    }
+
+
+    if (historyAllOption) {
+
+        historyAllOption.textContent =
+            scoreText(
+                "allSubjects"
+            );
+
+    }
+
+
+    if (!examScoresLoaded) {
+        return;
+    }
+
+
+    renderScoreMetrics();
+    renderSubjectPerformance();
+    renderScoreTrend();
+    renderScoreHistory();
+
+}
+
+
+document.addEventListener(
+    "lmslanguagechange",
+    refreshStudentExamScoreLanguage
+);
+
+
+        // =====================================
         // START
         // =====================================
 
-        loadExamScores();
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadExamScores,
+        {
+            once: true
+        }
+    );
+
+} else {
+
+    loadExamScores();
+
+}
 
     </script>
 

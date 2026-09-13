@@ -161,7 +161,7 @@
 
 </style>
 
-    <title>Poin Siswa</title>
+    <title data-i18n="studentPoints.pageTitle">Poin Siswa</title>
 
         <link
     rel="icon"
@@ -171,7 +171,7 @@
 
     <link
     rel="stylesheet"
-    href="/styles.css"
+    href="/styles.css?v=20260913-3"
 >
 
 <script src="/student-profile-initial.js"></script>
@@ -191,6 +191,11 @@
     defer
 ></script>
 
+<script
+    src="/language.js?v=20260913-6"
+    defer
+></script>
+
 </head>
 
 
@@ -202,6 +207,7 @@
     role="status"
     aria-live="polite"
     aria-label="Halaman sedang dimuat"
+    data-i18n-aria-label="studentPoints.loadingPage"
 >
     <div class="lms-page-loader-content">
 
@@ -253,7 +259,7 @@
                         ◫
                     </span>
 
-                    Dashboard
+                    <span data-i18n="studentPoints.dashboard">Dashboard</span>
                 </button>
 
                 <button
@@ -265,7 +271,7 @@
         S
     </span>
 
-    Profile
+    <span data-i18n="studentPoints.profile">Profil</span>
 </button>
 
                 <button
@@ -276,7 +282,7 @@
                         ★
                     </span>
 
-                    Poin Saya
+                    <span data-i18n="studentPoints.myPoints">Poin Saya</span>
                 </button>
 
 
@@ -289,7 +295,7 @@
                         ▤
                     </span>
 
-                    Nilai Saya
+                    <span data-i18n="studentPoints.myGrades">Nilai Saya</span>
                 </button>
 
                 <button
@@ -300,7 +306,7 @@
     "
 >
     <span class="nav-icon">?</span>
-    Quiz
+    <span data-i18n="studentPoints.quiz">Quiz</span>
 </button>
 
 
@@ -313,13 +319,40 @@
                         ◉
                     </span>
 
-                    Classroom Feed
+                    <span data-i18n="studentPoints.classroomFeed">Feed Kelas</span>
                 </button>
 
             </nav>
 
 
             <div class="sidebar-bottom">
+
+                <div class="sidebar-language-setting">
+                    <span class="sidebar-language-label">LANGUAGE</span>
+
+                    <div
+                        class="home-v2-language-switch sidebar-language-switch"
+                        role="group"
+                        aria-label="Pilih bahasa"
+                        data-i18n-aria-label="language.selectorLabel"
+                    >
+                        <button
+                            type="button"
+                            class="home-v2-language-option"
+                            data-language-option="id"
+                            aria-pressed="true"
+                            aria-label="Bahasa Indonesia"
+                        >ID</button>
+
+                        <button
+                            type="button"
+                            class="home-v2-language-option"
+                            data-language-option="en-US"
+                            aria-pressed="false"
+                            aria-label="English (US)"
+                        >EN</button>
+                    </div>
+                </div>
 
                 <div class="sidebar-profile">
 
@@ -346,7 +379,7 @@
                     type="button"
                     onclick="logout()"
                 >
-                    Keluar
+                    <span data-i18n="studentPoints.logout">Keluar</span>
                 </button>
 
             </div>
@@ -365,11 +398,11 @@
 
                 <div>
 
-                    <h2>
+                    <h2 data-i18n="studentPoints.myPoints">
                         Poin Saya
                     </h2>
 
-                    <p>
+                    <p data-i18n="studentPoints.summary">
                         Ringkasan dan riwayat poin
                     </p>
 
@@ -408,7 +441,7 @@
             Siswa
         </h1>
 
-        <p id="studentClass">
+        <p id="studentClass" data-point-class-name="-">
             Kelas: -
         </p>
 
@@ -419,7 +452,7 @@
 
         <div class="points-total-block">
 
-            <span>
+            <span data-i18n="studentPoints.totalPoints">
                 Total Poin
             </span>
 
@@ -446,7 +479,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.totalPoints">
                 Total Poin
             </span>
 
@@ -454,7 +487,7 @@
                 0
             </strong>
 
-            <small>
+            <small data-i18n="studentPoints.currentBalance">
                 Saldo poin saat ini
             </small>
 
@@ -471,7 +504,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.positivePoints">
                 Poin Positif
             </span>
 
@@ -479,7 +512,7 @@
                 0
             </strong>
 
-            <small>
+            <small data-i18n="studentPoints.positivePointsDescription">
                 Seluruh poin yang diperoleh
             </small>
 
@@ -496,7 +529,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.deduction">
                 Pengurangan
             </span>
 
@@ -504,7 +537,7 @@
                 0
             </strong>
 
-            <small>
+            <small data-i18n="studentPoints.deductionDescription">
                 Seluruh poin yang dikurangi
             </small>
 
@@ -521,7 +554,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.activity">
                 Aktivitas
             </span>
 
@@ -529,7 +562,7 @@
                 0
             </strong>
 
-            <small>
+            <small data-i18n="studentPoints.activityDescription">
                 Jumlah perubahan poin
             </small>
 
@@ -546,7 +579,7 @@
 
     <article class="student-point-insight-card">
 
-        <span>
+        <span data-i18n="studentPoints.positiveActivity">
             Aktivitas Positif
         </span>
 
@@ -554,7 +587,7 @@
             0%
         </strong>
 
-        <p>
+        <p data-i18n="studentPoints.positiveActivityDescription">
             Persentase aktivitas yang menambah poin
         </p>
 
@@ -563,7 +596,7 @@
 
     <article class="student-point-insight-card">
 
-        <span>
+        <span data-i18n="studentPoints.largestGain">
             Penambahan Terbesar
         </span>
 
@@ -574,7 +607,7 @@
             +0
         </strong>
 
-        <p id="largestGainReason">
+        <p id="largestGainReason" data-i18n="studentPoints.noPositiveActivity">
             Belum ada aktivitas positif
         </p>
 
@@ -583,7 +616,7 @@
 
     <article class="student-point-insight-card">
 
-        <span>
+        <span data-i18n="studentPoints.largestDeduction">
             Pengurangan Terbesar
         </span>
 
@@ -594,7 +627,7 @@
             0
         </strong>
 
-        <p id="largestDeductionReason">
+        <p id="largestDeductionReason" data-i18n="studentPoints.noDeduction">
             Belum ada pengurangan poin
         </p>
 
@@ -603,7 +636,7 @@
 
     <article class="student-point-insight-card">
 
-        <span>
+        <span data-i18n="studentPoints.last30Days">
             Perubahan 30 Hari
         </span>
 
@@ -611,7 +644,7 @@
             0
         </strong>
 
-        <p>
+        <p data-i18n="studentPoints.last30DaysDescription">
             Total perubahan dalam 30 hari terakhir
         </p>
 
@@ -636,11 +669,11 @@
                     POINT PROGRESS
                 </small>
 
-                <h2>
+                <h2 data-i18n="studentPoints.pointProgress">
                     Perkembangan Poin
                 </h2>
 
-                <p>
+                <p data-i18n="studentPoints.pointProgressDescription">
                     Perubahan saldo poin dari waktu ke waktu.
                 </p>
 
@@ -657,6 +690,7 @@
         class="lms-loading-spinner lms-loading-spinner--chart"
         role="status"
         aria-label="Memuat perkembangan poin"
+        data-i18n-aria-label="studentPoints.loadingPointProgress"
     ></div>
 </div>
 
@@ -665,7 +699,7 @@
             id="pointTrendFooter"
             class="student-point-chart-footer"
         >
-            Belum ada data perkembangan.
+            <span data-i18n="studentPoints.noProgressData">Belum ada data perkembangan.</span>
         </div>
 
     </article>
@@ -683,11 +717,11 @@
                     MONTHLY ACTIVITY
                 </small>
 
-                <h2>
+                <h2 data-i18n="studentPoints.monthlyActivity">
                     Aktivitas Bulanan
                 </h2>
 
-                <p>
+                <p data-i18n="studentPoints.monthlyActivityDescription">
                     Perbandingan poin positif dan negatif setiap bulan.
                 </p>
 
@@ -704,6 +738,7 @@
         class="lms-loading-spinner lms-loading-spinner--chart"
         role="status"
         aria-label="Memuat aktivitas bulanan"
+        data-i18n-aria-label="studentPoints.loadingMonthlyActivity"
     ></div>
 </div>
 
@@ -712,7 +747,7 @@
             id="monthlyPointSummary"
             class="student-point-chart-footer"
         >
-            Belum ada aktivitas bulanan.
+            <span data-i18n="studentPoints.noMonthlyActivity">Belum ada aktivitas bulanan.</span>
         </div>
 
     </article>
@@ -728,11 +763,11 @@
 
         <div>
 
-            <h2>
+            <h2 data-i18n="studentPoints.pointHistory">
                 Riwayat Poin
             </h2>
 
-            <p>
+            <p data-i18n="studentPoints.pointHistoryDescription">
                 Cari, filter, dan tinjau seluruh perubahan poin.
             </p>
 
@@ -745,7 +780,7 @@
 
         <div class="student-point-search-control">
 
-            <label for="pointHistorySearch">
+            <label for="pointHistorySearch" data-i18n="studentPoints.search">
                 Cari
             </label>
 
@@ -753,6 +788,7 @@
                 type="search"
                 id="pointHistorySearch"
                 placeholder="Cari alasan perubahan poin..."
+                data-i18n-placeholder="studentPoints.searchPlaceholder"
                 oninput="renderPointHistory()"
             >
 
@@ -761,7 +797,7 @@
 
         <div class="student-point-filter-control">
 
-            <label for="pointHistoryType">
+            <label for="pointHistoryType" data-i18n="studentPoints.type">
                 Jenis
             </label>
 
@@ -770,15 +806,15 @@
                 onchange="renderPointHistory()"
             >
 
-                <option value="all">
+                <option value="all" data-i18n="studentPoints.all">
                     Semua
                 </option>
 
-                <option value="positive">
+                <option value="positive" data-i18n="studentPoints.positivePoint">
                     Poin positif
                 </option>
 
-                <option value="negative">
+                <option value="negative" data-i18n="studentPoints.negativePoint">
                     Poin negatif
                 </option>
 
@@ -789,7 +825,7 @@
 
         <div class="student-point-filter-control">
 
-            <label for="pointHistorySort">
+            <label for="pointHistorySort" data-i18n="studentPoints.sort">
                 Urutkan
             </label>
 
@@ -798,19 +834,19 @@
                 onchange="renderPointHistory()"
             >
 
-                <option value="newest">
+                <option value="newest" data-i18n="studentPoints.newest">
                     Terbaru
                 </option>
 
-                <option value="oldest">
+                <option value="oldest" data-i18n="studentPoints.oldest">
                     Terlama
                 </option>
 
-                <option value="largest">
+                <option value="largest" data-i18n="studentPoints.largestChange">
                     Perubahan terbesar
                 </option>
 
-                <option value="smallest">
+                <option value="smallest" data-i18n="studentPoints.smallestChange">
                     Perubahan terkecil
                 </option>
 
@@ -824,7 +860,7 @@
             class="student-point-filter-reset"
             onclick="resetPointHistoryFilters()"
         >
-            Reset
+            <span data-i18n="studentPoints.reset">Reset</span>
         </button>
 
     </div>
@@ -845,6 +881,7 @@
         class="lms-loading-spinner"
         role="status"
         aria-label="Memuat riwayat poin"
+        data-i18n-aria-label="studentPoints.loadingHistory"
     ></div>
 </div>
 
@@ -890,7 +927,7 @@
 
         <div class="student-point-print-document">
 
-            <span>
+            <span data-i18n="studentPoints.document">
                 Dokumen
             </span>
 
@@ -909,11 +946,11 @@
             OFFICIAL STUDENT RECORD
         </small>
 
-        <h1>
+        <h1 data-i18n="studentPoints.reportTitle">
             Laporan Poin Siswa
         </h1>
 
-        <p>
+        <p data-i18n="studentPoints.reportDescription">
             Ringkasan perkembangan dan riwayat poin siswa.
         </p>
 
@@ -924,7 +961,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.studentName">
                 Nama Siswa
             </span>
 
@@ -937,7 +974,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.class">
                 Kelas
             </span>
 
@@ -950,7 +987,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.reportDate">
                 Tanggal Laporan
             </span>
 
@@ -965,7 +1002,7 @@
 
     <div class="student-point-print-total">
 
-        <span>
+        <span data-i18n="studentPoints.currentTotalPoints">
             Total Poin Saat Ini
         </span>
 
@@ -980,7 +1017,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.positivePoints">
                 Poin Positif
             </span>
 
@@ -993,7 +1030,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.deduction">
                 Pengurangan
             </span>
 
@@ -1006,7 +1043,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.totalActivity">
                 Jumlah Aktivitas
             </span>
 
@@ -1019,7 +1056,7 @@
 
         <div>
 
-            <span>
+            <span data-i18n="studentPoints.positiveActivity">
                 Aktivitas Positif
             </span>
 
@@ -1034,7 +1071,7 @@
 
     <div class="student-point-print-history">
 
-        <h2>
+        <h2 data-i18n="studentPoints.pointChangeHistory">
             Riwayat Perubahan Poin
         </h2>
 
@@ -1045,19 +1082,19 @@
 
                 <tr>
 
-                    <th>
+                    <th data-i18n="studentPoints.number">
                         No
                     </th>
 
-                    <th>
+                    <th data-i18n="studentPoints.reason">
                         Alasan
                     </th>
 
-                    <th>
+                    <th data-i18n="studentPoints.date">
                         Tanggal
                     </th>
 
-                    <th>
+                    <th data-i18n="studentPoints.change">
                         Perubahan
                     </th>
 
@@ -1070,7 +1107,7 @@
 
                 <tr>
 
-                    <td colspan="4">
+                    <td colspan="4" data-i18n="studentPoints.noHistory">
                         Belum ada riwayat.
                     </td>
 
@@ -1087,7 +1124,7 @@
 
         <div>
 
-            <p>
+            <p data-i18n="studentPoints.automaticDocument">
                 Dokumen ini dibuat secara otomatis berdasarkan data LMS.
             </p>
 
@@ -1100,13 +1137,13 @@
 
         <div class="student-point-print-signature">
 
-            <span>
+            <span data-i18n="studentPoints.verification">
                 Verifikasi
             </span>
 
             <div></div>
 
-            <strong>
+            <strong data-i18n="studentPoints.teacherAdmin">
                 Guru / Admin
             </strong>
 
@@ -1144,6 +1181,49 @@ if (!studentId) {
 
     window.location.href =
         "/index.html";
+
+}
+
+
+function pointText(
+    key,
+    variables = {}
+) {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage.t ===
+            "function"
+    ) {
+
+        return window.LMSLanguage.t(
+            `studentPoints.${key}`,
+            variables
+        );
+
+    }
+
+
+    return key;
+
+}
+
+
+function getPointLanguage() {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage
+            .getLanguage === "function"
+    ) {
+
+        return window.LMSLanguage
+            .getLanguage();
+
+    }
+
+
+    return "id";
 
 }
 
@@ -1204,7 +1284,7 @@ function formatPointNumber(
 
 
     return numericValue.toLocaleString(
-        "id-ID"
+        getPointLanguage()
     );
 
 }
@@ -1249,7 +1329,7 @@ function formatPointShortDate(
 
 
     return new Intl.DateTimeFormat(
-        "id-ID",
+        getPointLanguage(),
         {
             day: "2-digit",
             month: "short"
@@ -1323,7 +1403,13 @@ function renderPointStudentInfo() {
             "studentClass"
         )
         .textContent =
-            `Kelas: ${studentClass}`;
+            pointText(
+                "classLabel",
+                {
+                    className:
+                        studentClass
+                }
+            );
 
 
     const sidebarName =
@@ -1575,7 +1661,9 @@ function renderPointMetrics() {
         .textContent =
             largestGain
                 ? largestGain.reason
-                : "Belum ada aktivitas positif";
+                : pointText(
+                    "noPositiveActivity"
+                );
 
 
     document
@@ -1597,7 +1685,9 @@ function renderPointMetrics() {
         .textContent =
             largestDeduction
                 ? largestDeduction.reason
-                : "Belum ada pengurangan poin";
+                : pointText(
+                    "noDeduction"
+                );
 
 
     const last30Element =
@@ -1899,11 +1989,19 @@ function renderPointTrend() {
             <div class="student-point-chart-empty">
 
                 <strong>
-                    Belum ada perkembangan poin
+                    ${escapeHtml(
+                        pointText(
+                            "noPointProgress"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Grafik akan muncul setelah ada aktivitas poin.
+                    ${escapeHtml(
+                        pointText(
+                            "pointProgressWillAppear"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -1912,7 +2010,9 @@ function renderPointTrend() {
 
 
         footer.textContent =
-            "Belum ada data perkembangan.";
+            pointText(
+                "noProgressData"
+            );
 
         return;
 
@@ -2177,8 +2277,16 @@ const plotBottom =
     r="6"
     tabindex="0"
 
-data-chart-tooltip="Tren poin: ${formatPointChange(
-    point.transaction.points
+data-chart-tooltip="${escapeHtml(
+    pointText(
+        "pointTrend",
+        {
+            points:
+                formatPointChange(
+                    point.transaction.points
+                )
+        }
+    )
 )}"
                 class="
                     student-point-trend-dot
@@ -2190,12 +2298,17 @@ data-chart-tooltip="Tren poin: ${formatPointChange(
                 "
             >
 
-<title>
-    Tren poin:
-    ${formatPointChange(
-        point.transaction.points
-    )}
-</title>
+<title>${escapeHtml(
+    pointText(
+        "pointTrend",
+        {
+            points:
+                formatPointChange(
+                    point.transaction.points
+                )
+        }
+    )
+)}</title>
 
             </circle>
 
@@ -2289,7 +2402,11 @@ data-chart-tooltip="Tren poin: ${formatPointChange(
                 ${graphHeight}
             "
             role="img"
-            aria-label="Grafik perkembangan poin"
+            aria-label="${escapeHtml(
+                pointText(
+                    "pointProgressChart"
+                )
+            )}"
         >
 
             ${gridLines}
@@ -2316,13 +2433,25 @@ data-chart-tooltip="Tren poin: ${formatPointChange(
 
 
     footer.textContent =
-        `Saldo sekarang ${formatPointNumber(
-            currentTotalPoints
-        )} · Saldo tertinggi ${formatPointNumber(
-            maximumBalance
-        )} · Saldo terendah ${formatPointNumber(
-            minimumBalance
-        )}`;
+        pointText(
+            "pointTrendSummary",
+            {
+                current:
+                    formatPointNumber(
+                        currentTotalPoints
+                    ),
+
+                highest:
+                    formatPointNumber(
+                        maximumBalance
+                    ),
+
+                lowest:
+                    formatPointNumber(
+                        minimumBalance
+                    )
+            }
+        );
 
 }
 
@@ -2443,11 +2572,19 @@ function renderMonthlyPointChart() {
             <div class="student-point-chart-empty">
 
                 <strong>
-                    Belum ada aktivitas bulanan
+                    ${escapeHtml(
+                        pointText(
+                            "noMonthlyActivityTitle"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Ringkasan akan muncul setelah ada transaksi.
+                    ${escapeHtml(
+                        pointText(
+                            "monthlyActivityWillAppear"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -2456,7 +2593,9 @@ function renderMonthlyPointChart() {
 
 
         summary.textContent =
-            "Belum ada aktivitas bulanan.";
+            pointText(
+                "noMonthlyActivity"
+            );
 
         return;
 
@@ -2483,7 +2622,7 @@ function renderMonthlyPointChart() {
 
         const monthName =
             new Intl.DateTimeFormat(
-                "id-ID",
+                getPointLanguage(),
                 {
                     month: "short",
                     year: "numeric"
@@ -2603,9 +2742,15 @@ function renderMonthlyPointChart() {
 
 
     summary.textContent =
-        `Perubahan bulan terbaru: ${formatPointChange(
-            latestMonthNet
-        )}`;
+        pointText(
+            "latestMonthChange",
+            {
+                points:
+                    formatPointChange(
+                        latestMonthNet
+                    )
+            }
+        );
 
 }
 
@@ -2624,7 +2769,7 @@ function renderPointHistory() {
             .value
             .trim()
             .toLocaleLowerCase(
-                "id-ID"
+                getPointLanguage()
             );
 
 
@@ -2646,10 +2791,10 @@ function renderPointHistory() {
 
                 const reason =
                     String(
-                        transaction.reason ||
-                        ""
-                    ).toLocaleLowerCase(
-                        "id-ID"
+                    transaction.reason ||
+                    ""
+                ).toLocaleLowerCase(
+                        getPointLanguage()
                     );
 
 
@@ -2746,7 +2891,16 @@ function renderPointHistory() {
             "pointHistorySummary"
         )
         .textContent =
-            `${visibleTransactions.length} dari ${allPointTransactions.length} aktivitas ditampilkan`;
+            pointText(
+                "historySummary",
+                {
+                    visible:
+                        visibleTransactions.length,
+
+                    total:
+                        allPointTransactions.length
+                }
+            );
 
 
     if (
@@ -2758,11 +2912,19 @@ function renderPointHistory() {
             <div class="empty-state">
 
                 <strong>
-                    Tidak ada aktivitas ditemukan
+                    ${escapeHtml(
+                        pointText(
+                            "noActivityFound"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Coba ubah pencarian atau filter.
+                    ${escapeHtml(
+                        pointText(
+                            "adjustSearchOrFilter"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -2821,7 +2983,9 @@ function renderPointHistory() {
                         <strong>
                             ${escapeHtml(
                                 transaction.reason ||
-                                "Tanpa alasan"
+                                pointText(
+                                    "noReason"
+                                )
                             )}
                         </strong>
 
@@ -2913,7 +3077,7 @@ function populatePointPrintReport() {
 
     const generatedDate =
         new Intl.DateTimeFormat(
-            "id-ID",
+            getPointLanguage(),
             {
                 dateStyle: "long",
                 timeStyle: "short"
@@ -2975,7 +3139,13 @@ function populatePointPrintReport() {
             "printFooterDate"
         )
         .textContent =
-            `Dibuat ${generatedDate}`;
+            pointText(
+                "generatedAt",
+                {
+                    date:
+                        generatedDate
+                }
+            );
 
 
     document
@@ -3046,7 +3216,11 @@ function populatePointPrintReport() {
             <tr>
 
                 <td colspan="4">
-                    Belum ada riwayat poin.
+                    ${escapeHtml(
+                        pointText(
+                            "noPointHistory"
+                        )
+                    )}
                 </td>
 
             </tr>
@@ -3093,7 +3267,9 @@ function populatePointPrintReport() {
                 <td>
                     ${escapeHtml(
                         transaction.reason ||
-                        "Tanpa alasan"
+                        pointText(
+                            "noReason"
+                        )
                     )}
                 </td>
 
@@ -3131,7 +3307,9 @@ function printPointReport() {
     if (!pointStudentData) {
 
         alert(
-            "Data poin belum selesai dimuat."
+            pointText(
+                "dataStillLoading"
+            )
         );
 
         return;
@@ -3166,7 +3344,11 @@ async function loadPoints() {
         <div
             class="lms-loading-spinner"
             role="status"
-            aria-label="Memuat riwayat poin"
+            aria-label="${escapeHtml(
+                pointText(
+                    "loadingHistory"
+                )
+            )}"
         ></div>
 
     `;
@@ -3191,13 +3373,19 @@ async function loadPoints() {
                 <div class="empty-state">
 
                     <strong>
-                        Gagal memuat poin
+                        ${escapeHtml(
+                            pointText(
+                                "loadFailed"
+                            )
+                        )}
                     </strong>
 
                     <span>
                         ${escapeHtml(
                             data.message ||
-                            "Data poin tidak tersedia."
+                            pointText(
+                                "dataUnavailable"
+                            )
                         )}
                     </span>
 
@@ -3263,11 +3451,19 @@ async function loadPoints() {
             <div class="empty-state">
 
                 <strong>
-                    Tidak dapat terhubung
+                    ${escapeHtml(
+                        pointText(
+                            "cannotConnect"
+                        )
+                    )}
                 </strong>
 
                 <span>
-                    Periksa server lalu coba kembali.
+                    ${escapeHtml(
+                        pointText(
+                            "checkServer"
+                        )
+                    )}
                 </span>
 
             </div>
@@ -3282,7 +3478,11 @@ async function loadPoints() {
             .innerHTML = `
 
                 <div class="student-point-chart-empty">
-                    Gagal memuat grafik.
+                    ${escapeHtml(
+                        pointText(
+                            "chartLoadFailed"
+                        )
+                    )}
                 </div>
 
             `;
@@ -3295,7 +3495,11 @@ async function loadPoints() {
             .innerHTML = `
 
                 <div class="student-point-chart-empty">
-                    Gagal memuat grafik.
+                    ${escapeHtml(
+                        pointText(
+                            "chartLoadFailed"
+                        )
+                    )}
                 </div>
 
             `;
@@ -3378,7 +3582,47 @@ function escapeHtml(
 
 }
 
-        loadPoints();
+function refreshStudentPointsLanguage() {
+
+    if (!pointStudentData) {
+        return;
+    }
+
+
+    renderPointStudentInfo();
+    renderPointMetrics();
+    renderPointTrend();
+    renderMonthlyPointChart();
+    renderPointHistory();
+    populatePointPrintReport();
+
+}
+
+
+window.addEventListener(
+    "lmslanguagechange",
+    refreshStudentPointsLanguage
+);
+
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        loadPoints,
+        {
+            once: true
+        }
+    );
+
+} else {
+
+    loadPoints();
+
+}
 
     </script>
 

@@ -1,6 +1,93 @@
 (() => {
     "use strict";
 
+function directoryText(
+    key,
+    variables = {}
+) {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage.t ===
+            "function"
+    ) {
+
+        return window.LMSLanguage.t(
+            `studentDirectory.${key}`,
+            variables
+        );
+
+    }
+
+    return key;
+
+}
+
+
+function getDirectoryLanguage() {
+
+    if (
+        window.LMSLanguage &&
+        typeof window.LMSLanguage
+            .getLanguage === "function"
+    ) {
+
+        return window.LMSLanguage
+            .getLanguage();
+
+    }
+
+    return "id";
+
+}
+
+function directoryStudentCount(
+    count
+) {
+
+    return directoryText(
+        count === 1
+            ? "oneStudent"
+            : "manyStudents",
+        {
+            count
+        }
+    );
+
+}
+
+
+function directoryTeacherCount(
+    count
+) {
+
+    return directoryText(
+        count === 1
+            ? "oneTeacher"
+            : "manyTeachers",
+        {
+            count
+        }
+    );
+
+}
+
+
+function directoryHomeroomCount(
+    count
+) {
+
+    return directoryText(
+        count === 1
+            ? "oneHomeroomTeacher"
+            : "manyHomeroomTeachers",
+        {
+            count
+        }
+    );
+
+}
+
 
     function normalizeAccountType(value) {
         return value === "teacher"
@@ -109,8 +196,17 @@ return [
             );
 
 
-        image.alt =
-            `Foto profil ${name || "akun"}`;
+image.alt =
+    directoryText(
+        "avatarAlt",
+        {
+            name:
+                name ||
+                directoryText(
+                    accountType
+                )
+        }
+    );
 
         image.loading =
             "lazy";
@@ -191,36 +287,60 @@ return [
     }
 
 
-    function formatDate(value) {
-        if (!value) {
-            return "-";
-        }
+function formatDate(value) {
 
-
-        const date =
-            new Date(
-                `${value}T00:00:00`
-            );
-
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-            return String(value);
-        }
-
-
-        return date.toLocaleDateString(
-            "id-ID",
-            {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            }
-        );
+    if (!value) {
+        return "-";
     }
+
+
+    const parts =
+        String(value).split("-");
+
+
+    if (parts.length !== 3) {
+        return String(value);
+    }
+
+
+    const year =
+        Number(parts[0]);
+
+    const month =
+        Number(parts[1]);
+
+    const day =
+        Number(parts[2]);
+
+
+    if (
+        !year ||
+        !month ||
+        !day
+    ) {
+        return String(value);
+    }
+
+
+    return new Intl.DateTimeFormat(
+        getDirectoryLanguage(),
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC"
+        }
+    ).format(
+        new Date(
+            Date.UTC(
+                year,
+                month - 1,
+                day
+            )
+        )
+    );
+
+}
 
 
     function getSubjectNames(subjects) {
@@ -343,6 +463,12 @@ return [
         let requestController =
             null;
 
+        let currentProfileData =
+    null;
+
+let currentProfileAccountType =
+    null;
+
 
         function createResultCard(account) {
             const accountType =
@@ -369,6 +495,9 @@ const bannerColor =
 
 button.dataset.accountType =
     accountType;
+
+button.directoryAccount =
+    account;
 
 button.dataset.bannerColor =
     bannerColor;
@@ -415,14 +544,12 @@ button.dataset.bannerColor =
                     "strong"
                 );
 
-            name.textContent =
-                account.fullName ||
-                account.name ||
-                (
-                    accountType === "teacher"
-                        ? "Guru"
-                        : "Siswa"
-                );
+name.textContent =
+    account.fullName ||
+    account.name ||
+    directoryText(
+        accountType
+    );
 
 
 heading.appendChild(
@@ -443,8 +570,10 @@ if (accountType === "teacher") {
         );
 
 
-    let subjectSummary =
-        "Belum ada mapel";
+let subjectSummary =
+    directoryText(
+        "noSubjects"
+    );
 
 
 if (subjects.length === 1) {
@@ -459,18 +588,25 @@ if (subjects.length === 1) {
         subjects.length - 1;
 
 
-    subjectSummary =
-        `${firstSubject} +${remainingCount} lainnya`;
+subjectSummary =
+    `${firstSubject} ${directoryText(
+        "moreSubjects",
+        {
+            count:
+                remainingCount
+        }
+    )}`;
 }
 
 
-    meta.textContent =
-        `Guru · ${subjectSummary}`;
+meta.textContent =
+    `${directoryText(
+        "teacher"
+    )} · ${subjectSummary}`;
 
 } else {
                 meta.textContent =
-                    `${account.className || "-"} · ${
-                        account.name || "-"
+                    `${account.className || "-"
                     }`;
             }
 
@@ -518,8 +654,10 @@ async function searchDirectory() {
 
 
     if (query.length < 2) {
-        status.textContent =
-            "Ketik minimal 2 karakter untuk mulai mencari.";
+status.textContent =
+    directoryText(
+        "minimumSearch"
+    );
 
         return;
     }
@@ -547,34 +685,50 @@ async function searchDirectory() {
         );
 
 
-    if (normalizedQuery === "!all") {
-        status.textContent =
-            "Memuat seluruh Directory...";
+if (normalizedQuery === "!all") {
 
-    } else if (
-        normalizedQuery ===
-        "!teacher"
-    ) {
-        status.textContent =
-            "Memuat semua guru...";
+    status.textContent =
+        directoryText(
+            "loadingAll"
+        );
 
-    } else if (
-        normalizedQuery ===
-        "!student"
-    ) {
-        status.textContent =
-            "Memuat semua siswa...";
+} else if (
+    normalizedQuery ===
+    "!teacher"
+) {
 
-    } else if (
-        /^!class\s*=/i.test(query)
-    ) {
-        status.textContent =
-            "Memuat anggota kelas...";
+    status.textContent =
+        directoryText(
+            "loadingTeachers"
+        );
 
-    } else {
-        status.textContent =
-            "Mencari siswa dan guru...";
-    }
+} else if (
+    normalizedQuery ===
+    "!student"
+) {
+
+    status.textContent =
+        directoryText(
+            "loadingStudents"
+        );
+
+} else if (
+    /^!class\s*=/i.test(query)
+) {
+
+    status.textContent =
+        directoryText(
+            "loadingClass"
+        );
+
+} else {
+
+    status.textContent =
+        directoryText(
+            "searching"
+        );
+
+}
 
 
     try {
@@ -617,8 +771,10 @@ async function searchDirectory() {
             !data.success
         ) {
             throw new Error(
-                data.message ||
-                "Pencarian gagal."
+data.message ||
+directoryText(
+    "searchFailed"
+)
             );
         }
 
@@ -635,56 +791,84 @@ async function searchDirectory() {
          * Command campuran atau tidak valid
          * tidak menghasilkan card apa pun.
          */
-        if (
-            data.searchMode ===
-            "invalid"
-        ) {
-            status.textContent =
-                "Tidak ada hasil yang cocok.";
+if (
+    data.searchMode ===
+    "invalid"
+) {
 
-            return;
-        }
+    status.textContent =
+        directoryText(
+            "noMatches"
+        );
 
+    return;
 
-        if (accounts.length === 0) {
-            if (
-                data.searchMode ===
-                "class"
-            ) {
-                status.textContent =
-                    data.className
-                        ? `Tidak ada anggota Directory di ${data.className}.`
-                        : "Kelas tersebut tidak ditemukan.";
-
-            } else if (
-                data.searchMode ===
-                "teacher"
-            ) {
-                status.textContent =
-                    "Belum ada guru di Directory.";
-
-            } else if (
-                data.searchMode ===
-                "student"
-            ) {
-                status.textContent =
-                    "Belum ada siswa di Directory.";
-
-            } else if (
-                data.searchMode ===
-                "all"
-            ) {
-                status.textContent =
-                    "Directory masih kosong.";
-
-            } else {
-                status.textContent =
-                    "Tidak ada siswa atau guru yang cocok.";
-            }
+}
 
 
-            return;
-        }
+ if (accounts.length === 0) {
+
+    if (
+        data.searchMode ===
+        "class"
+    ) {
+
+        status.textContent =
+            data.className
+                ? directoryText(
+                    "noDirectoryMembers",
+                    {
+                        className:
+                            data.className
+                    }
+                )
+                : directoryText(
+                    "classNotFound"
+                );
+
+    } else if (
+        data.searchMode ===
+        "teacher"
+    ) {
+
+        status.textContent =
+            directoryText(
+                "noTeachers"
+            );
+
+    } else if (
+        data.searchMode ===
+        "student"
+    ) {
+
+        status.textContent =
+            directoryText(
+                "noStudents"
+            );
+
+    } else if (
+        data.searchMode ===
+        "all"
+    ) {
+
+        status.textContent =
+            directoryText(
+                "directoryEmpty"
+            );
+
+    } else {
+
+        status.textContent =
+            directoryText(
+                "noAccountsMatch"
+            );
+
+    }
+
+
+    return;
+
+}
 
 
         const fragment =
@@ -721,75 +905,151 @@ async function searchDirectory() {
             ).length;
 
 
-        if (
-            data.searchMode ===
-            "teacher"
-        ) {
-            status.textContent =
-                `${teacherCount} guru ditemukan.`;
+ if (
+    data.searchMode ===
+    "teacher"
+) {
 
-        } else if (
-            data.searchMode ===
-            "student"
-        ) {
-            status.textContent =
-                `${studentCount} siswa ditemukan.`;
-
-        } else if (
-            data.searchMode ===
-            "class"
-        ) {
-            const statusParts = [];
-
-
-            if (studentCount > 0) {
-                statusParts.push(
-                    `${studentCount} siswa`
-                );
+    status.textContent =
+        directoryText(
+            "found",
+            {
+                summary:
+                    directoryTeacherCount(
+                        teacherCount
+                    )
             }
+        );
 
+} else if (
+    data.searchMode ===
+    "student"
+) {
 
-            if (teacherCount > 0) {
-                statusParts.push(
-                    `${teacherCount} wali kelas`
-                );
+    status.textContent =
+        directoryText(
+            "found",
+            {
+                summary:
+                    directoryStudentCount(
+                        studentCount
+                    )
             }
+        );
+
+} else if (
+    data.searchMode ===
+    "class"
+) {
+
+    const statusParts = [];
 
 
-            status.textContent =
-                `${statusParts.join(" dan ")} di ${
+    if (studentCount > 0) {
+
+        statusParts.push(
+            directoryStudentCount(
+                studentCount
+            )
+        );
+
+    }
+
+
+    if (teacherCount > 0) {
+
+        statusParts.push(
+            directoryHomeroomCount(
+                teacherCount
+            )
+        );
+
+    }
+
+
+    status.textContent =
+        directoryText(
+            "classFound",
+            {
+                summary:
+                    statusParts.join(
+                        getDirectoryLanguage() ===
+                            "en-US"
+                            ? " and "
+                            : " dan "
+                    ),
+
+                className:
                     data.className ||
-                    "kelas tersebut"
-                }.`;
-
-        } else if (
-            data.searchMode ===
-            "all"
-        ) {
-            status.textContent =
-                `${studentCount} siswa dan ${teacherCount} guru di Directory.`;
-
-        } else {
-            const statusParts = [];
-
-
-            if (studentCount > 0) {
-                statusParts.push(
-                    `${studentCount} siswa`
-                );
+                    directoryText(
+                        "class"
+                    )
             }
+        );
 
+} else if (
+    data.searchMode ===
+    "all"
+) {
 
-            if (teacherCount > 0) {
-                statusParts.push(
-                    `${teacherCount} guru`
-                );
+    status.textContent =
+        directoryText(
+            "allFound",
+            {
+                students:
+                    directoryStudentCount(
+                        studentCount
+                    ),
+
+                teachers:
+                    directoryTeacherCount(
+                        teacherCount
+                    )
             }
+        );
+
+} else {
+
+    const statusParts = [];
 
 
-            status.textContent =
-                `${statusParts.join(" dan ")} ditemukan.`;
-        }
+    if (studentCount > 0) {
+
+        statusParts.push(
+            directoryStudentCount(
+                studentCount
+            )
+        );
+
+    }
+
+
+    if (teacherCount > 0) {
+
+        statusParts.push(
+            directoryTeacherCount(
+                teacherCount
+            )
+        );
+
+    }
+
+
+    status.textContent =
+        directoryText(
+            "found",
+            {
+                summary:
+                    statusParts.join(
+                        getDirectoryLanguage() ===
+                            "en-US"
+                            ? " and "
+                            : " dan "
+                    )
+            }
+        );
+
+}
 
     } catch (error) {
         if (
@@ -801,14 +1061,16 @@ async function searchDirectory() {
 
 
         console.error(
-            "Directory search gagal:",
+            "Directory search failed:",
             error
         );
 
 
-        status.textContent =
-            error.message ||
-            "Directory tidak dapat dimuat.";
+status.textContent =
+    error.message ||
+    directoryText(
+        "directoryLoadFailed"
+    );
 
     } finally {
         if (
@@ -961,220 +1223,297 @@ const bannerColor =
         }
 
 
-        function renderTeacherProfile(
-            teacher
-        ) {
-            const subjects =
-                getSubjectNames(
-                    teacher.subjects
+function renderTeacherProfile(
+    teacher
+) {
+
+    const subjects =
+        getSubjectNames(
+            teacher.subjects
+        );
+
+
+    const subjectText =
+        subjects.length > 0
+            ? subjects.join(", ")
+            : directoryText(
+                "noSubjects"
+            );
+
+
+    let classRole =
+        directoryText(
+            "specialistTeacher"
+        );
+
+
+    if (teacher.isHomeroomTeacher) {
+
+        classRole =
+            teacher.homeroomClass?.name
+                ? `${directoryText(
+                    "homeroomTeacher"
+                )} ${
+                    teacher
+                        .homeroomClass
+                        .name
+                }`
+                : directoryText(
+                    "homeroomTeacher"
                 );
 
-
-            const subjectText =
-                subjects.length > 0
-                    ? subjects.join(", ")
-                    : "Belum diatur";
+    }
 
 
-            const classRole =
-                teacher.isHomeroomTeacher
-                    ? teacher.homeroomClass?.name
-                        ? `Wali Kelas ${
-                            teacher.homeroomClass.name
-                        }`
-                        : "Wali Kelas"
-                    : "Guru Spesialis";
+    profileName.textContent =
+        teacher.fullName ||
+        teacher.name ||
+        directoryText(
+            "teacher"
+        );
 
 
-            profileName.textContent =
-                teacher.fullName ||
-                teacher.name ||
-                "Guru";
+    profileMeta.textContent =
+        `${directoryText(
+            "teacher"
+        )} · ${directoryText(
+            "teacherAccount"
+        )}`;
 
 
-            profileMeta.textContent =
-                "Teacher · Akun guru";
+    profileBio.textContent =
+        teacher.bio ||
+        directoryText(
+            "noBio"
+        );
 
 
-            profileBio.textContent =
-                teacher.bio ||
-                "Belum ada bio.";
+    profileGrid.replaceChildren(
+
+        createDetailItem(
+            directoryText(
+                "subjects"
+            ),
+            subjectText
+        ),
+
+        createDetailItem(
+            directoryText(
+                "dateOfBirth"
+            ),
+            formatDate(
+                teacher.dateOfBirth
+            )
+        ),
+
+        createDetailItem(
+            directoryText(
+                "classRole"
+            ),
+            classRole
+        )
+
+    );
 
 
-            profileGrid.replaceChildren(
+    privacyNote.textContent =
+        "";
 
-                createDetailItem(
-                    "Mata Pelajaran",
-                    subjectText
+    privacyNote.classList.remove(
+        "is-visible"
+    );
+
+}
+
+
+ function renderStudentProfile(
+    student
+) {
+
+    profileName.textContent =
+        student.fullName ||
+        student.name ||
+        directoryText(
+            "student"
+        );
+
+
+    profileMeta.textContent =
+        `${student.className || "-"} · ${
+            directoryText(
+                "studentAccount"
+            )
+        }`;
+
+
+    profileBio.textContent =
+        student.bio ||
+        directoryText(
+            "noBio"
+        );
+
+
+    if (mode === "admin") {
+
+        profileGrid.replaceChildren(
+
+            createDetailItem(
+                directoryText(
+                    "shortName"
                 ),
+                student.name || "-"
+            ),
 
-                createDetailItem(
-                    "Tanggal Lahir",
-                    formatDate(
-                        teacher.dateOfBirth
-                    )
+            createDetailItem(
+                directoryText(
+                    "studentCode"
                 ),
+                student.loginCode || "-"
+            ),
 
-                createDetailItem(
-                    "Peran Kelas",
-                    classRole
+            createDetailItem(
+                directoryText(
+                    "dateOfBirth"
+                ),
+                formatDate(
+                    student.dateOfBirth
                 )
+            ),
 
-            );
+            createDetailItem(
+                directoryText(
+                    "class"
+                ),
+                student.className || "-"
+            ),
 
+            createDetailItem(
+                directoryText(
+                    "totalPoints"
+                ),
+                student.totalPoints ?? 0
+            ),
 
-            privacyNote.textContent =
-                "";
-
-            privacyNote.classList.remove(
-                "is-visible"
-            );
-        }
-
-
-        function renderStudentProfile(
-            student
-        ) {
-            profileName.textContent =
-                student.fullName ||
-                student.name ||
-                "Siswa";
-
-
-            profileMeta.textContent =
-                `${student.className || "-"} · Akun siswa`;
-
-
-            profileBio.textContent =
-                student.bio ||
-                "Belum ada bio.";
-
-
-            if (mode === "admin") {
-                profileGrid.replaceChildren(
-
-                    createDetailItem(
-                        "Nama Pendek",
-                        student.name ||
-                        "-"
-                    ),
-
-                    createDetailItem(
-                        "Kode Siswa",
-                        student.loginCode ||
-                        "-"
-                    ),
-
-                    createDetailItem(
-                        "Tanggal Lahir",
-                        formatDate(
-                            student.dateOfBirth
-                        )
-                    ),
-
-                    createDetailItem(
-                        "Kelas",
-                        student.className ||
-                        "-"
-                    ),
-
-                    createDetailItem(
-                        "Total Poin",
-                        student.totalPoints ?? 0
-                    ),
-
-                    createDetailItem(
-                        "Nilai Rata-rata",
-                        student.averageScore ??
-                        "Belum ada nilai"
+            createDetailItem(
+                directoryText(
+                    "averageScore"
+                ),
+                student.averageScore ??
+                    directoryText(
+                        "noScore"
                     )
+            )
 
-                );
-
-
-                privacyNote.textContent =
-                    "";
-
-                privacyNote.classList.remove(
-                    "is-visible"
-                );
-
-                return;
-            }
+        );
 
 
-            const showStats =
-                Boolean(
-                    student.showAcademicStats
-                );
+        privacyNote.textContent =
+            "";
+
+        privacyNote.classList.remove(
+            "is-visible"
+        );
+
+        return;
+
+    }
 
 
-            profileGrid.replaceChildren(
+    const showStats =
+        Boolean(
+            student.showAcademicStats
+        );
 
-                createDetailItem(
-                    "Nama Pendek",
-                    student.name ||
-                    "-"
-                ),
 
-                createDetailItem(
-                    "Kelas",
-                    student.className ||
-                    "-"
-                ),
+    profileGrid.replaceChildren(
 
-                createDetailItem(
-                    "Kode Siswa",
-                    "******",
-                    true
-                ),
+        createDetailItem(
+            directoryText(
+                "shortName"
+            ),
+            student.name || "-"
+        ),
 
-                createDetailItem(
-                    "Tanggal Lahir",
-                    formatDate(
-                        student.dateOfBirth
-                    )
-                ),
+        createDetailItem(
+            directoryText(
+                "class"
+            ),
+            student.className || "-"
+        ),
 
-                createDetailItem(
-                    "Total Poin",
-                    showStats
-                        ? String(
-                            student.totalPoints ??
-                            0
-                        )
-                        : "**",
-                    !showStats
-                ),
+        createDetailItem(
+            directoryText(
+                "studentCode"
+            ),
+            "******",
+            true
+        ),
 
-                createDetailItem(
-                    "Nilai Rata-rata",
-                    showStats
-                        ? (
-                            student.averageScore ??
-                            "Belum ada nilai"
-                        )
-                        : "**",
-                    !showStats
+        createDetailItem(
+            directoryText(
+                "dateOfBirth"
+            ),
+            formatDate(
+                student.dateOfBirth
+            )
+        ),
+
+        createDetailItem(
+            directoryText(
+                "totalPoints"
+            ),
+            showStats
+                ? String(
+                    student.totalPoints ??
+                    0
                 )
+                : "**",
+            !showStats
+        ),
 
-            );
+        createDetailItem(
+            directoryText(
+                "averageScore"
+            ),
+            showStats
+                ? (
+                    student.averageScore ??
+                    directoryText(
+                        "noScore"
+                    )
+                )
+                : "**",
+            !showStats
+        )
+
+    );
 
 
-            privacyNote.textContent =
-                "Pemilik profil menyembunyikan statistik akademiknya.";
-
-            privacyNote.classList.toggle(
-                "is-visible",
-                !showStats
-            );
-        }
+    privacyNote.textContent =
+        directoryText(
+            "hiddenAcademicStats"
+        );
 
 
-        function renderProfile(
-            profileData,
-            accountType
-        ) {
+    privacyNote.classList.toggle(
+        "is-visible",
+        !showStats
+    );
+
+}
+
+
+function renderProfile(
+    profileData,
+    accountType,
+    shouldScroll = true
+) {
+
+    currentProfileData =
+        profileData;
+
+    currentProfileAccountType =
+        accountType;
             applyProfileTheme(
                 profileData,
                 accountType
@@ -1205,10 +1544,14 @@ const bannerColor =
                 false;
 
 
-            profile.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest"
-            });
+if (shouldScroll) {
+
+    profile.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+    });
+
+}
         }
 
 
@@ -1241,6 +1584,51 @@ const bannerColor =
                     );
             }
         );
+
+        window.addEventListener(
+    "lmslanguagechange",
+    () => {
+
+        Array.from(
+            results.children
+        ).forEach(
+            oldCard => {
+
+                const account =
+                    oldCard
+                        .directoryAccount;
+
+
+                if (!account) {
+                    return;
+                }
+
+
+                oldCard.replaceWith(
+                    createResultCard(
+                        account
+                    )
+                );
+
+            }
+        );
+
+
+        if (
+            currentProfileData &&
+            currentProfileAccountType
+        ) {
+
+            renderProfile(
+                currentProfileData,
+                currentProfileAccountType,
+                false
+            );
+
+        }
+
+    }
+);
 
 
         root.studentDirectoryFocus =
