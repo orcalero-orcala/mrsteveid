@@ -177,6 +177,7 @@
 >
 
 <script src="/student-profile-initial.js"></script>
+<script src="/language.js?v=4"></script>
 
 <style>
 /* =========================================
@@ -333,7 +334,7 @@
                         ◫
                     </span>
 
-                    Dashboard
+                    <span data-i18n="studentDashboard.dashboard">Dashboard</span>
                 </button>
 
                 <button
@@ -345,7 +346,7 @@
         S
     </span>
 
-    Profile
+    <span data-i18n="studentDashboard.profile">Profil</span>
 </button>
 
 
@@ -358,7 +359,7 @@
                         ★
                     </span>
 
-                    Poin Saya
+                    <span data-i18n="studentDashboard.myPoints">Poin Saya</span>
                 </button>
 
 
@@ -371,7 +372,7 @@
                         ▤
                     </span>
 
-                    Nilai Saya
+                    <span data-i18n="studentDashboard.myGrades">Nilai Saya</span>
                 </button>
 
                 <button
@@ -382,7 +383,7 @@
     "
 >
     <span class="nav-icon">?</span>
-    Quiz
+    <span data-i18n="studentDashboard.quiz">Quiz</span>
 </button>
 
 
@@ -394,13 +395,27 @@
                         ◉
                     </span>
 
-                    Classroom Feed
+                    <span data-i18n="studentDashboard.classroomFeed">Feed Kelas</span>
                 </button>
 
             </nav>
 
 
             <div class="sidebar-bottom">
+
+                <div class="sidebar-language-setting">
+                    <span class="sidebar-language-label">LANGUAGE</span>
+
+                    <div
+                        class="home-v2-language-switch sidebar-language-switch"
+                        role="group"
+                        aria-label="Pilih bahasa"
+                        data-i18n-aria-label="language.selectorLabel"
+                    >
+                        <button type="button" class="home-v2-language-option" data-language-option="id" aria-pressed="true" aria-label="Bahasa Indonesia">ID</button>
+                        <button type="button" class="home-v2-language-option" data-language-option="en-US" aria-pressed="false" aria-label="English (US)">EN</button>
+                    </div>
+                </div>
 
                 <div class="sidebar-profile">
 
@@ -427,6 +442,7 @@
                     class="logout-button"
                     type="button"
                     onclick="logout()"
+                    data-i18n="studentDashboard.logout"
                 >
                     Keluar
                 </button>
@@ -449,11 +465,11 @@
 
                 <div>
 
-                    <h2>
-                        Classroom Feed
+                    <h2 data-i18n="studentFeed.title">
+                        Feed Kelas
                     </h2>
 
-                    <p>
+                    <p data-i18n="studentFeed.topbarDescription">
                         Diskusi dan komunikasi kelas
                     </p>
 
@@ -540,15 +556,15 @@
     </div>
 
 
-    <div
-        id="studentFeedModerationReasonRow"
-        class="student-feed-moderation-reason"
-        style="display: none;"
-    >
+<div
+    id="studentFeedModerationReasonRow"
+    class="student-feed-moderation-reason"
+    style="display: none;"
+>
 
-        <small>
-            Alasan
-        </small>
+    <small data-i18n="studentFeed.reason">
+        Alasan
+    </small>
 
         <p
             id="studentFeedModerationReason"
@@ -591,11 +607,11 @@
             CLASSROOM
         </small>
 
-        <h1>
-            Classroom Feed
+        <h1 data-i18n="studentFeed.title">
+            Feed Kelas
         </h1>
 
-        <p>
+        <p data-i18n="studentFeed.description">
             Bagikan informasi, berdiskusi,
             reply, dan mention teman atau guru.
         </p>
@@ -631,11 +647,11 @@
 
                         <div>
 
-                            <strong>
+                            <strong data-i18n="studentFeed.createPost">
                                 Buat postingan
                             </strong>
 
-                            <span>
+                            <span data-i18n="studentFeed.shareToClass">
                                 Bagikan sesuatu ke kelas
                             </span>
 
@@ -649,7 +665,7 @@
 
                         <div class="feed-target-row">
 
-                            <span class="feed-field-label">
+                            <span class="feed-field-label" data-i18n="studentFeed.sendTo">
                                 Kirim ke
                             </span>
 
@@ -663,7 +679,7 @@
                                     checked
                                 >
 
-                                <span>
+                                <span data-i18n="studentFeed.myClass">
                                     Kelas Saya
                                 </span>
 
@@ -696,6 +712,7 @@
         role="textbox"
         aria-multiline="true"
         data-placeholder="Mulai diskusi atau bagikan informasi ke kelas..."
+        data-i18n-editor-placeholder="studentFeed.postPlaceholder"
         spellcheck="true"
     ></div>
 
@@ -785,6 +802,8 @@
                 feed-format-clear-button
             "
             data-format="clear"
+            data-i18n-title="studentFeed.clearFormatting"
+data-i18n-aria-label="studentFeed.clearFormatting"
             title="Hapus formatting"
             aria-label="Hapus formatting"
         >
@@ -807,6 +826,8 @@
     data-format="bullet"
     title="Daftar poin"
     aria-label="Daftar poin"
+    data-i18n-title="studentFeed.bulletList"
+data-i18n-aria-label="studentFeed.bulletList"
 >
     <svg
         viewBox="0 0 24 24"
@@ -833,8 +854,11 @@
                 feed-post-image-button
                 feed-composer-feature-button
             "
-            title="Tambahkan gambar"
-            aria-label="Tambahkan gambar"
+title="Tambahkan gambar"
+aria-label="Tambahkan gambar"
+data-i18n-title="studentFeed.addImageTooltip"
+data-i18n-aria-label="studentFeed.addImageTooltip"
+
         >
             <svg
                 viewBox="0 0 24 24"
@@ -855,9 +879,12 @@
                 feed-upcoming-button
                 feed-poll-button
             "
-            disabled
-            aria-disabled="true"
-            title="Poll segera hadir"
+disabled
+aria-disabled="true"
+title="Poll segera hadir"
+aria-label="Poll segera hadir"
+data-i18n-title="studentFeed.pollComingSoon"
+data-i18n-aria-label="studentFeed.pollComingSoon"
         >
             <svg
                 viewBox="0 0 24 24"
@@ -868,9 +895,12 @@
                 ></path>
             </svg>
 
-            <span class="feed-upcoming-tooltip">
-                Segera hadir
-            </span>
+<span
+    class="feed-upcoming-tooltip"
+    data-i18n="studentFeed.comingSoon"
+>
+    Segera hadir
+</span>
         </button>
 
     </div>
@@ -883,7 +913,7 @@
     class="feed-post-button student-modern-primary-button"
     style="position: relative; top: 4px;"
 >
-    Posting
+    <span data-i18n="studentFeed.post">Posting</span>
 </button>
 
     </div>
@@ -916,11 +946,11 @@
 
     <div>
 
-        <h2>
+        <h2 data-i18n="studentFeed.latestFeed">
             Feed terbaru
         </h2>
 
-        <p>
+        <p data-i18n="studentFeed.feedScope">
             Postingan kelas dan global
         </p>
 
@@ -934,7 +964,7 @@
             class="feed-filter-select"
             aria-label="Filter Classroom Feed"
         >
-            <option value="all">
+            <option value="all" data-i18n="studentFeed.all">
                 Semua
             </option>
 
@@ -942,7 +972,7 @@
                 Global
             </option>
 
-            <option value="class">
+            <option value="class" data-i18n="studentFeed.myClass">
                 Kelas Saya
             </option>
         </select>
@@ -953,7 +983,7 @@
             type="button"
             class="secondary-button"
         >
-            ↻ Refresh
+            ↻ <span data-i18n="studentFeed.refresh">Muat Ulang</span>
         </button>
 
     </div>
@@ -965,10 +995,11 @@
     id="announcementList"
     class="feed-list"
 >
-    <div
-        class="classroom-feed-loading-panel"
-        role="status"
-        aria-label="Memuat feed"
+<div
+    class="classroom-feed-loading-panel"
+    role="status"
+    aria-label="Memuat feed"
+    data-i18n-aria-label="studentFeed.loadingFeed"
     >
         <span
             class="classroom-feed-loading-spinner"
@@ -988,13 +1019,14 @@
     "
     hidden
 >
-    <span
-        id="studentFeedLoadMoreStatus"
-        aria-live="polite"
-        hidden
-    >
-        Memuat...
-    </span>
+<span
+    id="studentFeedLoadMoreStatus"
+    aria-live="polite"
+    data-i18n="studentFeed.loading"
+    hidden
+>
+    Memuat...
+</span>
 </div>
 
                 </section>
@@ -1027,11 +1059,11 @@
                     NOTIFICATIONS
                 </small>
 
-                <h1>
+                <h1 data-i18n="studentFeed.notifications">
                     Notifikasi
                 </h1>
 
-                <p>
+                <p data-i18n="studentFeed.notificationDescription">
                     Mention, reply, dan aktivitas terbaru
                     dari Classroom Feed.
                 </p>
@@ -1068,12 +1100,12 @@
         </small>
 
 
-        <h2>
+        <h2 data-i18n="studentFeed.accessRestored">
             Akses Classroom Feed Dipulihkan
         </h2>
 
 
-        <p>
+        <p data-i18n="studentFeed.accessRestoredDescription">
             Kamu sudah dapat menggunakan
             Classroom Feed kembali.
         </p>
@@ -1082,7 +1114,10 @@
 <button
     id="studentFeedRecoveryButton"
     type="button"
+    class="student-modern-primary-button"
+    data-i18n="studentFeed.understand"
     onclick="acknowledgeStudentFeedRecovery()"
+    style="font-size: 15px !important; font-weight: 700 !important;"
 >
     Mengerti
 </button>
@@ -1114,11 +1149,11 @@
                     GAMBAR POST
                 </small>
 
-                <h2 id="feedImageDialogTitle">
+                <h2 id="feedImageDialogTitle" data-i18n="studentFeed.addImage">
                     Tambahkan Gambar
                 </h2>
 
-                <p>
+                <p data-i18n="studentFeed.imageDialogDescription">
                     Pilih satu file atau gunakan URL gambar.
                 </p>
             </div>
@@ -1150,11 +1185,11 @@
                     ></path>
                 </svg>
 
-                <strong>
+                <strong data-i18n="studentFeed.imagePreview">
                     Preview Gambar
                 </strong>
 
-                <span>
+                <span data-i18n="studentFeed.imagePreviewHint">
                     Pilih file atau periksa URL gambar.
                 </span>
             </div>
@@ -1189,7 +1224,7 @@
                     ></path>
                 </svg>
 
-                <span>
+                <span data-i18n="studentFeed.chooseFile">
                     Pilih File
                 </span>
 
@@ -1201,7 +1236,7 @@
 
             </label>
 
-            <small>
+            <small data-i18n="studentFeed.imageRequirements">
                 JPEG, PNG, atau WebP. Maksimal 2 MB.
             </small>
 
@@ -1209,7 +1244,7 @@
 
 
         <div class="feed-image-dialog-divider">
-            <span>
+            <span data-i18n="studentFeed.or">
                 ATAU
             </span>
         </div>
@@ -1223,6 +1258,7 @@
                 inputmode="url"
                 autocomplete="off"
                 placeholder="Tempel URL gambar HTTPS..."
+                data-i18n-placeholder="studentFeed.imageUrlPlaceholder"
             >
 
             <button
@@ -1230,7 +1266,7 @@
                 type="button"
                 class="secondary-button"
             >
-                Cek Gambar
+                <span data-i18n="studentFeed.checkImage">Cek Gambar</span>
             </button>
 
         </div>
@@ -1244,7 +1280,7 @@
                 class="danger-button"
                 hidden
             >
-                Hapus Gambar
+                <span data-i18n="studentFeed.removeImage">Hapus Gambar</span>
             </button>
 
             <span class="feed-image-dialog-action-spacer"></span>
@@ -1254,7 +1290,7 @@
                 type="button"
                 class="secondary-button"
             >
-                Batal
+                <span data-i18n="studentFeed.cancel">Batal</span>
             </button>
 
             <button
@@ -1263,7 +1299,7 @@
                 class="feed-post-button"
                 disabled
             >
-                Tambahkan
+                <span data-i18n="studentFeed.add">Tambahkan</span>
             </button>
 
         </div>

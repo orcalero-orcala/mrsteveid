@@ -1,15 +1,17 @@
-Fix panel consistrency fade out
+Fix panel consistrency fade out, Lanjut language admin
 
 Changelog feature Index html - Akan ada tombol changelog di footer index html, kecil aja
 Cara tulis changelog itu di information board, akan jadi sistem 2 tab, tab information board lama, sama tab Changelog, dia tujuannya berbeda
 
 Polling feature
 
+Like feature
+
 Kenapa website lebih lambat jika di publish di vercel. Apakah ada solusi biar mempercepat jadi kecepatan hampir sama dgn menggunakan localhost
 ----------------------------------------------------
 MAJOR ADMIN Redesign Part 2 based
 
-Attendance system ---
+Attendance system --- Dropdown untuk pilih siswa mayoritas ubah menjadi search siswa
 
 Dashboard: Ada summary total student, teacher, Best student (by poin dan score), sama Worst student, Info board posted berapa, quiz buat berapa
 Exam score: pertama kamu pilih kelas, subject, dan isi materi, baru akan muncul roster yg isi data siswa, sebelahnya input nilai saja. Baru bisa pencet submit
@@ -34,11 +36,7 @@ Sidebar rework, Daripada ada tab individual banyak bisa jadi dropdown segitiga b
 
 Untuk rework admin ini, tidak perlu fokus banyak ke Css mobile, jadi tambahkan saat login admin jika di hp/tablet kasih warning bahwa
 admin dashboard tidak dibuat utk hp atau tablet jadi bisa ada bug, dgn bahwanya tombol ok
-
-Update tab: Mirip information board tapi ini viewnya di index html ada tombol di footer, basic aja, cuma heading dan isi text areanya
 ----
 Percepat perpindahan pages. Lumayan lambat saat login, Referensi lms aku itu ternyata admin digabung jadi 1 file, tapi ini sulit diubah, jadi mungkin ada cara lain
 
 Pastikan banyak aksi menggunakan kebab icon
-
-Image preview di info board dan feed, akan muncul gambarnya lebih besar mengisi layar bg gelap terus bisa di zoom dan geser kek google gitu

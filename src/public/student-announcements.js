@@ -3,6 +3,12 @@
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+    const feedT = (key, variables = {}) =>
+        window.LMSLanguage.t(`studentFeed.${key}`, variables);
+
+    document.addEventListener("lmslanguagechange", () => {
+        location.reload();
+    });
     const studentId = Number(localStorage.getItem("studentId"));
     const studentName = localStorage.getItem("studentName") || "Siswa";
     const studentClass = localStorage.getItem("studentClass") || "";
@@ -82,6 +88,17 @@
         imageDialogConfirm:
             $("#feedImageDialogConfirmButton")
     };
+
+/*
+ * Pindahkan moderation blocker ke body agar posisi fixed
+ * dihitung dari seluruh layar, bukan dari main-content.
+ */
+if (
+    ui.blocker &&
+    ui.blocker.parentElement !== document.body
+) {
+    document.body.appendChild(ui.blocker);
+}
 
     const state = {
         loading: false,
@@ -199,8 +216,8 @@ function setFeedTextExpanded(
 
     toggle.textContent =
         expanded
-            ? "Tampilkan lebih sedikit"
-            : "Lihat selengkapnya";
+            ? feedT("showLess")
+            : feedT("showMore");
 
     toggle.hidden =
         false;
@@ -386,9 +403,9 @@ function formatToolbarMarkup() {
                     feed-format-button
                     feed-format-clear-button
                 "
-                data-format="clear"
-                title="Hapus formatting"
-                aria-label="Hapus formatting"
+data-format="clear"
+title="${escapeHtml(feedT("clearFormatting"))}"
+aria-label="${escapeHtml(feedT("clearFormatting"))}"
             >
                 <svg
                     viewBox="0 0 24 24"
@@ -406,9 +423,9 @@ function formatToolbarMarkup() {
                     feed-format-button
                     feed-format-list-button
                 "
-                data-format="bullet"
-                title="Daftar poin"
-                aria-label="Daftar poin"
+data-format="bullet"
+title="${escapeHtml(feedT("bulletList"))}"
+aria-label="${escapeHtml(feedT("bulletList"))}"
             >
                 <svg
                     viewBox="0 0 24 24"
@@ -571,7 +588,7 @@ function formatNotificationMessage(message) {
         return formatMessage(text);
     }
 
-    const prefix = replyMatch[1];
+    const prefix = feedT("notificationReplyPrefix");
     const postPreview = replyMatch[2];
 
     return `
@@ -1408,7 +1425,9 @@ img.alt =
     }
 
     function ensureEmptyReplies(container) {
-        if (container && !$(".reply-item", container)) container.innerHTML = "<small>Belum ada reply.</small>";
+        if (container && !$(".reply-item", container)) {
+            container.innerHTML = `<small>${escapeHtml(feedT("noReplies"))}</small>`;
+        }
     }
 
     function updateReplyCount(container) {
@@ -1461,8 +1480,8 @@ button.setAttribute("aria-expanded", String(open));
 
     if (label) {
         label.textContent = open
-            ? "Sembunyikan replies"
-            : "Tampilkan replies";
+            ? feedT("hideReplies")
+            : feedT("showReplies");
     }
 
     // Simpan kondisi visual saat ini, termasuk jika diklik cepat.
@@ -1561,7 +1580,7 @@ button.setAttribute("aria-expanded", String(open));
         if (cards.length && !visible) {
             const empty = document.createElement("p");
             empty.className = "student-feed-filter-empty";
-            empty.textContent = "Belum ada announcement.";
+            empty.textContent = feedT("noPosts");
             ui.list.appendChild(empty);
         }
     }
@@ -2521,7 +2540,7 @@ button.setAttribute("aria-expanded", String(open));
             );
 
             setFeedImageDialogStatus(
-                "Membaca gambar..."
+                feedT("readingImage")
             );
 
             releaseFeedDialogObjectUrl();
@@ -2568,7 +2587,7 @@ button.setAttribute("aria-expanded", String(open));
             renderFeedImageDialogCandidate();
 
             setFeedImageDialogStatus(
-                "Gambar siap ditambahkan.",
+                feedT("imageReady"),
                 "success"
             );
 
@@ -2616,7 +2635,7 @@ button.setAttribute("aria-expanded", String(open));
         } catch {
 
             setFeedImageDialogStatus(
-                "URL gambar tidak valid.",
+                feedT("invalidImageUrl"),
                 "error"
             );
 
@@ -2629,7 +2648,7 @@ button.setAttribute("aria-expanded", String(open));
             "https:"
         ) {
             setFeedImageDialogStatus(
-                "URL gambar harus menggunakan HTTPS.",
+                feedT("imageHttpsRequired"),
                 "error"
             );
 
@@ -2644,7 +2663,7 @@ button.setAttribute("aria-expanded", String(open));
             );
 
             setFeedImageDialogStatus(
-                "Memeriksa gambar..."
+                feedT("checkingImage")
             );
 
 
@@ -2683,7 +2702,7 @@ button.setAttribute("aria-expanded", String(open));
             renderFeedImageDialogCandidate();
 
             setFeedImageDialogStatus(
-                "URL gambar berhasil diperiksa.",
+                feedT("imageUrlChecked"),
                 "success"
             );
 
@@ -3189,7 +3208,7 @@ function createReplyItem(
         aria-expanded="false"
         hidden
     >
-        Lihat selengkapnya
+    ${escapeHtml(feedT("showMore"))}
     </button>
 
 </div>
@@ -3212,7 +3231,7 @@ function createReplyItem(
                                     reply.id
                                 )}"
                             >
-                                Hapus
+                                ${escapeHtml(feedT("delete"))}
                             </button>
                         `
                         : ""
@@ -3419,7 +3438,7 @@ card.className = [
                         ? escapeHtml(
                             cleanClassName
                         )
-                        : "Global"
+                                : feedT("global")
                 }"
             >
                 ${
@@ -3465,7 +3484,7 @@ card.className = [
         aria-expanded="false"
         hidden
     >
-        Lihat selengkapnya
+        ${escapeHtml(feedT("showMore"))}
     </button>
 
 </div>
@@ -3488,7 +3507,7 @@ ${feedPostImageMarkup(post)}
                     "
                     disabled
                     aria-disabled="true"
-                    title="Like segera hadir"
+                    title="Coming soon"
                 >
 <svg
     class="feed-like-icon"
@@ -3528,7 +3547,7 @@ ${feedPostImageMarkup(post)}
     data-reply-label
     class="feed-visually-hidden"
 >
-    Tampilkan replies
+    ${escapeHtml(feedT("showReplies"))}
 </span>
 
 <span data-reply-count>
@@ -3553,7 +3572,7 @@ ${feedPostImageMarkup(post)}
                                 post.id
                             )}"
                         >
-                            Hapus
+                            ${escapeHtml(feedT("delete"))}
                         </button>
                     `
                     : ""
@@ -3579,7 +3598,7 @@ ${feedPostImageMarkup(post)}
                     class="reply-list"
                 >
                     <small>
-                        Belum ada reply.
+                        ${escapeHtml(feedT("noReplies"))}
                     </small>
                 </div>
 
@@ -3604,7 +3623,7 @@ ${feedPostImageMarkup(post)}
                             contenteditable="true"
                             role="textbox"
                             aria-multiline="true"
-                            data-placeholder="Tulis balasan..."
+                            data-placeholder="${escapeHtml(feedT("replyPlaceholder"))}"
                             spellcheck="true"
                         ></div>
 
@@ -3622,7 +3641,7 @@ ${feedPostImageMarkup(post)}
                         type="submit"
                         class="reply-send-button"
                     >
-                        Balas
+                        ${escapeHtml(feedT("reply"))}
                     </button>
 
                 </form>
@@ -3794,7 +3813,7 @@ if (
     if (!append) {
         ui.list.textContent =
             error.message ||
-            "Gagal mengambil announcement.";
+            feedT("feedLoadFailed");
     }
 } finally {
             if (state.feedController === controller) state.feedController = null;
@@ -3806,10 +3825,10 @@ if (
     async function hardRefresh() {
         if (moderation.status !== "active") return;
         ui.refresh.disabled = true;
-        ui.refresh.textContent = "↻ Memuat...";
+        ui.refresh.textContent = `↻ ${feedT("loading")}`;
         beginForeground();
         try { await loadAnnouncements(false); await loadNotificationCount(); }
-        finally { endForeground(); ui.refresh.disabled = false; ui.refresh.textContent = "↻ Refresh"; }
+        finally { endForeground(); ui.refresh.disabled = false; ui.refresh.textContent = `↻ ${feedT("refresh")}`; }
     }
 
     async function submitPost(event) {
@@ -3836,7 +3855,7 @@ if (
             !state.postImage
         ) {
             ui.status.textContent =
-                "Isi post atau tambahkan satu gambar.";
+                feedT("postRequired");
 
             return;
         }
@@ -3859,7 +3878,7 @@ if (
             true;
 
         button.textContent =
-            "Memposting...";
+            feedT("publishing");
 
         ui.imageButton.disabled =
             true;
@@ -3869,8 +3888,8 @@ if (
 
         ui.status.textContent =
             state.postImage?.type === "file"
-                ? "Mengunggah gambar..."
-                : "Membuat announcement...";
+                ? feedT("uploadingImage")
+                : feedT("creatingPost");
 
 
         beginForeground();
@@ -3894,7 +3913,7 @@ if (
 
             if (uploadedImage) {
                 ui.status.textContent =
-                    "Menyimpan post...";
+                    feedT("savingPost");
             }
 
 
@@ -3965,7 +3984,7 @@ syncFormatToolbar(
             );
 
             ui.status.textContent =
-                "Announcement berhasil dibuat.";
+                feedT("postCreated");
 
         } catch (error) {
 
@@ -3983,10 +4002,9 @@ syncFormatToolbar(
 
 
             ui.status.textContent =
-                `Post gagal dipublikasikan: ${
-                    error.message ||
-                    "Terjadi kesalahan."
-                }`;
+                feedT("postFailed", {
+                    message: error.message || feedT("genericError")
+                });
 
         } finally {
 
@@ -3996,7 +4014,7 @@ syncFormatToolbar(
                 false;
 
             button.textContent =
-                "Posting";
+                feedT("post");
 
             ui.imageButton.disabled =
                 false;
@@ -4017,7 +4035,7 @@ syncFormatToolbar(
         const text = editorToMarkup(input);
         if (!text || moderation.status !== "active") return;
         button.disabled = true;
-        button.textContent = "Menambahkan...";
+        button.textContent = feedT("addingReply");
         beginForeground();
         try {
             const mentions = mergeTypedMentions(text, form._selectedMentions || [], form._mentionUsers || []);
@@ -4058,17 +4076,17 @@ syncFormatToolbar(
         applyFilter();
 
         ui.status.textContent =
-            "Post ini sudah dihapus di perangkat lain.";
+            feedT("deletedElsewhere");
     } else {
         showReplyWarning(
             form,
-            `Reply gagal dipublikasikan: ${message}`
+            feedT("replyFailed", { message })
         );
     }
 } finally {
             endForeground();
             button.disabled = false;
-            button.textContent = "Kirim";
+            button.textContent = feedT("send");
         }
     }
 
@@ -4084,9 +4102,9 @@ syncFormatToolbar(
     }
 
     async function deletePost(postId, button) {
-        if (!confirm("Yakin ingin menghapus announcement ini? Semua reply dan mention di dalamnya juga akan dihapus.")) return;
+        if (!confirm(feedT("deletePostConfirm"))) return;
         button.disabled = true;
-        button.textContent = "Menghapus...";
+        button.textContent = feedT("deleting");
         beginForeground();
         try {
             await request(`/api/student/${studentId}/announcements/${postId}`, { method: "DELETE" });
@@ -4095,15 +4113,15 @@ syncFormatToolbar(
             applyFilter();
         } catch (error) {
             button.disabled = false;
-            button.textContent = "Hapus";
+            button.textContent = feedT("delete");
             ui.status.textContent = error.message;
         } finally { endForeground(); }
     }
 
     async function deleteReply(postId, replyId, button) {
-        if (!confirm("Yakin ingin menghapus reply ini?")) return;
+        if (!confirm(feedT("deleteReplyConfirm"))) return;
         button.disabled = true;
-        button.textContent = "Menghapus...";
+        button.textContent = feedT("deleting");
         beginForeground();
         try {
             await request(`/api/announcements/${postId}/replies/${replyId}`, {
@@ -4117,7 +4135,7 @@ ensureEmptyReplies(container);
 updateReplyCount(container);
         } catch (error) {
             button.disabled = false;
-            button.textContent = "Hapus";
+            button.textContent = feedT("delete");
             alert(error.message);
         } finally { endForeground(); }
     }
@@ -5355,7 +5373,7 @@ updateReplyCount(container);
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const rest = seconds % 60;
-        return `${days ? `${days} Hari, ` : ""}${hours || days ? `${hours} Jam, ` : ""}${minutes || hours || days ? `${minutes} Menit, ` : ""}${rest} Detik`;
+        return `${days ? `${days} ${feedT("day")}, ` : ""}${hours || days ? `${hours} ${feedT("hour")}, ` : ""}${minutes || hours || days ? `${minutes} ${feedT("minute")}, ` : ""}${rest} ${feedT("second")}`;
     }
 
     function formatDuration(minutes) {
@@ -5363,7 +5381,7 @@ updateReplyCount(container);
         const days = Math.floor(total / 1440);
         const hours = Math.floor((total % 1440) / 60);
         const mins = total % 60;
-        return [[days, "hari"], [hours, "jam"], [mins, "menit"]].filter(([n]) => n).map(([n, unit]) => `${n} ${unit}`).join(" ") || "0 menit";
+        return [[days, feedT("day")], [hours, feedT("hour")], [mins, feedT("minute")]].filter(([n]) => n).map(([n, unit]) => `${n} ${unit}`).join(" ") || `0 ${feedT("minute")}`;
     }
 
     function renderMuteCards() {
@@ -5375,12 +5393,12 @@ updateReplyCount(container);
             const end = new Date(action.ends_at || moderation.mutedUntil).getTime();
             const countdown = active && !Number.isNaN(end) ? formatCountdown(end - moderationNow()) : formatDuration(action.duration_minutes);
             return `<article class="student-feed-mute-card ${active ? "active" : "queued"}">
-                <div class="student-feed-mute-card-header"><div><small>CLASSROOM FEED</small><strong>${active ? "Mute aktif" : `Mute antrean ${queued}`}</strong></div>
-                <span class="student-feed-mute-card-status ${active ? "active" : "queued"}">${active ? "Aktif" : "Antrean"}</span></div>
-                <div class="student-feed-mute-card-timing"><div><small>${active ? "Sisa waktu" : "Durasi"}</small>
+                <div class="student-feed-mute-card-header"><div><small>CLASSROOM FEED</small><strong>${active ? feedT("activeMute") : feedT("queuedMute", { number: queued })}</strong></div>
+                <span class="student-feed-mute-card-status ${active ? "active" : "queued"}">${active ? feedT("active") : feedT("queue")}</span></div>
+                <div class="student-feed-mute-card-timing"><div><small>${active ? feedT("remainingTime") : feedT("duration")}</small>
                 <strong ${active ? `class="student-feed-mute-card-countdown" data-action-id="${action.id}"` : ""}>${escapeHtml(countdown)}</strong></div>
-                <div><small>${active ? "Berakhir" : "Mulai"}</small><strong>${active ? escapeHtml(dateTime(action.ends_at || moderation.mutedUntil)) : "Setelah mute sebelumnya"}</strong></div></div>
-                <div class="student-feed-mute-card-reason"><small>Alasan</small><p>${escapeHtml(action.reason || "Tidak ada alasan.")}</p></div></article>`;
+                <div><small>${active ? feedT("ends") : feedT("starts")}</small><strong>${active ? escapeHtml(dateTime(action.ends_at || moderation.mutedUntil)) : feedT("afterPreviousMute")}</strong></div></div>
+                <div class="student-feed-mute-card-reason"><small>${feedT("reason")}</small><p>${escapeHtml(action.reason || feedT("noReason"))}</p></div></article>`;
         }).join("");
     }
 
@@ -5413,16 +5431,16 @@ updateReplyCount(container);
         ui.feedContent.classList.toggle("student-feed-content-locked", matchMedia("(max-width:600px)").matches);
         ui.blocker.style.display = "";
         if (kind === "banned") {
-            $("#studentFeedModerationTitle").textContent = "Akses Classroom Feed Dinonaktifkan";
-            $("#studentFeedModerationMessage").textContent = "Kamu tidak dapat mengakses Classroom Feed sampai larangan dicabut oleh Admin atau Guru.";
+            $("#studentFeedModerationTitle").textContent = feedT("accessDisabled");
+            $("#studentFeedModerationMessage").textContent = feedT("bannedMessage");
             $("#studentFeedModerationDetails").style.display = "none";
             const row = $("#studentFeedModerationReasonRow");
             row.style.display = moderation.reason ? "block" : "none";
             $("#studentFeedModerationReason").textContent = moderation.reason || "";
             clearInterval(moderation.countdownTimer);
         } else {
-            $("#studentFeedModerationTitle").textContent = "Akses Classroom Feed Dibatasi";
-            $("#studentFeedModerationMessage").textContent = "Kamu sementara tidak dapat mengakses Classroom Feed.";
+            $("#studentFeedModerationTitle").textContent = feedT("accessLimited");
+            $("#studentFeedModerationMessage").textContent = feedT("mutedMessage");
             $("#studentFeedModerationDetails").style.display = "block";
             $("#studentFeedModerationReasonRow").style.display = "none";
             renderMuteCards();
@@ -5602,7 +5620,7 @@ async function markAllStudentNotificationsRead() {
         const item = document.createElement("div");
         item.id = `notification-${notification.id}`;
         item.className = `notification${Number(notification.is_read) === 0 ? " unread" : ""}`;
-        item.innerHTML = `${Number(notification.is_read) === 0 ? '<span class="notification-unread-dot" aria-label="Belum dibaca"></span>' : ""}
+        item.innerHTML = `${Number(notification.is_read) === 0 ? `<span class="notification-unread-dot" aria-label="${escapeHtml(feedT("unread"))}"></span>` : ""}
 <div class="notification-content">
     <div class="notification-message">
         ${formatNotificationMessage(notification.message)}
@@ -5632,10 +5650,12 @@ ui.notificationList.innerHTML = `
         try {
             const data = await request(`/api/student/${studentId}/notifications`);
             ui.notificationList.innerHTML = "";
-            if (!(data.notifications || []).length) ui.notificationList.innerHTML = '<div class="empty-state"><strong>Belum ada notifikasi</strong><span>Aktivitas baru akan muncul di sini.</span></div>';
+            if (!(data.notifications || []).length) {
+                ui.notificationList.innerHTML = `<div class="empty-state"><strong>${escapeHtml(feedT("noNotifications"))}</strong><span>${escapeHtml(feedT("notificationHint"))}</span></div>`;
+            }
             else data.notifications.forEach(item => ui.notificationList.appendChild(notificationItem(item)));
             updateBadge(Number(data.unreadCount || 0));
-        } catch (error) { ui.notificationList.textContent = "Gagal mengambil notifikasi."; }
+        } catch (error) { ui.notificationList.textContent = feedT("notificationLoadFailed"); }
     }
 
     function goToNotifications() {

@@ -711,6 +711,105 @@ studentExamScores: {
     chartLoadFailed: "Gagal memuat grafik."
 },
 
+studentFeed: {
+    title: "Feed Kelas",
+    topbarDescription: "Diskusi dan komunikasi kelas",
+    description: "Bagikan informasi, berdiskusi, reply, dan mention teman atau guru.",
+    createPost: "Buat postingan",
+    shareToClass: "Bagikan sesuatu ke kelas",
+    sendTo: "Kirim ke",
+    myClass: "Kelas Saya",
+    postPlaceholder: "Mulai diskusi atau bagikan informasi ke kelas...",
+    post: "Posting",
+    latestFeed: "Feed terbaru",
+    feedScope: "Postingan kelas dan global",
+    all: "Semua",
+    refresh: "Muat Ulang",
+    notifications: "Notifikasi",
+    notificationDescription: "Mention, reply, dan aktivitas terbaru dari Classroom Feed.",
+    readAll: "Baca Semua",
+    accessRestored: "Akses Classroom Feed Dipulihkan",
+    accessRestoredDescription: "Kamu sudah dapat menggunakan Classroom Feed kembali.",
+    understand: "Mengerti",
+    addImage: "Tambahkan Gambar",
+    imageDialogDescription: "Pilih satu file atau gunakan URL gambar.",
+    imagePreview: "Preview Gambar",
+    imagePreviewHint: "Pilih file atau periksa URL gambar.",
+    chooseFile: "Pilih File",
+    imageRequirements: "JPEG, PNG, atau WebP. Maksimal 2 MB.",
+    or: "ATAU",
+    imageUrlPlaceholder: "Tempel URL gambar HTTPS...",
+    checkImage: "Cek Gambar",
+    removeImage: "Hapus Gambar",
+    cancel: "Batal",
+    add: "Tambahkan",
+    student: "Siswa",
+    verifiedTeacher: "Admin atau guru terverifikasi",
+    noReplies: "Belum ada reply.",
+    noPosts: "Belum ada postingan.",
+    global: "Global",
+    showMore: "Lihat selengkapnya",
+    showLess: "Tampilkan lebih sedikit",
+    showReplies: "Tampilkan replies",
+    hideReplies: "Sembunyikan replies",
+    replyPlaceholder: "Tulis balasan...",
+    reply: "Balas",
+    delete: "Hapus",
+    loading: "Memuat...",
+    publishing: "Memposting...",
+    uploadingImage: "Mengunggah gambar...",
+    creatingPost: "Membuat postingan...",
+    savingPost: "Menyimpan postingan...",
+    postCreated: "Postingan berhasil dibuat.",
+    postRequired: "Isi postingan atau tambahkan satu gambar.",
+    postFailed: "Postingan gagal dipublikasikan: {message}",
+    genericError: "Terjadi kesalahan.",
+    addingReply: "Menambahkan...",
+    send: "Kirim",
+    replyFailed: "Reply gagal dipublikasikan: {message}",
+    deletedElsewhere: "Postingan ini sudah dihapus di perangkat lain.",
+    deletePostConfirm: "Yakin ingin menghapus postingan ini? Semua reply dan mention di dalamnya juga akan dihapus.",
+    deleteReplyConfirm: "Yakin ingin menghapus reply ini?",
+    deleting: "Menghapus...",
+    feedLoadFailed: "Gagal mengambil postingan.",
+    noNotifications: "Belum ada notifikasi",
+    notificationHint: "Aktivitas baru akan muncul di sini.",
+    notificationLoadFailed: "Gagal mengambil notifikasi.",
+    unread: "Belum dibaca",
+    accessDisabled: "Akses Classroom Feed Dinonaktifkan",
+    bannedMessage: "Kamu tidak dapat mengakses Classroom Feed sampai larangan dicabut oleh Admin atau Guru.",
+    accessLimited: "Akses Classroom Feed Dibatasi",
+    mutedMessage: "Kamu sementara tidak dapat mengakses Classroom Feed."
+    ,readingImage: "Membaca gambar..."
+    ,imageReady: "Gambar siap ditambahkan."
+    ,invalidImageUrl: "URL gambar tidak valid."
+    ,imageHttpsRequired: "URL gambar harus menggunakan HTTPS."
+    ,checkingImage: "Memeriksa gambar..."
+    ,imageUrlChecked: "URL gambar berhasil diperiksa."
+    ,activeMute: "Mute aktif"
+    ,queuedMute: "Mute antrean {number}"
+    ,active: "Aktif"
+    ,queue: "Antrean"
+    ,remainingTime: "Sisa waktu"
+    ,duration: "Durasi"
+    ,ends: "Berakhir"
+    ,starts: "Mulai"
+    ,afterPreviousMute: "Setelah mute sebelumnya"
+    ,reason: "Alasan"
+    ,noReason: "Tidak ada alasan."
+    ,day: "Hari"
+    ,hour: "Jam"
+    ,minute: "Menit"
+    ,second: "Detik"
+    ,notificationReplyPrefix: "Kamu mendapat reply dalam Post:"
+    ,addImageTooltip: "Tambahkan gambar",
+clearFormatting: "Hapus formatting",
+pollComingSoon: "Poll segera hadir",
+comingSoon: "Segera hadir",
+bulletList: "Daftar poin",
+loadingFeed: "Memuat postingan...",
+},
+
 studentQuizzes: {
     pageTitle: "Quiz Siswa",
     loadingPage: "Halaman sedang dimuat",
@@ -1566,6 +1665,105 @@ studentExamScores: {
     chartLoadFailed: "Unable to load chart."
 },
 
+studentFeed: {
+    title: "Classroom Feed",
+    topbarDescription: "Class discussions and communication",
+    description: "Share information, join discussions, reply, and mention classmates or teachers.",
+    createPost: "Create a post",
+    shareToClass: "Share something with the class",
+    sendTo: "Send to",
+    myClass: "My Class",
+    postPlaceholder: "Start a discussion or share information with the class...",
+    post: "Post",
+    latestFeed: "Latest Feed",
+    feedScope: "Class and global posts",
+    all: "All",
+    refresh: "Refresh",
+    notifications: "Notifications",
+    notificationDescription: "Mentions, replies, and recent activity from the Classroom Feed.",
+    readAll: "Read All",
+    accessRestored: "Classroom Feed Access Restored",
+    accessRestoredDescription: "You can now use the Classroom Feed again.",
+    understand: "Got It",
+    addImage: "Add Image",
+    imageDialogDescription: "Choose a file or use an image URL.",
+    imagePreview: "Image Preview",
+    imagePreviewHint: "Choose a file or check the image URL.",
+    chooseFile: "Choose File",
+    imageRequirements: "JPEG, PNG, or WebP. Maximum 2 MB.",
+    or: "OR",
+    imageUrlPlaceholder: "Paste an HTTPS image URL...",
+    checkImage: "Check Image",
+    removeImage: "Remove Image",
+    cancel: "Cancel",
+    add: "Add",
+    student: "Student",
+    verifiedTeacher: "Verified admin or teacher",
+    noReplies: "No replies yet.",
+    noPosts: "No posts yet.",
+    global: "Global",
+    showMore: "Show more",
+    showLess: "Show less",
+    showReplies: "Show replies",
+    hideReplies: "Hide replies",
+    replyPlaceholder: "Write a reply...",
+    reply: "Reply",
+    delete: "Delete",
+    loading: "Loading...",
+    publishing: "Publishing...",
+    uploadingImage: "Uploading image...",
+    creatingPost: "Creating post...",
+    savingPost: "Saving post...",
+    postCreated: "Post published successfully.",
+    postRequired: "Write a post or add one image.",
+    postFailed: "Unable to publish post: {message}",
+    genericError: "Something went wrong.",
+    addingReply: "Adding...",
+    send: "Send",
+    replyFailed: "Unable to publish reply: {message}",
+    deletedElsewhere: "This post was deleted on another device.",
+    deletePostConfirm: "Delete this post? All replies and mentions inside it will also be deleted.",
+    deleteReplyConfirm: "Delete this reply?",
+    deleting: "Deleting...",
+    feedLoadFailed: "Unable to load posts.",
+    noNotifications: "No notifications yet",
+    notificationHint: "New activity will appear here.",
+    notificationLoadFailed: "Unable to load notifications.",
+    unread: "Unread",
+    accessDisabled: "Classroom Feed Access Disabled",
+    bannedMessage: "You cannot access the Classroom Feed until a Teacher removes the ban.",
+    accessLimited: "Classroom Feed Access Limited",
+    mutedMessage: "You cannot access the Classroom Feed temporarily."
+    ,readingImage: "Reading image..."
+    ,imageReady: "Image is ready to add."
+    ,invalidImageUrl: "Invalid image URL."
+    ,imageHttpsRequired: "The image URL must use HTTPS."
+    ,checkingImage: "Checking image..."
+    ,imageUrlChecked: "Image URL checked successfully."
+    ,activeMute: "Active mute"
+    ,queuedMute: "Queued mute {number}"
+    ,active: "Active"
+    ,queue: "Queued"
+    ,remainingTime: "Time remaining"
+    ,duration: "Duration"
+    ,ends: "Ends"
+    ,starts: "Starts"
+    ,afterPreviousMute: "After the previous mute"
+    ,reason: "Reason"
+    ,noReason: "No reason provided."
+    ,day: "Day"
+    ,hour: "Hour"
+    ,minute: "Minute"
+    ,second: "Second"
+    ,notificationReplyPrefix: "You received a reply on the post:",
+    addImageTooltip: "Add image",
+clearFormatting: "Clear formatting",
+pollComingSoon: "Poll coming soon",
+comingSoon: "Coming soon",
+bulletList: "Bullet list",
+loadingFeed: "Loading posts...",
+},
+
 studentQuizzes: {
     pageTitle: "Student Quizzes",
     loadingPage: "Page is loading",
@@ -1947,6 +2145,29 @@ function t(
 
             }
         );
+
+
+        root.querySelectorAll(
+            "[data-i18n-editor-placeholder]"
+        ).forEach(
+            element => {
+
+                element.dataset.placeholder =
+                    t(
+                        element.dataset
+                            .i18nEditorPlaceholder
+                    );
+
+            }
+        );
+
+        root.querySelectorAll(
+    "[data-i18n-title]"
+).forEach(element => {
+    element.title = t(
+        element.dataset.i18nTitle
+    );
+});
 
 
         document.querySelectorAll(
