@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html
+    lang="id"
+    class="lms-page-is-loading"
+    style="background-color: #080e17;"
+>
 
 <head>
 
@@ -9,6 +13,153 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
+
+    <style id="lmsPageLoaderCriticalStyles">
+
+    /*
+     * Warna ini langsung tersedia dari HTML.
+     * Tidak perlu menunggu styles.css.
+     */
+    html,
+    body {
+        background-color:
+            #080e17;
+    }
+
+
+    html.lms-page-is-loading,
+    html.lms-page-is-loading body {
+        overflow:
+            hidden;
+    }
+
+
+    .lms-page-loader {
+        position:
+            fixed;
+
+        inset:
+            0;
+
+        z-index:
+            2147483647;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        background:
+            #080e17;
+
+        opacity:
+            0;
+
+        visibility:
+            hidden;
+
+        pointer-events:
+            none;
+    }
+
+
+    .lms-page-loader.is-visible {
+        opacity:
+            1;
+
+        visibility:
+            visible;
+
+        pointer-events:
+            all;
+    }
+
+
+    .lms-page-loader[hidden] {
+        display:
+            none !important;
+    }
+
+
+    .lms-page-loader-content {
+        display:
+            flex;
+
+        flex-direction:
+            column;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        gap:
+            13px;
+
+        color:
+            #8ea4bd;
+    }
+
+
+    .lms-page-loader-spinner {
+        width:
+            30px;
+
+        height:
+            30px;
+
+        border:
+            3px solid
+            rgba(96, 165, 250, 0.18);
+
+        border-top-color:
+            #60a5fa;
+
+        border-radius:
+            50%;
+
+        animation:
+            lms-critical-loader-spin
+            700ms
+            linear
+            infinite;
+    }
+
+
+    .lms-page-loader-text {
+        color:
+            #8ea4bd;
+
+        font-family:
+            Arial,
+            sans-serif;
+
+        font-size:
+            11px;
+
+        font-weight:
+            700;
+
+        line-height:
+            1.3;
+    }
+
+
+    @keyframes lms-critical-loader-spin {
+
+        to {
+            transform:
+                rotate(360deg);
+        }
+
+    }
+
+</style>
 
    <title>
     Nilai Saya
@@ -37,10 +188,36 @@
     defer
 ></script>
 
+<script
+    src="/page-loader.js"
+    defer
+></script>
+
 </head>
 
 
 <body>
+
+<div
+    id="lmsPageLoader"
+    class="lms-page-loader is-visible"
+    role="status"
+    aria-live="polite"
+    aria-label="Halaman sedang dimuat"
+>
+    <div class="lms-page-loader-content">
+
+        <span
+            class="lms-page-loader-spinner"
+            aria-hidden="true"
+        ></span>
+
+        <span class="lms-page-loader-text">
+            Loading...
+        </span>
+
+    </div>
+</div>
 
     <div class="app-layout">
 
@@ -433,16 +610,16 @@
         </div>
 
 
-        <div
-            id="subjectPerformanceChart"
-            class="student-subject-chart"
-        >
-
-            <div class="student-score-chart-loading">
-                Memuat performa mapel...
-            </div>
-
-        </div>
+<div
+    id="subjectPerformanceChart"
+    class="student-subject-chart"
+>
+    <div
+        class="lms-loading-spinner lms-loading-spinner--chart"
+        role="status"
+        aria-label="Memuat performa mata pelajaran"
+    ></div>
+</div>
 
 
         <div class="student-score-chart-legend">
@@ -507,16 +684,16 @@
         </div>
 
 
-        <div
-            id="scoreTrendChart"
-            class="student-score-trend-chart"
-        >
-
-            <div class="student-score-chart-loading">
-                Memuat perkembangan nilai...
-            </div>
-
-        </div>
+<div
+    id="scoreTrendChart"
+    class="student-score-trend-chart"
+>
+    <div
+        class="lms-loading-spinner lms-loading-spinner--chart"
+        role="status"
+        aria-label="Memuat perkembangan nilai"
+    ></div>
+</div>
 
 
         <div
@@ -631,23 +808,24 @@
     </div>
 
 
-    <p
-        id="scoreHistorySummary"
-        class="student-score-history-summary"
-    >
-        Memuat data...
-    </p>
+<p
+    id="scoreHistorySummary"
+    class="student-score-history-summary"
+    aria-live="polite"
+></p>
 
 
- <!-- RIWAYAT NILAI CARD -->
+<!-- RIWAYAT NILAI CARD -->
 
 <div
     id="examScoreContainer"
     class="student-score-history-list"
 >
-    <div class="student-score-history-empty">
-        Memuat nilai...
-    </div>
+    <div
+        class="lms-loading-spinner"
+        role="status"
+        aria-label="Memuat riwayat nilai"
+    ></div>
 </div>
 
 </section>
@@ -2395,20 +2573,26 @@ async function loadExamScores() {
     }
 
 
-    examScoreContainer.innerHTML = `
-
-        <tr>
-
-            <td colspan="5">
-                Memuat nilai...
-            </td>
-
-        </tr>
-
-    `;
+document
+    .getElementById(
+        "scoreHistorySummary"
+    )
+    .textContent =
+        "";
 
 
-    try {
+examScoreContainer.innerHTML = `
+
+    <div
+        class="lms-loading-spinner"
+        role="status"
+        aria-label="Memuat riwayat nilai"
+    ></div>
+
+`;
+
+
+try {
 
         const response =
             await fetch(

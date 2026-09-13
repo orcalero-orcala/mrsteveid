@@ -96,14 +96,15 @@ function normalizeTheme(
     themeName
 ) {
 
-    const allowedThemes =
-        new Set([
-            "blue",
-            "purple",
-            "green",
-            "orange",
-            "red"
-        ]);
+const allowedThemes =
+    new Set([
+        "blue",
+        "purple",
+        "green",
+        "orange",
+        "yellow",
+        "red"
+    ]);
 
 
     const cleanTheme =

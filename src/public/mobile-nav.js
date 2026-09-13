@@ -562,18 +562,49 @@ if (
 }
 
 
+/*
+ * Pasang ikon langsung jika sidebar sudah tersedia.
+ */
+applyAdminSidebarIcons();
+
+
 if (
     document.readyState ===
     "loading"
 ) {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        applyAdminSidebarIcons
+    /*
+     * Untuk halaman yang memuat mobile-nav.js di <head>,
+     * pantau sampai markup sidebar muncul.
+     */
+    const adminSidebarIconObserver =
+        new MutationObserver(
+            applyAdminSidebarIcons
+        );
+
+
+    adminSidebarIconObserver.observe(
+        document.documentElement,
+        {
+            childList: true,
+            subtree: true
+        }
     );
 
-} else {
 
-    applyAdminSidebarIcons();
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            applyAdminSidebarIcons();
+
+            adminSidebarIconObserver
+                .disconnect();
+
+        },
+        {
+            once: true
+        }
+    );
 
 }

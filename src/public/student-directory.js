@@ -14,15 +14,16 @@
             .trim()
             .toLowerCase();
 
-    return [
-        "blue",
-        "purple",
-        "green",
-        "orange",
-        "red"
-    ].includes(color)
-        ? color
-        : "blue";
+return [
+    "blue",
+    "purple",
+    "green",
+    "orange",
+    "yellow",
+    "red"
+].includes(color)
+    ? color
+    : "blue";
 }
 
 

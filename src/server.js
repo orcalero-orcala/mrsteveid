@@ -68,6 +68,7 @@ const STUDENT_PROFILE_BANNER_COLORS =
         "purple",
         "green",
         "orange",
+        "yellow",
         "red"
     ]);
 
@@ -92,6 +93,7 @@ const ADMIN_PROFILE_BANNER_COLORS =
         "purple",
         "green",
         "orange",
+        "yellow",
         "red"
     ]);
 
@@ -1095,7 +1097,55 @@ const publicAssetStatic =
     express.static(
         publicDirectory,
         {
-            index: false
+            index:
+                false,
+
+            etag:
+                true,
+
+            lastModified:
+                true,
+
+            maxAge:
+                "10m",
+
+            setHeaders:
+                (
+                    response,
+                    filePath
+                ) => {
+
+                    const extension =
+                        path.extname(
+                            filePath
+                        ).toLowerCase();
+
+
+                    if (
+                        [
+                            ".css",
+                            ".js",
+                            ".png",
+                            ".jpg",
+                            ".jpeg",
+                            ".webp",
+                            ".svg",
+                            ".ico",
+                            ".woff",
+                            ".woff2"
+                        ].includes(
+                            extension
+                        )
+                    ) {
+
+                        response.setHeader(
+                            "Cache-Control",
+                            "public, max-age=600"
+                        );
+
+                    }
+
+                }
         }
     );
 
@@ -1260,6 +1310,405 @@ app.use(
         }
 
     })
+);
+
+// ========================================
+// WEBSITE MAINTENANCE
+// ========================================
+
+const MAINTENANCE_CACHE_DURATION =
+    5000;
+
+let maintenanceSettingsCache = {
+    data: null,
+    expiresAt: 0
+};
+
+let maintenanceTablePromise =
+    null;
+
+
+function isLocalRequest(req) {
+
+    const hostname =
+        String(
+            req.hostname || ""
+        )
+            .replace(
+                /^\[|\]$/g,
+                ""
+            )
+            .toLowerCase();
+
+
+    return (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname === "::1" ||
+        hostname.endsWith(
+            ".localhost"
+        ) ||
+        hostname.startsWith(
+            "127."
+        )
+    );
+
+}
+
+
+function isVercelDeploymentRequest(req) {
+
+    return (
+        process.env.VERCEL === "1" &&
+        !isLocalRequest(req)
+    );
+
+}
+
+
+async function ensureMaintenanceTable() {
+
+    if (maintenanceTablePromise) {
+        return maintenanceTablePromise;
+    }
+
+
+    maintenanceTablePromise =
+        (async () => {
+
+            await tursoDb.run(`
+                CREATE TABLE IF NOT EXISTS
+                    maintenance_settings
+                (
+                    id INTEGER PRIMARY KEY
+                        CHECK (id = 1),
+
+                    enabled INTEGER NOT NULL
+                        DEFAULT 0,
+
+                    reason TEXT NOT NULL
+                        DEFAULT '',
+
+                    estimated_end_at TEXT,
+
+                    updated_by_admin_id INTEGER,
+
+                    updated_at DATETIME NOT NULL
+                        DEFAULT CURRENT_TIMESTAMP,
+
+                    FOREIGN KEY (
+                        updated_by_admin_id
+                    )
+                    REFERENCES admins(id)
+                    ON DELETE SET NULL
+                )
+            `);
+
+
+            await tursoDb.run(`
+                INSERT OR IGNORE INTO
+                    maintenance_settings
+                (
+                    id,
+                    enabled,
+                    reason,
+                    estimated_end_at
+                )
+                VALUES (1, 0, '', NULL)
+            `);
+
+        })()
+            .catch(error => {
+
+                maintenanceTablePromise =
+                    null;
+
+                throw error;
+
+            });
+
+
+    return maintenanceTablePromise;
+
+}
+
+
+async function getMaintenanceSettings(
+    forceRefresh = false
+) {
+
+    const now =
+        Date.now();
+
+
+    if (
+        !forceRefresh &&
+        maintenanceSettingsCache.data &&
+        maintenanceSettingsCache
+            .expiresAt > now
+    ) {
+
+        return maintenanceSettingsCache
+            .data;
+
+    }
+
+
+    await ensureMaintenanceTable();
+
+
+    const row =
+        await tursoDb.get(`
+            SELECT
+                enabled,
+                reason,
+                estimated_end_at,
+                updated_at
+            FROM maintenance_settings
+            WHERE id = 1
+            LIMIT 1
+        `);
+
+
+    const settings = {
+        enabled:
+            Number(
+                row?.enabled
+            ) === 1,
+
+        reason:
+            String(
+                row?.reason || ""
+            ),
+
+        estimatedEndAt:
+            row?.estimated_end_at ||
+            null,
+
+        updatedAt:
+            row?.updated_at ||
+            null
+    };
+
+
+    maintenanceSettingsCache = {
+        data: settings,
+
+        expiresAt:
+            now +
+            MAINTENANCE_CACHE_DURATION
+    };
+
+
+    return settings;
+
+}
+
+
+function canBypassMaintenance(req) {
+
+    /*
+        Hanya akun dengan role admin yang
+        boleh membuka dashboard saat maintenance.
+
+        Akun teacher tetap terkena maintenance.
+    */
+    return (
+        Boolean(
+            req.session?.adminId
+        ) &&
+        String(
+            req.session?.adminRole || ""
+        ).toLowerCase() === "admin"
+    );
+
+}
+
+
+function isMaintenancePublicRoute(req) {
+
+    return [
+        "/maintenance.html",
+        "/api/site-status",
+        "/admin-login.html",
+        "/api/admin/login",
+        "/api/logout"
+    ].includes(
+        req.path
+    );
+
+}
+
+
+// Status publik untuk halaman maintenance
+app.get(
+    "/api/site-status",
+    async (req, res) => {
+
+        try {
+
+            const settings =
+                await getMaintenanceSettings();
+
+
+            const appliesToRequest =
+                settings.enabled &&
+                isVercelDeploymentRequest(
+                    req
+                ) &&
+                !canBypassMaintenance(
+                    req
+                );
+
+
+            return res.json({
+                success: true,
+
+                maintenance:
+                    appliesToRequest,
+
+                enabled:
+                    settings.enabled,
+
+                reason:
+                    settings.reason,
+
+                estimatedEndAt:
+                    settings
+                        .estimatedEndAt,
+
+                isLocal:
+                    isLocalRequest(req)
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Status maintenance gagal dimuat:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Status website gagal diperiksa."
+            });
+
+        }
+
+    }
+);
+
+
+// Pengunci utama website
+app.use(
+    async (req, res, next) => {
+
+        /*
+            Localhost tidak pernah diblokir.
+        */
+        if (
+            !isVercelDeploymentRequest(req)
+        ) {
+            return next();
+        }
+
+
+        /*
+            Route ini harus tetap dapat dibuka.
+        */
+        if (
+            isMaintenancePublicRoute(req)
+        ) {
+            return next();
+        }
+
+
+        /*
+            Administrator tetap memiliki akses.
+        */
+        if (
+            canBypassMaintenance(req)
+        ) {
+            return next();
+        }
+
+
+        try {
+
+            const settings =
+                await getMaintenanceSettings();
+
+
+            if (!settings.enabled) {
+                return next();
+            }
+
+
+            /*
+                Semua API siswa, guru, quiz,
+                feed, dan API publik dihentikan.
+            */
+            if (
+                req.path.startsWith(
+                    "/api/"
+                )
+            ) {
+
+                return res.status(503).json({
+                    success: false,
+
+                    maintenance: true,
+
+                    code:
+                        "MAINTENANCE_MODE",
+
+                    message:
+                        settings.reason ||
+                        "Website sedang dalam pemeliharaan.",
+
+                    estimatedEndAt:
+                        settings
+                            .estimatedEndAt
+                });
+
+            }
+
+
+            /*
+                Semua halaman diarahkan ke
+                tampilan maintenance.
+            */
+            return res
+                .status(503)
+                .sendFile(
+                    path.join(
+                        publicDirectory,
+                        "maintenance.html"
+                    )
+                );
+
+
+        } catch (error) {
+
+            /*
+                Jika database maintenance gagal
+                dibaca, website tidak ikut terkunci.
+            */
+            console.error(
+                "Pemeriksaan maintenance gagal:",
+                error
+            );
+
+
+            return next();
+
+        }
+
+    }
 );
 
 function requireAdminPage(
@@ -2369,6 +2818,261 @@ function requireAdministratorSettingsAccess(
     next();
 
 }
+
+// ========================================
+// MAINTENANCE SETTINGS API
+// ========================================
+
+app.get(
+    "/api/admin/settings/maintenance",
+
+    requireAdministratorSettingsAccess,
+
+    async (req, res) => {
+
+        try {
+
+            const settings =
+                await getMaintenanceSettings(
+                    true
+                );
+
+
+            return res.json({
+                success: true,
+                maintenance: settings,
+                isLocal:
+                    isLocalRequest(req)
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Pengaturan maintenance gagal dimuat:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Pengaturan maintenance gagal dimuat."
+            });
+
+        }
+
+    }
+);
+
+
+app.patch(
+    "/api/admin/settings/maintenance",
+
+    requireAdministratorSettingsAccess,
+
+    async (req, res) => {
+
+        const enabled =
+            req.body?.enabled;
+
+        const reason =
+            String(
+                req.body?.reason || ""
+            ).trim();
+
+        const estimatedEndAt =
+            String(
+                req.body?.estimatedEndAt ||
+                ""
+            ).trim();
+
+
+        if (
+            typeof enabled !==
+            "boolean"
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Status maintenance tidak valid."
+            });
+
+        }
+
+
+        if (
+            reason.length > 500
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Alasan maintenance maksimal 500 karakter."
+            });
+
+        }
+
+
+        if (
+            enabled &&
+            !reason
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Isi alasan maintenance terlebih dahulu."
+            });
+
+        }
+
+
+        if (
+            enabled &&
+            !estimatedEndAt
+        ) {
+
+            return res.status(400).json({
+                success: false,
+
+                message:
+                    "Isi estimasi maintenance selesai."
+            });
+
+        }
+
+
+        let normalizedEstimatedEndAt =
+            null;
+
+
+        if (estimatedEndAt) {
+
+            const estimatedDate =
+                new Date(
+                    estimatedEndAt
+                );
+
+
+            if (
+                Number.isNaN(
+                    estimatedDate.getTime()
+                )
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+
+                    message:
+                        "Tanggal estimasi tidak valid."
+                });
+
+            }
+
+
+            normalizedEstimatedEndAt =
+                estimatedDate.toISOString();
+
+        }
+
+
+        try {
+
+            await ensureMaintenanceTable();
+
+
+            await tursoDb.run(
+                `
+                    UPDATE maintenance_settings
+                    SET
+                        enabled = ?,
+                        reason = ?,
+                        estimated_end_at = ?,
+                        updated_by_admin_id = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = 1
+                `,
+                [
+                    enabled
+                        ? 1
+                        : 0,
+
+                    reason,
+
+                    normalizedEstimatedEndAt,
+
+                    Number(
+                        req.session.adminId
+                    )
+                ]
+            );
+
+
+            const updatedSettings = {
+                enabled,
+                reason,
+
+                estimatedEndAt:
+                    normalizedEstimatedEndAt,
+
+                updatedAt:
+                    new Date()
+                        .toISOString()
+            };
+
+
+            /*
+                Cache instance ini langsung
+                diperbarui setelah tombol Simpan.
+            */
+            maintenanceSettingsCache = {
+                data:
+                    updatedSettings,
+
+                expiresAt:
+                    Date.now() +
+                    MAINTENANCE_CACHE_DURATION
+            };
+
+
+            return res.json({
+                success: true,
+
+                maintenance:
+                    updatedSettings,
+
+                message:
+                    enabled
+                        ? "Mode maintenance berhasil dinyalakan."
+                        : "Mode maintenance berhasil dimatikan."
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Pengaturan maintenance gagal disimpan:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+
+                message:
+                    "Pengaturan maintenance gagal disimpan."
+            });
+
+        }
+
+    }
+);
 
 
 // ========================================

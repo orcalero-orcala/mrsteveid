@@ -3603,20 +3603,16 @@ return card;
         if (state.loading || (append && !state.hasMore)) return;
         state.loading = true;
         if (!append) {
-            ui.list.innerHTML = `
+ui.list.innerHTML = `
     <div
         class="classroom-feed-loading-panel"
         role="status"
-        aria-live="polite"
+        aria-label="Memuat feed"
     >
         <span
             class="classroom-feed-loading-spinner"
             aria-hidden="true"
         ></span>
-
-        <div class="classroom-feed-loading-copy">
-            <strong>Memuat feed</strong>
-        </div>
     </div>
 `;
             state.beforeId = null;

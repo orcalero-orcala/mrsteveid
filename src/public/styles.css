@@ -44276,13 +44276,6 @@ select {
     font-size: 0.78rem;
 }
 
-.admin-profile-zoom-row input {
-    flex: 1;
-
-    accent-color:
-        var(--admin-profile-accent-dark);
-}
-
 .admin-profile-crop-hint {
     display: block;
     margin-top: 10px;
@@ -46190,15 +46183,6 @@ select {
 
     font-size: 9px;
     font-weight: 700;
-}
-
-.admin-profile-zoom-row input[type="range"] {
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-
-    accent-color:
-        var(--admin-profile-accent-dark);
 }
 
 .admin-profile-crop-reset-button {
@@ -56036,4 +56020,1042 @@ top: -1px;
 
     font-weight:
         650;
+}
+
+/* =========================================================
+   GLOBAL LMS LOADING SPINNER
+   ========================================================= */
+
+.lms-loading-spinner {
+    width: 100%;
+    min-height: 118px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lms-loading-spinner::before {
+    content: "";
+
+    width: 24px;
+    height: 24px;
+
+    flex: 0 0 24px;
+
+    border:
+        2px solid
+        rgba(96, 165, 250, 0.18);
+
+    border-top-color:
+        #60a5fa;
+
+    border-radius:
+        50%;
+
+    animation:
+        lms-loading-spinner-rotate
+        700ms
+        linear
+        infinite;
+}
+
+
+/* Spinner untuk area kecil */
+
+.lms-loading-spinner--compact {
+    min-height: 64px;
+}
+
+.lms-loading-spinner--compact::before {
+    width: 20px;
+    height: 20px;
+
+    flex-basis: 20px;
+}
+
+
+/* Spinner untuk grafik */
+
+.lms-loading-spinner--chart {
+    min-height: 235px;
+}
+
+
+/* Spinner kecil di dalam satu baris teks */
+
+.lms-loading-spinner--inline {
+    width: 18px;
+    min-height: 18px;
+
+    display: inline-flex;
+
+    vertical-align: middle;
+}
+
+.lms-loading-spinner--inline::before {
+    width: 14px;
+    height: 14px;
+
+    flex-basis: 14px;
+
+    border-width: 2px;
+}
+
+
+/* Spinner di dalam grid daftar kelas harus memenuhi semua kolom */
+
+.admin-announcement-class-checklist
+> .lms-loading-spinner {
+    grid-column:
+        1 / -1;
+}
+
+
+/* Teks loading pagination feed dibuat lebih kecil */
+
+#adminFeedLoadMoreStatus,
+#studentFeedLoadMoreStatus {
+    color: #667f9b;
+
+    font-size: 8px;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+
+@keyframes lms-loading-spinner-rotate {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .lms-loading-spinner::before {
+        animation-duration:
+            1400ms;
+    }
+
+}
+
+/* =========================================================
+   GLOBAL PAGE LOADER
+   ========================================================= */
+
+html.lms-page-is-loading,
+html.lms-page-is-loading body {
+    overflow: hidden;
+}
+
+
+.lms-page-loader {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2147483647;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        #080e17;
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.14s ease,
+        visibility 0.14s ease;
+}
+
+
+.lms-page-loader[hidden] {
+    display: none !important;
+}
+
+
+.lms-page-loader.is-visible {
+    opacity: 1;
+    visibility: visible;
+
+    pointer-events: all;
+}
+
+
+.lms-page-loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 13px;
+
+    color:
+        #8ea4bd;
+
+    text-align: center;
+}
+
+
+.lms-page-loader-spinner {
+    width: 30px;
+    height: 30px;
+
+    border:
+        3px solid
+        rgba(96, 165, 250, 0.18);
+
+    border-top-color:
+        #60a5fa;
+
+    border-radius:
+        50%;
+
+    animation:
+        lms-page-loader-spin
+        700ms
+        linear
+        infinite;
+}
+
+
+.lms-page-loader-text {
+    color:
+        #8ea4bd;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+
+    letter-spacing:
+        0.01em;
+}
+
+
+@keyframes lms-page-loader-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .lms-page-loader {
+        transition: none;
+    }
+
+
+    .lms-page-loader-spinner {
+        animation-duration:
+            1400ms;
+    }
+
+}
+
+/* =========================================================
+   ADMIN / TEACHER PROFILE — YELLOW THEME
+   ========================================================= */
+
+.admin-profile-color.yellow {
+    background:
+        #eab308;
+}
+
+
+.admin-profile-page[data-profile-theme="yellow"] {
+    --admin-profile-page-bg:
+        #191606;
+
+    --admin-profile-glow:
+        rgba(234, 179, 8, 0.15);
+
+    --admin-profile-panel:
+        #211d0c;
+
+    --admin-profile-inner:
+        #1a1709;
+
+    --admin-profile-border:
+        #554a1f;
+
+    --admin-profile-accent:
+        #fde047;
+
+    --admin-profile-accent-dark:
+        #ca8a04;
+
+    --admin-profile-avatar-start:
+        #facc15;
+
+    --admin-profile-avatar-end:
+        #ca8a04;
+
+    --admin-profile-banner:
+        radial-gradient(
+            circle at 76% 25%,
+            rgba(253, 224, 71, 0.25),
+            transparent 28%
+        ),
+        linear-gradient(
+            120deg,
+            #854d0e,
+            #713f12 55%,
+            #251b0a
+        );
+}
+
+/* =========================================================
+   FIX YELLOW PROFILE COLOR OPTION
+   ========================================================= */
+
+/* Admin / Guru */
+
+.admin-profile-color[
+    data-profile-color="yellow"
+] {
+    background:
+        #eab308 !important;
+}
+
+
+/* Siswa */
+
+.profile-banner-color[
+    data-banner-color="yellow"
+] {
+    background:
+        #eab308 !important;
+}
+
+/* =========================================================
+   ADMIN PROFILE — THEMED SUBJECT CHECKBOX
+   ========================================================= */
+
+/*
+ * Checkbox kosong mengikuti warna terang tema ketika hover.
+ */
+
+.admin-profile-page
+.admin-profile-subject-option
+input[type="checkbox"]:hover:not(:checked) {
+    border-color:
+        var(--admin-profile-accent) !important;
+}
+
+
+/*
+ * Checkbox terpilih mengikuti warna tema aktif.
+ *
+ * Blue   → biru
+ * Purple → ungu
+ * Green  → hijau
+ * Orange → oranye
+ * Yellow → kuning
+ * Red    → merah
+ */
+
+.admin-profile-page
+.admin-profile-subject-option
+input[type="checkbox"]:checked {
+    border-color:
+        var(--admin-profile-accent) !important;
+
+    background-color:
+        var(--admin-profile-accent-dark) !important;
+}
+
+
+/*
+ * Focus keyboard juga mengikuti tema.
+ */
+
+.admin-profile-page
+.admin-profile-subject-option
+input[type="checkbox"]:focus-visible {
+    border-color:
+        var(--admin-profile-accent) !important;
+
+    box-shadow:
+        0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--admin-profile-accent) 22%,
+            transparent
+        ) !important;
+}
+
+/* =========================================================
+   CUSTOM PROFILE ZOOM SLIDER
+   ========================================================= */
+
+.profile-picture-zoom-row
+.profile-zoom-control {
+    --zoom-accent:
+        var(--profile-avatar-start, #60a5fa);
+
+    --zoom-panel:
+        var(--profile-panel-background, #101c2b);
+
+    --zoom-track:
+        var(--profile-panel-border, #29425f);
+}
+
+
+.admin-profile-zoom-row
+.profile-zoom-control {
+    --zoom-accent:
+        var(--admin-profile-accent, #60a5fa);
+
+    --zoom-panel:
+        var(--admin-profile-inner, #101c2b);
+
+    --zoom-track:
+        var(--admin-profile-border, #29425f);
+}
+
+
+.profile-zoom-control {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+
+    cursor: pointer;
+    touch-action: none;
+}
+
+
+/*
+ * Input asli tetap menerima mouse, keyboard,
+ * touch, dan event JavaScript.
+ */
+
+.profile-zoom-control
+input[type="range"] {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    opacity: 0;
+
+    cursor: pointer;
+}
+
+
+/* Track */
+
+.profile-zoom-track {
+    position: absolute;
+
+    left: 9px;
+    right: 9px;
+    top: 50%;
+
+    height: 6px;
+
+    transform: translateY(-50%);
+
+    overflow: visible;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--zoom-track) 70%,
+            #08111c
+        );
+
+    border:
+        1px solid
+        var(--zoom-track);
+
+    border-radius: 999px;
+
+    box-shadow:
+        inset 0 1px 2px
+        rgba(0, 0, 0, 0.38);
+
+    pointer-events: none;
+}
+
+
+/* Bagian track yang sudah dilewati */
+
+.profile-zoom-fill {
+    position: absolute;
+    inset:
+        -1px auto -1px -1px;
+
+    width:
+        var(--zoom-progress, 0%);
+
+    background:
+        var(--zoom-accent);
+
+    border-radius:
+        inherit;
+
+    box-shadow:
+        0 0 8px
+        color-mix(
+            in srgb,
+            var(--zoom-accent) 28%,
+            transparent
+        );
+}
+
+
+/* Thumb */
+
+.profile-zoom-thumb {
+    position: absolute;
+
+    top: 50%;
+    left:
+        var(--zoom-progress, 0%);
+
+    width: 17px;
+    height: 17px;
+
+    transform:
+        translate(-50%, -50%);
+
+    background:
+        var(--zoom-accent);
+
+    border:
+        3px solid
+        var(--zoom-panel);
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 1px
+            var(--zoom-accent),
+        0 3px 8px
+            rgba(0, 0, 0, 0.42);
+
+    transition:
+        transform 0.14s ease,
+        box-shadow 0.14s ease;
+
+    pointer-events: none;
+}
+
+
+.profile-zoom-control:hover
+.profile-zoom-thumb {
+    transform:
+        translate(-50%, -50%)
+        scale(1.08);
+
+    box-shadow:
+        0 0 0 3px
+            color-mix(
+                in srgb,
+                var(--zoom-accent) 20%,
+                transparent
+            ),
+        0 3px 9px
+            rgba(0, 0, 0, 0.45);
+}
+
+
+.profile-zoom-control:active
+.profile-zoom-thumb {
+    transform:
+        translate(-50%, -50%)
+        scale(0.94);
+}
+
+
+.profile-zoom-control:focus-within
+.profile-zoom-track {
+    border-color:
+        var(--zoom-accent);
+
+    box-shadow:
+        0 0 0 3px
+            color-mix(
+                in srgb,
+                var(--zoom-accent) 18%,
+                transparent
+            );
+}
+
+/* =========================================
+   ADMINISTRATOR MAINTENANCE SETTINGS
+   ========================================= */
+
+.administrator-settings-tabs {
+    width: 100%;
+
+    padding: 4px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 5px;
+
+    flex: 0 0 auto;
+
+    background: #08111c;
+
+    border:
+        1px solid #26384d;
+
+    border-radius: 12px;
+}
+
+
+.administrator-settings-tab {
+    min-height: 40px;
+
+    padding: 8px 16px;
+
+    color: #8fa2b9;
+    background: transparent;
+
+    border: 0;
+    border-radius: 9px;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        color 160ms ease,
+        background 160ms ease,
+        box-shadow 160ms ease;
+}
+
+
+.administrator-settings-tab:hover {
+    color: #dbeafe;
+
+    background:
+        rgba(59, 130, 246, 0.08);
+}
+
+
+.administrator-settings-tab.is-active {
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #3b82f6
+        );
+
+    box-shadow:
+        0 5px 14px
+        rgba(37, 99, 235, 0.22);
+}
+
+
+.maintenance-settings-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+
+.maintenance-status-card {
+    padding: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    background: #0a1421;
+
+    border:
+        1px solid #2b3c51;
+
+    border-radius: 12px;
+
+    transition:
+        border-color 180ms ease,
+        background 180ms ease;
+}
+
+
+.maintenance-is-enabled
+.maintenance-status-card {
+    background:
+        rgba(245, 158, 11, 0.06);
+
+    border-color:
+        rgba(245, 158, 11, 0.55);
+}
+
+
+.maintenance-status-card strong {
+    display: block;
+
+    color: #f8fafc;
+
+    font-size: 13px;
+}
+
+
+.maintenance-status-card p {
+    margin: 5px 0 0;
+
+    color: #8fa2b9;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+.maintenance-is-enabled
+.maintenance-status-card p {
+    color: #fbbf24;
+}
+
+
+/* CUSTOM TOGGLE */
+
+.maintenance-switch {
+    flex: 0 0 auto;
+
+    cursor: pointer;
+}
+
+
+.maintenance-switch input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+.maintenance-switch-track {
+    width: 48px;
+    height: 27px;
+
+    padding: 3px;
+
+    display: block;
+
+    background: #263548;
+
+    border:
+        1px solid #3b4d63;
+
+    border-radius: 999px;
+
+    transition:
+        background 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+
+.maintenance-switch-thumb {
+    width: 19px;
+    height: 19px;
+
+    display: block;
+
+    background: #cbd5e1;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 7px
+        rgba(0, 0, 0, 0.35);
+
+    transition:
+        transform 190ms
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        ),
+        background 180ms ease;
+}
+
+
+.maintenance-switch
+input:checked +
+.maintenance-switch-track {
+    background: #f59e0b;
+    border-color: #fbbf24;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(245, 158, 11, 0.12);
+}
+
+
+.maintenance-switch
+input:checked +
+.maintenance-switch-track
+.maintenance-switch-thumb {
+    background: #ffffff;
+
+    transform:
+        translateX(21px);
+}
+
+
+.maintenance-switch
+input:focus-visible +
+.maintenance-switch-track {
+    outline:
+        2px solid #60a5fa;
+
+    outline-offset: 3px;
+}
+
+
+.maintenance-switch
+input:disabled +
+.maintenance-switch-track {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+
+/* FORM */
+
+.maintenance-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.maintenance-field > span {
+    color: #dbe5f2;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+
+.maintenance-field textarea,
+.maintenance-field input {
+    width: 100%;
+
+    margin: 0;
+    padding: 12px 13px;
+
+    color: #f8fafc;
+    background: #08121e;
+
+    border:
+        1px solid #2c4056;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    font: inherit;
+    font-size: 12px;
+
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+
+.maintenance-field textarea {
+    min-height: 110px;
+
+    line-height: 1.6;
+    resize: vertical;
+}
+
+
+.maintenance-field input {
+    min-height: 43px;
+
+    color-scheme: dark;
+}
+
+
+.maintenance-field textarea:focus,
+.maintenance-field input:focus {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, 0.12);
+}
+
+
+.maintenance-field > small {
+    color: #71849c;
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+
+.maintenance-local-note {
+    padding: 13px 14px;
+
+    background:
+        rgba(59, 130, 246, 0.06);
+
+    border:
+        1px solid
+        rgba(59, 130, 246, 0.25);
+
+    border-radius: 10px;
+}
+
+
+.maintenance-local-note strong {
+    color: #93c5fd;
+
+    font-size: 11px;
+}
+
+
+.maintenance-local-note p {
+    margin: 4px 0 0;
+
+    color: #8194aa;
+
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+
+.maintenance-settings-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+
+.maintenance-settings-actions button {
+    min-width: 104px;
+    min-height: 42px;
+}
+
+
+/* SPINNER SAVE */
+
+.maintenance-save-spinner {
+    width: 15px;
+    height: 15px;
+
+    display: none;
+
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.35);
+
+    border-top-color: #ffffff;
+    border-radius: 50%;
+
+    animation:
+        maintenance-button-spin
+        700ms linear infinite;
+}
+
+
+#saveMaintenanceButton.is-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: wait;
+}
+
+
+#saveMaintenanceButton.is-loading
+.maintenance-save-label {
+    display: none;
+}
+
+
+#saveMaintenanceButton.is-loading
+.maintenance-save-spinner {
+    display: block;
+}
+
+
+@keyframes maintenance-button-spin {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .administrator-settings-tabs {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+    }
+
+
+    .administrator-maintenance-panel {
+        padding: 17px;
+    }
+
+
+    .maintenance-status-card {
+        padding: 14px;
+    }
+
+
+    .maintenance-settings-actions {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+
+    .maintenance-settings-actions button {
+        width: 100%;
+        min-width: 0;
+    }
+
 }

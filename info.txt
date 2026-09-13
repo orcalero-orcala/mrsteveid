@@ -1,8 +1,9 @@
-Tambah banner color yellow siswa amdin
-
-Tambah site Maintenance page, bisa dinyalakin di admin settings, Exclude localhost, kalau tidak bisa sistem exclude localhost, yasudah gak usah, jangan dipaksakan
 Bahasa Id dan Enus, bisa ganti Bahasa Idn atau inggris (us) di settings yg ada di siswa dan admin, siswa dapat tab baru settings dibawah, admin berarti di area system reset
 Mending buat language file atau gimana, pokoknya hasilnya bisa ganti bahasa Indo atau Inggris
+
+Quiz editor boleh masuk di mobile kasih wanring aja
+
+Fix panel consistrency fade out
 
 Changelog feature Index html - Akan ada tombol changelog di footer index html, kecil aja
 Cara tulis changelog itu di information board, akan jadi sistem 2 tab, tab information board lama, sama tab Changelog, dia tujuannya berbeda
@@ -35,10 +36,6 @@ Information Board: Skrg bisa edit info yg lama, dan Archive artinya bisa dilihat
 
 Admin register rework: Regiter bukan di page lama yg bisa dilihat semua orang, melainkan tetap di dashboard admin, pindahkan disitu
 Artinya hapus fungsional yg kode guru.
-
-Maintenance: Tab baru dimana kamu bisa nyalakan mode maintenance untuk website yg udh di vercel, yg localhost tidak kena maintenance
-Bisa disetting alasan maintenancenya input text area, setting estimasi maintenance selesai
-Kalau semisal gak bisa yg vercel kena maintenance tapi localhost tidak, berarti tambah fungsi dimana teacher tetap bisa login, siswa tidak
 
 Sidebar rework, Daripada ada tab individual banyak bisa jadi dropdown segitiga bawah jadi misalnya ada Tab management, dibuka nah misal ada teacher register, system maintenance dll
 

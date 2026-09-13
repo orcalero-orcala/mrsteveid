@@ -655,18 +655,52 @@ if (
 }
 
 
+/*
+ * Coba pasang langsung.
+ * Jika sidebar sudah dirender, ikon tampil tanpa menunggu
+ * seluruh halaman menyelesaikan parsing.
+ */
+applyStudentSidebarIcons();
+
+
 if (
     document.readyState ===
     "loading"
 ) {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        applyStudentSidebarIcons
+    /*
+     * Beberapa halaman memuat student-session.js
+     * sebelum markup sidebar selesai dibuat.
+     * Observer memasang ikon segera setelah nav muncul.
+     */
+    const studentSidebarIconObserver =
+        new MutationObserver(
+            applyStudentSidebarIcons
+        );
+
+
+    studentSidebarIconObserver.observe(
+        document.documentElement,
+        {
+            childList: true,
+            subtree: true
+        }
     );
 
-} else {
 
-    applyStudentSidebarIcons();
+    document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+            applyStudentSidebarIcons();
+
+            studentSidebarIconObserver
+                .disconnect();
+
+        },
+        {
+            once: true
+        }
+    );
 
 }

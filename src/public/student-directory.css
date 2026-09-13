@@ -1143,3 +1143,59 @@ svg[hidden] {
             1fr;
     }
 }
+
+/* =========================================================
+   STUDENT DIRECTORY — YELLOW BANNER
+   ========================================================= */
+
+.student-directory-profile-cover[
+    data-banner-color="yellow"
+] {
+    background:
+        linear-gradient(
+            120deg,
+            #854d0e,
+            #713f12 55%,
+            #251b0a
+        );
+}
+
+
+.student-directory-profile[
+    data-banner-color="yellow"
+] {
+    --directory-theme-panel:
+        #211d0c;
+
+    --directory-theme-inner:
+        #1a1709;
+
+    --directory-theme-border:
+        #665823;
+
+    --directory-theme-icon:
+        #463b12;
+
+    --directory-avatar-start:
+        #facc15;
+
+    --directory-avatar-end:
+        #ca8a04;
+}
+
+
+.student-directory-result[
+    data-banner-color="yellow"
+] {
+    --directory-avatar-start:
+        #facc15;
+
+    --directory-avatar-end:
+        #ca8a04;
+
+    --directory-result-hover-border:
+        rgba(250, 204, 21, 0.68);
+
+    --directory-result-hover-background:
+        rgba(133, 77, 14, 0.16);
+}

@@ -221,6 +221,18 @@ async function initTurso() {
                 FOREIGN KEY (updated_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
             )`,
 
+                        `CREATE TABLE IF NOT EXISTS maintenance_settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                enabled INTEGER NOT NULL DEFAULT 0,
+                reason TEXT NOT NULL DEFAULT '',
+                estimated_end_at TEXT,
+                updated_by_admin_id INTEGER,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (updated_by_admin_id)
+                    REFERENCES admins(id)
+                    ON DELETE SET NULL
+            )`,
+
             `CREATE TABLE IF NOT EXISTS admin_profile_subjects (
                 admin_id INTEGER NOT NULL,
                 subject_id INTEGER NOT NULL,
@@ -391,6 +403,16 @@ async function initTurso() {
         ];
 
         await runStatements(tables);
+
+        await db.run(`
+            INSERT OR IGNORE INTO maintenance_settings (
+                id,
+                enabled,
+                reason,
+                estimated_end_at
+            )
+            VALUES (1, 0, '', NULL)
+        `);
 
         const migrations = {
             students: {
