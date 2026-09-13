@@ -1,16 +1,9 @@
-Bahasa Id dan Enus, bisa ganti Bahasa Idn atau inggris (us) di settings yg ada di siswa dan admin, siswa dapat tab baru settings dibawah, admin berarti di area system reset
-Mending buat language file atau gimana, pokoknya hasilnya bisa ganti bahasa Indo atau Inggris
-
-Quiz editor boleh masuk di mobile kasih wanring aja
-
 Fix panel consistrency fade out
 
 Changelog feature Index html - Akan ada tombol changelog di footer index html, kecil aja
 Cara tulis changelog itu di information board, akan jadi sistem 2 tab, tab information board lama, sama tab Changelog, dia tujuannya berbeda
 
 Polling feature
-
-Tambah tombol read all (gak perlu scroll to mention cuma hilangkan badge dan biru highlight)
 
 Kenapa website lebih lambat jika di publish di vercel. Apakah ada solusi biar mempercepat jadi kecepatan hampir sama dgn menggunakan localhost
 ----------------------------------------------------

@@ -1505,36 +1505,23 @@ async function getMaintenanceSettings(
 }
 
 
-function canBypassMaintenance(req) {
-
-    /*
-        Hanya akun dengan role admin yang
-        boleh membuka dashboard saat maintenance.
-
-        Akun teacher tetap terkena maintenance.
-    */
-    return (
-        Boolean(
-            req.session?.adminId
-        ) &&
-        String(
-            req.session?.adminRole || ""
-        ).toLowerCase() === "admin"
-    );
-
-}
-
-
 function isMaintenancePublicRoute(req) {
 
-    return [
-        "/maintenance.html",
-        "/api/site-status",
-        "/admin-login.html",
-        "/api/admin/login",
-        "/api/logout"
-    ].includes(
-        req.path
+    /*
+        Hanya halaman maintenance dan endpoint
+        pemeriksa status yang tetap dapat diakses.
+
+        Login admin juga diblokir di deployment.
+        Maintenance harus dimatikan dari localhost.
+    */
+    return (
+        req.method === "GET" &&
+        [
+            "/maintenance.html",
+            "/api/site-status"
+        ].includes(
+            req.path
+        )
     );
 
 }
@@ -1554,9 +1541,6 @@ app.get(
             const appliesToRequest =
                 settings.enabled &&
                 isVercelDeploymentRequest(
-                    req
-                ) &&
-                !canBypassMaintenance(
                     req
                 );
 
@@ -1609,6 +1593,10 @@ app.use(
 
         /*
             Localhost tidak pernah diblokir.
+
+            Pengaturan tetap menggunakan database
+            yang sama, sehingga maintenance dapat
+            dimatikan dari localhost.
         */
         if (
             !isVercelDeploymentRequest(req)
@@ -1618,7 +1606,8 @@ app.use(
 
 
         /*
-            Route ini harus tetap dapat dibuka.
+            Hanya halaman maintenance dan status
+            website yang tetap dapat dibuka.
         */
         if (
             isMaintenancePublicRoute(req)
@@ -1627,20 +1616,27 @@ app.use(
         }
 
 
-        /*
-            Administrator tetap memiliki akses.
-        */
-        if (
-            canBypassMaintenance(req)
-        ) {
-            return next();
-        }
-
-
         try {
 
+            /*
+                Semua action yang mengubah data wajib
+                membaca status terbaru langsung dari
+                Turso agar tidak lolos karena cache.
+            */
+            const isDataMutation =
+                ![
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ].includes(
+                    req.method
+                );
+
+
             const settings =
-                await getMaintenanceSettings();
+                await getMaintenanceSettings(
+                    isDataMutation
+                );
 
 
             if (!settings.enabled) {
@@ -1649,14 +1645,27 @@ app.use(
 
 
             /*
-                Semua API siswa, guru, quiz,
-                feed, dan API publik dihentikan.
+                Seluruh API ditolak, termasuk:
+
+                - membuat dan menghapus feed;
+                - membuat dan menghapus reply;
+                - mengubah nilai atau poin;
+                - mengerjakan quiz;
+                - login siswa dan guru;
+                - upload gambar;
+                - action lainnya.
             */
             if (
                 req.path.startsWith(
                     "/api/"
                 )
             ) {
+
+                res.setHeader(
+                    "Cache-Control",
+                    "no-store"
+                );
+
 
                 return res.status(503).json({
                     success: false,
@@ -1679,29 +1688,52 @@ app.use(
 
 
             /*
-                Semua halaman diarahkan ke
-                tampilan maintenance.
+                Semua halaman, termasuk admin-login,
+                diarahkan kembali ke maintenance.
             */
-            return res
-                .status(503)
-                .sendFile(
-                    path.join(
-                        publicDirectory,
-                        "maintenance.html"
-                    )
-                );
+            return res.redirect(
+                302,
+                "/maintenance.html"
+            );
 
 
         } catch (error) {
 
-            /*
-                Jika database maintenance gagal
-                dibaca, website tidak ikut terkunci.
-            */
             console.error(
                 "Pemeriksaan maintenance gagal:",
                 error
             );
+
+
+            /*
+                Bila Turso gagal diperiksa, request
+                perubahan data tetap ditolak agar
+                tidak terjadi perubahan saat status
+                maintenance tidak dapat dipastikan.
+            */
+            if (
+                ![
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ].includes(
+                    req.method
+                )
+            ) {
+
+                return res.status(503).json({
+                    success: false,
+
+                    maintenance: true,
+
+                    code:
+                        "MAINTENANCE_STATUS_UNAVAILABLE",
+
+                    message:
+                        "Status website sedang tidak dapat diperiksa. Coba lagi nanti."
+                });
+
+            }
 
 
             return next();

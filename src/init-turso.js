@@ -513,34 +513,61 @@ async function initTurso() {
             WHERE target_type IS NULL OR TRIM(target_type) = ''
         `);
 
-        const existingSteven = await db.get(`
-            SELECT id
-            FROM admins
-            WHERE username = ?
-            LIMIT 1
-        `, ["steven"]);
+        /*
+            Buat satu akun guru awal hanya jika
+            database belum memiliki akun guru.
+        */
+        const adminCountRow =
+            await db.get(`
+                SELECT COUNT(*) AS total
+                FROM admins
+            `);
 
-        if (!existingSteven) {
-            const passwordHash = await bcrypt.hash("cruise@fl350", 12);
 
-            await db.run(`
-                INSERT INTO admins (
-                    username,
-                    password,
-                    name,
-                    role
-                )
-                VALUES (?, ?, ?, ?)
-            `, [
-                "steven",
-                passwordHash,
-                "Steven",
-                "teacher"
-            ]);
+        const adminCount =
+            Number(
+                adminCountRow?.total || 0
+            );
 
-            console.log("+ Akun Steven dibuat.");
+
+        if (adminCount === 0) {
+
+            const initialPasswordHash =
+                await bcrypt.hash(
+                    "admin123",
+                    12
+                );
+
+
+            await db.run(
+                `
+                    INSERT INTO admins (
+                        username,
+                        password,
+                        name,
+                        role
+                    )
+                    VALUES (?, ?, ?, ?)
+                `,
+                [
+                    "admin",
+                    initialPasswordHash,
+                    "Admin",
+                    "teacher"
+                ]
+            );
+
+
+            console.log(
+                "+ Akun guru awal dibuat: admin"
+            );
+
         } else {
-            console.log("= Akun Steven sudah tersedia.");
+
+            console.log(
+                "= Akun guru awal tidak dibuat karena akun guru sudah tersedia."
+            );
+
         }
 
         console.log(`Schema Turso siap: ${tables.length} tabel dan ${indexes.length} index diperiksa.`);
