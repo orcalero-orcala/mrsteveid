@@ -1317,7 +1317,7 @@ app.use(
 // ========================================
 
 const MAINTENANCE_CACHE_DURATION =
-    5000;
+    30000;
 
 let maintenanceSettingsCache = {
     data: null,
@@ -1367,69 +1367,7 @@ function isVercelDeploymentRequest(req) {
 
 
 async function ensureMaintenanceTable() {
-
-    if (maintenanceTablePromise) {
-        return maintenanceTablePromise;
-    }
-
-
-    maintenanceTablePromise =
-        (async () => {
-
-            await tursoDb.run(`
-                CREATE TABLE IF NOT EXISTS
-                    maintenance_settings
-                (
-                    id INTEGER PRIMARY KEY
-                        CHECK (id = 1),
-
-                    enabled INTEGER NOT NULL
-                        DEFAULT 0,
-
-                    reason TEXT NOT NULL
-                        DEFAULT '',
-
-                    estimated_end_at TEXT,
-
-                    updated_by_admin_id INTEGER,
-
-                    updated_at DATETIME NOT NULL
-                        DEFAULT CURRENT_TIMESTAMP,
-
-                    FOREIGN KEY (
-                        updated_by_admin_id
-                    )
-                    REFERENCES admins(id)
-                    ON DELETE SET NULL
-                )
-            `);
-
-
-            await tursoDb.run(`
-                INSERT OR IGNORE INTO
-                    maintenance_settings
-                (
-                    id,
-                    enabled,
-                    reason,
-                    estimated_end_at
-                )
-                VALUES (1, 0, '', NULL)
-            `);
-
-        })()
-            .catch(error => {
-
-                maintenanceTablePromise =
-                    null;
-
-                throw error;
-
-            });
-
-
-    return maintenanceTablePromise;
-
+    return true;
 }
 
 
