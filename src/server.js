@@ -36883,4 +36883,16 @@ async function startServer() {
 }
 
 
-startServer();
+/*
+ * Lokal:
+ * jalankan server HTTP seperti biasa.
+ */
+if (require.main === module) {
+    startServer();
+}
+
+/*
+ * Vercel:
+ * ekspor aplikasi Express sebagai serverless function.
+ */
+module.exports = app;
